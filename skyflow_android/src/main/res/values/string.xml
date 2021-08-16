@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="field_required">This field is required</string>
+    <string name="bt_cvv">cvv</string>
+    <string name="bt_cvc">cvc</string>
+    <string name="bt_cvn">cvn</string>
+    <string name="bt_cid">cid</string>
+    <string name="invalid_card_holder_name">Invalid Card holder name</string>
+    <string name="invalid_cvv">Invalid Cvv</string>
+    <string name="invalid_expiredate">Invalid Expire date</string>
+    <string name="invalid_card_number">Invalid Card number</string>
+</resources>
