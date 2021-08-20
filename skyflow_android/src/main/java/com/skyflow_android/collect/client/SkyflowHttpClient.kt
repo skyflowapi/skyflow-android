@@ -3,6 +3,8 @@ package com.skyflowandroid.collect.client
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import com.skyflow_android.core.SkyflowCallback
+import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream
@@ -54,9 +56,9 @@ internal class SkyflowHttpClient(
         }
     }
 
-    private fun getAccessToken(callback: ApiCallback) {
+    private fun getAccessToken(callback: SkyflowCallback) {
         if (!isValidToken(token)) {
-            tokenProvider.getAccessToken(object : ApiCallback {
+            tokenProvider.getAccessToken(object : SkyflowCallback {
                 override fun success(responseBody: String) {
                     token = responseBody
                     callback.success(responseBody);
@@ -83,9 +85,9 @@ internal class SkyflowHttpClient(
         connectionUrl: URL,
         method: String,
         requestBody: String?,
-        callback: ApiCallback
+        callback: SkyflowCallback
     ) {
-        this.getAccessToken(object : ApiCallback {
+        this.getAccessToken(object : SkyflowCallback {
             override fun success(token: String) {
                 try {
                     val thread = Thread {
@@ -138,11 +140,11 @@ internal class SkyflowHttpClient(
 
     }
 
-    fun post(requestBody: String, callback: ApiCallback) {
+    fun post(requestBody: String, callback: SkyflowCallback) {
         request(url, "POST", requestBody, callback);
     }
 
-    fun get(queryString: String, callback: ApiCallback) {
+    fun get(queryString: String, callback: SkyflowCallback) {
         request(URL(url.toString() + queryString), "GET", null, callback);
     }
 }

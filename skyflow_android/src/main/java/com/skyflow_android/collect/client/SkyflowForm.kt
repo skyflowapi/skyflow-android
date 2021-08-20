@@ -2,10 +2,11 @@ package com.skyflowandroid.collect.client
 
 import android.view.View
 import androidx.core.widget.doAfterTextChanged
+import com.skyflow_android.core.SkyflowCallback
 import com.skyflowandroid.collect.elements.SkyflowInputField
 
 class SkyflowForm(
-    private val skyflowCollectClient: SkyflowCollectClient,
+//    private val skyflowCollectClient: SkyflowCollectClient,
     private val tableName: String
     ) {
     private val skyflowRecord: SkyflowRecord = SkyflowRecord(tableName)
@@ -43,12 +44,12 @@ class SkyflowForm(
         return true
     }
 
-    fun submit(callback: ApiCallback) {
-        if (isValid()) {
-            skyflowCollectClient.tokenize(skyflowRecord, callback)
-        } else {
-            callback.failure(Exception("Invalid input"))
-        }
-    }
+//    fun submit(callback: SkyflowCallback) {
+//        if (isValid()) {
+//            skyflowCollectClient.tokenize(skyflowRecord, callback)
+//        } else {
+//            callback.failure(Exception("Invalid input"))
+//        }
+//    }
 
 }
