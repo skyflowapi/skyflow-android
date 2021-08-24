@@ -1,140 +1,93 @@
-package com.skyflowandroid.collect.elements.utils
+package com.skyflow_android.collect.elements.utils
 
-import android.text.TextUtils
-import com.skyflow_android.R
 import java.util.regex.Pattern
 
-enum class  CardType(
-    var regex: String, var minCardLength: Int, var maxCardLength: Int, var securityCodeLength: Int,
-    var securityCodeName: Int
-) {
+internal class Card
+    (var defaultName:String,var regex: String,var minCardLength: Int,var maxCardLength: Int,
+     var formatPattern: String,var securityCodeLength: Int,var securityCodeName: String)
+{
+}
+
+enum class  CardType (var defaultName:String,var regex: String,var minCardLength: Int,var maxCardLength: Int,
+                      var formatPattern: String,var securityCodeLength: Int,var securityCodeName: String)
+{
 
     VISA(
-        "^4\\d*",
-        16, 16,
-        3, R.string.bt_cvv
-    ),
+        "Visa" , "^4\\d*", 13, 19, "#### #### #### #### ###",
+        3, SecurityCode.cvv.rawValue),
     MASTERCARD(
-        "^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
-        16, 16,
-        3, R.string.bt_cvc
-    ),
+        "MasterCard","^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
+        16,16,"#### #### #### ####",
+        3,  SecurityCode.cvc.rawValue),
     DISCOVER(
-        "^(6011|65|64[4-9]|622)\\d*",
-        16, 16,
-        3, R.string.bt_cid
-    ),
+        "Discover", "^(6011|65|64[4-9]|622)\\d*",
+        16,16,"#### #### #### ####",
+        3, SecurityCode.cid.rawValue),
     AMEX(
-        "^3[47]\\d*",
-        15, 15,
-        4, R.string.bt_cid
-    ),
+        "Amex","^3[47]\\d*",
+        15,15,"#### ###### #####",
+        4, SecurityCode.cid.rawValue),
     DINERS_CLUB(
-        "^(36|38|30[0-5])\\d*",
-        14, 14,
-        3, R.string.bt_cvv
-    ),
+        "Diners Club","^(36|38|30[0-5])\\d*",
+        14,16,"#### ###### #####",
+        3, SecurityCode.cvv.rawValue),
     JCB(
-        "^35\\d*",
-        16, 16,
-        3, R.string.bt_cvv
-    ),
+        "JCB","^35\\d*",
+        16,19,"#### #### #### #### ###",
+        3, SecurityCode.cvv.rawValue),
     MAESTRO(
-        "^(5018|5020|5038|5043|5[6-9]|6020|6304|6703|6759|676[1-3])\\d*",
-        12, 19,
-        3, R.string.bt_cvc
-    ),
+        "Maestro","^(5018|5020|5038|5043|5[6-9]|6020|6304|6703|6759|676[1-3])\\d*",
+        12,19,"#### #### #### #### ###",
+        3, SecurityCode.cvc.rawValue),
     UNIONPAY(
-        "^62\\d*",
-        16, 19,
-        3, R.string.bt_cvn
-    ),
-    HIPER(
-        "^637(095|568|599|609|612)\\d*",
-        16, 16,
-        3, R.string.bt_cvc
-    ),
+        "UnionPay","^62\\d*",
+        16,19,"#### #### #### #### ###",
+        3, SecurityCode.cvn.rawValue),
     HIPERCARD(
-        "^606282\\d*",
-        16, 16,
-        3, R.string.bt_cvc
-    ),
+        "HiperCard","^606282\\d*",
+        14, 19,"#### #### #### #### ###",
+        3, SecurityCode.cvc.rawValue),
     UNKNOWN(
-        "\\d+",
-        12, 19,
-        3, R.string.bt_cvv
-    ),
+        "Unknown","\\d+",
+        12, 19,"#### #### #### #### ###",
+        3, SecurityCode.cvv.rawValue),
     EMPTY(
-        "^$",
-        12, 19,
-        3, R.string.bt_cvv
-    );
+        "Empty","^$",
+        12,19,"#### #### #### #### ###",
+        3, SecurityCode.cvv.rawValue);
 
 
-
-    companion object {
-
-        private val AMEX_SPACE_INDICES = intArrayOf(4, 10)
-        private val DEFAULT_SPACE_INDICES = intArrayOf(4, 8, 12)
-
-        open fun forCardNumber(cardNumber: String): CardType {
-            val patternMatch = forCardNumberPattern(cardNumber)
-            return if (patternMatch != EMPTY && patternMatch != UNKNOWN) {
+    companion object
+    {
+        fun forCardNumber(cardNumber: String) : CardType {
+            var patternMatch = forCardPattern(cardNumber)
+            if (patternMatch.defaultName != "Empty" && patternMatch.defaultName != "Unknown") {
                 return patternMatch
-            } else EMPTY
+            }
+            else
+            {
+                return EMPTY
+            }
         }
 
 
-        private fun forCardNumberPattern(cardNumber: String): CardType {
-            for (cardType in values()) {
-                var pattern = Pattern.compile(cardType.regex)
+        private fun forCardPattern(cardNumber: String) : CardType {
+            val cards = enumValues<CardType>()
+            cards.forEach {
+                var pattern = Pattern.compile(it.regex)
                 if (pattern.matcher(cardNumber).matches()) {
-                    return cardType
+                    return it
                 }
             }
             return EMPTY
         }
-
-
-
     }
-
-    open fun validate(cardNumber: String): Boolean {
-        if (TextUtils.isEmpty(cardNumber)) {
-            return false
-        } else if (!TextUtils.isDigitsOnly(cardNumber)) {
-            return false
-        }
-        val numberLength = cardNumber.length
-        if (numberLength < minCardLength || numberLength > maxCardLength) {
-            return false
-        } else if (!Pattern.compile(regex).matcher(cardNumber).matches() ) {
-            return false
-        }
-        return isLuhnValid(cardNumber)
-    }
-
-    private fun isLuhnValid(cardNumber: String?): Boolean {
-        val reversed = StringBuffer(cardNumber).reverse().toString()
-        val len = reversed.length
-        var oddSum = 0
-        var evenSum = 0
-        for (i in 0 until len) {
-            val c = reversed[i]
-            require(Character.isDigit(c)) { String.format("Not a digit: '%s'", c) }
-            val digit = Character.digit(c, 10)
-            if (i % 2 == 0) {
-                oddSum += digit
-            } else {
-                evenSum += digit / 5 + 2 * digit % 10
-            }
-        }
-        return (oddSum + evenSum) % 10 == 0
-    }
+}
 
 
-
-    open fun getSpaceIndices(): IntArray {
-        return if (this == AMEX) AMEX_SPACE_INDICES else DEFAULT_SPACE_INDICES
-    }
+internal enum class SecurityCode(var rawValue:String) {
+    cvv("cvv"),
+    cvc("cvc"),
+    cvn("cvn"),
+    cid("cid")
 }

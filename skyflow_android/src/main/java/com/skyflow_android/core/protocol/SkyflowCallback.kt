@@ -1,4 +1,4 @@
-package com.skyflow_android.core
+package com.skyflow_android.core.protocol
 
 interface SkyflowCallback {
 

@@ -1,41 +1,41 @@
 package com.skyflow_android.core
 
-import com.google.gson.JsonObject
-import com.skyflow_android.collect.client.CollectContainer
+import android.util.Log
 import com.skyflow_android.collect.client.InsertOptions
 import com.skyflow_android.core.container.Container
-import com.skyflow_android.core.container.ContainerOptions
 import com.skyflow_android.core.container.ContainerProtocol
-import com.skyflow_android.core.container.ContainerTypes
+import com.skyflow_android.core.protocol.SkyflowCallback
+import com.skyflow_android.reveal.client.RevealOptions
+import com.skyflow_android.reveal.client.RevealRequestRecord
 import org.json.JSONObject
+import kotlin.reflect.KClass
 
 class Skyflow (
-    val vaultId: String,
-    val vaultURL: String,
+    configuration: SkyflowConfiguration
 ){
 
-    val apiClient = APIClient(vaultId, vaultURL, DemoTokenProvider())
+    private val apiClient = APIClient(configuration.vaultId, configuration.workspaceUrl, configuration.tokenProvider)
 
-    public fun insert(records: JSONObject, options: InsertOptions? = InsertOptions(), callback: SkyflowCallback){
+    fun insert(records:  String, options: InsertOptions? = InsertOptions(), callback: SkyflowCallback){
         apiClient.post(records, callback, options!!)
     }
 
-        fun <T:ContainerProtocol> container(type:Class<T>) : Container<T>{
-            return Container<T>(this)
+    fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T>{
+        return Container<T>(this)
+    }
+
+
+    fun get(records: String, options: RevealOptions? = RevealOptions(), callback: SkyflowCallback)   {
+        val jsonobj = JSONObject(records)
+        val obj = jsonobj.getJSONArray("records")
+        val list = mutableListOf<RevealRequestRecord>()
+        var i = 0
+        while(i<obj.length())
+        {
+            val jsonobj1 = obj.getJSONObject(i)
+            list.add(RevealRequestRecord(jsonobj1.get("id").toString(),jsonobj1.get("redaction").toString()))
+            i++
         }
-
-
-//    public fun reveal(records: HashMap<String, Any>, options: RevealOptions? = RevealOptions(), callback: SkyflowCallback)   {
-//        let tokens : [[String : Any]] = records["records"] as! [[String : Any]]
-//        var list : [RevealRequestRecord] = []
-//        for token in tokens
-//        {
-//            list.append(RevealRequestRecord(token: token["id"] as! String, redaction: token["redaction"] as! String))
-//        }
-//        self.apiClient.get(records: list, callback: callback)
-//    }
+        this.apiClient.get(list,callback)
+    }
 }
-
-//fun main(){
-//    var skyflow = Skyflow()
-//}

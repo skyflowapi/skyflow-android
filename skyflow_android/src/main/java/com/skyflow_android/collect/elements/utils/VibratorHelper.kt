@@ -1,4 +1,4 @@
-package com.skyflowandroid.collect.elements.utils
+package com.skyflow_android.collect.elements.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -16,7 +16,7 @@ object VibrationHelper {
         }
     }
 
-    fun hasVibrationPermission(context: Context): Boolean {
+    private fun hasVibrationPermission(context: Context): Boolean {
         return context.packageManager.checkPermission(Manifest.permission.VIBRATE,
                 context.packageName) == PackageManager.PERMISSION_GRANTED
     }

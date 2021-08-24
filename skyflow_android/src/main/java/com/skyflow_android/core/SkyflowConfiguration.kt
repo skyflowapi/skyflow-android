@@ -1,9 +1,9 @@
 package com.skyflow_android.core
 
-import com.skyflowandroid.collect.client.TokenProvider
+import com.skyflow_android.core.protocol.TokenProvider
 
 class SkyflowConfiguration(
-    workspaceUrl: String,
-    vaultId: String,
-    private val tokenProvider: TokenProvider
-) {}
+    val workspaceUrl: String,
+    val vaultId: String,
+    val tokenProvider: TokenProvider
+)
