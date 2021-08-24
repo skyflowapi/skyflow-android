@@ -4,14 +4,14 @@ import android.text.TextUtils
 import java.util.*
 
 
- class DateValidator {
+ class DateValidator() {
 
 
     private var mCalendar: Calendar? = null
 
-    constructor(){
-        mCalendar = Calendar.getInstance()
-    }
+     init {
+         mCalendar = Calendar.getInstance()
+     }
 
 
     fun isValid(monthString: String, yearString: String): Boolean {
@@ -29,9 +29,9 @@ import java.util.*
         if (month < 1 || month > 12) {
             return false
         }
-        var currentYear:Int
-        var year:Int = yearString.toInt()
-        var yearLength = yearString.length;
+        val currentYear:Int
+        val year:Int = yearString.toInt()
+        val yearLength = yearString.length;
         if (yearLength == 2) {
             currentYear = currentTwoDigitYear()
         } else if (yearLength == 4) {
