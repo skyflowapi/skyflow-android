@@ -6,10 +6,9 @@ dependencyResolutionManagement {
         jcenter() // Warning: this repository is going to shut down soon
         maven {
             url 'https://jitpack.io'
-            credentials { username authToken }
         }
     }
 }
 rootProject.name = "Skyflow-android"
 include ':app'
-include ':skyflow_android'
+include ':Skyflow'
