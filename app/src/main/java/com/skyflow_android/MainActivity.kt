@@ -1,5 +1,7 @@
 package com.skyflow_android
 
+//import okhttp3.Request
+import SkyflowElementType
 import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.os.Bundle
@@ -12,7 +14,6 @@ import com.skyflow_android.collect.client.InsertOptions
 import com.skyflow_android.collect.client.collect
 import com.skyflow_android.collect.client.create
 import com.skyflow_android.collect.elements.CollectElementInput
-import com.skyflow_android.collect.elements.SkyflowElementType
 import com.skyflow_android.collect.elements.core.styles.SkyflowStyles
 import com.skyflow_android.core.Skyflow
 import com.skyflow_android.core.SkyflowConfiguration
@@ -24,7 +25,6 @@ import com.skyflow_android.core.protocol.TokenProvider
 import com.skyflow_android.reveal.client.*
 import okhttp3.Call
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = SkyflowConfiguration("https://na1.area51.vault.skyflowapis.com/v1/vaults/", "ffe21f44f68a4ae3b4fe55ee7f0a85d6", tokenProvider)
         val skyflow:Skyflow = Skyflow(skyflowConfiguration)
-        val container =  skyflow.container(ContainerTypes.COLLECT)
+        val container =  skyflow.container(com.skyflow_android.core.container.ContainerTypes.COLLECT)
         val revealContainer = skyflow.container(ContainerTypes.REVEAL)
         pureSDKTest()
         val padding = Padding(30,20,20,20)
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
 class DemoTokenProvider: TokenProvider{
     override fun getAccessToken(callback: SkyflowCallback) {
         val url = "http://10.0.2.2:8000/js/analystToken"
-        val request = Request.Builder().url(url).build()
+        val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {
             val thread = Thread {
