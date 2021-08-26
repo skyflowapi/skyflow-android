@@ -20,6 +20,7 @@ import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
+import skyflow.R
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
