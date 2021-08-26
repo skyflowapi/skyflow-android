@@ -11,4 +11,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Skyflow-android"
 include ':app'
-include ':skyflow_android'
+include ':Skyflow'
