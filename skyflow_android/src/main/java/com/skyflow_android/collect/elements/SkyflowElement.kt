@@ -1,5 +1,6 @@
 package com.skyflow_android.collect.elements
 
+import SkyflowElementType
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.LinearLayout
