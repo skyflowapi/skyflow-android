@@ -2,7 +2,7 @@ package  Skyflow
 
 import android.graphics.Color
 import android.view.Gravity
-import skyflow.R
+import com.skyflow_android.R
 
 
 class Style(
