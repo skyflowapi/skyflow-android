@@ -1,6 +1,6 @@
 package Skyflow.collect.client
 
-import com.Skyflow.core.APIClient
+import Skyflow.core.APIClient
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject

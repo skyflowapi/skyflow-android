@@ -1,4 +1,4 @@
-package com.Skyflow.core
+package Skyflow.core
 
 import android.util.Base64
 import Skyflow.InsertOptions
