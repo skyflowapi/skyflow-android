@@ -22,7 +22,6 @@ import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import com.skyflow_android.R
 
-
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
