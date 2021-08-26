@@ -7,22 +7,22 @@ import android.os.Build
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
+import android.view.View.OnFocusChangeListener
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import com.skyflow_android.R
+import com.skyflow_android.collect.elements.utils.VibrationHelper
 import com.skyflow_android.collect.elements.validations.SkyflowValidationError
 import com.skyflow_android.collect.elements.validations.SkyflowValidationSet
 import com.skyflow_android.collect.elements.validations.SkyflowValidator
 import com.skyflow_android.core.elements.Padding
 import com.skyflow_android.core.elements.state.State
 import com.skyflow_android.core.elements.state.StateforText
-import com.skyflow_android.collect.elements.utils.VibrationHelper
+import skyflow.R
 
 @Suppress("DEPRECATION")
 class SkyflowTextField @JvmOverloads constructor(
