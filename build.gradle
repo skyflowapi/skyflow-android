@@ -13,11 +13,11 @@ buildscript {
     }
 }
 
-ext {
-    compileSdkVersion = 29
-    buildToolsVersion = '29.0.2'
-    versionName = '1.0.0'
-}
+//ext {
+//    compileSdkVersion = 29
+//    buildToolsVersion = '29.0.2'
+//    versionName = '1.0.0'
+//}
 
 task clean(type: Delete) {
     delete rootProject.buildDir

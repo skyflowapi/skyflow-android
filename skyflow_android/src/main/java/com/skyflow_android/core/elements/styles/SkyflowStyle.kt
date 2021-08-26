@@ -2,8 +2,8 @@ package  com.skyflow_android.core.elements.styles
 
 import android.graphics.Color
 import android.view.Gravity
-import com.skyflow_android.R
 import com.skyflow_android.core.elements.Padding
+import skyflow.R
 
 
 class SkyflowStyle(

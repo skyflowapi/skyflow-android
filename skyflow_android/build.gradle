@@ -3,8 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'maven-publish'
 }
-group='com.github.skyflowapi'
-version = rootProject.ext.versionName
+//group='com.github.skyflowapi'
+//version = rootProject.ext.versionName
 
 android {
     compileSdk 31
