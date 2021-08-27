@@ -56,24 +56,28 @@ class APIClient (
     }
 
     private fun getAccessToken(callback: Callback) {
-        if (!isValidToken(token)) {
-            tokenProvider.getAccessToken(object : Callback {
-                override fun onSuccess(responseBody: String) {
-                    token = responseBody
-                    callback.onSuccess(responseBody)
-                }
+        try {
+            if (!isValidToken(token)) {
+                tokenProvider.getBearerToken(object : Callback {
+                    override fun onSuccess(responseBody: Any) {
+                        token = "Bearer $responseBody"
+                        callback.onSuccess(responseBody)
+                    }
 
-                override fun onFailure(exception: Exception?) {
-                    callback.onFailure(exception)
-                }
-            })
-        } else {
-            callback.onSuccess(token)
+                    override fun onFailure(exception: Exception) {
+                        callback.onFailure(exception)
+                    }
+                })
+            } else {
+                callback.onSuccess(token)
+            }
+        }catch (e: Exception){
+            callback.onFailure(e)
         }
     }
 
 
-    internal fun post(records: String, callback: Callback, options: InsertOptions){
+    internal fun post(records: JSONObject, callback: Callback, options: InsertOptions){
         val collectApiCallback = CollectAPICallback(this, records, callback, options)
         this.getAccessToken(collectApiCallback)
     }
@@ -83,11 +87,10 @@ class APIClient (
         this.getAccessToken(revealApiCallback)
     }
 
-    fun constructBatchRequestBody(records:  String, options: InsertOptions) : JSONObject{
+    fun constructBatchRequestBody(records:  JSONObject, options: InsertOptions) : JSONObject{
         val postPayload:MutableList<Any> = mutableListOf()
         val insertTokenPayload:MutableList<Any> = mutableListOf()
-        val obj = JSONObject(records)
-        val obj1 = obj.getJSONArray("records")
+        val obj1 = records.getJSONArray("records")
         var i = 0
         while ( i < obj1.length())
         {

@@ -2,5 +2,5 @@ package Skyflow
 
 
 interface TokenProvider {
-    fun getAccessToken(callback: Callback)
+    fun getBearerToken(callback: Callback)
 }

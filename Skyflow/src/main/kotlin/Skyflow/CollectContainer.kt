@@ -3,6 +3,7 @@ package Skyflow
 import Skyflow.collect.client.CollectRequestBody
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
+import org.json.JSONObject
 
 
 class CollectContainer : ContainerProtocol {
@@ -40,5 +41,5 @@ fun Container<CollectContainer>.collect(callback: Callback, options: InsertOptio
         return
     }
     val records = CollectRequestBody.createRequestBody(this.elements)
-    this.client.insert(records, options,callback)
+    this.client.insert(JSONObject(records), options,callback)
 }

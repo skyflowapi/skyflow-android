@@ -11,14 +11,15 @@ import java.io.IOException
 
 internal class CollectAPICallback(
     private val apiClient: APIClient,
-    private val records: String,
+    private val records: JSONObject,
     val callback: Callback,
     private val options: InsertOptions,
 ) : Callback
 {
     private val okHttpClient = OkHttpClient()
 
-    override fun onSuccess(responseBody: String) {
+    override fun onSuccess(responseBody: Any) {
+        try{
         val url =apiClient.vaultURL + apiClient.vaultId
         val jsonBody: JSONObject = apiClient.constructBatchRequestBody(records, options)
         val body: RequestBody = RequestBody.create(
@@ -27,7 +28,7 @@ internal class CollectAPICallback(
         val request = Request
             .Builder()
             .method("POST", body)
-            .addHeader("Authorization", responseBody)
+            .addHeader("Authorization", "Bearer $responseBody")
             .url(url)
             .build()
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback{
@@ -42,15 +43,17 @@ internal class CollectAPICallback(
                     callback.onSuccess(buildResponse(JSONObject(response.body()!!.string())["responses"] as JSONArray))
                 }
             }
-        })
+        })}catch (e: Exception){
+            callback.onSuccess(e)
+        }
     }
 
-    override fun onFailure(exception: Exception?) {
+    override fun onFailure(exception: Exception) {
         callback.onFailure(exception)
     }
 
-    private fun buildResponse(responseJson: JSONArray) : String{
-        val inputRecords = JSONObject(this.records)["records"] as JSONArray
+    private fun buildResponse(responseJson: JSONArray) : JSONObject{
+        val inputRecords = this.records["records"] as JSONArray
         val recordsArray = JSONArray()
         val responseObject = JSONObject()
         if(this.options.tokens){
@@ -68,7 +71,7 @@ internal class CollectAPICallback(
                 recordsArray.put((record.get(0) as JSONObject).put("table", inputRecord["table"]))
             }
         }
-        return responseObject.put("records", recordsArray).toString()
+        return responseObject.put("records", recordsArray)
     }
 
 }

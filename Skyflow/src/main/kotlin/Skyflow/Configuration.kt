@@ -1,7 +1,7 @@
 package Skyflow
 
 class Configuration(
-    val workspaceUrl: String,
-    val vaultId: String,
+    val vaultID: String,
+    val vaultURL: String,
     val tokenProvider: TokenProvider
 )
