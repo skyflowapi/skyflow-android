@@ -36,7 +36,7 @@ class RevealResponse(var size: Int, var callback: Callback){
         }
 
         if(currentSize == size){
-            callback.onSuccess(responseBody.toString())
+            callback.onSuccess(responseBody)
         }
     }
 }

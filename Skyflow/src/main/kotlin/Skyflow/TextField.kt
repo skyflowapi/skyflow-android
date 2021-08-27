@@ -22,12 +22,12 @@ import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import com.skyflow_android.R
 
-
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : Skyflow.Element(context, attrs, defStyleAttr) {
 
+    internal var label = TextView(context)
     internal var inputField = EditText(context)
     internal var error = TextView(context)
     private var validationRules = SkyflowValidationSet()
@@ -53,9 +53,18 @@ class TextField @JvmOverloads constructor(
         padding = collectInput.styles?.base?.padding!!
         //textField.keyboardType = fieldType.instance.keyboardType
         state = StateforText(this)
+        this.collectInput = collectInput
         setError("Invalid Field")
         buildTextField()
         buildError()
+        buildLabel()
+    }
+
+    private fun buildLabel() {
+        label.text = collectInput.label
+        label.textSize = 16F
+        label.setPadding(15,0,0,5)
+        label.setTextColor(collectInput.styles?.base?.textColor!!)
     }
 
     private fun buildTextField()
@@ -85,6 +94,7 @@ class TextField @JvmOverloads constructor(
         super.onAttachedToWindow()
         super.setOrientation(VERTICAL)
         getListenersForText()
+        addView(label)
         addView(inputField)
         addView(error)
     }
@@ -139,12 +149,12 @@ class TextField @JvmOverloads constructor(
                     startAnimation(mErrorAnimator)
 
                 } else {
-                    inputField.setTextColor(collectInput.styles!!.completed!!.textColor!!)
-                    border.setStroke(collectInput.styles!!.completed!!.borderWidth!!,collectInput.styles!!.completed!!.borderColor!!)
-                    border.cornerRadius = collectInput.styles!!.completed!!.cornerRadius!!
+                    inputField.setTextColor(collectInput.styles!!.complete!!.textColor!!)
+                    border.setStroke(collectInput.styles!!.complete!!.borderWidth!!,collectInput.styles!!.complete!!.borderColor!!)
+                    border.cornerRadius = collectInput.styles!!.complete!!.cornerRadius!!
                     inputField.setBackgroundDrawable(border)
-                    inputField.gravity = collectInput.styles?.completed?.textAlignment!!
-                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.styles?.completed?.font!!)
+                    inputField.gravity = collectInput.styles?.complete?.textAlignment!!
+                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.styles?.complete?.font!!)
                 }
             }
         }.also { inputField.onFocusChangeListener = it }
