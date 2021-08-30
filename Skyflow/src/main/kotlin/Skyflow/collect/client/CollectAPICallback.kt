@@ -28,7 +28,7 @@ internal class CollectAPICallback(
         val request = Request
             .Builder()
             .method("POST", body)
-            .addHeader("Authorization", "Bearer $responseBody")
+            .addHeader("Authorization", "$responseBody")
             .url(url)
             .build()
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback{

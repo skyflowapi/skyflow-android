@@ -29,7 +29,7 @@ internal class RevealApiCallback(
                     record.redaction
                 ).build()
                 val request = Request.Builder()
-                    .addHeader("Authorization", "Bearer $responseBody").url(requestUrl).build()
+                    .addHeader("Authorization", "$responseBody").url(requestUrl).build()
 
                 okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
                     override fun onFailure(call: Call, e: IOException) {
