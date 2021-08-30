@@ -12,7 +12,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 ---
 ### Using gradle
 
-- Add the JitPack repository to your build file
+- Add the JitPack repository to your root project build.gradle file
 
   ```java
   allprojects {
@@ -20,17 +20,17 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 	    ...
 	    maven { url 'https://jitpack.io' }
 	    }
-     }
+     } gradle
   ```
 
-- Add the dependency
+- Add the dependency to your application's build.gradle file
 
   ```java
   implementation 'com.github.skyflowapi:skyflow-android-sdk:1.0.0'
   ```
 
 ### Using maven
-- Add the JitPack repository to your build file
+- Add the JitPack repository to your project root level build file
 
   ```xml
   <repositories>
@@ -41,7 +41,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
   </repositories>
   ```
 
-- Add the dependency
+- Add the dependency to your application level build file
   ```xml
   <dependency>
       <groupId>com.github.skyflowapi</groupId>
@@ -185,10 +185,10 @@ To create a collect element, we must first construct `Skyflow.CollectElementInpu
 Skyflow.CollectElementInput(
    table : String,            //the table this data belongs to
    column : String,           //the column into which this data should be inserted
+   type: Skyflow.ElementType   //Skyflow.ElementType enum
    styles: Skyflow.Styles,     //optional styles that should be applied to the form element
    label: String,            //optional label for the form element
    placeholder: String,      //optional placeholder for the form element
-   type: Skyflow.ElementType   //Skyflow.ElementType enum
 )
 ```
 The `table` and `column` parameters indicate which table and column in the vault the Element corresponds to.
@@ -244,10 +244,10 @@ Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objec
 val collectElementInput =  Skyflow.CollectElementInput(
         table: "string",            //the table this data belongs to
         column: "string",           //the column into which this data should be inserted
+	type: Skyflow.ElementType   //Skyflow.ElementType enum
         styles: Skyflow.Styles,     /*optional styles that should be applied to the form element*/
         label: "string",            //optional label for the form element
         placeholder: "string",      //optional placeholder for the form element
-        type: Skyflow.ElementType   //Skyflow.ElementType enum
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(required: false)  //indicates whether the field is marked as required. Defaults to 'false'
@@ -304,10 +304,10 @@ val styles = Skyflow.Styles(base: baseStyle, complete: completedStyle)
 val input = Skyflow.CollectElementInput(
        table: "cards",
        column: "cardNumber",
+       type: Skyflow.ElementType.CARD_NUMBER
        styles: styles,
        label: "card number",
        placeholder: "card number",
-       type: Skyflow.ElementType.CARD_NUMBER
 )
 
 //Create a CollectElementOptions instance
