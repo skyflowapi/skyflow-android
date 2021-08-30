@@ -61,7 +61,7 @@ class APIClient (
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
                         token = "Bearer $responseBody"
-                        callback.onSuccess(responseBody)
+                        callback.onSuccess(token)
                     }
 
                     override fun onFailure(exception: Exception) {
