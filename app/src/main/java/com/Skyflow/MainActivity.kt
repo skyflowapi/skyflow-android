@@ -1,9 +1,6 @@
 package com.Skyflow
 
-import Skyflow.collect
-import Skyflow.create
-import Skyflow.reveal
-import android.content.ContentValues.TAG
+import Skyflow.*
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,13 +14,15 @@ import org.json.JSONObject
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
+    private val TAG = MainActivity::class.qualifiedName
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            "ffe21f44f68a4ae3b4fe55ee7f0a85d6",
-            "https://na1.area51.vault.skyflowapis.com/v1/vaults/",
+            getString(R.string.test_vault_id),
+            getString(R.string.test_vault_url),
             tokenProvider
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -37,14 +36,11 @@ class MainActivity : AppCompatActivity() {
         val istyle = Skyflow.Style(Color.RED,30f,padding,4,R.font.roboto_light, Gravity.START, Color.RED)
 
         val styles = Skyflow.Styles(bstyle,cstyle,estyle,fstyle,istyle)
-        val cardNumberInput = Skyflow.CollectElementInput("persons","cardNumber",styles,"card","card number",
-            Skyflow.SkyflowElementType.CARD_NUMBER)
-        val expiryDateInput = Skyflow.CollectElementInput("persons","cardExpiration",styles,"expiry date","expiry date",
-            Skyflow.SkyflowElementType.EXPIRATION_DATE)
-        val cvvInput = Skyflow.CollectElementInput("persons","cvv",styles,"cvv","cvv",
-            Skyflow.SkyflowElementType.CVV)
-        val nameInput = Skyflow.CollectElementInput("persons","name.first_name",styles,"","name",
-            Skyflow.SkyflowElementType.CARDHOLDER_NAME)
+        val cardNumberInput = Skyflow.CollectElementInput("persons","cardNumber",Skyflow.SkyflowElementType.CARD_NUMBER)
+        val expiryDateInput = Skyflow.CollectElementInput("persons","cardExpiration",SkyflowElementType.EXPIRATION_DATE,
+            Styles(), "expiry date","expiry date")
+        val cvvInput = Skyflow.CollectElementInput("persons","cvv",Skyflow.SkyflowElementType.CVV,styles,"cvv","cvv")
+        val nameInput = Skyflow.CollectElementInput("persons","name.first_name",Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles,"","name")
 
         val cardNumber = collectContainer.create(this, cardNumberInput)
         val expirationDate = collectContainer.create(this, expiryDateInput)
@@ -102,11 +98,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pureSDKTest(){
-        Log.d("enter", "testingFunction: called")
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            "ffe21f44f68a4ae3b4fe55ee7f0a85d6",
-            "https://na1.area51.vault.skyflowapis.com/v1/vaults/",
+            getString(R.string.test_vault_id),
+            getString(R.string.test_vault_url),
             tokenProvider
         )
         val skyflow = Skyflow.init(skyflowConfiguration)
@@ -156,7 +151,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
             })
-//            Log.d("result", "testingFunction: " + obj1.toString())
     }catch (e: Exception){
             Log.d("TAG", "testingFunction: $e")
     }}
