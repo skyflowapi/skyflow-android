@@ -120,7 +120,7 @@ NOTE: You should pass access token as `String` value in the success callback of 
 
 To insert data into the vault from the integrated application, use the ```insert(records: JSONObject, options: InsertOptions?= InsertOptions() , callback: Skyflow.Callback)``` method of the Skyflow client. The records parameter takes a JSON object of the records to be inserted in the below format. The options parameter takes a object of optional parameters for the insertion. See below:
 
-```java
+```json5
 {
   "records": [
     {
@@ -238,7 +238,8 @@ Finally, the `type` field takes a Skyflow ElementType. Each type applies the app
 - `EXPIRATION_DATE`
 - `CVV`
 
-Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions` as described below:
+Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
+the `context` param takes android Context object as described below:
 
 ```kt
 val collectElementInput =  Skyflow.CollectElementInput(
@@ -252,7 +253,7 @@ val collectElementInput =  Skyflow.CollectElementInput(
 
 val collectElementOptions = Skyflow.CollectElementOptions(required: false)  //indicates whether the field is marked as required. Defaults to 'false'
 
-const element = container.create(collectElementInput, collectElementOptions)
+const element = container.create(context:Context,collectElementInput, collectElementOptions)
 ```
 
 
@@ -314,7 +315,7 @@ val input = Skyflow.CollectElementInput(
 val options = Skyflow.CollectElementOptions(required: true)
 
 //Create a Collect Element from the Collect Container
-val skyflowElement = container.create(input, options)
+val skyflowElement = container.create(context:Context,input, options)
 
 //Can interact with this object as a normal UIView Object and add to View
 
@@ -360,7 +361,7 @@ container.collect(options: insertOptions, callback: insertCallback)
 
 ## Retrieving data from the vault
 For non-PCI use-cases, to retrieve data from the vault and reveal it in the mobile, use the `get(records)` method. The records parameter takes a JSON object that contains `records` to be fetched as shown below.
-```java
+```json5
 {
     "records":[
         {
@@ -416,17 +417,17 @@ Then define a Skyflow Element to reveal data as shown below.
 ```kt
 val revealElementInput = Skyflow.RevealElementInput(
         id: "string",
+        redaction: Skyflow.RedactionType.DEFAULT,
         styles: Skyflow.Styles,        //optional, styles to be applied to the element
-        label: "cardNumber",          //optional, label for the element
-        redaction: Skyflow.RedactionType.DEFAULT
+        label: "cardNumber"            //optional, label for the element
     )
 ```
 The `styles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state. For a list of acceptable redaction types, see the [section above](#Retrieving-data-from-the-vault).
 
-Once you've defined a `Skyflow.RevealElementInput` object, you can use the `create(element)` method of the container to create the Element as shown below:
+Once you've defined a `Skyflow.RevealElementInput` object, you can use the `create()` method of the container to create the Element as shown below:
 
 ```kt
-val element = container.create(input: revealElementInput)
+val element = container.create(context:Context, input: revealElementInput)
 ```
 
 ### Step 3: Mount Elements to the Screen
@@ -460,21 +461,21 @@ val styles = Skyflow.Styles(base: baseStyle)
 //Create Reveal Elements
 val cardNumberInput = Skyflow.RevealElementInput(
         id: "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+        redaction: Skyflow.RedactionType.PLAIN_TEXT,
         styles: styles,
-        label: "cardnumber",
-        redaction: Skyflow.RedactionType.PLAIN_TEXT
+        label: "cardnumber"
 )
 
-val cardNumberElement = container.create(input: cardNumberInput)
+val cardNumberElement = container.create(context:Context, input: cardNumberInput)
 
 val cvvInput = Skyflow.RevealElementInput(
         id: "89024714-6a26-4256-b9d4-55ad69aa4047",
-        styles: styles,
-        label: "cvv",
         redaction: Skyflow.RedactionType.PLAIN_TEXT
+        styles: styles,
+        label: "cvv"
 )
 
-val cvvElement = container.create(input: cvvInput)
+val cvvElement = container.create(context:Context,input: cvvInput)
 
 //Can interact with these objects as a normal UIView Object and add to View
 
