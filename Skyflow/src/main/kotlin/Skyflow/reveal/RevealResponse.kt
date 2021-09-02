@@ -1,7 +1,6 @@
 package Skyflow.reveal
 
 import Skyflow.Callback
-import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -18,7 +17,6 @@ class RevealResponse(var size: Int, var callback: Callback){
     @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean = false){
         if(responseObject != null && isSuccess) {
             successResponses +=1
-            Log.d("records", "insertResponse: $responseObject")
             (responseBody.get("records") as JSONArray)
                 .put(responseObject.getJSONArray("records")[0])
         }
