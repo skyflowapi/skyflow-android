@@ -37,7 +37,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: InsertOptio
     }
     if(errors != "")
     {
-        callback.onFailure(Exception("error: ", Throwable(errors)))
+        callback.onFailure(Exception(errors))
         return
     }
     val records = CollectRequestBody.createRequestBody(this.elements)
