@@ -1,6 +1,7 @@
 package Skyflow.reveal
 
 import Skyflow.Callback
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -8,12 +9,14 @@ class RevealResponse(var size: Int, var callback: Callback){
 
     var responseBody = JSONObject()
 
-    var currentSize = 0;
+    var successResponses = 0
+
+    var failureResponses = 0
 
 
-    @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean? = false){
-        currentSize += 1
-        if(responseObject != null && isSuccess!!) {
+    @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean = false){
+        if(responseObject != null && isSuccess) {
+            successResponses +=1
             if(!responseBody.has("records")){
                 responseBody.put("records", responseObject.get("records"))
             }
@@ -24,7 +27,8 @@ class RevealResponse(var size: Int, var callback: Callback){
                  }
             }
         }
-        else if(responseObject != null && !isSuccess!!){
+        else if(responseObject != null && !isSuccess){
+            successResponses +=1
             if(!responseBody.has("errors")){
                 val errorsArray = JSONArray()
                 errorsArray.put(responseObject)
@@ -33,10 +37,16 @@ class RevealResponse(var size: Int, var callback: Callback){
             else{
                 (responseBody.get("errors") as JSONArray).put(responseObject)
             }
+        }else{
+            failureResponses += 1
         }
 
-        if(currentSize == size){
-            callback.onSuccess(responseBody)
+        if(successResponses + failureResponses == size) {
+            if (successResponses == 0) {
+                callback.onFailure(Exception("Reveal elements failed"))
+            } else {
+                callback.onSuccess(responseBody)
+            }
         }
     }
 }

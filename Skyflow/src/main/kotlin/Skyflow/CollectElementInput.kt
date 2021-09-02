@@ -1,7 +1,7 @@
 package Skyflow
 
-class CollectElementInput(var table: String, var column: String,var type: SkyflowElementType,
-                          var styles: Styles = Styles(), var label: String = "",
-                          var placeholder: String = ""
+class CollectElementInput(internal var table: String, internal var column: String,internal var type: SkyflowElementType,
+                          internal var styles: Styles = Styles(),internal var label: String = "",
+                          internal var placeholder: String = ""
 ) {
 }

@@ -21,7 +21,11 @@ internal class RevealApiCallback(
 
             for (record in records) {
                 val url = apiClient.vaultURL + apiClient.vaultId + "/tokens"
-                val requestUrlBuilder = HttpUrl.parse(url)!!.newBuilder()
+                val requestUrlBuilder = HttpUrl.parse(url)?.newBuilder()
+                if(requestUrlBuilder == null){
+                    onFailure(Exception("Bad or missing url"))
+                    return
+                }
                 requestUrlBuilder.addQueryParameter("token_ids", record.token)
 
                 val requestUrl = requestUrlBuilder.addQueryParameter(
