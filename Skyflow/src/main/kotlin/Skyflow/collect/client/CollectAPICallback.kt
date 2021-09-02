@@ -44,7 +44,7 @@ internal class CollectAPICallback(
                 }
             }
         })}catch (e: Exception){
-            callback.onSuccess(e)
+            callback.onFailure(e)
         }
     }
 

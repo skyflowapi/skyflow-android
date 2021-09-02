@@ -35,17 +35,21 @@ class MainActivity : AppCompatActivity() {
         val estyle = Skyflow.Style(Color.YELLOW,30f,padding,4,R.font.roboto_light, Gravity.CENTER, Color.YELLOW)
         val istyle = Skyflow.Style(Color.RED,30f,padding,4,R.font.roboto_light, Gravity.START, Color.RED)
 
-        val styles = Skyflow.Styles(bstyle,cstyle,estyle,fstyle,istyle)
-        val cardNumberInput = Skyflow.CollectElementInput("persons","cardNumber",Skyflow.SkyflowElementType.CARD_NUMBER)
+        val revealStyle = Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.BLUE)
+
+        val styles = Skyflow.Styles(revealStyle,cstyle,estyle,fstyle,istyle)
+        val cardNumberInput = Skyflow.CollectElementInput("persons","cardNumber",Skyflow.SkyflowElementType.CARD_NUMBER, label = "card number")
         val expiryDateInput = Skyflow.CollectElementInput("persons","cardExpiration",SkyflowElementType.EXPIRATION_DATE,
             Styles(), "expiry date","expiry date")
         val cvvInput = Skyflow.CollectElementInput("persons","cvv",Skyflow.SkyflowElementType.CVV,styles,"cvv","cvv")
-        val nameInput = Skyflow.CollectElementInput("persons","name.first_name",Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles,"","name")
+        val nameInput = Skyflow.CollectElementInput("persons","name.first_name",Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles,"Name","name")
 
         val cardNumber = collectContainer.create(this, cardNumberInput)
         val expirationDate = collectContainer.create(this, expiryDateInput)
         val cvv = collectContainer.create(this, cvvInput)
         val name = collectContainer.create(this, nameInput)
+
+        val reStyles = Styles(revealStyle)
 
         val parent = findViewById<LinearLayout>(R.id.parent)
 
@@ -55,8 +59,8 @@ class MainActivity : AppCompatActivity() {
         cvv.layoutParams = lp
         val revealInput = Skyflow.RevealElementInput(
             "45012507-f72b-4f5c-9bf9-86b133bae719",
-            styles, "CVV",
-            Skyflow.RedactionType.PLAIN_TEXT
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,
+            label =  "CVV"
         )
         val revealElement = revealContainer.create(this, revealInput, Skyflow.RevealElementOptions())
         revealElement.layoutParams = lp
@@ -76,21 +80,21 @@ class MainActivity : AppCompatActivity() {
             pureSDKTest()
             collectContainer.collect(object: Skyflow.Callback {
                 override fun onSuccess(responseBody: Any) {
-                    Log.d(TAG, "success: $responseBody")
+                    Log.d(TAG, "collect success: $responseBody")
                 }
 
                 override fun onFailure(exception: Exception) {
-                    Log.d(TAG, "failure: $exception")
+                    Log.d(TAG, "collect failure: $exception")
 
                 }
             })
             revealContainer.reveal(object: Skyflow.Callback {
                 override fun onSuccess(responseBody: Any) {
-                    Log.d(TAG, "success reveal: ${responseBody}")
+                    Log.d(TAG, "reveal success: ${responseBody}")
                 }
 
                 override fun onFailure(exception: Exception) {
-                    Log.d(TAG, "failure reveal: $exception")
+                    Log.d(TAG, "reveal failure: ${exception.printStackTrace()}")
 
                 }})
             }
@@ -132,22 +136,22 @@ class MainActivity : AppCompatActivity() {
             revealRecords.put("records", revealRecordsArray)
             skyflow.insert(records, Skyflow.InsertOptions(false), object : Skyflow.Callback {
                 override fun onSuccess(responseBody: Any) {
-                    Log.d(TAG, "success: $responseBody")
+                    Log.d(TAG, "insert success: $responseBody")
                 }
 
                 override fun onFailure(exception: Exception) {
-                    Log.d(TAG, "failure: $exception")
+                    Log.d(TAG, "insert failure: $exception")
                 }
 
             })
 
             skyflow.get(revealRecords, Skyflow.RevealOptions(), object: Skyflow.Callback {
                 override fun onSuccess(responseBody: Any) {
-                    Log.d(TAG, "Reveal success: $responseBody")
+                    Log.d(TAG, "get success: $responseBody")
                 }
 
                 override fun onFailure(exception: Exception) {
-                    Log.d(TAG, "Reveal failure: $exception")
+                    Log.d(TAG, "get failure: $exception")
                 }
 
             })

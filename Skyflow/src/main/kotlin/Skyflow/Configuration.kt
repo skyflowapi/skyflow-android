@@ -8,10 +8,10 @@ class Configuration(
     val tokenProvider: TokenProvider
 ){
     init {
-        vaultURL += if( vaultURL.last().toString() != "/"){
-            "/v1/vaults/"
+        if( vaultURL.endsWith("/")){
+            vaultURL += "v1/vaults/"
         } else{
-            "v1/vaults/"
+            vaultURL += "/v1/vaults/"
         }
     }
 }
