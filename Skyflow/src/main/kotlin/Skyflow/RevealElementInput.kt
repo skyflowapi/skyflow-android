@@ -1,6 +1,6 @@
 package Skyflow
 
-class RevealElementInput(
+public class RevealElementInput(
     internal var token: String,
     internal var redaction: RedactionType,
     internal var styles: Styles = Styles(),

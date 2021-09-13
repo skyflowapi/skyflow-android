@@ -1,5 +1,6 @@
 package Skyflow.reveal
 
+import Skyflow.Callback
 import Skyflow.Label
 
 class RevealRequestBody {
