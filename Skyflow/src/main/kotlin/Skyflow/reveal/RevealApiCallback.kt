@@ -53,14 +53,14 @@ internal class RevealApiCallback(
                                         (responseErrorBody.get("error") as JSONObject).get("message")
                                     )
                                     resObj.put("error", errorObj)
-                                    resObj.put("id", record.token)
+                                    resObj.put("token", record.token)
                                     revealResponse.insertResponse(resObj, false)
                                 } else if (response.body() != null) {
                                     val responseString = response.body()!!.string().toString()
                                     revealResponse.insertResponse(
                                         JSONObject(
                                             responseString.replace(
-                                                "\"token_id\":", "\"id\":"
+                                                "\"token_id\":", "\"token\":"
                                             )
                                         ), true
                                     )
@@ -70,7 +70,7 @@ internal class RevealApiCallback(
                                     errorObj.put("code", "400")
                                     errorObj.put("description", "Bad Request")
                                     resObj.put("error", errorObj)
-                                    resObj.put("id", record.token)
+                                    resObj.put("token", record.token)
                                     revealResponse.insertResponse(resObj, false)
                                 }
                             }catch (e: Exception){

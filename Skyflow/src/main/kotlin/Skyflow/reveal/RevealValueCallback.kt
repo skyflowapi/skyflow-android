@@ -2,8 +2,10 @@ package Skyflow.reveal
 
 import Skyflow.Callback
 import Skyflow.Label
+import androidx.core.content.res.ResourcesCompat
 import org.json.JSONObject
 
+@Suppress("DEPRECATION")
 class RevealValueCallback(var callback: Callback, var revealElements: MutableList<Label>) :
     Callback {
     override fun onSuccess(responseBody: Any) {
@@ -15,11 +17,30 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
         val recordsArray = responseJSON.getJSONArray("records")
         for (i in 0 until  recordsArray.length()){
             val recordObj = recordsArray[i] as JSONObject
-            val tokenId = recordObj.get("id")
+            val tokenId = recordObj.get("token")
             val fieldsObj = recordObj.getJSONObject("fields")
             val value = fieldsObj.get(fieldsObj.keys().next()).toString()
             elementsMap[tokenId]!!.placeholder.text = value
             recordObj.remove("fields")
+        }
+        val errorArray = responseJSON.getJSONArray("errors")
+        var i=0
+        while (i < errorArray.length())
+        {
+            val recordObj = errorArray[i] as JSONObject
+            val tokenId = recordObj.get("token").toString()
+
+            elementsMap[tokenId]!!.error.text = "invalid token"
+            elementsMap[tokenId]!!.placeholder.typeface = ResourcesCompat.getFont(elementsMap[tokenId]!!.context,elementsMap[tokenId]!!.revealInput.styles.invalid?.font!!)
+            elementsMap[tokenId]!!.placeholder.gravity = elementsMap[tokenId]!!.revealInput.styles.invalid?.textAlignment!!
+            val padding =elementsMap[tokenId]!!.revealInput.styles.invalid.padding
+            elementsMap[tokenId]!!.placeholder.setPadding(padding.left,padding.top,padding.right,padding.bottom)
+            elementsMap[tokenId]!!.placeholder.setTextColor( elementsMap[tokenId]!!.revealInput.styles.invalid?.textColor!!)
+            elementsMap[tokenId]!!.border.setStroke(elementsMap[tokenId]!!.revealInput.styles.invalid!!.borderWidth,elementsMap[tokenId]!!.revealInput.styles.invalid!!.borderColor)
+            elementsMap[tokenId]!!.border.cornerRadius = elementsMap[tokenId]!!.revealInput.styles.invalid!!.cornerRadius
+            elementsMap[tokenId]!!.placeholder.setBackgroundDrawable( elementsMap[tokenId]!!.border)
+
+            i++
         }
         val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
         callback.onSuccess(revealResponse)

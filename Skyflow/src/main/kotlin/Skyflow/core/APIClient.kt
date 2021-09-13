@@ -1,9 +1,7 @@
 package Skyflow.core
 
+import Skyflow.*
 import android.util.Base64
-import Skyflow.InsertOptions
-import Skyflow.Callback
-import Skyflow.TokenProvider
 import Skyflow.collect.client.CollectAPICallback
 import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealRequestRecord
@@ -82,9 +80,28 @@ class APIClient (
         this.getAccessToken(collectApiCallback)
     }
 
-    internal fun get(records:MutableList<RevealRequestRecord>, callback : Callback){
-        val revealApiCallback = RevealApiCallback(callback, this, records)
-        this.getAccessToken(revealApiCallback)
+    internal fun get(records:JSONObject, callback : Callback){
+
+        try {
+            val obj = records.getJSONArray("records")
+            val list = mutableListOf<RevealRequestRecord>()
+            var i = 0
+            while (i < obj.length()) {
+                val jsonobj1 = obj.getJSONObject(i)
+                list.add(
+                    RevealRequestRecord(
+                        jsonobj1.get("token").toString(),
+                        jsonobj1.get("redaction").toString()
+                    )
+                )
+                i++
+            }
+            val revealApiCallback = RevealApiCallback(callback, this, list)
+            this.getAccessToken(revealApiCallback)
+        }catch (e: Exception){
+            callback.onFailure(e)
+        }
+
     }
 
     fun constructBatchRequestBody(records:  JSONObject, options: InsertOptions) : JSONObject{
@@ -116,5 +133,7 @@ class APIClient (
         body["records"] = postPayload + insertTokenPayload
         return JSONObject(body as Map<*, *>)
     }
+
+
 
 }

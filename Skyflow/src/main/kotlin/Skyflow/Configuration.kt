@@ -1,6 +1,5 @@
 package Skyflow
 
-import android.util.Log
 
 class Configuration(
     val vaultID: String,

@@ -41,5 +41,5 @@ fun Container<CollectContainer>.collect(callback: Callback, options: InsertOptio
         return
     }
     val records = CollectRequestBody.createRequestBody(this.elements)
-    this.client.insert(JSONObject(records), options,callback)
+    this.apiClient.post(JSONObject(records),callback,options!!)
 }

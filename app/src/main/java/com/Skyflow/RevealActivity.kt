@@ -29,13 +29,15 @@ class RevealActivity : AppCompatActivity() {
 
         val padding = Skyflow.Padding(10, 10, 10, 10)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
-        val styles = Skyflow.Styles(bstyle)
+        val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val styles = Skyflow.Styles(istyle,invalid = istyle)
         val labelStyles = Styles(bstyle)
-
+        val base_error_style = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
+        val error_styles = Styles(base_error_style)
         val cardNumberInput = Skyflow.RevealElementInput(
             card_number.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
-            label =  "card number"
+            Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
+           "card number"
         )
 
         val expiryDateInput = Skyflow.RevealElementInput(

@@ -9,10 +9,12 @@ class RevealRequestBody {
         {
             val payload = mutableListOf<HashMap<String,String>>()
             for (element in elements) {
-                val entry = HashMap<String,String>()
-                entry["id"] = element.revealInput.token
-                entry["redaction"] = element.revealInput.redaction.toString()
-                payload.add(entry)
+
+                    val entry = HashMap<String, String>()
+                    entry["token"] = element.revealInput.token
+                    entry["redaction"] = element.revealInput.redaction.toString()
+                    payload.add(entry)
+
             }
 
             val result = HashMap<String,Any>()
