@@ -9,7 +9,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
     override fun onSuccess(responseBody: Any) {
         val elementsMap = HashMap<String, Label>()
         for (element in revealElements){
-            elementsMap[element.revealInput.id] = element
+            elementsMap[element.revealInput.token] = element
         }
         val responseJSON = JSONObject(responseBody.toString())
         val recordsArray = responseJSON.getJSONArray("records")
