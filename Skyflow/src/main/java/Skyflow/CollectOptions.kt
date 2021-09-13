@@ -1,0 +1,4 @@
+package Skyflow
+
+class CollectOptions {
+}

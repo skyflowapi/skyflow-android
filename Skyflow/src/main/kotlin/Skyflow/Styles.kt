@@ -1,10 +1,14 @@
 package  Skyflow
 
-public class Styles(var base: Style? = Style(),
-                    var complete: Style? = Style(),
-                    var empty: Style? =  Style(),
-                    var focus: Style? = Style(),
-                    var invalid: Style? = Style()
+public class Styles( base: Style? = Style(),
+                     complete: Style? = Style(),
+                     empty: Style? =  Style(),
+                     focus: Style? = Style(),
+                     invalid: Style? = Style()
 ) {
-
+    var base = base ?: Style()
+    var complete = complete ?: Style()
+    var empty = empty ?: Style()
+    var focus = focus ?: Style()
+    var invalid = invalid ?: Style()
 }
