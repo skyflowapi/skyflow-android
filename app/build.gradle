@@ -1,7 +1,11 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-android-extensions'
 }
+
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
     compileSdk 31
@@ -20,6 +24,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            buildConfigField("String", "TOKEN_URL", "\"" +  localProperties.getProperty("TOKEN_URL") + "\"")
+            buildConfigField("String", "VAULT_ID", "\"" +  localProperties.getProperty("VAULT_ID") + "\"")
+            buildConfigField("String", "VAULT_URL", "\"" +  localProperties.getProperty("VAULT_URL") + "\"")
         }
     }
     compileOptions {

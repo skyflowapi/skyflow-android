@@ -25,8 +25,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault id",
-            "vault url",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             tokenProvider
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         parent.addView(name)
 
 
-        val submit: Button = findViewById(R.id.submit)
         submit.setOnClickListener {
             var dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
@@ -97,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
     class DemoTokenProvider : Skyflow.TokenProvider {
         override fun getBearerToken(callback: Skyflow.Callback) {
-            val url = "token url"
+            val url = BuildConfig.TOKEN_URL
             val request = okhttp3.Request.Builder().url(url).build()
             val okHttpClient = OkHttpClient()
             try {

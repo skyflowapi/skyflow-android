@@ -51,8 +51,8 @@ class RevealActivity : AppCompatActivity() {
 
         val tokenProvider = MainActivity.DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault id",
-            "vault url",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             tokenProvider
         )
 
@@ -72,7 +72,7 @@ class RevealActivity : AppCompatActivity() {
         linear_parent.addView(fullname)
 
         reveal.setOnClickListener {
-            var dialog = AlertDialog.Builder(this).create()
+            val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
             revealContainer.reveal(object: Skyflow.Callback {
