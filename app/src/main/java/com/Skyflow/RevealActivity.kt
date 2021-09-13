@@ -42,19 +42,19 @@ class RevealActivity : AppCompatActivity() {
 
         val expiryDateInput = Skyflow.RevealElementInput(
             expiry_date.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles, error_styles,
             label =  "expire date","mm/yyyy"
         )
 
         val fullNameInput = Skyflow.RevealElementInput(
             name.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
             label =  "Name","Name"
         )
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, error_styles,error_styles,
             label = "CVV", "***"
         )
 
