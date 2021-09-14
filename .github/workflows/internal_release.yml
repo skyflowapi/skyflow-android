@@ -4,8 +4,8 @@ on:
     tags-ignore:
       - '*'
     paths-ignore:
-      - "skyflow/build.gradle"
-      - "*.md"
+      - 'Skyflow/build.gradle'
+      - '*.md'
     branches:
       - "main"
 
