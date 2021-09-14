@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
-        val padding = Skyflow.Padding(20, 20, 20, 20)
+        val padding = Skyflow.Padding(8, 8, 8, 8)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, null, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
         val cstyle = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
         val fstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
@@ -44,15 +44,17 @@ class MainActivity : AppCompatActivity() {
         var base_error_styles = Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput("cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER,styles,labelStyles,
-            error_styles, "card number","card number")
+            error_styles, "Card Number","Card Number")
         val expiryDateInput = Skyflow.CollectElementInput("cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
                                 styles, labelStyles,error_styles, label = "expiry date", placeholder = "expiry date")
         val nameInput = Skyflow.CollectElementInput("cards", "fullname", Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles, labelStyles, error_styles,
-                            "full name", "name")
+                            "Full Name", "Full Name")
+        val cvvInput = Skyflow.CollectElementInput("cards", "cvv", SkyflowElementType.CVV, styles, labelStyles, error_styles, "CVV", "CVV")
         val options = CollectElementOptions(true)
         val cardNumber = collectContainer.create(this, cardNumberInput)
         val expirationDate = collectContainer.create(this, expiryDateInput)
-       val name = collectContainer.create(this, nameInput,options)
+        val name = collectContainer.create(this, nameInput,options)
+        val cvv = collectContainer.create(this, cvvInput)
 
 
         val parent = findViewById<LinearLayout>(R.id.parent)
@@ -62,10 +64,12 @@ class MainActivity : AppCompatActivity() {
         cardNumber.layoutParams = lp
         expirationDate.layoutParams = lp
         name.layoutParams = lp
+        cvv.layoutParams = lp
 
+        parent.addView(name)
         parent.addView(cardNumber)
         parent.addView(expirationDate)
-        parent.addView(name)
+        parent.addView(cvv)
 
 
         submit.setOnClickListener {
@@ -82,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra("cardNumber",fields["card_number"].toString())
                     intent.putExtra("expiryDate",fields["expiry_date"].toString())
                     intent.putExtra("name",fields["fullname"].toString())
+                    intent.putExtra("cvv", fields["cvv"].toString())
                     startActivity(intent)
 
                 }
