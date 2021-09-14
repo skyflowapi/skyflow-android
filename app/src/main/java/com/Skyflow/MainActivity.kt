@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
-        val padding = Skyflow.Padding(8, 8, 8, 8)
+        val padding = Skyflow.Padding(20, 20, 20, 20)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, null, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
         val cstyle = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
         val fstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)

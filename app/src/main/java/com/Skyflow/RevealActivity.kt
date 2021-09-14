@@ -29,7 +29,7 @@ class RevealActivity : AppCompatActivity() {
         val padding = Skyflow.Padding(20, 20, 20, 20)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
         val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
-        val styles = Skyflow.Styles(istyle,invalid = istyle)
+        val styles = Skyflow.Styles(bstyle,invalid = istyle)
         val labelStyles = Styles(bstyle)
         val base_error_style = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
         val error_styles = Styles(base_error_style)
