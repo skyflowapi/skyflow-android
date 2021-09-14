@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          token: ${{ secrets.PAT_ACTIONS }}
           fetch-depth: 0
 
       - name: Set up JDK 12
