@@ -1,0 +1,46 @@
+name: Internal Release
+
+on:
+  push:
+    tags: 'v*.*.*'
+    branch:
+      - main
+      
+jobs:
+  build-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: main
+
+
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
+
+      - name: Bump Version
+        run: |
+           chmod +x ./scripts/bump_version.sh
+           ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}"
+
+      - name: Commit changes
+        run: |
+           git config user.name ${{ github.actor }}
+           git config user.email ${{ github.actor }}@users.noreply.gihub.com
+           git add app/build.gradle
+           git commit -m "[AUTOMATED] Public Release ${{ steps.previoustag.outputs.tag }}"
+           git push origin
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Publish package
+        run: |
+           chmod +x gradlew
+           ./gradlew publish
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
