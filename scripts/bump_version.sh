@@ -1,6 +1,6 @@
 
 Version=$1
-SEMVER=${Version:1}
+SEMVER=$Version
 
 if [ -z $2 ]
 then
