@@ -1,9 +1,9 @@
-name: Android SDK CI
+name: CI Checks
 
 on: [pull_request]
 
 jobs:
-  build-and-test:
+  check-code-quality:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -13,6 +13,22 @@ jobs:
         java-version: 12
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
-    - name: Build and test
-      run: ./gradlew runOnGithub
- 
+    - name: Run Android Linter
+      run: ./gradlew lint
+  build:
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 12
+    - name: Grant permissions to gradlew
+      run: chmod +x gradlew
+    - name: Build SDK
+      run: ./gradlew build
+    - name: Run Tests
+      id: tests
+      run: ./gradlew test
