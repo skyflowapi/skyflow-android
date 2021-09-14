@@ -48,7 +48,7 @@ jobs:
         run: |
            git config user.name ${{ github.actor }}
            git config user.email ${{ github.actor }}@users.noreply.gihub.com
-           git add app/build.gradle
+           git add Skyflow/build.gradle
            git commit -m "[AUTOMATED] Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
            git push origin
 
