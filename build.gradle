@@ -22,3 +22,8 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+tasks.register("runOnGitHub") { // 1
+    dependsOn(":Skyflow:lint", ":Skyflow:test")  // 2 ==> CUSTOMIZE THIS LINE
+    group = "custom"      // 3
+}
