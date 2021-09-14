@@ -1,4 +1,4 @@
-name: Release
+name: Internal Release
 on:
   push:
     tags-ignore:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   publish:
-    name: Release Simple Library
+    name: Internal Release
     runs-on: ubuntu-latest
 
     steps:
