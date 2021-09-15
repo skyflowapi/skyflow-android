@@ -42,14 +42,14 @@ class RevealActivity : AppCompatActivity() {
 
         val expiryDateInput = Skyflow.RevealElementInput(
             expiry_date.toString(),
-             Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
-             "expire date","<Redacted expire date token>"
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
+            label =  "expire date", "mm/yyyy"
         )
 
         val fullNameInput = Skyflow.RevealElementInput(
             name.toString(),
-            Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
-              "Name","<Redacted fullname token>"
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
+            label =  "Name","Name"
         )
 
         val cvvElement = Skyflow.RevealElementInput(
@@ -85,7 +85,7 @@ class RevealActivity : AppCompatActivity() {
 
 
         reveal.setOnClickListener {
-            var dialog = AlertDialog.Builder(this).create()
+            val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
             revealContainer.reveal(object: Skyflow.Callback {
