@@ -32,7 +32,7 @@ class RevealActivity : AppCompatActivity() {
         val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
         val styles = Skyflow.Styles(bstyle,invalid = istyle)
         val labelStyles = Styles(bstyle)
-        val base_error_style = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
+        val base_error_style = Skyflow.Style(Color.RED, 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
         val error_styles = Styles(base_error_style)
         val cardNumberInput = Skyflow.RevealElementInput(
             card_number.toString(),
