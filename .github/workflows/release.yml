@@ -3,8 +3,6 @@ name: Public Release
 on:
   push:
     tags: '*.*.*'
-    branches:
-      - main
       
 jobs:
   build-sdk:
