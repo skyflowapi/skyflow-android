@@ -68,10 +68,10 @@ class RevealActivity : AppCompatActivity() {
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
 
-        val cardnumber = revealContainer.create(this, cardNumberInput, Skyflow.RevealElementOptions())
-        val expiry = revealContainer.create(this, expiryDateInput, Skyflow.RevealElementOptions())
-        val fullname = revealContainer.create(this, fullNameInput, Skyflow.RevealElementOptions())
-        val cvv = revealContainer.create(this, cvvElement, Skyflow.RevealElementOptions())
+        val cardnumber = revealContainer.create(this, cardNumberInput)
+        val expiry = revealContainer.create(this, expiryDateInput)
+        val fullname = revealContainer.create(this, fullNameInput)
+        val cvv = revealContainer.create(this, cvvElement)
 
         cardnumber.layoutParams = lp
         expiry.layoutParams = lp

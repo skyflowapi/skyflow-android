@@ -11,7 +11,7 @@ class RevealContainer: ContainerProtocol
 {
 }
 
-fun Container<RevealContainer>.create(context: Context, input : RevealElementInput, options : RevealElementOptions) : Label
+fun Container<RevealContainer>.create(context: Context, input : RevealElementInput, options : RevealElementOptions = RevealElementOptions()) : Label
 {
     val revealElement = Label(context)
     revealElement.setupField(input,options)
