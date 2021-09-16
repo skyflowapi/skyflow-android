@@ -21,7 +21,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - Create a github.properties file within your root Android project
 - In case of a public repository make sure you add this file to .gitignore for keep the token private
 - Add properties gpr.usr=GITHUB_USER_NAME and gpr.key=PERSONAL_ACCESS_TOKEN
-- Replace GITHUB_USER_NAME with personal / organisation Github user NAME and PERSONAL_ACCESS_TOKEN with the token generated in [Step 1](Step-1:-Generate-a-Personal-Access-Token-for-GitHub)
+- Replace GITHUB_USER_NAME with personal / organisation Github user NAME and PERSONAL_ACCESS_TOKEN with the token generated in [Step 1](#Step-1:-Generate-a-Personal-Access-Token-for-GitHub)
 
 Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your environment variables on you local machine or build server to avoid creating a github properties file
 
