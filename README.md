@@ -23,13 +23,13 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - Add properties gpr.usr=GITHUB_USER_NAME and gpr.key=PERSONAL_ACCESS_TOKEN
 - Replace GITHUB_USER_NAME with personal / organisation Github user NAME and PERSONAL_ACCESS_TOKEN with the token generated in #Step 1
 
-Alternatively you can also add the GPR_USER and GPR_API_KEY values to your environment variables on you local machine or build server to avoid creating a github properties file
+Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your environment variables on you local machine or build server to avoid creating a github properties file
 
 ## Step 3: Adding the dependency to the project
 
 ### Using gradle
 
-- Add the JitPack repository to your root project build.gradle file
+- Add the Github package registry to your root project build.gradle file
 
   ```java
   def githubProperties = new Properties() githubProperties.load(new FileInputStream(rootProject.file(“github.properties”)))
@@ -40,8 +40,8 @@ Alternatively you can also add the GPR_USER and GPR_API_KEY values to your envir
             url "https://maven.pkg.github.com/skyflowapi/skyflow-android-sdk"
             credentials
                     {
-                        username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-                        password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+                        username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER_NAME")
+                        password = githubProperties['gpr.key'] ?: System.getenv("GPR_PAT")
                     }
         }
      } gradle
@@ -54,7 +54,7 @@ Alternatively you can also add the GPR_USER and GPR_API_KEY values to your envir
   ```
 
 ### Using maven
-- Add the github repository in the repositories tag and the github userName, token collected from  [Step1](#Step-1-:-Generate-a-Personal-Access-Token-for-GitHub) in the server tag to your project's settings.xml file. Make sure that the id's for both these tags are the same.
+- Add the Github package registry in the repositories tag and the GITHUB_USER_NAME, PERSONAL_ACCESS_TOKEN collected from  [Step1](#Step-1-:-Generate-a-Personal-Access-Token-for-GitHub) in the server tag to your project's settings.xml file. Make sure that the id's for both these tags are the same.
 
 ```xml
 <repositories>
@@ -67,8 +67,8 @@ Alternatively you can also add the GPR_USER and GPR_API_KEY values to your envir
 <servers>
     <server>
       <id>github</id>
-      <username>USERNAME</username>
-      <password>TOKEN</password>
+      <username>GITHUB_USER_NAME</username>
+      <password>PERSONAL_ACCESS_TOKEN</password>
     </server>
 </servers>
   ```
