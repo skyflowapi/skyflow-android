@@ -29,30 +29,32 @@ class RevealActivity : AppCompatActivity() {
 
         val padding = Skyflow.Padding(10, 10, 10, 10)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
-        val styles = Skyflow.Styles(bstyle)
+        val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val styles = Skyflow.Styles(bstyle,invalid = istyle)
         val labelStyles = Styles(bstyle)
-
+        val base_error_style = Skyflow.Style(Color.RED, 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val error_styles = Styles(base_error_style)
         val cardNumberInput = Skyflow.RevealElementInput(
             card_number.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
-            label =  "card number"
+            Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
+           "card number"
         )
 
         val expiryDateInput = Skyflow.RevealElementInput(
             expiry_date.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles, error_styles,
             label =  "expire date","mm/yyyy"
         )
 
         val fullNameInput = Skyflow.RevealElementInput(
             name.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
             label =  "Name","Name"
         )
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, error_styles,error_styles,
             label = "CVV", "***"
         )
 
@@ -66,10 +68,10 @@ class RevealActivity : AppCompatActivity() {
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
 
-        val cardnumber = revealContainer.create(this, cardNumberInput, Skyflow.RevealElementOptions())
-        val expiry = revealContainer.create(this, expiryDateInput, Skyflow.RevealElementOptions())
-        val fullname = revealContainer.create(this, fullNameInput, Skyflow.RevealElementOptions())
-        val cvv = revealContainer.create(this, cvvElement, Skyflow.RevealElementOptions())
+        val cardnumber = revealContainer.create(this, cardNumberInput)
+        val expiry = revealContainer.create(this, expiryDateInput)
+        val fullname = revealContainer.create(this, fullNameInput)
+        val cvv = revealContainer.create(this, cvvElement)
 
         cardnumber.layoutParams = lp
         expiry.layoutParams = lp

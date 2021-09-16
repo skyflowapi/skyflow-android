@@ -5,8 +5,9 @@ class RevealElementInput(
     internal var redaction: RedactionType,
     internal var styles: Styles = Styles(),
     internal var labelStyles:Styles = Styles(),
-    internal var label: String = "",
-    internal var defaultText:String = ""
+    internal var errorTextStyles:Styles=Styles(),
+    internal var label: String="",
+    internal var altText:String = ""
 ) {
 
 }
