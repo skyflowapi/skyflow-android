@@ -54,7 +54,7 @@ class RevealActivity : AppCompatActivity() {
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, error_styles,error_styles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles,error_styles,
             label = "CVV", "***"
         )
 

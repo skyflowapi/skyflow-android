@@ -1,7 +1,6 @@
 package Skyflow
 
 import Skyflow.core.APIClient
-import Skyflow.reveal.RevealRequestRecord
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import kotlin.reflect.KClass

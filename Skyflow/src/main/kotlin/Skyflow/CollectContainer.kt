@@ -19,7 +19,7 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
     return collectElement
 }
 
-fun Container<CollectContainer>.collect(callback: Callback, options: InsertOptions? = InsertOptions()){
+fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
 
     var errors = ""
     for (element in this.elements)
@@ -40,6 +40,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: InsertOptio
         callback.onFailure(Exception(errors))
         return
     }
-    val records = CollectRequestBody.createRequestBody(this.elements)
-    this.apiClient.post(JSONObject(records),callback,options!!)
+    val records = CollectRequestBody.createRequestBody(this.elements,options!!.additionalFields,callback)
+    if(!records.isEmpty() || !records.equals(""))
+        this.apiClient.post(JSONObject(records),callback,options)
 }

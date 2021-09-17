@@ -6,6 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Callback
 import Skyflow.InsertOptions
+import android.util.Log
 import java.io.IOException
 
 
@@ -38,9 +39,13 @@ internal class CollectAPICallback(
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    if(!response.isSuccessful) throw IOException("Unexpected code ${response.body()?.string()}")
-
-                    callback.onSuccess(buildResponse(JSONObject(response.body()!!.string())["responses"] as JSONArray))
+                    if(!response.isSuccessful)
+                    {
+                        callback.onFailure(IOException("Unexpected code ${response.body()?.string()}"))
+                        return
+                    }
+                    val responsebody = response.body()!!.string()
+                    callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
                 }
             }
         })}catch (e: Exception){
