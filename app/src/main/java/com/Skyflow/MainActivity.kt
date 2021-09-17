@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         val options = CollectElementOptions(true)
         val cardNumber = collectContainer.create(this, cardNumberInput)
         val expirationDate = collectContainer.create(this, expiryDateInput)
-        //val name = collectContainer.create(this, nameInput,options)
+        val name = collectContainer.create(this, nameInput,options)
         val cvv = collectContainer.create(this, cvvInput)
 
 
@@ -63,10 +63,10 @@ class MainActivity : AppCompatActivity() {
         lp.setMargins(20,-20, 20, 0)
         cardNumber.layoutParams = lp
         expirationDate.layoutParams = lp
-        //name.layoutParams = lp
+        name.layoutParams = lp
         cvv.layoutParams = lp
 
-        //parent.addView(name)
+        parent.addView(name)
         parent.addView(cardNumber)
         parent.addView(expirationDate)
         parent.addView(cvv)
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         record.put("table", "cards")
         val fields = JSONObject()
         fields.put("fullname", JSONObject())
-        fields.put("test_int",111)
+        //fields.put("test_int",111)
         //fields.put("name.lastname","last")
         fields.put("expiry_date", "11/34")
         record.put("fields", fields)

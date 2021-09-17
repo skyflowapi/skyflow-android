@@ -60,7 +60,6 @@ class CollectRequestBody {
                 }
                 catch (e:Exception)
                 {
-                    Log.d("exception","has occurred"+e.toString())
                     callback.onFailure(e)
                     return ""
                 }
