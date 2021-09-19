@@ -3,7 +3,9 @@ package Skyflow.core
 import Skyflow.*
 import android.util.Base64
 import Skyflow.collect.client.CollectAPICallback
+import Skyflow.reveal.GetByIdRecord
 import Skyflow.reveal.RevealApiCallback
+import Skyflow.reveal.RevealByIdCallback
 import Skyflow.reveal.RevealRequestRecord
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -134,6 +136,10 @@ class APIClient (
         return JSONObject(body as Map<*, *>)
     }
 
+    fun get(records: MutableList<GetByIdRecord>, callback: Callback) {
+        val revealApiCallback = RevealByIdCallback(callback, this, records)
+        this.getAccessToken(revealApiCallback)
+    }
 
 
 }

@@ -1,8 +1,7 @@
 package com.Skyflow
 
-import Skyflow.Styles
-import Skyflow.create
-import Skyflow.reveal
+import Skyflow.*
+import Skyflow.reveal.GetByIdRecord
 import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.graphics.Color
@@ -85,6 +84,7 @@ class RevealActivity : AppCompatActivity() {
 
 
         reveal.setOnClickListener {
+            getByIds()
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -99,6 +99,34 @@ class RevealActivity : AppCompatActivity() {
                     Log.d(TAG, "reveal failure: ${exception.printStackTrace()}")
                 }})
         }
+    }
+
+    fun getByIds()
+    {
+        val obj = GetByIdRecord(arrayOf("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9","xxx"),"cards",
+            RedactionType.PLAIN_TEXT)
+        val obj1 = GetByIdRecord(arrayOf("da26de53-95d5-4bdb-99db-8d8c66a35ff9"),"cards", RedactionType.DEFAULT)
+        val list = mutableListOf<GetByIdRecord>()
+        list.add(obj)
+        list.add(obj1)
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            MainActivity.DemoTokenProvider()
+        )
+        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        skyflowClient.getById(list,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+                Log.d("getbyskyflow_ids",responseBody.toString())
+            }
+
+            override fun onFailure(exception: Exception) {
+                Log.d("exception",exception.toString())
+
+            }
+
+        })
     }
 
 

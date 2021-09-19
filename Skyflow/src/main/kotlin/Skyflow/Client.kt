@@ -1,7 +1,7 @@
 package Skyflow
 
 import Skyflow.core.APIClient
-import Skyflow.reveal.RevealRequestRecord
+import Skyflow.reveal.GetByIdRecord
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import kotlin.reflect.KClass
@@ -19,7 +19,11 @@ class Client (
         return Container<T>(apiClient)
     }
 
-    fun get(records: JSONObject, options: RevealOptions? = RevealOptions(), callback: Callback) {
+    fun detokenize(records: JSONObject, options: RevealOptions? = RevealOptions(), callback: Callback) {
+        this.apiClient.get(records, callback)
+    }
+    fun getById(records: MutableList<GetByIdRecord>, callback: Callback)
+    {
         this.apiClient.get(records, callback)
     }
 }
