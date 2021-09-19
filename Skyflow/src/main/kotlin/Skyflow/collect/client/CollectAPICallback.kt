@@ -39,8 +39,8 @@ internal class CollectAPICallback(
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if(!response.isSuccessful) throw IOException("Unexpected code ${response.body()?.string()}")
-
-                    callback.onSuccess(buildResponse(JSONObject(response.body()!!.string())["responses"] as JSONArray))
+                    val responsebody = response.body()!!.string()
+                    callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
                 }
             }
         })}catch (e: Exception){
