@@ -6,7 +6,7 @@ import org.json.JSONObject
 import Skyflow.Element
 import android.util.Log
 import com.google.gson.JsonObject
-import java.lang.Exception
+import kotlin.Exception
 
 class CollectRequestBody {
     companion object {
@@ -17,9 +17,16 @@ class CollectRequestBody {
         ) : String
         {
             val tableMap: HashMap<String,MutableList<CollectRequestRecord>> = HashMap()
+            val tableWithColumn : HashSet<String> = HashSet()
             for (element in elements) {
                 if (tableMap[(element.tableName)] != null){
+                    if(tableWithColumn.contains(element.tableName+element.columnName))
+                    {
+                        callback.onFailure(Exception("duplicate column "+element.columnName+ " found in "+element.tableName))
+                        return ""
+                    }
                     val obj = CollectRequestRecord(element.columnName,element.getOutput())
+                    tableWithColumn.add(element.tableName+element.columnName)
                     tableMap[(element.tableName)]!!.add(obj)
                 }
                 else{
@@ -49,6 +56,14 @@ class CollectRequestBody {
                             field_list.add(obj)
                         }
                         if (tableMap[tableName] != null) {
+                            for(k in 0 until field_list.size)
+                            {
+                                if(tableWithColumn.contains(tableName+field_list.get(k).columnName))
+                                {
+                                    callback.onFailure(Exception("duplicate column "+ field_list.get(k).columnName+" found in "+tableName))
+                                    return ""
+                                }
+                            }
                             tableMap[tableName]!!.addAll(field_list)
                         } else {
                             val tempArray = mutableListOf<CollectRequestRecord>()
