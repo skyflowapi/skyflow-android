@@ -36,27 +36,7 @@ class RevealResponseByID(var size: Int, var callback: Callback) {
             if (successResponses == 0) {
                 callback.onFailure(Exception("Reveal failed"))
             } else {
-                try {
-                    val records = responseBody.get("records") as JSONArray
-                    val errors = responseBody.get("errors") as JSONArray
-                    if(records.length() ==0)
-                    {
-                        responseBody.remove("records")
-                        callback.onSuccess(responseBody)
-                    }
-                    else if(errors.length() ==0)
-                    {
-                        responseBody.remove("errors")
-                        callback.onSuccess(responseBody)
-                    }
-                    else
-                        callback.onSuccess(responseBody)
-                }
-                catch (e:Exception)
-                {
-                    callback.onFailure(e)
-                }
-
+                callback.onSuccess(responseBody)
             }
         }
     }

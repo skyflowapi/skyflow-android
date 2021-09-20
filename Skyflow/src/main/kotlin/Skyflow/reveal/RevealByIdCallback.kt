@@ -56,7 +56,7 @@ internal class RevealByIdCallback(
                                         (responseErrorBody.get("error") as JSONObject).get("message")
                                     )
                                     resObj.put("error", errorObj)
-                                    resObj.put("skyflow_ids", record.skyflow_ids.joinToString(separator = ","))
+                                    resObj.put("skyflow_ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                                 } else if (response.body() != null) {
                                     val fields =JSONObject(response.body()!!.string()).getJSONArray("records")
