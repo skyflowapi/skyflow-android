@@ -605,6 +605,30 @@ The `inputStyles` parameter accepts a styles object as described in the [previou
 
 The `labelStyles` and `errorTextStyles` fields accept the above mentioned `Skyflow.Styles` object as described in the [previous section](#step-2-create-a-collect-element), the only state available for a reveal element is the base state.
 
+For a list of acceptable RedactionTypes, see the [section above](#Retrieving-data-from-the-vault).
+The `inputStyles`, `labelStyles` and  `errorTextStyles` parameters accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but only a single variant is available i.e. base. 
+
+An example of a inputStyles object:
+
+```kt
+var inputStyles = Skyflow.Styles(base = Skyflow.Style(
+                      borderColor = Color.BLUE))
+```
+
+An example of a labelStyles object:
+
+```kt
+var labelStyles = Skyflow.Styles(base = 
+                    Skyflow.Style(font = 12))
+```
+
+An example of a errorTextStyles object:
+
+```kt
+var labelStyles = Skyflow.Styles(base = 
+                    Skyflow.Style(textColor = COLOR.RED))
+```
+
 Once you've defined a `Skyflow.RevealElementInput` object, you can use the `create()` method of the container to create the Element as shown below:
 
 ```kt
