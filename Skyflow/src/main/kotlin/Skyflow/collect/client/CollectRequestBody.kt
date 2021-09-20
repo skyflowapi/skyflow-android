@@ -4,6 +4,7 @@ import Skyflow.Callback
 import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Element
+import android.util.Log
 import com.google.gson.JsonObject
 import kotlin.Exception
 
@@ -24,14 +25,15 @@ class CollectRequestBody {
                         callback.onFailure(Exception("duplicate column "+element.columnName+ " found in "+element.tableName))
                         return ""
                     }
-                    val obj = CollectRequestRecord(element.columnName,element.getOutput())
                     tableWithColumn.add(element.tableName+element.columnName)
+                    val obj = CollectRequestRecord(element.columnName,element.getOutput())
                     tableMap[(element.tableName)]!!.add(obj)
                 }
                 else{
                     val obj = CollectRequestRecord(element.columnName,element.getOutput())
                     val tempArray = mutableListOf<CollectRequestRecord>()
                     tempArray.add(obj)
+                    tableWithColumn.add(element.tableName+element.columnName)
                     tableMap[(element.tableName)] = tempArray
                 }
             }
@@ -62,10 +64,24 @@ class CollectRequestBody {
                                     callback.onFailure(Exception("duplicate column "+ field_list.get(k).columnName+" found in "+tableName))
                                     return ""
                                 }
+                                else
+                                {
+                                    tableWithColumn.add(tableName+field_list.get(k).columnName)
+                                }
                             }
                             tableMap[tableName]!!.addAll(field_list)
                         } else {
                             val tempArray = mutableListOf<CollectRequestRecord>()
+                            for(k in 0 until field_list.size)
+                            {
+                                if(tableWithColumn.contains(tableName+field_list.get(k).columnName))
+                                {
+                                    callback.onFailure(Exception("duplicate column "+ field_list.get(k).columnName+" found in "+tableName))
+                                    return ""
+                                }
+                                else
+                                tableWithColumn.add(tableName+field_list.get(k).columnName)
+                            }
                             tempArray.addAll(field_list)
                             tableMap[tableName] = tempArray
                         }

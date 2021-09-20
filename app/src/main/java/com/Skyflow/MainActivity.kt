@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.OkHttpClient
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
@@ -70,6 +71,16 @@ class MainActivity : AppCompatActivity() {
 
 
         submit.setOnClickListener {
+            val additionalFields = JSONObject()
+            val recordsArray = JSONArray()
+            val record = JSONObject()
+            record.put("table", "cards")
+            val fields = JSONObject()
+            // fields.put("expiry_date", "11/22")
+            // fields.put("cvv", "123")
+            record.put("fields", fields)
+            additionalFields.put("records", recordsArray)
+
             var dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -92,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                     error.text = exception.message.toString()
                     Log.d(TAG, "collect failure: ${exception.message.toString()}")
                 }
-            })
+            }, CollectOptions(true,additionalFields))
         }
 
     }

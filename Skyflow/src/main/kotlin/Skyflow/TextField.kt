@@ -21,6 +21,7 @@ import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import com.skyflow_android.R
+import kotlin.String
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
@@ -51,7 +52,6 @@ class TextField @JvmOverloads constructor(
         super.setupField(collectInput,options)
         validationRules = fieldType.getType().validation
         padding = collectInput.inputStyles.base.padding
-        //textField.keyboardType = fieldType.instance.keyboardType
         state = StateforText(this)
         this.collectInput = collectInput
         if(collectInput.label.isEmpty())
@@ -201,7 +201,7 @@ class TextField @JvmOverloads constructor(
         }.also { inputField.onFocusChangeListener = it }
     }
 
-    internal fun setError(error:String)
+    internal fun setError(error: String)
     {
         this.error.text = error
     }

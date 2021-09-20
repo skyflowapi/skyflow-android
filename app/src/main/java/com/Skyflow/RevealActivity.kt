@@ -1,7 +1,6 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.reveal.GetByIdRecord
 import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.graphics.Color
@@ -11,6 +10,8 @@ import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_reveal.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class RevealActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,19 +104,27 @@ class RevealActivity : AppCompatActivity() {
 
     fun getByIds()
     {
-        val obj = GetByIdRecord(arrayOf("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9","xxx"),"cards",
-            RedactionType.PLAIN_TEXT)
-        val obj1 = GetByIdRecord(arrayOf("da26de53-95d5-4bdb-99db-8d8c66a35ff9"),"cards", RedactionType.DEFAULT)
-        val list = mutableListOf<GetByIdRecord>()
-        list.add(obj)
-        list.add(obj1)
+
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
             MainActivity.DemoTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
-        skyflowClient.getById(list,object : Callback
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table","cards")
+        record.put("redaction","PLAIN_TEXT")
+
+        val skyflowIds = ArrayList<String>()
+        skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+        skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+        skyflowIds.add("xxx")
+        record.put("skyflow_ids",skyflowIds)
+        recordsArray.put(record)
+        val records = JSONObject()
+        records.put("records",recordsArray)
+        skyflowClient.getById(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
                 Log.d("getbyskyflow_ids",responseBody.toString())
