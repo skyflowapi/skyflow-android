@@ -54,7 +54,10 @@ class TextField @JvmOverloads constructor(
         //textField.keyboardType = fieldType.instance.keyboardType
         state = StateforText(this)
         this.collectInput = collectInput
-        setError("Invalid Field")
+        if(collectInput.label.isEmpty())
+            setError("Invalid field")
+        else
+            setError("Invalid "+collectInput.label)
         buildTextField()
         buildError()
         buildLabel()
@@ -62,9 +65,6 @@ class TextField @JvmOverloads constructor(
 
     private fun buildLabel() {
         label.text = collectInput.label
-       /* label.textSize = 16F
-        label.setPadding(15,0,0,5)
-        label.setTextColor(collectInput.styles?.base?.textColor)*/
         val labelPadding = collectInput.labelStyles.base.padding
         label.textSize = 16F
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)

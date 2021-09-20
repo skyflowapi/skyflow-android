@@ -4,7 +4,6 @@ import Skyflow.Callback
 import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Element
-import android.util.Log
 import com.google.gson.JsonObject
 import kotlin.Exception
 
@@ -79,8 +78,6 @@ class CollectRequestBody {
                     return ""
                 }
             }
-
-
             val recordsArray = JSONArray()
             val requestObject = JSONObject()
             for ((key, value ) in tableMap){
@@ -94,7 +91,6 @@ class CollectRequestBody {
                 recordsArray.put(recordObject)
             }
             requestObject.put("records", recordsArray)
-            Log.d("records ",requestObject.toString())
             return requestObject.toString()
         }
 
