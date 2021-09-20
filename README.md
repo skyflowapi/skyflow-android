@@ -453,49 +453,132 @@ container.collect(options = collectOptions, callback = insertCallback)
 -  [**Using Skyflow Elements to reveal data**](#using-skyflow-elements-to-reveal-data)
 
 ## Retrieving data from the vault
-For non-PCI use-cases, to retrieve data from the vault and reveal it in the mobile, use the `get(records)` method. The records parameter takes a JSON object that contains `records` to be fetched as shown below.
-```json5
-{
-    "records":[
+For non-PCI use-cases, retrieving data from the vault and revealing it in the mobile can be done either using the SkyflowID's or tokens as described below
+
+- ### Using Skyflow tokens
+    For retrieving using tokens, use the `detokenize(records)` method. The records parameter takes a JSON object that contains `records` to be fetched as shown below.
+    ```json5
+    {
+      "records":[
         {
           token: "string",                 // token for the record to be fetched
           redaction: Skyflow.RedactionType    //redaction to be applied to retrieved data
         }
-    ]
-}
+      ]
+    }
+   ```
+   
+  An example of a detokenize call:
+  ```kt
+  val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
 
-```
+  val recods = JSONObject()
+  val recordsArray = JSONArray()
+  val recordObj = JSONObject()
+  recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
+  recordObj.put("redaction", RedactionType.PLAIN_TEXT)
+  recordsArray.put(recordObj)
+  records.put("records", recordsArray)
+
+  skyflowClient.detokenize(records = records, callback = getCallback)
+  ```
+  The sample response:
+  ```json
+  {
+    "records": [
+      {
+        "token": "131e70dc-6f76-4319-bdd3-96281e051051",
+        "date_of_birth": "1990-01-01",
+      }
+    ]
+  }
+  ```
+
+- ### Using Skyflow ID's
+    For retrieving using SkyflowID's, use the `getById(records)` method.The records parameter takes a JSON object that contains `records` to be fetched as shown below.
+    ```json5
+    {
+      "records":[
+        {
+          ids: ArrayList<String>(),       // Array of SkyflowID's of the records to be fetched
+          table: "string"          // name of table holding the above skyflow_id's
+          redaction: Skyflow.RedactionType    //redaction to be applied to retrieved data
+        }
+      ]
+    }
+    ```
+
+    An example of getById call:
+    ```kt
+    val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
+
+    var recordsArray = JSONArray()
+    var record = JSONObject()
+    record.put("table","cards")
+    record.put("redaction","PLAIN_TEXT")
+
+    val skyflowIDs = ArrayList<String>()
+    skyflowIDs.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+    skyflowIDs.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+    record.put("skyflow_ids",skyflowIDs)
+     
+    var record1 = JSONObject()
+    record1.put("table","cards")
+    record1.put("redaction","PLAIN_TEXT")
+
+    val recordSkyflowIDs = ArrayList<String>()
+    recordSkyflowIDs.add("invalid skyflow id")   // invalid skyflow ID
+    record.put("skyflow_ids",recordSkyflowIDs)
+    recordsArray.put(record1)
+    val records = JSONObject()
+    records.put("records",recordsArray)
+
+    skyflowClient.getById(records = records, callback = getCallback)
+    ```
+
+  The sample response:
+  ```json
+  {
+    "records": [
+        {
+            "fields": {
+                "card_number": "4111111111111111",
+                "cvv": "127",
+                "expiry_date": "11/35",
+                "fullname": "myname",
+                "skyflow_id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
+            },
+            "table": "cards"
+        },
+        {
+            "fields": {
+                "card_number": "4111111111111111",
+                "cvv": "317",
+                "expiry_date": "10/23",
+                "fullname": "sam",
+                "skyflow_id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
+            },
+            "table": "cards"
+        }
+    ],
+    "errors": [
+        {
+            "error": {
+                "code": "404",
+                "description": "No Records Found"
+            },
+            "skyflow_ids": ["invalid skyflow id"]
+        }
+    ]
+  }
+  ```
+
 There are four enum values in Skyflow.RedactionType:
 - `PLAIN_TEXT`
 - `MASKED`
 - `REDACTED`
 - `DEFAULT`
 
-An example of a get call:
-```kt
-val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
-
-val recods = JSONObject()
-val recordsArray = JSONArray()
-val recordObj = JSONObject()
-recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
-recordObj.put("redaction", RedactionType.PLAIN_TEXT)
-recordsArray.put(recordObj)
-records.put("records", recordsArray)
-
-skyflowClient.get(records = records, callback = getCallback)
-```
-The sample response:
-```json
-{
-  "records": [
-    {
-      "token": "131e70dc-6f76-4319-bdd3-96281e051051",
-      "date_of_birth": "1990-01-01",
-    }
-  ]
-}
-```
 
 ## Using Skyflow Elements to reveal data
 Skyflow Elements can be used to securely reveal data in an application without exposing your front end to the sensitive data. This is great for use-cases like card issuance where you may want to reveal the card number to a user without increasing your PCI compliance scope.
