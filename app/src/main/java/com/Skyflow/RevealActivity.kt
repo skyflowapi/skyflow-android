@@ -37,7 +37,7 @@ class RevealActivity : AppCompatActivity() {
         val cardNumberInput = Skyflow.RevealElementInput(
             card_number.toString(),
             Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
-           "card number"
+            "card number"
         )
 
         val expiryDateInput = Skyflow.RevealElementInput(
@@ -54,7 +54,7 @@ class RevealActivity : AppCompatActivity() {
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, error_styles,error_styles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles,error_styles,
             label = "CVV", "***"
         )
 
@@ -99,7 +99,7 @@ class RevealActivity : AppCompatActivity() {
                     Log.d(TAG, "reveal failure: ${exception.printStackTrace()}")
                 }})
         }
-        }
-
-
     }
+
+
+}

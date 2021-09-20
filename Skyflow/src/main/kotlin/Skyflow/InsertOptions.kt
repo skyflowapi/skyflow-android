@@ -1,5 +1,5 @@
 package Skyflow
 
-class InsertOptions(
+open class InsertOptions(
     val tokens : Boolean = true
 ){}

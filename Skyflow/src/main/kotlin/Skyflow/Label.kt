@@ -2,17 +2,13 @@ package Skyflow
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
-import android.view.View
-import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import com.skyflow_android.R
 
 @Suppress("DEPRECATION")
 class Label @JvmOverloads constructor(
@@ -32,7 +28,7 @@ class Label @JvmOverloads constructor(
     {
         this.revealInput = revealInput
         this.options = options
-        padding = revealInput.styles.base.padding
+        padding = revealInput.inputStyles.base.padding
         buildLabel()
         buildPlaceholder()
         buildError()
@@ -56,13 +52,13 @@ class Label @JvmOverloads constructor(
         else
             placeholder.text = revealInput.altText
 
-        placeholder.typeface = ResourcesCompat.getFont(context,revealInput.styles.base.font)
+        placeholder.typeface = ResourcesCompat.getFont(context,revealInput.inputStyles.base.font)
         placeholder.textSize = 20f
-        placeholder.gravity = revealInput.styles.base.textAlignment
+        placeholder.gravity = revealInput.inputStyles.base.textAlignment
         placeholder.setPadding(padding.left,padding.top,padding.right,padding.bottom)
-        placeholder.setTextColor(revealInput.styles.base.textColor)
-        border.setStroke(revealInput.styles.base.borderWidth,revealInput.styles.base.borderColor)
-        border.cornerRadius = revealInput.styles.base.cornerRadius
+        placeholder.setTextColor(revealInput.inputStyles.base.textColor)
+        border.setStroke(revealInput.inputStyles.base.borderWidth,revealInput.inputStyles.base.borderColor)
+        border.cornerRadius = revealInput.inputStyles.base.cornerRadius
         placeholder.setBackgroundDrawable(border)
     }
 
