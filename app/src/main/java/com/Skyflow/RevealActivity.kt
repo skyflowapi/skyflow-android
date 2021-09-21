@@ -120,7 +120,7 @@ class RevealActivity : AppCompatActivity() {
         skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
         skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
         skyflowIds.add("xxx")
-        record.put("skyflow_ids",skyflowIds)
+        record.put("ids",skyflowIds)
         recordsArray.put(record)
         val records = JSONObject()
         records.put("records",recordsArray)
