@@ -520,7 +520,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     val skyflowIDs = ArrayList<String>()
     skyflowIDs.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
     skyflowIDs.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
-    record.put("skyflow_ids",skyflowIDs)
+    record.put("ids",skyflowIDs)
      
     var record1 = JSONObject()
     record1.put("table","cards")
@@ -528,7 +528,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
 
     val recordSkyflowIDs = ArrayList<String>()
     recordSkyflowIDs.add("invalid skyflow id")   // invalid skyflow ID
-    record.put("skyflow_ids",recordSkyflowIDs)
+    record.put("ids",recordSkyflowIDs)
     recordsArray.put(record1)
     val records = JSONObject()
     records.put("records",recordsArray)
