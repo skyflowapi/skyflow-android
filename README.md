@@ -546,7 +546,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
                 "cvv": "127",
                 "expiry_date": "11/35",
                 "fullname": "myname",
-                "skyflow_id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
+                "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
             },
             "table": "cards"
         },
@@ -556,7 +556,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
                 "cvv": "317",
                 "expiry_date": "10/23",
                 "fullname": "sam",
-                "skyflow_id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
+                "id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
             },
             "table": "cards"
         }
@@ -567,7 +567,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
                 "code": "404",
                 "description": "No Records Found"
             },
-            "skyflow_ids": ["invalid skyflow id"]
+            "ids": ["invalid skyflow id"]
         }
     ]
   }
