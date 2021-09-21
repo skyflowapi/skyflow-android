@@ -27,7 +27,7 @@ class Client (
         return Container<T>(apiClient)
     }
 
-    fun detokenize(records: JSONObject, options: RevealOptions? = RevealOptions(), callback: Callback) {
+    fun detokenize(records: JSONObject, callback: Callback) {
         val isUrlValid =Utils.checkUrl(configuration.vaultURL)
         if(isUrlValid)
             this.apiClient.get(records, callback)

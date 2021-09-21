@@ -2,6 +2,7 @@ package com.Skyflow
 
 import Skyflow.*
 import android.app.AlertDialog
+import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity() {
 
 
         submit.setOnClickListener {
+            pureSDKTest()
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
             val record = JSONObject()
@@ -107,6 +109,43 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    private fun pureSDKTest(){
+        Log.d("enter", "testingFunction: called")
+        val tokenProvider = DemoTokenProvider()
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            tokenProvider
+        )
+        val skyflow = Skyflow.init(skyflowConfiguration)
+
+        try{
+            val records = JSONObject()
+            val recordsArray = JSONArray()
+            val record = JSONObject()
+            record.put("table", "cards")
+            val fields = JSONObject()
+            fields.put("cvv", "123")
+            fields.put("card_number", "41111111111")
+            record.put("fields", fields)
+            recordsArray.put(record)
+            records.put("records", recordsArray)
+
+            skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
+                override fun onSuccess(responseBody: Any) {
+                    Log.d(ContentValues.TAG, "success: $responseBody")
+                }
+
+                override fun onFailure(exception: Exception) {
+                    Log.d(ContentValues.TAG, "failure: $exception")
+                }
+
+            })
+        }catch (e: Exception){
+            Log.d("TAG", "testingFunction: $e")
+        }}
+
 
 
     class DemoTokenProvider : Skyflow.TokenProvider {
