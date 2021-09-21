@@ -33,7 +33,7 @@ class Client (
             while (i<jsonArray.length())
             {
                 val jsonObj = jsonArray.getJSONObject(i)
-                var skyflow_ids = jsonObj.get("skyflow_ids")
+                var skyflow_ids = jsonObj.get("ids")
                 try {
                     skyflow_ids = skyflow_ids  as ArrayList<String>
                 }
