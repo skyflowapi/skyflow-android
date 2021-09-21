@@ -48,42 +48,39 @@ class CollectRequestBody {
                         val tableName = jsonobj.get("table")
                         if(tableName !is String)
                             throw Exception("invalid table name in additionalFields")
-                        val fields = jsonobj.getJSONObject("fields")
-                        val keys = fields.names()
-                        val field_list = mutableListOf<CollectRequestRecord>()
-                        for(j in 0 until keys!!.length())
-                        {
-                            val obj = CollectRequestRecord(keys.getString(j),fields.get(keys.getString(j)))
-                            field_list.add(obj)
-                        }
-                        if (tableMap[tableName] != null) {
-                            for(k in 0 until field_list.size)
-                            {
-                                if(tableWithColumn.contains(tableName+field_list.get(k).columnName))
-                                {
-                                    callback.onFailure(Exception("duplicate column "+ field_list.get(k).columnName+" found in "+tableName))
-                                    return ""
-                                }
-                                else
-                                {
-                                    tableWithColumn.add(tableName+field_list.get(k).columnName)
-                                }
+                        if(!jsonobj.getJSONObject("fields").toString().equals("{}")) {
+                            val fields = jsonobj.getJSONObject("fields")
+                            val keys = fields.names()
+                            val field_list = mutableListOf<CollectRequestRecord>()
+                            for (j in 0 until keys!!.length()) {
+                                val obj = CollectRequestRecord(keys.getString(j),
+                                    fields.get(keys.getString(j)))
+                                field_list.add(obj)
                             }
-                            tableMap[tableName]!!.addAll(field_list)
-                        } else {
-                            val tempArray = mutableListOf<CollectRequestRecord>()
-                            for(k in 0 until field_list.size)
-                            {
-                                if(tableWithColumn.contains(tableName+field_list.get(k).columnName))
-                                {
-                                    callback.onFailure(Exception("duplicate column "+ field_list.get(k).columnName+" found in "+tableName))
-                                    return ""
+                            if (tableMap[tableName] != null) {
+                                for (k in 0 until field_list.size) {
+                                    if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
+                                        callback.onFailure(Exception("duplicate column " + field_list.get(
+                                            k).columnName + " found in " + tableName))
+                                        return ""
+                                    } else {
+                                        tableWithColumn.add(tableName + field_list.get(k).columnName)
+                                    }
                                 }
-                                else
-                                tableWithColumn.add(tableName+field_list.get(k).columnName)
+                                tableMap[tableName]!!.addAll(field_list)
+                            } else {
+                                val tempArray = mutableListOf<CollectRequestRecord>()
+                                for (k in 0 until field_list.size) {
+                                    if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
+                                        callback.onFailure(Exception("duplicate column " + field_list.get(
+                                            k).columnName + " found in " + tableName))
+                                        return ""
+                                    } else
+                                        tableWithColumn.add(tableName + field_list.get(k).columnName)
+                                }
+                                tempArray.addAll(field_list)
+                                tableMap[tableName] = tempArray
                             }
-                            tempArray.addAll(field_list)
-                            tableMap[tableName] = tempArray
                         }
                         i++
                     }

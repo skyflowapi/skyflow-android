@@ -1,6 +1,7 @@
 package Skyflow
 
 import Skyflow.collect.client.CollectRequestBody
+import Skyflow.utils.Utils
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
@@ -21,26 +22,31 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
 
 fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
 
-    var errors = ""
-    for (element in this.elements)
-    {
-        val state = element.getState()
-        val error = state["validationErrors"]
-        if((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean))
-        {
-            errors += element.columnName+" is empty"+"\n"
+    val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+    if(isUrlValid) {
+        var errors = ""
+        for (element in this.elements) {
+            val state = element.getState()
+            val error = state["validationErrors"]
+            if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
+                errors += element.columnName + " is empty" + "\n"
+            }
+            if (!(state["isValid"] as Boolean)) {
+                errors += "for " + element.columnName + " " + (error as String) + "\n"
+            }
         }
-        if(!(state["isValid"] as Boolean))
-        {
-            errors += "for " + element.columnName + " " + (error as String) + "\n"
+        if (errors != "") {
+            callback.onFailure(Exception(errors))
+            return
         }
+        val records = CollectRequestBody.createRequestBody(this.elements,
+            options!!.additionalFields,
+            callback)
+        if (!records.isEmpty() || !records.equals(""))
+            this.apiClient.post(JSONObject(records), callback, options)
     }
-    if(errors != "")
+    else
     {
-        callback.onFailure(Exception(errors))
-        return
+        callback.onFailure(Exception("Url is not valid/not secure"))
     }
-    val records = CollectRequestBody.createRequestBody(this.elements,options!!.additionalFields,callback)
-    if(!records.isEmpty() || !records.equals(""))
-        this.apiClient.post(JSONObject(records),callback,options)
 }
