@@ -5,6 +5,7 @@ import com.Skyflow.core.container.ContainerProtocol
 import Skyflow.reveal.RevealRequestBody
 import Skyflow.reveal.RevealRequestRecord
 import Skyflow.reveal.RevealValueCallback
+import Skyflow.utils.Utils
 import org.json.JSONObject
 
 class RevealContainer: ContainerProtocol
@@ -21,7 +22,12 @@ fun Container<RevealContainer>.create(context: Context, input : RevealElementInp
 
 fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions? = RevealOptions())
 {
-    val revealValueCallback = RevealValueCallback(callback, this.revealElements)
-    val records = JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
-    this.apiClient.get(records, revealValueCallback)
+    val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+    if(isUrlValid) {
+        val revealValueCallback = RevealValueCallback(callback, this.revealElements)
+        val records = JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
+        this.apiClient.get(records, revealValueCallback)
+    }
+    else
+        callback.onFailure(Exception("Url is not valid/not secure"))
 }

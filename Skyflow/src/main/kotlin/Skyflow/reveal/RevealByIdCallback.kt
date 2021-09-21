@@ -56,10 +56,10 @@ internal class RevealByIdCallback(
                                         (responseErrorBody.get("error") as JSONObject).get("message")
                                     )
                                     resObj.put("error", errorObj)
-                                    resObj.put("skyflow_ids", record.skyflow_ids)
+                                    resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                                 } else if (response.body() != null) {
-                                    val fields =JSONObject(response.body()!!.string()).getJSONArray("records")
+                                    val fields =JSONObject(response.body()!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
                                     var i = 0
                                     val newJsonArray = JSONArray()
                                     while (i<fields.length())
@@ -80,7 +80,7 @@ internal class RevealByIdCallback(
                                     errorObj.put("code", "400")
                                     errorObj.put("description", "Bad Request")
                                     resObj.put("error", errorObj)
-                                    resObj.put("skyflow_ids", record.skyflow_ids)
+                                    resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                                 }
                             }catch (e: Exception){
