@@ -86,6 +86,7 @@ class RevealActivity : AppCompatActivity() {
 
         reveal.setOnClickListener {
             getByIds()
+            detokenize()
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -138,5 +139,34 @@ class RevealActivity : AppCompatActivity() {
         })
     }
 
+    fun detokenize(){
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            MainActivity.DemoTokenProvider()
+        )
+        val revealRecords = JSONObject()
+        val revealRecordsArray = JSONArray()
+        val recordObj = JSONObject()
+        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("redaction", Skyflow.RedactionType.PLAIN_TEXT)
+        val recordObj1 = JSONObject()
+        recordObj1.put("token", "d3ef5cdf-b177-4b60-a5d2-db11663fbd44")
+        recordObj1.put("redaction", Skyflow.RedactionType.DEFAULT)
+        revealRecordsArray.put(recordObj)
+        revealRecordsArray.put(recordObj1)
+        revealRecords.put("records", revealRecordsArray)
+        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        skyflowClient.detokenize(records = revealRecords, object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                Log.d("detokenize", "onSuccess: $responseBody")
+            }
+
+            override fun onFailure(exception: Exception) {
+                Log.d("detokenize", "onFailure: $exception")
+            }
+
+        })
+    }
 
 }
