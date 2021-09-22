@@ -43,7 +43,10 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
             options!!.additionalFields,
             callback)
         if (!records.isEmpty() || !records.equals(""))
-            this.apiClient.post(JSONObject(records), callback, options)
+        {
+            val insertOptions = InsertOptions(options.token)
+            this.apiClient.post(JSONObject(records), callback, insertOptions)
+        }
     }
     else
     {
