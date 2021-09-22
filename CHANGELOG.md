@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Moved from jitpack registry to github packages.
-- Renamed `styles` to `inputSytles` in CollectElementInput and RevealElementInput.
+- Renamed `styles` to `inputStyles` in CollectElementInput and RevealElementInput.
 - Renamed `get` method to `detokenize`.
 - Renamed `id` to `token` in request and response of `detokenize` and `container.reveal()`.
 - Changed `InsertOptions` to `CollectOptions` in collect method of container.
