@@ -115,7 +115,7 @@ class RevealActivity : AppCompatActivity() {
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
-        record.put("redaction","PLAIN_TEXT")
+        record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
         skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")

@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
 
         submit.setOnClickListener {
-            pureSDKTest()
+            pureInsert()
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
             val record = JSONObject()
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun pureSDKTest(){
+    private fun pureInsert(){
         Log.d("enter", "testingFunction: called")
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
