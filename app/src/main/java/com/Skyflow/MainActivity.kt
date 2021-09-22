@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         var base_error_styles = Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput("cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER,styles,labelStyles,
-            error_styles, "Card Number","Card Number")
+            error_styles, "Card Number","CardNumber")
         val expiryDateInput = Skyflow.CollectElementInput("cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
                                 styles, labelStyles,error_styles, label = "expiry date", placeholder = "expiry date")
         val nameInput = Skyflow.CollectElementInput("cards", "fullname", Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles, labelStyles, error_styles,
