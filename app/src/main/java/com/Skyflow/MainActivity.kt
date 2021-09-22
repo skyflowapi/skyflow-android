@@ -102,7 +102,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 override fun onFailure(exception: Exception) {
                     dialog.dismiss()
-                    error.text = exception.message.toString()
                     Log.d(TAG, "collect failure: ${exception.message.toString()}")
                 }
             }, CollectOptions(true,additionalFields))
