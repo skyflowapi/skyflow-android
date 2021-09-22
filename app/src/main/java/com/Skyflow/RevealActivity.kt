@@ -1,8 +1,6 @@
 package com.Skyflow
 
-import Skyflow.Styles
-import Skyflow.create
-import Skyflow.reveal
+import Skyflow.*
 import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.graphics.Color
@@ -12,6 +10,8 @@ import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_reveal.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class RevealActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +85,8 @@ class RevealActivity : AppCompatActivity() {
 
 
         reveal.setOnClickListener {
+            getByIds()
+            detokenize()
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -101,5 +103,70 @@ class RevealActivity : AppCompatActivity() {
         }
     }
 
+    fun getByIds()
+    {
+
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            MainActivity.DemoTokenProvider()
+        )
+        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table","cards")
+        record.put("redaction","PLAIN_TEXT")
+
+        val skyflowIds = ArrayList<String>()
+        skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+        skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+        skyflowIds.add("xxx")
+        record.put("ids",skyflowIds)
+        recordsArray.put(record)
+        val records = JSONObject()
+        records.put("records",recordsArray)
+        skyflowClient.getById(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+                Log.d("getbyskyflow_ids",responseBody.toString())
+            }
+
+            override fun onFailure(exception: Exception) {
+                Log.d("exception",exception.toString())
+
+            }
+
+        })
+    }
+
+    fun detokenize(){
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            MainActivity.DemoTokenProvider()
+        )
+        val revealRecords = JSONObject()
+        val revealRecordsArray = JSONArray()
+        val recordObj = JSONObject()
+        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("redaction", Skyflow.RedactionType.PLAIN_TEXT)
+        val recordObj1 = JSONObject()
+        recordObj1.put("token", "d3ef5cdf-b177-4b60-a5d2-db11663fbd44")
+        recordObj1.put("redaction", Skyflow.RedactionType.DEFAULT)
+        revealRecordsArray.put(recordObj)
+        revealRecordsArray.put(recordObj1)
+        revealRecords.put("records", revealRecordsArray)
+        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        skyflowClient.detokenize(records = revealRecords, object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                Log.d("detokenize", "onSuccess: $responseBody")
+            }
+
+            override fun onFailure(exception: Exception) {
+                Log.d("detokenize", "onFailure: $exception")
+            }
+
+        })
+    }
 
 }

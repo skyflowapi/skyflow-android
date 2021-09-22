@@ -2,12 +2,12 @@ package com.Skyflow
 
 import Skyflow.*
 import android.app.AlertDialog
+import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -15,7 +15,6 @@ import okhttp3.OkHttpClient
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
-import kotlin.error
 
 class MainActivity : AppCompatActivity() {
     private val TAG = MainActivity::class.qualifiedName
@@ -31,24 +30,24 @@ class MainActivity : AppCompatActivity() {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
-        val padding = Skyflow.Padding(20, 20, 20, 20)
+        val padding = Skyflow.Padding(8, 8, 8, 8)
         val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, null, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
         val cstyle = Skyflow.Style(Color.GREEN, 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
         val fstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.END, Color.GREEN)
         val estyle = Skyflow.Style(Color.YELLOW, 10f, padding, 4, R.font.roboto_light, Gravity.CENTER, Color.YELLOW)
         val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
-        val styles = Skyflow.Styles(bstyle , null, estyle, fstyle,istyle)
+        val styles = Skyflow.Styles(bstyle , null, estyle, fstyle, istyle)
 
 
-        val labelStyles = Styles(bstyle , null, estyle, fstyle, istyle)
-        val base_error_styles = Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
+        var labelStyles = Styles(bstyle , null, estyle, fstyle, istyle)
+        var base_error_styles = Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput("cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER,styles,labelStyles,
             error_styles, "Card Number","Card Number")
         val expiryDateInput = Skyflow.CollectElementInput("cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
-        styles, labelStyles,error_styles, label = "expiry date", placeholder = "expiry date")
+                                styles, labelStyles,error_styles, label = "expiry date", placeholder = "expiry date")
         val nameInput = Skyflow.CollectElementInput("cards", "fullname", Skyflow.SkyflowElementType.CARDHOLDER_NAME, styles, labelStyles, error_styles,
-            "Full Name", "Full Name")
+                            "Full Name", "Full Name")
         val cvvInput = Skyflow.CollectElementInput("cards", "cvv", SkyflowElementType.CVV, styles, labelStyles, error_styles, "CVV", "CVV")
         val options = CollectElementOptions(true)
         val cardNumber = collectContainer.create(this, cardNumberInput)
@@ -71,23 +70,20 @@ class MainActivity : AppCompatActivity() {
         parent.addView(expirationDate)
         parent.addView(cvv)
 
-        val records = JSONObject()
-        val recordsArray = JSONArray()
-        val record = JSONObject()
-        record.put("table", "cards")
-        val fields = JSONObject()
-        fields.put("fullname", JSONObject())
-        //fields.put("test_int",111)
-        //fields.put("name.lastname","last")
-        fields.put("expiry_date", "11/34")
-        record.put("fields", fields)
-        recordsArray.put(record)
-        records.put("records", recordsArray)
-
-
 
         submit.setOnClickListener {
-            val dialog = AlertDialog.Builder(this).create()
+            pureSDKTest()
+            val additionalFields = JSONObject()
+            val recordsArray = JSONArray()
+            val record = JSONObject()
+            record.put("table", "cards")
+            val fields = JSONObject()
+            // fields.put("expiry_date", "11/22")
+            // fields.put("cvv", "123")
+            record.put("fields", fields)
+            additionalFields.put("records", recordsArray)
+
+            var dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
             collectContainer.collect(object : Skyflow.Callback {
@@ -96,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, "collect success: $responseBody")
                     val jsonobj = JSONObject(responseBody.toString()).getJSONArray("records").getJSONObject(0)
                     val fields =  jsonobj.getJSONObject("fields")
-                    val intent = Intent(this@MainActivity,RevealActivity::class.java)
+                    var intent = Intent(this@MainActivity,RevealActivity::class.java)
                     intent.putExtra("cardNumber",fields["card_number"].toString())
                     intent.putExtra("expiryDate",fields["expiry_date"].toString())
                     intent.putExtra("name",fields["fullname"].toString())
@@ -106,12 +102,51 @@ class MainActivity : AppCompatActivity() {
                 }
                 override fun onFailure(exception: Exception) {
                     dialog.dismiss()
-                    // error.text = exception.message.toString()
+                    error.text = exception.message.toString()
                     Log.d(TAG, "collect failure: ${exception.message.toString()}")
                 }
-            },CollectOptions(true,records))
+            }, CollectOptions(true,additionalFields))
         }
+
     }
+
+    private fun pureSDKTest(){
+        Log.d("enter", "testingFunction: called")
+        val tokenProvider = DemoTokenProvider()
+        val skyflowConfiguration = Skyflow.Configuration(
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
+            tokenProvider
+        )
+        val skyflow = Skyflow.init(skyflowConfiguration)
+
+        try{
+            val records = JSONObject()
+            val recordsArray = JSONArray()
+            val record = JSONObject()
+            record.put("table", "cards")
+            val fields = JSONObject()
+            fields.put("cvv", "123")
+            fields.put("card_number", "41111111111")
+            record.put("fields", fields)
+            recordsArray.put(record)
+            records.put("records", recordsArray)
+
+            skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
+                override fun onSuccess(responseBody: Any) {
+                    Log.d(ContentValues.TAG, "success: $responseBody")
+                }
+
+                override fun onFailure(exception: Exception) {
+                    Log.d(ContentValues.TAG, "failure: $exception")
+                }
+
+            })
+        }catch (e: Exception){
+            Log.d("TAG", "testingFunction: $e")
+        }}
+
+
 
     class DemoTokenProvider : Skyflow.TokenProvider {
         override fun getBearerToken(callback: Skyflow.Callback) {
@@ -138,3 +173,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
