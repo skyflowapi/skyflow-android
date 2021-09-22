@@ -44,7 +44,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
                         password = githubProperties['gpr.key'] ?: System.getenv("GPR_PAT")
                     }
         }
-     } gradle
+     }
   ```
 
 - Add the dependency to your application's build.gradle file
