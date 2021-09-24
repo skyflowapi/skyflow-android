@@ -55,6 +55,13 @@ class MainActivity : AppCompatActivity() {
         val name = collectContainer.create(this, nameInput,options)
         val cvv = collectContainer.create(this, cvvInput)
 
+        val expiryDateInput1 = Skyflow.RevealElementInput(
+            "reveal token",
+            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles, error_styles,
+            label =  "expire date","mm/yyyy"
+        )
+        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+        val expiry = revealContainer.create(this, expiryDateInput1)
 
         val parent = findViewById<LinearLayout>(R.id.parent)
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -64,14 +71,46 @@ class MainActivity : AppCompatActivity() {
         expirationDate.layoutParams = lp
         name.layoutParams = lp
         cvv.layoutParams = lp
-
+        expiry.layoutParams = lp
         parent.addView(name)
         parent.addView(cardNumber)
         parent.addView(expirationDate)
         parent.addView(cvv)
+        parent.addView(expiry)
 
 
         submit.setOnClickListener {
+
+
+            val bodyForgateWay = JSONObject()
+            val requestBody = JSONObject()
+            val x = JSONObject()
+            x.put("card",cardNumber)
+            x.put("cvv",cvv)
+            val e = JSONObject()
+            e.put("exp",expirationDate)
+            e.put("some","something")
+            val ee = JSONObject()
+            ee.put("reveal",expiry)
+            ee.put("number",123)
+            e.put("revealElement",ee)
+            x.put("expireDate",e)
+            requestBody.put("xxx",x)
+            requestBody.put("yyy",cvv)
+            requestBody.put("cc","xx")
+            bodyForgateWay.put("requestBody",requestBody)
+            bodyForgateWay.put("gatewayURL","https://www.google.com")
+            skyflowClient.invokeGateway(bodyForgateWay,object : Callback
+            {
+                override fun onSuccess(responseBody: Any) {
+                    Log.d("gateway success",responseBody.toString())
+                }
+
+                override fun onFailure(exception: Exception) {
+                    Log.d("gateway failure",exception.toString())
+                }
+
+            })
             pureInsert()
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
@@ -160,7 +199,8 @@ class MainActivity : AppCompatActivity() {
                                 throw IOException("Unexpected code $response")
                             val accessTokenObject =
                                 JSONObject(response.body()!!.string().toString())
-                            val accessToken = accessTokenObject["accessToken"]
+                            //val accessToken = accessTokenObject["accessToken"]
+                            val accessToken = ""
                             callback.onSuccess("$accessToken")
                         }
                     }

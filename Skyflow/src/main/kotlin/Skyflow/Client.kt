@@ -68,5 +68,30 @@ class Client (
 
     }
 
+    fun invokeGateway(gatewayConfig:JSONObject,callback: Callback)
+    {
+        try {
+           val gatewayUrl = gatewayConfig.getString("gatewayURL")
+           val checkUrl = Utils.checkUrl(gatewayUrl)
+           if(checkUrl) {
+               val requestBody = gatewayConfig.getJSONObject("requestBody")
+               val constructed_body = Utils.gateWayConstructBody(requestBody)
+               Log.d("body", constructed_body.toString())
+             /*  if (!constructed_body.equals(JSONObject()))
+                   this.apiClient.getGatewayConfig(gatewayUrl, constructed_body, callback)
+               else
+                   callback.onFailure(Exception("Invalid requestBody"))*/
+           }
+            else
+           {
+               callback.onFailure(Exception("Url is not valid/not secure"))
+           }
+        }
+        catch (e:Exception)
+        {
+            callback.onFailure(e)
+        }
+    }
+
 
 }
