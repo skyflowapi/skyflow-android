@@ -6,6 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Callback
 import Skyflow.InsertOptions
+import Skyflow.utils.Utils
 import java.io.IOException
 
 
@@ -21,7 +22,7 @@ internal class CollectAPICallback(
     override fun onSuccess(responseBody: Any) {
         try{
         val url =apiClient.vaultURL + apiClient.vaultId
-        val jsonBody: JSONObject = apiClient.constructBatchRequestBody(records, options)
+        val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options)
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"), jsonBody.toString()
         )

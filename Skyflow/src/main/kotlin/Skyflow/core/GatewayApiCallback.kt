@@ -60,7 +60,7 @@ class GatewayApiCallback(
                         else
                         {
                             val responseFromGateway =JSONObject(response.body()!!.string())
-                            Utils.constructJsonKeyForGatewayResponse(gatewayConfig.responseBody,responseFromGateway,callback)
+                            Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,responseFromGateway,callback)
                             callback.onSuccess(responseFromGateway)
                         }
                     }

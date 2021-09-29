@@ -275,5 +275,36 @@ class Utils {
             return true
         }
 
+        //for collect element
+        fun constructBatchRequestBody(records:  JSONObject, options: InsertOptions) : JSONObject{
+            val postPayload:MutableList<Any> = mutableListOf()
+            val insertTokenPayload:MutableList<Any> = mutableListOf()
+            val obj1 = records.getJSONArray("records")
+            var i = 0
+            while ( i < obj1.length())
+            {
+                val jsonObj = obj1.getJSONObject(i)
+                val map = HashMap<String,Any>()
+                map["tableName"] = jsonObj["table"]
+                map["fields"] = jsonObj["fields"]
+                map["method"] = "POST"
+                map["quorum"] = true
+                postPayload.add(map)
+                if(options.tokens)
+                {
+                    val temp2 = HashMap<String,Any>()
+                    temp2["method"] = "GET"
+                    temp2["tableName"] = jsonObj["table"] as String
+                    temp2["ID"] = "\$responses.$i.records.0.skyflow_id"
+                    temp2["tokenization"] = true
+                    insertTokenPayload.add(temp2)
+                }
+                i++
+            }
+            val body = HashMap<String,Any>()
+            body["records"] = postPayload + insertTokenPayload
+            return JSONObject(body as Map<*, *>)
+        }
+
     }
 }
