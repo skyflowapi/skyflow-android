@@ -3,8 +3,6 @@ package Skyflow
 import Skyflow.core.APIClient
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.utils.Utils
-import android.util.Log
-import android.webkit.URLUtil
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import kotlin.Exception
@@ -67,31 +65,12 @@ class Client (
             callback.onFailure(Exception("Url is not valid/not secure"))
 
     }
-
-    fun invokeGateway(gatewayConfig:JSONObject,callback: Callback)
+    fun invokeGateway(gatewayConfig:GatewayConfiguration,callback: Callback)
     {
-        try {
-           val gatewayUrl = gatewayConfig.getString("gatewayURL")
-           val checkUrl = Utils.checkUrl(gatewayUrl)
-           if(checkUrl) {
-               val requestBody = gatewayConfig.getJSONObject("requestBody")
-               val constructed_body = Utils.gateWayConstructBody(requestBody)
-               Log.d("body", constructed_body.toString())
-             /*  if (!constructed_body.equals(JSONObject()))
-                   this.apiClient.getGatewayConfig(gatewayUrl, constructed_body, callback)
-               else
-                   callback.onFailure(Exception("Invalid requestBody"))*/
-           }
-            else
-           {
-               callback.onFailure(Exception("Url is not valid/not secure"))
-           }
-        }
-        catch (e:Exception)
-        {
-            callback.onFailure(e)
-        }
+        val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL)
+        if(checkUrl)
+            this.apiClient.invokeGateway(gatewayConfig,callback)
+        else
+            callback.onFailure(Exception("Url is not valid/not secure"))
     }
-
-
 }

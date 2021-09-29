@@ -4,7 +4,6 @@ import Skyflow.Callback
 import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Element
-import android.util.Log
 import com.google.gson.JsonObject
 import kotlin.Exception
 

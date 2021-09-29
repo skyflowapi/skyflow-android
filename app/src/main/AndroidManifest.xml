@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.Skyflow">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
@@ -12,13 +12,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-
         android:theme="@style/Theme.Skyflowandroid"
+        android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name="com.Skyflow.MainActivity"
-            android:exported="true">
+            android:name=".GenerateCvv"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,9 +25,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.Skyflow.RevealActivity">
-        </activity>
-    </application>
+            android:name=".MainActivity"
+            android:exported="true">
 
+        </activity>
+        <activity android:name=".RevealActivity"></activity>
+    </application>
 
 </manifest>

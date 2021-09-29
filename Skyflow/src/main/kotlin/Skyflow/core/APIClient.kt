@@ -7,6 +7,7 @@ import Skyflow.reveal.GetByIdRecord
 import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealByIdCallback
 import Skyflow.reveal.RevealRequestRecord
+import Skyflow.utils.Utils
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -141,5 +142,17 @@ class APIClient (
         this.getAccessToken(revealApiCallback)
     }
 
-
+    fun invokeGateway(
+        gatewayConfig: GatewayConfiguration,
+        callback: Callback
+    ) {
+            val requestBody = gatewayConfig.requestBody
+            val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback)
+            if(isBodyConstructed)
+            {
+                val newGateway = gatewayConfig.copy(requestBody = requestBody)
+                val gateway = GatewayApiCallback(newGateway,callback)
+                this.getAccessToken(gateway)
+            }
+    }
 }
