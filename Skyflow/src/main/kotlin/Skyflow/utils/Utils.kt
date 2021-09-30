@@ -190,27 +190,32 @@ class Utils {
             return true
         }
 
+        //adding path params to gatewaye url
         fun addPathparamsToURL(url: String, params: JSONObject, callback: Callback) : String
         {
             try {
                 var newURL = url
                 val keys = params.names()
-                for (j in 0 until keys!!.length()) {
-                    var value: Any
-                    if (params.get(keys.getString(j)) is Element) {
-                        val element = (params.get(keys.getString(j)) as Element)
+                for (j in 0 until keys!!.length())
+                {
+                    var value = params.get(keys.getString(j))
+                    if (value is Element)
+                    {
+                        val element = value
                         val check = checkElement(element,callback)
                         if(check)
-                        {
                             newURL = newURL.replace("{" + keys.getString(j) + "}", element.getOutput())
-                        }
                         else
                             return ""
-                    } else if (params.get(keys.getString(j)) is Label) {
-                        value = (params.get(keys.getString(j)) as Label).revealInput.token
+                    }
+                    else if (value is Label)
+                    {
+                        value = value.revealInput.token
                         newURL = newURL.replace("{" + keys.getString(j) + "}", value)
-                    }  else if(params.get(keys.getString(j)) is String ||params.get(keys.getString(j)) is Int) {
-                        value = params.get(keys.getString(j)).toString()
+                    }
+                    else if(value is String || value is Number || value is Boolean)
+                    {
+                        value = value.toString()
                         newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                     }
                     else
@@ -227,29 +232,42 @@ class Utils {
             }
         }
 
+        //adding query params for gateway url
         fun addQueryParams(
             requestUrlBuilder: HttpUrl.Builder,
             gatewayConfig: GatewayConfiguration,
             callback: Callback
         ): Boolean {
-            val queryParams = (gatewayConfig.queryParams as JSONObject).names()
+            val queryParams = (gatewayConfig.queryParams).names()
             if(queryParams != null) {
                 for (i in 0 until queryParams.length()) {
-                    if (gatewayConfig.queryParams.get(queryParams.getString(i)) is Element) {
-                        requestUrlBuilder.addQueryParameter(queryParams.getString(i),
-                            (gatewayConfig.queryParams.get(queryParams.getString(i)) as Element).getOutput())
-                    } else if (gatewayConfig.queryParams.get(queryParams.getString(i)) is Label) {
-                        requestUrlBuilder.addQueryParameter(queryParams.getString(i),
-                            (gatewayConfig.queryParams.get(queryParams.getString(i)) as Label).revealInput.token)
-                    } else if (gatewayConfig.queryParams.get(queryParams.getString(i)) is String || gatewayConfig.queryParams.get(
-                            queryParams.getString(i)) is Int
-                    )
-                        requestUrlBuilder.addQueryParameter(queryParams.getString(i),
-                            gatewayConfig.queryParams.getString(queryParams.getString(i)))
+                    val value = gatewayConfig.queryParams.get(queryParams.getString(i))
+                    if (value is Element) 
+                        requestUrlBuilder.addQueryParameter(queryParams.getString(i),value.getOutput())
+                    else if (value is Label) 
+                        requestUrlBuilder.addQueryParameter(queryParams.getString(i), value.revealInput.token)
+                    else if (value is Number || value is String || value is Boolean)
+                        requestUrlBuilder.addQueryParameter(queryParams.getString(i),value.toString())
+                    else if(value is Array<*>)
+                    {
+                        for(j in 0 until value.size)
+                        {
+                            if(value.get(j) is Number || value.get(j) is String || value.get(j) is Boolean )
+                                requestUrlBuilder.addQueryParameter(queryParams.getString(i),value.get(j).toString())
+                            else if(value.get(j) is Label)
+                                requestUrlBuilder.addQueryParameter(queryParams.getString(i), (value.get(j) as Label).revealInput.token)
+                            else if(value.get(j) is Element)
+                                requestUrlBuilder.addQueryParameter(queryParams.getString(i),(value.get(j) as Element).getOutput())
+                            else
+                            {
+                                callback.onFailure(Exception("invalid field \"${queryParams.getString(i)}\" present in queryParams"))
+                                return false
+                            }
+
+                        }
+                    }
                     else {
-                        callback.onFailure(java.lang.Exception("invalid field \"${
-                            queryParams.getString(i)
-                        }\" present in queryParams"))
+                        callback.onFailure(Exception("invalid field \"${queryParams.getString(i)}\" present in queryParams"))
                         return false
                     }
                 }
@@ -258,6 +276,7 @@ class Utils {
 
         }
 
+        //adding requestHeader for gateway url
         fun addRequestHeader(request: Request.Builder, gatewayConfig: GatewayConfiguration, callback: Callback): Boolean {
             val headers = (gatewayConfig.requestHeader as JSONObject).names()
             if (headers != null) {

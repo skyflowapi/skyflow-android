@@ -3,6 +3,7 @@ package Skyflow.core
 import Skyflow.Callback
 import Skyflow.GatewayConfiguration
 import Skyflow.utils.Utils
+import android.util.Log
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -18,6 +19,8 @@ class GatewayApiCallback(
         try{
             //adding path params
             val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,gatewayConfig.pathParams,callback)
+            if(gatewayUrl.equals(""))
+                return
             val requestUrlBuilder = HttpUrl.parse(gatewayUrl)?.newBuilder()
             if(requestUrlBuilder == null){
                 onFailure(Exception("Bad or missing url"))
@@ -44,6 +47,7 @@ class GatewayApiCallback(
             if(!isHeaderAdded)
                 return
 
+            Log.d("url",requestUrl.toString())
             // Building request
            val  requestBuild = request.build()
            okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
