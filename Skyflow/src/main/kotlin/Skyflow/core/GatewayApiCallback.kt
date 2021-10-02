@@ -3,7 +3,6 @@ package Skyflow.core
 import Skyflow.Callback
 import Skyflow.GatewayConfiguration
 import Skyflow.utils.Utils
-import android.util.Log
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -47,8 +46,7 @@ class GatewayApiCallback(
             if(!isHeaderAdded)
                 return
 
-            Log.d("url",requestUrl.toString())
-            // Building request
+              // Building request
            val  requestBuild = request.build()
            okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
                 override fun onFailure(call: Call, e: IOException) {

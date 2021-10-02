@@ -12,6 +12,7 @@ import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.collections.HashSet
 
 
 object JWTUtils {
@@ -115,13 +116,15 @@ class APIClient (
         gatewayConfig: GatewayConfiguration,
         callback: Callback
     ) {
-            val requestBody = gatewayConfig.requestBody
-            val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback)
-            if(isBodyConstructed)
-            {
-                val newGateway = gatewayConfig.copy(requestBody = requestBody)
-                val gateway = GatewayApiCallback(newGateway,callback)
-                this.getAccessToken(gateway)
-            }
+        val isValidResponseBody = Utils.checkDuplicateInResponseBody(gatewayConfig.responseBody,callback,HashSet())
+        if(!isValidResponseBody) return
+        val requestBody = gatewayConfig.requestBody
+        val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback)
+        if(isBodyConstructed)
+        {
+            val newGateway = gatewayConfig.copy(requestBody = requestBody)
+            val gateway = GatewayApiCallback(newGateway,callback)
+            this.getAccessToken(gateway)
+        }
     }
 }
