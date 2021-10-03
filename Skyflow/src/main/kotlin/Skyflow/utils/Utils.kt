@@ -1,7 +1,6 @@
 package Skyflow.utils
 
 import Skyflow.*
-import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -92,6 +91,7 @@ class Utils {
 
         }
 
+        var arrayInRequestBody : JSONArray = JSONArray()
         //changing pci elements to actual values in it for request to gateway
         private fun constructJsonKeyForGatewayRequest(records: JSONObject, callback: Callback) : Boolean {
             val keys = records.names()
@@ -157,6 +157,49 @@ class Utils {
                             arrayValue.put(k,value)
                         }
                         value = arrayValue
+                    }
+                    else if(records.get(keys.getString(j)) is Array<*>)
+                    {
+                            val arrayValue =(records.get(keys.getString(j)) as Array<*>)
+                        for(k in 0 until arrayValue.size)
+                            {
+                                if(arrayValue.get(k) is Element)
+                                {
+                                    val element = (arrayValue.get(k)  as Element)
+                                    val check = checkElement(element, callback)
+                                    if (check)
+                                    {
+                                        value = (arrayValue.get(k)  as Element).getOutput()
+                                    }
+                                    else
+                                        return false
+                                }
+                                else if(arrayValue.get(k) is Label)
+                                {
+                                    value = (arrayValue.get(k)  as Label).revealInput.token
+                                }
+                                else if(arrayValue.get(k) is JSONObject)
+                                {
+                                    val isValid =
+                                        constructJsonKeyForGatewayRequest(arrayValue.get(k)  as JSONObject,
+                                            callback)
+                                    if (isValid)
+                                        value = JSONObject(arrayValue.get(k) .toString())
+                                    else
+                                        return false
+                                }
+                                else if(arrayValue.get(k) is String || arrayValue.get(k) is Number || arrayValue.get(k) is Boolean)
+                                {
+                                    value = arrayValue.get(k) .toString()
+                                }
+                                else
+                                {
+                                    callback.onFailure(Exception("invalid field \"${keys.getString(j)}\" present in requestbody"))
+                                    return false
+                                }
+                                arrayInRequestBody.put(k,value)
+                            }
+                            value = arrayInRequestBody
                     }
                     else if (records.get(keys.getString(j)) is String || records.get(keys.getString(
                             j)) is Number || records.get(keys.getString(j)) is Boolean
