@@ -3,6 +3,7 @@ package Skyflow
 import Skyflow.collect.client.CollectRequestBody
 import Skyflow.utils.Utils
 import android.content.Context
+import android.util.Log
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 
@@ -26,6 +27,16 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
     if(isUrlValid) {
         var errors = ""
         for (element in this.elements) {
+            if(element.collectInput.table.equals(null))
+            {
+                callback.onFailure(Exception("invalid table name"))
+                return
+            }
+            else if(element.collectInput.column.equals(null))
+            {
+                callback.onFailure(Exception("invalid column name"))
+                return
+            }
             val state = element.getState()
             val error = state["validationErrors"]
             if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {

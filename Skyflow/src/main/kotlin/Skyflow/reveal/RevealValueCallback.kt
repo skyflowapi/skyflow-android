@@ -11,7 +11,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
     override fun onSuccess(responseBody: Any) {
         val elementsMap = HashMap<String, Label>()
         for (element in revealElements){
-            elementsMap[element.revealInput.token] = element
+            elementsMap[element.revealInput.token!!] = element
         }
         val responseJSON = JSONObject(responseBody.toString())
         val recordsArray = responseJSON.getJSONArray("records")
@@ -21,6 +21,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
             val fieldsObj = recordObj.getJSONObject("fields")
             val value = fieldsObj.get(fieldsObj.keys().next()).toString()
             elementsMap[tokenId]!!.placeholder.text = value
+            elementsMap[tokenId]!!.value = value
             recordObj.remove("fields")
         }
         val errorArray = responseJSON.getJSONArray("errors")

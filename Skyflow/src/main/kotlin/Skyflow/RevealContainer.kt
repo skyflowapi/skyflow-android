@@ -22,6 +22,19 @@ fun Container<RevealContainer>.create(context: Context, input : RevealElementInp
 
 fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions? = RevealOptions())
 {
+    for(element in this.revealElements)
+    {
+        if(element.isTokenNull)
+        {
+            callback.onFailure(Exception("invalid token"))
+            return
+        }
+        else if(element.isRedactionNull)
+        {
+            callback.onFailure(Exception("invalid redaction type"))
+            return
+        }
+    }
     val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
     if(isUrlValid) {
         val revealValueCallback = RevealValueCallback(callback, this.revealElements)

@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import android.webkit.URLUtil
+import androidx.core.view.get
 import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONArray
@@ -61,6 +62,7 @@ class Utils {
                         } else if (responseBody.get(keys.getString(j)) is Label) {
                             val ans = responseFromGateway.getString(keys.getString(j))
                             (responseBody.get(keys.getString(j)) as Label).placeholder.setText(ans)
+                            (responseBody.get(keys.getString(j)) as Label).value = ans
                             responseFromGateway.remove(keys.getString(j))
                         } else if (responseBody.get(keys.getString(j)) is JSONObject) {
                             constructJsonKeyForGatewayResponse(responseBody.get(keys.getString(j)) as JSONObject,
@@ -102,11 +104,11 @@ class Utils {
                         val element = (records.get(keys.getString(j)) as Element)
                         val check = checkElement(element, callback)
                         if (check)
-                            value = (records.get(keys.getString(j)) as Element).getOutput()
+                            value = (records.get(keys.getString(j)) as Element).getValue()
                         else
                             return false
                     } else if (records.get(keys.getString(j)) is Label) {
-                        value = (records.get(keys.getString(j)) as Label).revealInput.token
+                        value = (records.get(keys.getString(j)) as Label).revealInput.token!!
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
                             constructJsonKeyForGatewayRequest(records.get(keys.getString(j)) as JSONObject,
@@ -127,13 +129,13 @@ class Utils {
                                 val element = (arrayValue.get(k) as Element)
                                 val check = checkElement(element, callback)
                                 if (check)
-                                    value = (arrayValue.get(k)  as Element).getOutput()
+                                    value = (arrayValue.get(k)  as Element).getValue()
                                 else
                                     return false
                             }
                             else if(arrayValue.get(k) is Label)
                             {
-                                value = (arrayValue.get(k)  as Label).revealInput.token
+                                value = (arrayValue.get(k)  as Label).revealInput.token!!
                             }
                             else if(arrayValue.get(k) is JSONObject)
                             {
@@ -169,14 +171,14 @@ class Utils {
                                     val check = checkElement(element, callback)
                                     if (check)
                                     {
-                                        value = (arrayValue.get(k)  as Element).getOutput()
+                                        value = (arrayValue.get(k)  as Element).getValue()
                                     }
                                     else
                                         return false
                                 }
                                 else if(arrayValue.get(k) is Label)
                                 {
-                                    value = (arrayValue.get(k)  as Label).revealInput.token
+                                    value = (arrayValue.get(k)  as Label).revealInput.token!!
                                 }
                                 else if(arrayValue.get(k) is JSONObject)
                                 {
@@ -231,11 +233,11 @@ class Utils {
                             val check = checkElement(element, callback)
                             if (check)
                                 newURL = newURL.replace("{" + keys.getString(j) + "}",
-                                    element.getOutput())
+                                    element.getValue())
                             else
                                 return ""
                         } else if (value is Label) {
-                            value = value.revealInput.token
+                            value = value.revealInput.token!!
                             newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                         } else if (value is String || value is Number || value is Boolean) {
                             value = value.toString()
@@ -297,12 +299,12 @@ class Utils {
                 val element = value
                 val isValid = checkElement(element, callback)
                 if (isValid)
-                    requestUrlBuilder.addQueryParameter(key,element.getOutput())
+                    requestUrlBuilder.addQueryParameter(key,element.getValue())
                 else
                     return false
             }
             else if (value is Label)
-                requestUrlBuilder.addQueryParameter(key, value.revealInput.token)
+                requestUrlBuilder.addQueryParameter(key, value.revealInput.token!!)
             else if (value is Number || value is String || value is Boolean || value is JSONObject)
                 requestUrlBuilder.addQueryParameter(key,value.toString())
             else {
@@ -388,23 +390,24 @@ class Utils {
             callback: Callback,
         ): Boolean {
             val keys = responseBody.names()
-            for (j in 0 until keys!!.length()) {
-                try
-                {
-                    if (responseBody.get(keys.getString(j)) is JSONObject) {
-                        val check = checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
-                            responseFromGateway.getJSONObject(keys.getString(j)),
-                            callback)
-                        if(!check)
-                            return false
+            if(keys !=null) {
+                for (j in 0 until keys.length()) {
+                    try {
+                        if (responseBody.get(keys.getString(j)) is JSONObject) {
+                            val check =
+                                checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
+                                    responseFromGateway.getJSONObject(keys.getString(j)),
+                                    callback)
+                            if (!check)
+                                return false
+                        } else if (!(responseBody.get(keys.getString(j)) is Element) && !(responseBody.get(
+                                keys.getString(j)) is Label)
+                        )
+                            throw Exception("invalid field " + keys.getString(j) + " present in response body")
+                    } catch (e: Exception) {
+                        callback.onFailure(e)
+                        return false
                     }
-                    else if(!(responseBody.get(keys.getString(j)) is Element) && !(responseBody.get(keys.getString(j)) is Label))
-                        throw Exception("invalid field "+keys.getString(j)+" present in response body")
-                }
-                catch (e:Exception)
-                {
-                    callback.onFailure(e)
-                    return false
                 }
             }
             return true
@@ -413,17 +416,21 @@ class Utils {
         //removing empty json objects
         private fun removeEmptyAndNullFields(response: JSONObject) {
             val keys = response.names()
-            for (j in 0 until keys!!.length()) {
-                val key = keys.getString(j)
-                try {
-                    if (response.isNull(key) || response.getJSONObject(key).toString().equals("{}")) {
-                        response.remove(key);
-                    } else {
-                        removeEmptyAndNullFields(response.getJSONObject(key));
-                        if(response.getJSONObject(key).toString().equals("{}"))
-                            response.remove(key)
+            if(keys !=null) {
+                for (j in 0 until keys.length()) {
+                    val key = keys.getString(j)
+                    try {
+                        if (response.isNull(key) || response.getJSONObject(key).toString()
+                                .equals("{}")
+                        ) {
+                            response.remove(key);
+                        } else {
+                            removeEmptyAndNullFields(response.getJSONObject(key));
+                            if (response.getJSONObject(key).toString().equals("{}"))
+                                response.remove(key)
+                        }
+                    } catch (e: Exception) {
                     }
-                } catch (e: Exception) {
                 }
             }
         }
@@ -433,25 +440,33 @@ class Utils {
                                           callback: Callback,elementList:HashSet<String>) : Boolean
         {
             val keys = responseBody.names()
-            for (j in 0 until keys!!.length()) {
-                try {
-                    if (responseBody.get(keys.getString(j)) is JSONObject) {
-                        val check = checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject,callback,elementList)
-                        if(!check)
-                            return false
+            if(keys != null) {
+                for (j in 0 until keys.length()) {
+
+                    try {
+                        if (responseBody.get(keys.getString(j)) is JSONObject) {
+                            val check =
+                                checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject,
+                                    callback,
+                                    elementList)
+                            if (!check)
+                                return false
+                        }
+                        if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(
+                                j)) is Label
+                        ) {
+                            if (elementList.contains(responseBody.get(keys.getString(j)).hashCode()
+                                    .toString())
+                            )
+                                throw Exception("duplicate field " + keys.getString(j) + " present in response body")
+                            else
+                                elementList.add(responseBody.get(keys.getString(j)).hashCode()
+                                    .toString())
+                        }
+                    } catch (e: Exception) {
+                        callback.onFailure(e)
+                        return false
                     }
-                    if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(j)) is Label)
-                    {
-                        if (elementList.contains(responseBody.get(keys.getString(j)).hashCode().toString()))
-                            throw Exception("duplicate field " + keys.getString(j) + " present in response body")
-                        else
-                            elementList.add(responseBody.get(keys.getString(j)).hashCode().toString())
-                    }
-                }
-                catch (e: Exception)
-                {
-                    callback.onFailure(e)
-                    return false
                 }
             }
             return true

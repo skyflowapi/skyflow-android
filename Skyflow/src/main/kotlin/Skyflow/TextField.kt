@@ -37,7 +37,7 @@ class TextField @JvmOverloads constructor(
     private lateinit var padding: Padding
     private var mErrorAnimator: Animation? = null
 
-    override fun getOutput() : String {
+    override fun getValue() : String {
         if(inputField.text.toString().isEmpty())
             return ""
         return inputField.text.toString()
