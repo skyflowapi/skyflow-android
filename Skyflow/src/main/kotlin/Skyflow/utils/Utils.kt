@@ -2,7 +2,6 @@ package Skyflow.utils
 
 import Skyflow.*
 import android.webkit.URLUtil
-import androidx.core.view.get
 import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONArray
@@ -470,6 +469,15 @@ class Utils {
                 }
             }
             return true
+        }
+
+        fun checkIfElementsMounted(elements: MutableList<Label>):Label?{
+            for (element in elements){
+                if (!element.isAttachedToWindow()){
+                    return element
+                }
+            }
+            return null
         }
 
         fun copyJSON(records: JSONObject,finalRecords:JSONObject)
