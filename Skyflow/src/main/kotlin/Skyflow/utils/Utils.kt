@@ -200,6 +200,8 @@ class Utils {
                                 arrayInRequestBody.put(k,value)
                             }
                             value = arrayInRequestBody
+                            arrayInRequestBody = JSONArray()
+
                     }
                     else if (records.get(keys.getString(j)) is String || records.get(keys.getString(
                             j)) is Number || records.get(keys.getString(j)) is Boolean
