@@ -24,19 +24,17 @@ class GenerateCvv : AppCompatActivity() {
         val skyflowClient = Skyflow.init(skyflowConfiguration)
 
         val cardNumberInput = Skyflow.RevealElementInput(
-            "0905-8672-0773-0628",
+            "your token",
             redaction = Skyflow.RedactionType.PLAIN_TEXT,
             label =  "card number",
         )
         val cvvInput = Skyflow.RevealElementInput(
-            "",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,
             label =  "cvv",altText = "Cvv not generated"
         )
+
         val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
         val cardNumber = revealContainer.create(this, cardNumberInput)
         val cvv = revealContainer.create(this,cvvInput)
-
         val parent = findViewById<LinearLayout>(R.id.parent1)
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -61,10 +59,9 @@ class GenerateCvv : AppCompatActivity() {
             val pathparams = JSONObject()
             pathparams.put("cardNumber",cardNumber)
             val requestHeader = JSONObject()
-            requestHeader.put("Authorization","token")
-            val url = "your_url../{cardNumber}/cvv2generation"
+            requestHeader.put("Authorization",BuildConfig.GATEWAY_TOKEN)
+            val url = BuildConfig.GATEWAY_GENERATE_CVV_URL  // eg:  url.../{cardNumber}/...
             val bodyForgateWay = GatewayConfiguration(gatewayURL = url,requestHeader = requestHeader,pathParams = pathparams,methodName = RequestMethod.POST,requestBody = requestBody, responseBody =  responseBody,queryParams = quertParams)
-            Log.d("from main activity1",bodyForgateWay.requestBody.toString())
             skyflowClient.invokeGateway(bodyForgateWay,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
