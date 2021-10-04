@@ -7,7 +7,7 @@ data class GatewayConfiguration(
     val methodName: RequestMethod,
     val pathParams: JSONObject = JSONObject(),
     val queryParams: JSONObject = JSONObject(),
-    val requestBody: JSONObject = JSONObject(),
+    var requestBody: JSONObject = JSONObject(),
     val requestHeader: JSONObject = JSONObject(),
     val responseBody: JSONObject = JSONObject()
 ) {

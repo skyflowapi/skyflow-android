@@ -118,13 +118,17 @@ class APIClient (
     ) {
         val isValidResponseBody = Utils.checkDuplicateInResponseBody(gatewayConfig.responseBody,callback,HashSet())
         if(!isValidResponseBody) return
-        val requestBody = gatewayConfig.requestBody
+        val requestBody = JSONObject()
+        Utils.copyJSON(gatewayConfig.requestBody,requestBody)
         val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback)
+        gatewayConfig.requestBody = JSONObject()
         if(isBodyConstructed)
         {
             val newGateway = gatewayConfig.copy(requestBody = requestBody)
             val gateway = GatewayApiCallback(newGateway,callback)
             this.getAccessToken(gateway)
         }
+        else
+            return
     }
 }

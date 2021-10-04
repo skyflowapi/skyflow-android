@@ -472,5 +472,17 @@ class Utils {
             return true
         }
 
+        fun copyJSON(records: JSONObject,finalRecords:JSONObject)
+        {
+            val keys = records.names()
+            if(keys != null) {
+                for (j in 0 until keys.length()) {
+                    finalRecords.put(keys.getString(j),records.get(keys.getString(j)))
+                }
+            }
+        }
+
     }
+
+
 }
