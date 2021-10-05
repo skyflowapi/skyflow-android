@@ -37,7 +37,7 @@ class TextField @JvmOverloads constructor(
     private lateinit var padding: Padding
     private var mErrorAnimator: Animation? = null
 
-    override fun getOutput() : String {
+    override fun getValue() : String {
         if(inputField.text.toString().isEmpty())
             return ""
         return inputField.text.toString()
@@ -76,7 +76,7 @@ class TextField @JvmOverloads constructor(
 
     private fun buildTextField()
     {
-        if(!collectInput.altText.isEmpty() || !collectInput.altText.equals(""))
+        if(collectInput.altText.isNotEmpty() || collectInput.altText != "")
         {
             inputField.setText(collectInput.altText)
             state = StateforText(this)

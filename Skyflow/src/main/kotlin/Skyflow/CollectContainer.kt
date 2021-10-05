@@ -26,13 +26,26 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
     if(isUrlValid) {
         var errors = ""
         for (element in this.elements) {
-            val state = element.getState()
-            val error = state["validationErrors"]
-            if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
-                errors += element.columnName + " is empty" + "\n"
+            if(element.isAttachedToWindow()) {
+                if (element.collectInput.table.equals(null)) {
+                    callback.onFailure(Exception("invalid table name"))
+                    return
+                } else if (element.collectInput.column.equals(null)) {
+                    callback.onFailure(Exception("invalid column name"))
+                    return
+                }
+                val state = element.getState()
+                val error = state["validationErrors"]
+                if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
+                    errors += element.columnName + " is empty" + "\n"
+                }
+                if (!(state["isValid"] as Boolean)) {
+                    errors += "for " + element.columnName + " " + (error as String) + "\n"
+                }
             }
-            if (!(state["isValid"] as Boolean)) {
-                errors += "for " + element.columnName + " " + (error as String) + "\n"
+            else {
+                callback.onFailure(Exception("Element with label ${element.collectInput.label} is not attached to window"))
+                return
             }
         }
         if (errors != "") {

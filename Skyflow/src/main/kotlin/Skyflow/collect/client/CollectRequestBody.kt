@@ -4,7 +4,6 @@ import Skyflow.Callback
 import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Element
-import android.util.Log
 import com.google.gson.JsonObject
 import kotlin.Exception
 
@@ -26,11 +25,11 @@ class CollectRequestBody {
                         return ""
                     }
                     tableWithColumn.add(element.tableName+element.columnName)
-                    val obj = CollectRequestRecord(element.columnName,element.getOutput())
+                    val obj = CollectRequestRecord(element.columnName,element.getValue())
                     tableMap[(element.tableName)]!!.add(obj)
                 }
                 else{
-                    val obj = CollectRequestRecord(element.columnName,element.getOutput())
+                    val obj = CollectRequestRecord(element.columnName,element.getValue())
                     val tempArray = mutableListOf<CollectRequestRecord>()
                     tempArray.add(obj)
                     tableWithColumn.add(element.tableName+element.columnName)

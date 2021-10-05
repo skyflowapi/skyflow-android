@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -15,6 +16,7 @@ class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
+    internal  var value: String =""
     internal var label = TextView(context)
     internal var placeholder = TextView(context)
     internal var error = TextView(context)
@@ -22,6 +24,8 @@ class Label @JvmOverloads constructor(
     internal lateinit var options: RevealElementOptions
     internal lateinit var padding: Padding
     internal var border = GradientDrawable()
+    internal var isTokenNull = false
+    internal var isRedactionNull = false
 
     @SuppressLint("NewApi", "WrongConstant")
     internal fun setupField(revealInput: RevealElementInput, options: RevealElementOptions)
@@ -29,6 +33,16 @@ class Label @JvmOverloads constructor(
         this.revealInput = revealInput
         this.options = options
         padding = revealInput.inputStyles.base.padding
+        if(this.revealInput.token.equals("null") || this.revealInput.token.equals(null))
+        {
+            isTokenNull = true
+            this.revealInput.token = ""
+        }
+        if(this.revealInput.redaction.toString().equals("null"))
+        {
+            isRedactionNull = true
+            this.revealInput.redaction = RedactionType.DEFAULT
+        }
         buildLabel()
         buildPlaceholder()
         buildError()
@@ -82,9 +96,9 @@ class Label @JvmOverloads constructor(
         addView(error)
     }
 
-    internal fun getOutput() : String
-    {
-        return placeholder.text.toString()
+    @JvmName("getValue1")
+    internal fun getValue(): String {
+        return value
     }
 
 

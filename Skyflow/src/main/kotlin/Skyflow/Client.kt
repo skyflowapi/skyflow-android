@@ -3,8 +3,6 @@ package Skyflow
 import Skyflow.core.APIClient
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.utils.Utils
-import android.util.Log
-import android.webkit.URLUtil
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import kotlin.Exception
@@ -67,6 +65,12 @@ class Client (
             callback.onFailure(Exception("Url is not valid/not secure"))
 
     }
-
-
+    fun invokeGateway(gatewayConfig:GatewayConfiguration,callback: Callback)
+    {
+        val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL)
+        if(checkUrl)
+            this.apiClient.invokeGateway(gatewayConfig,callback)
+        else
+            callback.onFailure(Exception("Url is not valid/not secure"))
+    }
 }

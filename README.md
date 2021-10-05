@@ -734,5 +734,147 @@ The response below shows that some tokens assigned to the reveal elements get re
 }
 ```
 
+# Securely invoking gateway client-side
+Using Skyflow gateway, end-user applications can integrate checkout/card issuance flow without any of their apps/systems touching the PCI compliant fields like cvv, card number. To invoke gateway, use the `invokeGateway(gatewayConfig)` method of the Skyflow client.
+
+```kt
+val gatewayConfig = GatewayConfiguration(
+  gatewayURL: string, // gateway url recevied when creating a skyflow gateway integration
+  methodName: Skyflow.RequestMethod,
+  pathParams: JSONObject,	// optional
+  queryParams: JSONObject,	// optional
+  requestHeader: JSONObject, // optional
+  requestBody: JSONObject,	// optional
+  responseBody: JSONObject	// optional
+)
+
+skyflowClient.invokeGateway(gatewayConfig,callback);
+```
+`methodName` supports the following methods:
+
+- GET
+- POST
+- PUT
+- PATCH
+- DELETE
+
+**pathParams, queryParams, requestHeader, requestBody** are the JSON objects that will be sent through the gateway integration url.
+
+The values in the above parameters can contain collect elements, reveal elements or actual values. When elements are provided inplace of values, they get replaced with the value entered in the collect elements or value present in the reveal elements
+
+**responseBody**:  
+It is a JSON object that specifies where to render the response in the UI. The values in the responseBody can contain collect elements or reveal elements. 
+
+Sample use-cases on using invokeGateway():
+
+###  Sample use-case 1:
+
+Merchant acceptance - customers should be able to complete payment checkout without cvv touching their application. This means that the merchant should be able to receive a CVV and process a payment without exposing their front-end to any PCI data
+
+```javascript
+// step 1
+val config = Skyflow.Configuration(
+    vaultID = <VAULT_ID>,
+    vaultURL = <VAULT_URL>,
+    tokenProvider = demoTokenProvider
+)
+
+val skyflowClient = Skyflow.init(config)
+
+// step 2
+val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+
+// step 3
+val cardNumberInput = Skyflow.CollectElementInput(type = Skyflow.SkyflowElementType.CARD_NUMBER,label = "Card Number")
+ val cardNumberElement = collectContainer.create(context = Context, input = cardNumberInput,options = collectElementOptions)   
+ 
+val cvvInput = Skyflow.CollectElementInput(type = Skyflow.SkyflowElementType.CVV,label = "cvv")
+val cvvElement = collectContainer.create(context = Context,input = cvvInput, options = collectElementOptions)
+
+
+// step 4
+val requestBody = JSONObject()
+requestBody.put("card_number",cardNumberElement)
+requestBody.put("cvv",cvvElement)
+val gatewayConfig = GatewayConfiguration( 
+  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/v2/pay”,
+  methodName = Skyflow.RequestMethod.POST,
+  requestBody = requestBody
+)
+
+skyflowClient.invokeGateway(gatewayConfig,callback);
+```
+
+Sample Response:
+```javascript
+{
+   "receivedTimestamp": "2019-05-29 21:49:56.625",
+   "processingTimeinMs": 116
+}
+```
+In the above example,  CVV is being collected from the user input at the time of checkout and not stored anywhere in the vault
+
+`Note:`  
+- card_number can be either container element or plain text value (tokens or actual value)
+- `table` and `column` names are not required for creating collect element, if it is used for invokeGateway method, since they will not be stored in the vault
+
+ ### Sample use-case 2:
+ 
+ Card issuance -  customers want to issue cards from card issuer service and should generate the CVV dynamically without increasing their PCI scope.
+```javascript
+// step 1
+val config = Skyflow.Configuration(
+    vaultID = <VAULT_ID>,
+    vaultURL = <VAULT_URL>,
+    tokenProvider = demoTokenProvider
+)
+
+val skyflowClient = Skyflow.init(config)
+// step 2
+val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+
+// step 3
+val cvvInput = Skyflow.RevealElementInput(label = "cvv",altText = "cvv not generated") 
+val cvvElement = revealContainer.create(context = Context, input = cvvInput)
+
+val expireInput = Skyflow.CollectElementInput(type = Skyflow.SkyflowElementType.EXPIRATION_DATE,label = "Expire Date")
+val expiryDateElement = collectContainer.create(context = Context,input = expireInput)
+
+//step 3
+val pathParams = JSONObject()
+pathParams.put("card_number","0905-8672-0773-0628") //it can be skyflow element(collect/reveal) or token or actual value
+val requestBody = JSONObject()
+requestBody.put("expirationDate",expiryDateElement)
+val responseBody = JSONObject()
+responseBody.put(resource,JSONObject().put("cvv",cvvElement)) // pass the element where the cvv response from the gateway will be mounted
+val gatewayConfig = GatewayConfiguration(
+  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/cards/{card_number}/cvv2generation",
+  methodName = Skyflow.RequestMethod.POST,
+  pathParams = pathParams,
+  requestBody = requestBody,
+ responseBody = responseBody
+   
+)
+
+skyflowClient.invokeGateway(gatewayConfig,callback);
+```
+
+Sample Response:
+```javascript
+{
+   "receivedTimestamp": "2019-05-29 21:49:56.625",
+   "processingTimeinMs": 116
+}
+```
+
+`Note`:
+- `token` and `redaction` are optional for creating reveal element, if it is used for invokeGateway
+- responseBody contains collect or reveal elements to render the response from the gateway on UI
+
+
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
+
+
+

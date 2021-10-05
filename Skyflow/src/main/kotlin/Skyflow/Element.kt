@@ -11,8 +11,8 @@ open class Element @JvmOverloads constructor(
 ) : LinearLayout(context, attrs, defStyleAttr)  {
 
     internal var isRequired: Boolean = false
-    internal var columnName: String  =""
-    internal lateinit var tableName: String
+    internal var columnName: String  = ""
+    internal var tableName: String = ""
     internal lateinit var collectInput : CollectElementInput
     private lateinit var options : Skyflow.CollectElementOptions
     internal lateinit var fieldType: SkyflowElementType
@@ -29,19 +29,23 @@ open class Element @JvmOverloads constructor(
     internal open fun setupField(collectInput: CollectElementInput, options: Skyflow.CollectElementOptions) {
         this.collectInput = collectInput
         this.options = options
-        tableName = this.collectInput.table
-        columnName = this.collectInput.column
+        if(!this.collectInput.table.equals(null))
+            tableName = this.collectInput.table!!
+        if(!this.collectInput.column.equals(null))
+            columnName = this.collectInput.column!!
         fieldType = this.collectInput.type
         isRequired = this.options.required
         state = State(columnName,isRequired)
 
     }
 
-    internal open fun getOutput() : String {
-        return ""
-    }
     internal open fun validate() : MutableList<SkyflowValidationError> {
         return mutableListOf()
     }
+
+     internal open fun getValue(): String {
+        return ""
+    }
+
 
 }
