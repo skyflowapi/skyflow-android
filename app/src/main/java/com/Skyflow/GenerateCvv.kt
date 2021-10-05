@@ -19,12 +19,12 @@ class GenerateCvv : AppCompatActivity() {
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
-            MainActivity.DemoTokenProvider()
+            PullFunds.DemoTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
 
         val cardNumberInput = Skyflow.RevealElementInput(
-            "your token",
+            BuildConfig.CARD_NUMBER_TOKEN,
             redaction = Skyflow.RedactionType.PLAIN_TEXT,
             label =  "card number",
         )
@@ -55,14 +55,14 @@ class GenerateCvv : AppCompatActivity() {
             val cvvResponse = JSONObject()
             cvvResponse.put("cvv2",cvv)
             responseBody.put("resource",cvvResponse)
-            val quertParams = JSONObject()
-            val pathparams = JSONObject()
-            pathparams.put("cardNumber",cardNumber)
+            val queryParams = JSONObject()
+            val pathParams = JSONObject()
+            pathParams.put("cardNumber",cardNumber)
             val requestHeader = JSONObject()
             requestHeader.put("Authorization",BuildConfig.GATEWAY_TOKEN)
-            val url = BuildConfig.GATEWAY_GENERATE_CVV_URL  // eg:  url.../{cardNumber}/...
-            val bodyForgateWay = GatewayConfiguration(gatewayURL = url,requestHeader = requestHeader,pathParams = pathparams,methodName = RequestMethod.POST,requestBody = requestBody, responseBody =  responseBody,queryParams = quertParams)
-            skyflowClient.invokeGateway(bodyForgateWay,object : Callback
+            val url = BuildConfig.GATEWAY_CVV_GEN_URL  // eg:  url.../{cardNumber}/...
+            val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = requestHeader,pathParams = pathParams,methodName = RequestMethod.POST,requestBody = requestBody, responseBody =  responseBody,queryParams = queryParams)
+            skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
                     Log.d("gateway success",responseBody.toString())

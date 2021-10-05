@@ -1,6 +1,7 @@
 package Skyflow.utils
 
 import Skyflow.*
+import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -77,17 +78,11 @@ class Utils {
         //requestbody for invokegateway
         fun constructRequestBodyForGateway(records: JSONObject, callback: Callback) : Boolean
         {
-            try {
-                val isValid = constructJsonKeyForGatewayRequest(records,callback)
-                if(isValid)
-                    return true
-                else
-                    return false
+            return try {
+                constructJsonKeyForGatewayRequest(records, callback)
 
-            }
-            catch (e:Exception)
-            {
-                return false
+            } catch (e: Exception) {
+                false
             }
 
         }
@@ -369,11 +364,15 @@ class Utils {
         {
             val state = element.getState()
             var error = ""
+            var labelName = element.columnName
+            if(labelName == ""){
+                labelName = element.collectInput.label
+            }
             if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
-                error = element.columnName + " is empty" + "\n"
+                error = "$labelName is empty\n"
             }
             if (!(state["isValid"] as Boolean)) {
-                error = "for " + element.columnName + " " + (state["validationErrors"] as String) + "\n"
+                error = "for " + labelName + " " + (state["validationErrors"] as String) + "\n"
             }
             if (error != "") {
                 callback.onFailure(Exception(error))
