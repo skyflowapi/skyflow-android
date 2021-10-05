@@ -7,6 +7,8 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - [**Initializing Skyflow-android**](#initializing-skyflow-android)
 - [**Securely collecting data client-side**](#securely-collecting-data-client-side)
 - [**Securely revealing data client-side**](#securely-revealing-data-client-side)
+- [**Securely invoking gateway client-side**](#Securely-invoking-gateway-client-side)
+
 
 # Installing skyflow-android
 ---
@@ -771,7 +773,7 @@ Sample use-cases on using invokeGateway():
 
 Merchant acceptance - customers should be able to complete payment checkout without cvv touching their application. This means that the merchant should be able to receive a CVV and process a payment without exposing their front-end to any PCI data
 
-```javascript
+```kt
 // step 1
 val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
@@ -797,7 +799,7 @@ val requestBody = JSONObject()
 requestBody.put("card_number",cardNumberElement)
 requestBody.put("cvv",cvvElement)
 val gatewayConfig = GatewayConfiguration( 
-  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/v2/pay”,
+  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/v2/pay",
   methodName = Skyflow.RequestMethod.POST,
   requestBody = requestBody
 )
@@ -806,7 +808,7 @@ skyflowClient.invokeGateway(gatewayConfig,callback);
 ```
 
 Sample Response:
-```javascript
+```kt
 {
    "receivedTimestamp": "2019-05-29 21:49:56.625",
    "processingTimeinMs": 116
@@ -821,7 +823,7 @@ In the above example,  CVV is being collected from the user input at the time of
  ### Sample use-case 2:
  
  Card issuance -  customers want to issue cards from card issuer service and should generate the CVV dynamically without increasing their PCI scope.
-```javascript
+```kt
 // step 1
 val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
@@ -857,11 +859,11 @@ val gatewayConfig = GatewayConfiguration(
    
 )
 
-skyflowClient.invokeGateway(gatewayConfig,callback);
+skyflowClient.invokeGateway(gatewayConfig, callback);
 ```
 
 Sample Response:
-```javascript
+```kt
 {
    "receivedTimestamp": "2019-05-29 21:49:56.625",
    "processingTimeinMs": 116
