@@ -58,7 +58,7 @@ class RevealActivity : AppCompatActivity() {
             label = "CVV", "***"
         )
 
-        val tokenProvider = MainActivity.DemoTokenProvider()
+        val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
@@ -109,7 +109,7 @@ class RevealActivity : AppCompatActivity() {
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
-            MainActivity.DemoTokenProvider()
+            CollectActivity.DemoTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val recordsArray = JSONArray()
@@ -143,7 +143,7 @@ class RevealActivity : AppCompatActivity() {
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
-            MainActivity.DemoTokenProvider()
+            CollectActivity.DemoTokenProvider()
         )
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()

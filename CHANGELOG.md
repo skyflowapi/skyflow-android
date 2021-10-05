@@ -2,10 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - 2021-09-22
+## [1.2.0] - 2021-10-05
 
 ### Added
 
+- invokeGateway method to work with inbound/outbound integrations using Skyflow Gateway
+
+### Changed
+- `table` and `column` are optional in CollectElementInput, when using invokeGateway
+- `token` and `redaction` are optional in RevealElementInput, when using invokeGateway
+
+
+
+## [1.1.0] - 2021-09-22
+
+### Added
 
 - getById method to reveal fields using SkyflowID's
 

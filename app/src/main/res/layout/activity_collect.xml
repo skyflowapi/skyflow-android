@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".CollectActivity">
 
     <LinearLayout
         android:id="@+id/parent"
@@ -14,7 +14,6 @@
         android:layout_marginTop="20dp"
         android:orientation="vertical"/>
 
-
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,29 +21,8 @@
         android:layout_marginRight="50dp"
         android:layout_marginTop="10dp"
         android:background="#403E6B"
-        android:text="@string/collect_demo"
-        android:id="@+id/collect_demo"/>
-
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
-        android:layout_marginTop="10dp"
-        android:background="#403E6B"
-        android:text="CVV Generation Demo"
-        android:id="@+id/cvv_generation"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
-        android:layout_marginTop="10dp"
-        android:background="#403E6B"
-        android:text="PAYMENT DEMO"
-        android:id="@+id/payment_demo"/>
+        android:text="submit"
+        android:id="@+id/submit"/>
 
     <TextView
         android:layout_width="match_parent"
