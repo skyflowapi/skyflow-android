@@ -1,12 +1,13 @@
 package Skyflow
 
+import Skyflow.core.Messages
 import android.content.res.Resources
 
 
 enum class SkyflowErrorCode(val code:Int, var messageId:Int)
 {
 
-    INVALID_VAULT_ID(101,Messages.INVALID_VAULT_ID.messageId),
+    INVALID_VAULT_ID(101, Messages.INVALID_VAULT_ID.messageId),
     INVALID_VAULT_URL(102,Messages.INVALID_VAULT_URL.messageId),
     EMPTY_VAULT_ID(103,Messages.EMPTY_VAULT_ID.messageId),
     EMPTY_VAULT_URL(104,Messages.EMPTY_VAULT_URL.messageId),

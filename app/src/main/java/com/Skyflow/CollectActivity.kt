@@ -2,14 +2,13 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.LogLevel
-import Skyflow.core.Options
+import Skyflow.Options
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -205,13 +204,8 @@ private fun pureInsert(){
                 Log.d("insert", "success: $responseBody")
             }
 
-<<<<<<< HEAD
-            override fun onFailure(exception: Exception) {
-                Log.d("insert", "failure: $exception")
-=======
             override fun onFailure(exception: Any) {
                 Log.d(ContentValues.TAG, "failure: $exception")
->>>>>>> standardized errors
             }
 
         })

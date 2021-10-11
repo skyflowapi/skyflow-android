@@ -1,12 +1,10 @@
 package com.Skyflow
 
 import Skyflow.*
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_generate_cvv.*
@@ -146,17 +144,7 @@ class PullFunds : AppCompatActivity() {
                     Log.d("gateway success",responseBody.toString())
                 }
 
-<<<<<<< HEAD
-                override fun onFailure(exception: Exception) {
-                    runOnUiThread {
-                        kotlin.run {
-                            Toast.makeText(this@PullFunds, "Payment Failed", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
-=======
                 override fun onFailure(exception: Any) {
->>>>>>> standardized errors
                     Log.d("gateway failure",exception.toString())
                 }
 

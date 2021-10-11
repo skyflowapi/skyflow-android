@@ -1,13 +1,10 @@
 package Skyflow.utils
 
 import Skyflow.*
-<<<<<<< HEAD
 import Skyflow.core.LogLevel
 import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
-=======
->>>>>>> standardized errors
 import android.content.res.Resources
 import android.util.Log
 import android.webkit.URLUtil
@@ -674,8 +671,6 @@ class Utils {
             return String.format(Resources.getSystem().getString(messageID), *values)
         }
 
-<<<<<<< HEAD
-=======
         fun constructError(e:Exception,code:Int=400) : JSONObject
         {
             val skyflowError = SkyflowError()
@@ -690,7 +685,6 @@ class Utils {
             return finalError
         }
 
->>>>>>> standardized errors
     }
 
 
