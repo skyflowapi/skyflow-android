@@ -1,6 +1,8 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.core.LogLevel
+import Skyflow.core.Options
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
@@ -29,7 +31,8 @@ class CollectActivity : AppCompatActivity() {
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
-            tokenProvider
+            tokenProvider,
+            Options(LogLevel.INFO)
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
@@ -180,7 +183,8 @@ private fun pureInsert(){
     val skyflowConfiguration = Skyflow.Configuration(
         BuildConfig.VAULT_ID,
         BuildConfig.VAULT_URL,
-        tokenProvider
+        tokenProvider,
+        Options(LogLevel.INFO)
     )
     val skyflow = Skyflow.init(skyflowConfiguration)
 
@@ -198,11 +202,11 @@ private fun pureInsert(){
 
         skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
             override fun onSuccess(responseBody: Any) {
-                Log.d(ContentValues.TAG, "success: $responseBody")
+                Log.d("insert", "success: $responseBody")
             }
 
             override fun onFailure(exception: Exception) {
-                Log.d(ContentValues.TAG, "failure: $exception")
+                Log.d("insert", "failure: $exception")
             }
 
         })

@@ -1,5 +1,8 @@
 package Skyflow
 
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import Skyflow.reveal.RevealRequestBody
@@ -13,8 +16,11 @@ class RevealContainer: ContainerProtocol
 {
 }
 
+private val tag = RevealContainer::class.qualifiedName
+
 fun Container<RevealContainer>.create(context: Context, input : RevealElementInput, options : RevealElementOptions = RevealElementOptions()) : Label
 {
+    Logger.info(tag, Messages.CREATED_REVEAL_ELEMENT.getMessage(input.label), configuration.options.logLevel)
     val revealElement = Label(context)
     revealElement.setupField(input,options)
     revealElements.add(revealElement)
@@ -38,6 +44,7 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
     }
     val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
     if(isUrlValid) {
+        Logger.info(tag, Messages.VALIDATE_REVEAL_RECORDS.getMessage(), configuration.options.logLevel)
         val unMountedElements = checkIfElementsMounted(this.revealElements)
         if(unMountedElements == null) {
             val revealValueCallback = RevealValueCallback(callback, this.revealElements)

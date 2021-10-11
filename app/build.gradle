@@ -35,6 +35,7 @@ android {
             buildConfigField("String", "GATEWAY_ACCESS_TOKEN", "\"" + localProperties.getProperty("GATEWAY_ACCESS_TOKEN") + "\"")
             buildConfigField("String", "CARD_NUMBER_TOKEN", "\"" + localProperties.getProperty("CARD_NUMBER_TOKEN") + "\"")
             buildConfigField("String", "EXPIRATION_DATE_TOKEN", "\"" + localProperties.getProperty("EXPIRATION_DATE_TOKEN") + "\"")
+            buildConfigField("String", "TOKEN_LOCAL_URL", "\"" + localProperties.getProperty("TOKEN_LOCAL_URL") + "\"")
         }
     }
     compileOptions {

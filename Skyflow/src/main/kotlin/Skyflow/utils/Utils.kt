@@ -1,6 +1,11 @@
 package Skyflow.utils
 
 import Skyflow.*
+import Skyflow.core.LogLevel
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
+import android.content.res.Resources
 import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
@@ -12,9 +17,11 @@ import kotlin.Exception
 class Utils {
 
     companion object {
-        fun checkUrl(url: String): Boolean {
-            if (!URLUtil.isValidUrl(url) || !URLUtil.isHttpsUrl(url))
+        fun checkUrl(url: String, logLevel: LogLevel = LogLevel.PROD, logTag: String? = null): Boolean {
+            if (!URLUtil.isValidUrl(url) || !URLUtil.isHttpsUrl(url)) {
+                Logger.error(logTag, Messages.INVALID_URL.getMessage(url), logLevel)
                 return false
+            }
             return true
         }
 
@@ -487,6 +494,10 @@ class Utils {
                     finalRecords.put(keys.getString(j),records.get(keys.getString(j)))
                 }
             }
+        }
+
+        fun constructMessage(messageID:Int, vararg values : String?): String{
+            return String.format(Resources.getSystem().getString(messageID), *values)
         }
 
     }

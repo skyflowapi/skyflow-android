@@ -1,6 +1,9 @@
 package Skyflow
 
 import Skyflow.collect.client.CollectRequestBody
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import Skyflow.utils.Utils
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
@@ -11,9 +14,12 @@ class CollectContainer : ContainerProtocol {
 
 }
 
+private val tag = CollectContainer::class.qualifiedName
+
 
 fun Container<CollectContainer>.create(context: Context, input : CollectElementInput, options : CollectElementOptions = CollectElementOptions()) : TextField
 {
+    Logger.info(tag, Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label), configuration.options.logLevel)
     val collectElement = TextField(context)
     collectElement.setupField(input,options)
     elements.add(collectElement)
@@ -21,10 +27,10 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
 }
 
 fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
-
-    val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+    val isUrlValid = Utils.checkUrl(apiClient.vaultURL, configuration.options.logLevel, tag)
     if(isUrlValid) {
         var errors = ""
+        Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
         for (element in this.elements) {
             if(element.isAttachedToWindow()) {
                 if (element.collectInput.table.equals(null)) {
