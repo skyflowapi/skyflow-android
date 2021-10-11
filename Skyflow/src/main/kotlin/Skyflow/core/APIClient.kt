@@ -45,9 +45,10 @@ class APIClient (
     val vaultId: String,
     val vaultURL: String,
     private val tokenProvider: TokenProvider,
+    private val logLevel: LogLevel,
     private var token: String = ""
 ){
-
+    private val tag = APIClient::class.qualifiedName
     private fun isValidToken(token: String?): Boolean {
         return if (token != "") {
             !JWTUtils.isExpired(token!!)
@@ -59,13 +60,16 @@ class APIClient (
     private fun getAccessToken(callback: Callback) {
         try {
             if (!isValidToken(token)) {
+                Logger.info(tag, Messages.RETRIEVING_BEARER_TOKEN.getMessage(), logLevel)
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
+                        Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         token = "Bearer $responseBody"
                         callback.onSuccess(token)
                     }
 
                     override fun onFailure(exception: Exception) {
+                        Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
                         callback.onFailure(exception)
                     }
                 })

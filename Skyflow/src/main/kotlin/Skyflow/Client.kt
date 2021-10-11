@@ -1,6 +1,7 @@
 package Skyflow
 
-import Skyflow.core.APIClient
+import Skyflow.core.*
+import Skyflow.core.Logger
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.utils.Utils
 import com.Skyflow.core.container.ContainerProtocol
@@ -8,35 +9,51 @@ import org.json.JSONObject
 import kotlin.Exception
 import kotlin.reflect.KClass
 
-class Client (
+class Client internal constructor(
     val configuration: Configuration
 ){
-    private val apiClient = APIClient(configuration.vaultID, configuration.vaultURL, configuration.tokenProvider)
+    internal val tag = Client::class.qualifiedName
+
+    private val apiClient = APIClient(configuration.vaultID, configuration.vaultURL,
+        configuration.tokenProvider,configuration.options.logLevel)
 
     fun insert(records:  JSONObject, options: InsertOptions? = InsertOptions(), callback: Callback){
-        val isUrlValid =Utils.checkUrl(configuration.vaultURL)
-        if(isUrlValid)
-            apiClient.post(records, callback, options!!)
+        Logger.info(tag, Messages.INSERT_CALLED.getMessage(), configuration.options.logLevel)
+        val isUrlValid = Utils.checkUrl(configuration.vaultURL, configuration.options.logLevel, tag)
+        if(isUrlValid) {
+            Logger.info(tag, Messages.INSERTING_RECORDS.getMessage(configuration.vaultID), configuration.options.logLevel)
+            apiClient.post(records,
+                loggingCallback(callback,
+                    Messages.INSERTING_RECORDS_SUCCESS.getMessage(configuration.vaultID),
+                    Messages.INSERTING_RECORDS_FAILED.getMessage(configuration.vaultID)), options!!)
+        }
         else
             callback.onFailure(Exception("Url is not valid/not secure"))
     }
 
     fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T> {
-        return Container<T>(apiClient)
+        return Container<T>(apiClient, configuration)
     }
 
     fun detokenize(records: JSONObject, callback: Callback) {
-        val isUrlValid =Utils.checkUrl(configuration.vaultURL)
-        if(isUrlValid)
-            this.apiClient.get(records, callback)
+        Logger.info(tag, Messages.DETOKENIZE_CALLED.getMessage(), configuration.options.logLevel)
+        val isUrlValid =Utils.checkUrl(configuration.vaultURL, configuration.options.logLevel, tag)
+        if(isUrlValid) {
+            Logger.info(tag, Messages.DETOKENIZING_RECORDS.getMessage(configuration.vaultID), configuration.options.logLevel)
+            this.apiClient.get(records,
+                loggingCallback(callback, Messages.DETOKENIZE_SUCCESS.getMessage(),
+                Messages.DETOKENIZING_FAILED.getMessage(configuration.vaultID)))
+        }
         else
             callback.onFailure(Exception("Url is not valid/not secure"))
-
     }
+
     fun getById(records: JSONObject, callback: Callback)
     {
-        val isUrlValid =Utils.checkUrl(configuration.vaultURL)
+        Logger.info(tag, Messages.GET_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
+        val isUrlValid =Utils.checkUrl(configuration.vaultURL, configuration.options.logLevel, tag)
         if(isUrlValid) {
+            Logger.info(tag, Messages.GETTING_RECORDS_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
             try {
                 val jsonArray = records.getJSONArray("records")
                 var i = 0
@@ -67,10 +84,27 @@ class Client (
     }
     fun invokeGateway(gatewayConfig:GatewayConfiguration,callback: Callback)
     {
-        val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL)
+        Logger.info(tag, Messages.INVOKE_GATEWAY_CALLED.getMessage(), configuration.options.logLevel)
+        val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL, configuration.options.logLevel, tag)
         if(checkUrl)
             this.apiClient.invokeGateway(gatewayConfig,callback)
         else
             callback.onFailure(Exception("Url is not valid/not secure"))
+    }
+
+    inner class loggingCallback(
+        private val clientCallback: Callback,
+        private val successMessage: String,
+        val failureMessage: String) : Callback {
+        override fun onSuccess(responseBody: Any) {
+            Logger.info(tag, successMessage, configuration.options.logLevel)
+            clientCallback.onSuccess(responseBody)
+        }
+
+        override fun onFailure(exception: Exception) {
+            Logger.error(tag, failureMessage, configuration.options.logLevel)
+            clientCallback.onFailure(exception)
+        }
+
     }
 }

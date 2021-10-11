@@ -9,4 +9,56 @@
     <string name="invalid_cvv">Invalid Cvv</string>
     <string name="invalid_expiredate">Invalid Expire date</string>
     <string name="invalid_card_number">Invalid Card number</string>
+
+    <!--LOG MESSAGES -->
+    <string name="invalid_url">URL %s is invalid</string>
+    <string name="initialize_client">Initializing skyflow client</string>
+    <string name="client_initialized">Initialized skyflow client successfully</string>
+    <string name="create_collect_container">Creating Collect container</string>
+    <string name="collect_container_created">Created Collect container successfully</string>
+    <string name="create_reveal_container">Creating Reveal container</string>
+    <string name="reveal_container_created">Created Reveal container successfully</string>
+    <string name="validate_records">Validating insert records</string>
+    <string name="validate_detokenize_input">Validating detokenize input</string>
+    <string name="validate_get_by_id_input">Validating getByID input</string>
+    <string name="validate_gateway_config">Validating gateway config</string>
+    <string name="validate_collect_records">Validating collect element input</string>
+    <string name="validate_reveal_records">Validating reveal element input</string>
+    <string name="created_collect_element">Created collect element %s</string>
+    <string name="created_reveal_element">Created reveal element %s</string>
+    <string name="element_mounted">%s1 Element mounted</string>
+    <string name="element_revealed">%s1 Element revealed</string>
+    <string name="collect_submit_success">Data has been collected successfully.</string>
+    <string name="reveal_submit_success">Data has been revealed successfully.</string>
+    <string name="insert_data_success">Data has been inserted successfully.</string>
+    <string name="get_by_id_success">Data has been revealed successfully.</string>
+    <string name="tokenprovider_called">Getting bearer token from token provider</string>
+    <string name="bearer_token_listener">Listening to GetBearerToken event</string>
+    <string name="bearer_token_emitter">Emitted GetBearerToken event</string>
+    <string name="bearer_token_received">BearerToken received successfully</string>
+    <string name="retrieving_bearer_token_failed">Retrieving bearer token failed</string>
+    <string name="insert_called">Insert method triggered</string>
+    <string name="inserting_records">Inserting records into vault with id %s</string>
+    <string name="insert_records_success">Successfully inserted records into vault with id %s</string>
+    <string name="insert_records_failed">Failed inserting records into vault with id %s</string>
+    <string name="detokenize_called">Detokenize method called</string>
+    <string name="detokenizing_records">Detokenizing records</string>
+    <string name="detokenize_success">Data has been revealed successfully.</string>
+    <string name="detokenize_failed">Failed revealed data from vault with id %s</string>
+    <string name="get_by_id_called">getById method called</string>
+    <string name="invoked_gateway_called">invokeGateway method called</string>
+    <string name="retrieving_records_using_skyflow_ids">retrieving records using skyflow ids</string>
+    <!--
+    EMIT_PURE_JS_REQUEST: 'Emitted %s1 request',
+    LISTEN_PURE_JS_REQUEST: 'Listening to %s1  event',
+    FETCH_RECORDS_RESOLVED: 'Detokenize request is resolved',
+    FETCH_RECORDS_REJECTED: 'Detokenize request is rejected',
+    INSERT_RECORDS_RESOLVED: 'Insert request is resolved',
+    INSERT_RECORDS_REJECTED: 'Insert request is rejected',
+    GET_BY_SKYFLOWID_RESOLVED: 'GetById request is resolved',
+    GET_BY_SKYFLOWID_REJECTED: 'GetById request is rejected',
+    SEND_INVOKE_GATEWAY_RESOLVED: 'Invoke gateway request resolved',
+    SEND_INVOKE_GATEWAY_REJECTED: 'Invoke gateway request rejected',
+    EMIT_EVENT: '%s1 event emitted',
+    LISTEN_EVENT: 'Listening to %s1', -->
 </resources>
