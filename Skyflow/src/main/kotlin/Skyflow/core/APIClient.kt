@@ -8,6 +8,7 @@ import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealByIdCallback
 import Skyflow.reveal.RevealRequestRecord
 import Skyflow.utils.Utils
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
@@ -68,16 +69,18 @@ class APIClient (
                         callback.onSuccess(token)
                     }
 
-                    override fun onFailure(exception: Exception) {
+                    override fun onFailure(exception: Any) {
                         Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
-                        callback.onFailure(exception)
+                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
+                        callback.onFailure(Utils.constructError(error))
                     }
                 })
             } else {
                 callback.onSuccess(token)
             }
         }catch (e: Exception){
-            callback.onFailure(e)
+            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
+            callback.onFailure(Utils.constructError(error))
         }
     }
 
@@ -90,25 +93,64 @@ class APIClient (
     internal fun get(records:JSONObject, callback : Callback){
 
         try {
-            val obj = records.getJSONArray("records")
-            val list = mutableListOf<RevealRequestRecord>()
-            var i = 0
-            while (i < obj.length()) {
-                val jsonobj1 = obj.getJSONObject(i)
-                list.add(
-                    RevealRequestRecord(
-                        jsonobj1.get("token").toString(),
-                        jsonobj1.get("redaction").toString()
-                    )
-                )
-                i++
+            if(vaultURL.isEmpty() || vaultURL.equals("/v1/vaults/"))
+            {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
             }
-            val revealApiCallback = RevealApiCallback(callback, this, list)
-            this.getAccessToken(revealApiCallback)
-        }catch (e: Exception){
-            callback.onFailure(e)
-        }
+            else if(vaultId.isEmpty())
+            {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+            }
+            else if (!records.has("records")) {
+                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+            }
+            else if(records.get("records").toString().isEmpty())
+            {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+            }
+            else if(!(records.get("records") is JSONArray))
+            {
+                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+            }
+            else {
 
+                val obj = records.getJSONArray("records")
+                val list = mutableListOf<RevealRequestRecord>()
+                var i = 0
+                while (i < obj.length()) {
+                    val jsonobj1 = obj.getJSONObject(i)
+                    if (!jsonobj1.has("token")) {
+                        throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                    } else if (!jsonobj1.has("redaction")) {
+                        throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
+                    } else if (jsonobj1.get("token").toString().isEmpty()) {
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                    } else if (jsonobj1.get("redaction").toString().isEmpty()) {
+                        throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
+                    } else if (!(jsonobj1.get("redaction").toString()
+                            .equals("PLAIN_TEXT") || jsonobj1.get("redaction").toString()
+                            .equals("DEFAULT") ||
+                                jsonobj1.get("redaction").toString()
+                                    .equals("MASKED") || jsonobj1.get("redaction").toString()
+                            .equals("REDACTED"))
+                    ) {
+                        throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
+                    } else {
+                        list.add(
+                            RevealRequestRecord(
+                                jsonobj1.get("token").toString(),
+                                jsonobj1.get("redaction").toString()
+                            )
+                        )
+                    }
+                    i++
+                }
+                val revealApiCallback = RevealApiCallback(callback, this, list)
+                this.getAccessToken(revealApiCallback)
+            }
+        }catch (e: Exception){
+            callback.onFailure(Utils.constructError(e))
+        }
     }
 
     fun get(records: MutableList<GetByIdRecord>, callback: Callback) {

@@ -2,7 +2,9 @@ package Skyflow.reveal
 
 import Skyflow.Callback
 import Skyflow.Label
+import Skyflow.utils.Utils
 import androidx.core.content.res.ResourcesCompat
+import org.json.JSONArray
 import org.json.JSONObject
 
 @Suppress("DEPRECATION")
@@ -47,7 +49,8 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
         callback.onSuccess(revealResponse)
     }
 
-    override fun onFailure(exception: Exception) {
+    override fun onFailure(exception: Any) {
         callback.onFailure(exception)
+
     }
 }

@@ -68,7 +68,7 @@ class GenerateCvv : AppCompatActivity() {
                     Log.d("gateway success",responseBody.toString())
                 }
 
-                override fun onFailure(exception: Exception) {
+                override fun onFailure(exception: Any) {
                     Log.d("gateway failure",exception.toString())
                 }
 

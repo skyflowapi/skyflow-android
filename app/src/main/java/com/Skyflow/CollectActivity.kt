@@ -167,9 +167,9 @@ class CollectActivity : AppCompatActivity() {
 
                 }
 
-                override fun onFailure(exception: Exception) {
+                override fun onFailure(exception: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect failure: ${exception.message.toString()}")
+                    Log.d(TAG, "collect failure: ${exception.toString()}")
                 }
             }, CollectOptions(true, additionalFields))
         }
@@ -205,8 +205,13 @@ private fun pureInsert(){
                 Log.d("insert", "success: $responseBody")
             }
 
+<<<<<<< HEAD
             override fun onFailure(exception: Exception) {
                 Log.d("insert", "failure: $exception")
+=======
+            override fun onFailure(exception: Any) {
+                Log.d(ContentValues.TAG, "failure: $exception")
+>>>>>>> standardized errors
             }
 
         })

@@ -146,6 +146,7 @@ class PullFunds : AppCompatActivity() {
                     Log.d("gateway success",responseBody.toString())
                 }
 
+<<<<<<< HEAD
                 override fun onFailure(exception: Exception) {
                     runOnUiThread {
                         kotlin.run {
@@ -153,6 +154,9 @@ class PullFunds : AppCompatActivity() {
                                 .show()
                         }
                     }
+=======
+                override fun onFailure(exception: Any) {
+>>>>>>> standardized errors
                     Log.d("gateway failure",exception.toString())
                 }
 

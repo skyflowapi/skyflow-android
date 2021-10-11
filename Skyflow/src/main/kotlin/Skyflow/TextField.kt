@@ -129,6 +129,7 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 state = StateforText(this@TextField)
+
             }
 
         })
