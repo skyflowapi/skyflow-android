@@ -1,6 +1,8 @@
 package Skyflow.reveal
 
 import Skyflow.Callback
+import Skyflow.SkyflowError
+import Skyflow.SkyflowErrorCode
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -29,9 +31,19 @@ class RevealResponse(var size: Int, var callback: Callback){
 
         if(successResponses + failureResponses == size) {
             if (successResponses == 0) {
-                callback.onFailure(Exception("Reveal elements failed"))
+                val finalError = JSONObject()
+                val errors = JSONArray()
+                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
+                val error = JSONObject()
+                error.put("error",skyflowError)
+                errors.put(error)
+                finalError.put("errors",errors)
+                callback.onFailure(finalError)
             } else {
-                callback.onSuccess(responseBody)
+                if(failureResponses==0)
+                    callback.onSuccess(responseBody)
+                else
+                    callback.onFailure(responseBody)
             }
         }
     }

@@ -1,6 +1,5 @@
 package Skyflow
 
-import Skyflow.core.Options
 
 
 class Configuration(

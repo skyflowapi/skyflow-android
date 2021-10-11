@@ -10,7 +10,9 @@ import Skyflow.reveal.RevealRequestRecord
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
+import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.Exception
 
 class RevealContainer: ContainerProtocol
 {
@@ -29,33 +31,56 @@ fun Container<RevealContainer>.create(context: Context, input : RevealElementInp
 
 fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions? = RevealOptions())
 {
-    for(element in this.revealElements)
+    try {
+        if(apiClient.vaultURL.isEmpty() || apiClient.vaultURL.equals("/v1/vaults/"))
+        {
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+            throw error
+        }
+        else if(apiClient.vaultId.isEmpty())
+        {
+
+            val finalError = JSONObject()
+            val errors = JSONArray()
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+            errors.put(error)
+            finalError.put("errors",errors)
+            callback.onFailure(finalError)
+        }
+        else {
+            for (element in this.revealElements) {
+                val token = element.revealInput.token
+                if (element.isTokenNull) {
+                    throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                } else if (element.isRedactionNull) {
+                    throw  SkyflowError(SkyflowErrorCode.MISSING_REDACTION)
+                } else if (token!!.isEmpty()) {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                }
+                else if(!checkIfElementsMounted(element))
+                {
+                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
+                    error.setErrorResponse(element.revealInput.label)
+                    throw error
+                }
+            }
+            val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+            if (isUrlValid) {
+                    Logger.info(tag, Messages.VALIDATE_REVEAL_RECORDS.getMessage(), configuration.options.logLevel)
+                    val revealValueCallback = RevealValueCallback(callback, this.revealElements)
+                    val records =
+                        JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
+                    this.apiClient.get(records, revealValueCallback)
+
+            } else {
+                val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL)
+                error.setErrorResponse(apiClient.vaultURL)
+                throw error
+            }
+        }
+    }
+    catch (e: Exception)
     {
-        if(element.isTokenNull)
-        {
-            callback.onFailure(Exception("invalid token"))
-            return
-        }
-        else if(element.isRedactionNull)
-        {
-            callback.onFailure(Exception("invalid redaction type"))
-            return
-        }
+        callback.onFailure(Utils.constructError(e))
     }
-    val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
-    if(isUrlValid) {
-        Logger.info(tag, Messages.VALIDATE_REVEAL_RECORDS.getMessage(), configuration.options.logLevel)
-        val unMountedElements = checkIfElementsMounted(this.revealElements)
-        if(unMountedElements == null) {
-            val revealValueCallback = RevealValueCallback(callback, this.revealElements)
-            val records = JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
-            this.apiClient.get(records, revealValueCallback)
-        }
-        else{
-            callback.onFailure(Exception("Reveal Element with label ${unMountedElements.revealInput.label} is not attached to window"))
-            return
-        }
-    }
-    else
-        callback.onFailure(Exception("Url is not valid/not secure"))
 }

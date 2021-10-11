@@ -12,7 +12,7 @@ internal class Logger {
 
         fun info(tag: String? = null, message: String, logLevel: LogLevel){
             if(logLevel.ordinal < 2)
-            Log.i(tag, "info: $message")
+                Log.i(tag, "info: $message")
         }
 
         fun error(tag:String? = null, message: String, logLevel: LogLevel){

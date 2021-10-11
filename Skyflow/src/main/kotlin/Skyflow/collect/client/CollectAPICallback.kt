@@ -6,7 +6,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import Skyflow.Callback
 import Skyflow.InsertOptions
+import Skyflow.SkyflowError
+import Skyflow.SkyflowErrorCode
 import Skyflow.utils.Utils
+import android.util.Log
 import java.io.IOException
 
 
@@ -22,7 +25,8 @@ internal class CollectAPICallback(
     override fun onSuccess(responseBody: Any) {
         try{
         val url =apiClient.vaultURL + apiClient.vaultId
-        val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options)
+        val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options,callback)
+        if(jsonBody.toString().equals("{}")) return
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"), jsonBody.toString()
         )
@@ -34,28 +38,37 @@ internal class CollectAPICallback(
             .build()
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback{
             override fun onFailure(call: Call, e: IOException) {
-                callback.onFailure(e)
+                val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL)
+                error.setErrorResponse(apiClient.vaultURL)
+                callback.onFailure(error)
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!response.isSuccessful)
                     {
-                        callback.onFailure(IOException("Unexpected code ${response.body()?.string()}"))
+                        val skyflowError = SkyflowError()
+                        skyflowError.setErrorMessage("Unexpected code ${response.body()?.string()}")
+                        skyflowError.setErrorCode(400)
+                        callback.onFailure(skyflowError)
                     }
                     else
                     {
                         val responsebody = response.body()!!.string()
+                        Log.d("response",responsebody)
                         callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
                     }
                 }
             }
         })}catch (e: Exception){
-            callback.onFailure(e)
+            val skyflowError = SkyflowError()
+            skyflowError.setErrorMessage(e.message.toString())
+            skyflowError.setErrorCode(400)
+            callback.onFailure(skyflowError)
         }
     }
 
-    override fun onFailure(exception: Exception) {
+    override fun onFailure(exception: Any) {
         callback.onFailure(exception)
     }
 
@@ -65,7 +78,7 @@ internal class CollectAPICallback(
         val responseObject = JSONObject()
         if(this.options.tokens){
             for (i in responseJson.length()/2 until responseJson.length()){
-                val record = JSONObject(responseJson[i].toString().replace("\"*\":", "\"skyflow_id\":"))
+                val record = JSONObject(responseJson[i].toString())
                 val inputRecord = inputRecords.get(i - responseJson.length()/2) as JSONObject
                 record.put("table", inputRecord["table"])
                 recordsArray.put(record)
