@@ -57,7 +57,8 @@ enum class SkyflowErrorCode(val code:Int, var message:String)
     FAILED_TO_REVEAL(1,Messages.FAILED_TO_REVEAL.message),
     NOT_FOUND_IN_RESPONSE(1,Messages.NOT_FOUND_IN_RESPONSE.message),
     BAD_REQUEST(400,Messages.BAD_REQUEST.message),
-    MISSING_COLUMN(400,Messages.MISSING_COLUMN.message);
+    MISSING_COLUMN(400,Messages.MISSING_COLUMN.message),
+    EMPTY_FIELDS(400,Messages.EMPTY_FIELDS.message);
 
     @JvmName("getCode1")
     fun getCode() : Int

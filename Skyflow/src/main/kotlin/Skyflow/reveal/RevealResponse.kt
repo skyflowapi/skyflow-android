@@ -3,6 +3,7 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -23,14 +24,14 @@ class RevealResponse(var size: Int, var callback: Callback){
                 .put(responseObject.getJSONArray("records")[0])
         }
         else if(responseObject != null && !isSuccess){
-            successResponses +=1
+            failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject)
         }else{
             failureResponses += 1
         }
 
         if(successResponses + failureResponses == size) {
-            if (successResponses == 0) {
+             if (successResponses == 0) {
                 val finalError = JSONObject()
                 val errors = JSONArray()
                 val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)

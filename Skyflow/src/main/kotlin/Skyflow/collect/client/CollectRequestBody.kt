@@ -23,7 +23,6 @@ class CollectRequestBody {
                 if (tableMap[(element.tableName)] != null){
                     if(tableWithColumn.contains(element.tableName+element.columnName))
                     {
-                     //   callback.onFailure(Exception("duplicate column "+element.columnName+ " found in "+element.tableName))
                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
                         error.setErrorResponse(element.columnName)
                         callback.onFailure(error)
@@ -47,34 +46,38 @@ class CollectRequestBody {
                 try {
                     if(!(additionalFields.get("records") is JSONArray))
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_RECORDS))
-                        return ""
+                        throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
                     }
                     val records = additionalFields.getJSONArray("records")
+                    if(records.length() == 0)
+                    {
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                    }
                     var i = 0
                     while (i < records.length()) {
                         val jsonobj = records.getJSONObject(i)
                         if(!jsonobj.has("table"))
                         {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE))
-                            return ""
+                            throw SkyflowError(SkyflowErrorCode.MISSING_TABLE)
+                        }
+                        else if (jsonobj.get("table") !is String)
+                        {
+                            throw SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
                         }
                         else if(!jsonobj.has("fields"))
                         {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR))
-                            return ""
+                           throw SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+
                         }
                         else if(jsonobj.getJSONObject("fields").toString().equals("{}"))
                         {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_FIELD))
-                            return ""
+                            throw SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
                         }
                         val tableName = jsonobj.get("table")
                         if(tableName !is String)
                            throw SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
                         if(tableName.isEmpty())
                             throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
-                        //throw Exception("invalid table name in additionalFields")
                         if(!jsonobj.getJSONObject("fields").toString().equals("{}")) {
                             val fields = jsonobj.getJSONObject("fields")
                             val keys = fields.names()
@@ -92,12 +95,9 @@ class CollectRequestBody {
                             if (tableMap[tableName] != null) {
                                 for (k in 0 until field_list.size) {
                                     if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
-//                                        callback.onFailure(Exception("duplicate column " + field_list.get(
-//                                            k).columnName + " found in " + tableName))
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
                                         error.setErrorResponse(field_list.get(k).columnName)
-                                        callback.onFailure(error)
-                                        return ""
+                                        throw error
                                     } else {
                                         tableWithColumn.add(tableName + field_list.get(k).columnName)
                                     }
@@ -107,12 +107,9 @@ class CollectRequestBody {
                                 val tempArray = mutableListOf<CollectRequestRecord>()
                                 for (k in 0 until field_list.size) {
                                     if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
-//                                        callback.onFailure(Exception("duplicate column " + field_list.get(
-//                                            k).columnName + " found in " + tableName))
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
                                         error.setErrorResponse(field_list.get(k).columnName)
-                                        callback.onFailure(error)
-                                        return ""
+                                        throw error
                                     } else
                                         tableWithColumn.add(tableName + field_list.get(k).columnName)
                                 }
@@ -125,7 +122,9 @@ class CollectRequestBody {
                 }
                 catch (e:Exception)
                 {
-                    callback.onFailure(e)
+                    val skyflowError = SkyflowError()
+                    skyflowError.setErrorMessage(e.message.toString())
+                    callback.onFailure(skyflowError)
                     return ""
                 }
             }

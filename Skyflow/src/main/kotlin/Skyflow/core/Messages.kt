@@ -96,7 +96,8 @@ enum class Messages(val message: String) {
     EMPTY_GATEWAY_URL("Empty gateway url is passed"),
     NOT_FOUND_IN_RESPONSE("%s is not found in response"),
     BAD_REQUEST("bad request"),
-    MISSING_COLUMN("column name is missing");
+    MISSING_COLUMN("column name is missing"),
+    EMPTY_FIELDS("fields is empty");
 }
 
 fun Messages.getMessage(vararg values: String?): String{

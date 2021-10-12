@@ -87,8 +87,14 @@ class APIClient (
 
     internal fun post(records: JSONObject, callback: Callback, options: InsertOptions){
         val finalRecords = Utils.constructBatchRequestBody(records, options,callback)
-        val collectApiCallback = CollectAPICallback(this, finalRecords, callback, options)
-        this.getAccessToken(collectApiCallback)
+        if(!finalRecords.toString().equals("{}"))
+        {
+            val collectApiCallback = CollectAPICallback(this, records, callback, options)
+            this.getAccessToken(collectApiCallback)
+        }
+        else
+            return
+
     }
 
     internal fun get(records:JSONObject, callback : Callback){
