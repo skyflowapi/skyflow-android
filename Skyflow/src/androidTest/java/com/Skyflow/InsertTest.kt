@@ -20,7 +20,7 @@ class InsertTest {
     @Before
     fun setup() {
         val configuration = Configuration(
-            "b359c43f1b844ff4bea0f098d2c09193",
+            "b359c43f1b844ff4bea0f098d2c",
             "https://sb1.area51.vault.skyflowapis.tech",
             DemoTokenProvider()
         )
@@ -32,7 +32,7 @@ class InsertTest {
     @Test
     fun testEmptyVaultURL() //applicable for null value also
     {
-        val configuration = Configuration( "b359c43f1b844ff4bea0f098d2c09193",
+        val configuration = Configuration( "b359c43f1b844ff4bea0f098d2",
             "",
             DemoTokenProvider())
         val skyflow = Client(configuration)
@@ -87,7 +87,7 @@ class InsertTest {
     @Test
     fun testInvalidVaultURL()
     {
-        val configuration = Configuration( "b359c43f1b844ff4bea0f098d2c09193",
+        val configuration = Configuration( "b359c43f1b844ff4bea0f098",
             "https://na1.area51.vault.skyfwapis.com",
             DemoTokenProvider())
         val skyflow = Client(configuration)

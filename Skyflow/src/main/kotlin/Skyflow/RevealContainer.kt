@@ -6,6 +6,7 @@ import Skyflow.core.getMessage
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import Skyflow.reveal.RevealRequestBody
+import Skyflow.reveal.RevealRequestRecord
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
@@ -39,12 +40,8 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
         else if(apiClient.vaultId.isEmpty())
         {
 
-            val finalError = JSONObject()
-            val errors = JSONArray()
-            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
-            errors.put(error)
-            finalError.put("errors",errors)
-            callback.onFailure(finalError)
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+            throw error
         }
         else {
             for (element in this.revealElements) {
