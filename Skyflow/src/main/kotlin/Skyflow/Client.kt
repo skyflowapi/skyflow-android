@@ -186,11 +186,24 @@ class Client internal constructor(
             val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL,
                 configuration.options.logLevel,
                 tag)
-            if (checkUrl)
-                this.apiClient.invokeGateway(gatewayConfig, callback)
-            else {
+            if(!Utils.checkUrl(apiClient.vaultURL,
+                    configuration.options.logLevel,
+                    tag))
+            {
                 val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL)
                 error.setErrorResponse(apiClient.vaultURL)
+                callback.onFailure(Utils.constructError(error))
+            }
+            else if(gatewayConfig.gatewayURL.isEmpty())
+            {
+                val error = SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL)
+                callback.onFailure(Utils.constructError(error))
+            }
+            else if (checkUrl)
+                this.apiClient.invokeGateway(gatewayConfig, callback)
+            else {
+                val error = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL)
+                error.setErrorResponse(gatewayConfig.gatewayURL)
                 callback.onFailure(Utils.constructError(error))
 
             }

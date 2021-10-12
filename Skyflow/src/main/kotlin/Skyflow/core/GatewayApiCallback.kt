@@ -19,14 +19,7 @@ class GatewayApiCallback(
 
     override fun onSuccess(responseBody: Any) {
         try{
-            if(gatewayConfig.gatewayURL.isEmpty())
-            {
-                val finalError = JSONObject()
-                val errors = JSONArray()
-                errors.put(SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL))
-                finalError.put("errors",errors)
-                callback.onFailure(finalError)
-            }
+
             //adding path params
             val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,gatewayConfig.pathParams,callback)
             if(gatewayUrl.equals(""))
@@ -88,6 +81,11 @@ class GatewayApiCallback(
     }
 
     override fun onFailure(exception: Any) {
-        callback.onFailure(exception)
+        if(exception is Exception)
+        {
+            callback.onFailure(Utils.constructError(exception))
+        }
+        else
+            callback.onFailure(exception)
     }
 }

@@ -24,7 +24,7 @@ class CollectRequestBody {
                     if(tableWithColumn.contains(element.tableName+element.columnName))
                     {
                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
-                        error.setErrorResponse(element.columnName)
+                        error.setErrorResponse(element.tableName,element.columnName)
                         callback.onFailure(error)
                         return ""
                     }
@@ -96,7 +96,7 @@ class CollectRequestBody {
                                 for (k in 0 until field_list.size) {
                                     if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
-                                        error.setErrorResponse(field_list.get(k).columnName)
+                                        error.setErrorResponse(tableName,field_list.get(k).columnName)
                                         throw error
                                     } else {
                                         tableWithColumn.add(tableName + field_list.get(k).columnName)
@@ -108,7 +108,7 @@ class CollectRequestBody {
                                 for (k in 0 until field_list.size) {
                                     if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND)
-                                        error.setErrorResponse(field_list.get(k).columnName)
+                                        error.setErrorResponse(tableName,field_list.get(k).columnName)
                                         throw error
                                     } else
                                         tableWithColumn.add(tableName + field_list.get(k).columnName)
