@@ -50,7 +50,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
                         callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE))
                         return
                     } else if (element.collectInput.column.equals(null)) {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_COLUMN_NAME))
+                        callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_COLUMN))
                         return
                     } else if (element.collectInput.table!!.isEmpty()) {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME))

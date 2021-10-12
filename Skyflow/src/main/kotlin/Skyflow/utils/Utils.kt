@@ -6,7 +6,6 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import android.content.res.Resources
-import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -667,8 +666,8 @@ class Utils {
             }
         }
 
-        fun constructMessage(messageID:Int, vararg values : String?): String{
-            return String.format(Resources.getSystem().getString(messageID), *values)
+        fun constructMessage(message:String, vararg values : String?): String{
+            return String.format(message, *values)
         }
 
         fun constructError(e:Exception,code:Int=400) : JSONObject
