@@ -25,7 +25,7 @@ internal class CollectAPICallback(
     override fun onSuccess(responseBody: Any) {
         try{
         val url =apiClient.vaultURL + apiClient.vaultId
-        val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options,callback)
+        val jsonBody: JSONObject = records
         if(jsonBody.toString().equals("{}")) return
         val body: RequestBody = RequestBody.create(
             MediaType.parse("application/json"), jsonBody.toString()
