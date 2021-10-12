@@ -2,6 +2,7 @@ package Skyflow.reveal
 
 import Skyflow.Callback
 import Skyflow.Label
+import Skyflow.utils.Utils
 import androidx.core.content.res.ResourcesCompat
 import org.json.JSONObject
 
@@ -48,6 +49,11 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
     }
 
     override fun onFailure(exception: Any) {
-        callback.onFailure(exception)
+        if(exception is Exception)
+        {
+            callback.onFailure(Utils.constructError(exception))
+        }
+        else
+            callback.onFailure(exception)
     }
 }

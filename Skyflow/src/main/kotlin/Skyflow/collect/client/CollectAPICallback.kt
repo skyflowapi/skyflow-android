@@ -34,8 +34,7 @@ internal class CollectAPICallback(
             Logger.info(tag, Messages.VALIDATE_RECORDS.getMessage(), apiClient.logLevel)
             val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options,callback)
             if(jsonBody.toString() == "{}") return
-            val body: RequestBody = jsonBody.toString()
-                .toRequestBody("application/json".toMediaTypeOrNull())
+            val body: RequestBody = jsonBody.toString().toRequestBody("application/json".toMediaTypeOrNull())
             val request = Request
                 .Builder()
                 .method("POST", body)

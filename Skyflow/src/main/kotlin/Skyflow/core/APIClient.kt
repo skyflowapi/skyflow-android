@@ -71,7 +71,7 @@ class APIClient (
 
                     override fun onFailure(exception: Any) {
                         val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
-                        callback.onFailure(Utils.constructError(error))
+                        callback.onFailure(error)
                     }
                 })
             } else {
@@ -79,13 +79,14 @@ class APIClient (
             }
         }catch (e: Exception){
             val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
-            callback.onFailure(Utils.constructError(error))
+            callback.onFailure(error)
         }
     }
 
 
     internal fun post(records: JSONObject, callback: Callback, options: InsertOptions){
-        val collectApiCallback = CollectAPICallback(this, records, callback, options)
+        val finalRecords = Utils.constructBatchRequestBody(records, options,callback)
+        val collectApiCallback = CollectAPICallback(this, finalRecords, callback, options)
         this.getAccessToken(collectApiCallback)
     }
 
@@ -112,12 +113,17 @@ class APIClient (
                 throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
             }
             else {
-
-                val obj = records.getJSONArray("records")
+                if(!records.has("records"))
+                    throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+                else if(records.get("records") !is JSONArray)
+                    throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                val jsonArray = records.getJSONArray("records")
+                if(jsonArray.length() == 0)
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
                 val list = mutableListOf<RevealRequestRecord>()
                 var i = 0
-                while (i < obj.length()) {
-                    val jsonobj1 = obj.getJSONObject(i)
+                while (i < jsonArray.length()) {
+                    val jsonobj1 = jsonArray.getJSONObject(i)
                     if (!jsonobj1.has("token")) {
                         throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
                     } else if (!jsonobj1.has("redaction")) {
@@ -161,7 +167,7 @@ class APIClient (
         gatewayConfig: GatewayConfiguration,
         callback: Callback
     ) {
-        val isValidResponseBody = Utils.checkDuplicateInResponseBody(gatewayConfig.responseBody,callback,HashSet())
+        val isValidResponseBody = Utils.checkDuplicateInResponseBody(gatewayConfig.responseBody,callback,HashSet(),logLevel)
         if(!isValidResponseBody) return
         val requestBody = JSONObject()
         Utils.copyJSON(gatewayConfig.requestBody,requestBody)

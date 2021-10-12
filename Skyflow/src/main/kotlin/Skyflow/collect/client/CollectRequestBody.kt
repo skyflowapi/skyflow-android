@@ -29,7 +29,7 @@ class CollectRequestBody {
                     {
                      //   callback.onFailure(Exception("duplicate column "+element.columnName+ " found in "+element.tableName))
                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
-                            tag, logLevel, arrayOf(element.columnName))
+                            tag, logLevel, arrayOf(element.tableName,element.columnName))
                         callback.onFailure(error)
                         return ""
                     }
@@ -55,6 +55,10 @@ class CollectRequestBody {
                         return ""
                     }
                     val records = additionalFields.getJSONArray("records")
+                    if(records.length() == 0)
+                    {
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag,logLevel)
+                    }
                     var i = 0
                     while (i < records.length()) {
                         val jsonobj = records.getJSONObject(i)
@@ -97,7 +101,7 @@ class CollectRequestBody {
                                 for (k in 0 until field_list.size) {
                                     if (tableWithColumn.contains(tableName + field_list.get(k).columnName)) {
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
-                                            tag, logLevel, arrayOf(field_list[k].columnName))
+                                            tag, logLevel, arrayOf(tableName,field_list[k].columnName))
                                         callback.onFailure(error)
                                         return ""
                                     } else {
@@ -112,7 +116,7 @@ class CollectRequestBody {
 //                                        callback.onFailure(Exception("duplicate column " + field_list.get(
 //                                            k).columnName + " found in " + tableName))
                                         val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
-                                            tag, logLevel, arrayOf(field_list[k].columnName))
+                                            tag, logLevel, arrayOf(tableName,field_list[k].columnName))
                                         callback.onFailure(error)
                                         return ""
                                     } else
