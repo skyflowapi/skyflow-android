@@ -31,7 +31,7 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
     fun setErrorResponse(vararg params: String?)
     {
         if(!params.isEmpty())
-           message =  Utils.constructMessage(this.skyflowErrorCode.messageId,*params)
+           message =  Utils.constructMessage(this.skyflowErrorCode.message,*params)
     }
 }
 

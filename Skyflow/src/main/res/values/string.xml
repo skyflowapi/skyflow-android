@@ -75,7 +75,7 @@
     <string name="missing_table">missing table property</string>
     <string name="invalid_record_table_value">invalid record table value</string>
     <string name="invalid_gateway_url">invalid gateway url</string>
-    <string name="invalid_input">provide complete and valid inputs</string>
+    <string name="invalid_input">%s</string>
     <string name="required_inputs_not_provided">required inputs are not provided</string>
     <string name="invalid_event_type">provide a valid event type</string>
     <string name="invalid_event_listener">provide valid event listener</string>
@@ -89,7 +89,7 @@
     <string name="invalid_records">records are not valid</string>
     <string name="invalid_record_ids">ids are not valid</string>
     <string name="missing_redaction">redaction is missing</string>
-    <string name="empty_key_in_query_params">empty key present in query oarameters</string>
+    <string name="empty_key_in_query_params">empty key present in query parameters</string>
     <string name="empty_key_in_path_params">empty key present in path parameter</string>
     <string name="empty_key_in_request_header_params">empty key present in request header</string>
     <string name="invalid_field_in_path_params">invalid field %s present in path parameters</string>
@@ -99,5 +99,6 @@
     <string name="empty_gateway_url">Empty gateway url is passed</string>
     <string name="not_found_in_response">%s is not found in response</string>
     <string name="bad_request">Bad request</string>
+    <string name="missing_column">column name is missing</string>
 
 </resources>
