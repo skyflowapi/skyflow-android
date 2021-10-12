@@ -72,7 +72,7 @@ class APIClient (
                     override fun onFailure(exception: Any) {
                         Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
                         val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
-                        callback.onFailure(Utils.constructError(error))
+                        callback.onFailure(error)
                     }
                 })
             } else {
@@ -80,7 +80,7 @@ class APIClient (
             }
         }catch (e: Exception){
             val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
-            callback.onFailure(Utils.constructError(error))
+            callback.onFailure(error)
         }
     }
 

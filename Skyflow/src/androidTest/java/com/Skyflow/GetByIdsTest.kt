@@ -17,7 +17,7 @@ class GetByIdsTest {
     @Before
     fun setup() {
         val configuration = Configuration(
-            "b359c43f1b844ff4bea0f098d2c09193",
+            "b359c43f1b844ff4bea0f098d2c09",
             "https://sb1.area51.vault.skyflowapis.tech",
             DemoTokenProvider()
         )
@@ -65,7 +65,7 @@ class GetByIdsTest {
     fun testEmptyVaultURL()
     {
         val skyflowConfiguration =  Configuration(
-            "b359c43f1b844ff4bea0f098d2c09193",
+            "b359c43f1b844ff4bea0f098d2c0",
             "",
             DemoTokenProvider()
         )
@@ -100,7 +100,7 @@ class GetByIdsTest {
     fun testInvalidVaultURL()
     {
         val skyflowConfiguration =  Configuration(
-            "b359c43f1b844ff4bea0f098d2c09193",
+            "b359c43f1b844ff4bea0f098d2",
             "http://sb1.area51.vault.skyflowapis.tech",
             DemoTokenProvider()
         )

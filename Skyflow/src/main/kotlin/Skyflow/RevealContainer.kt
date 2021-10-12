@@ -40,12 +40,8 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
         else if(apiClient.vaultId.isEmpty())
         {
 
-            val finalError = JSONObject()
-            val errors = JSONArray()
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-            errors.put(error)
-            finalError.put("errors",errors)
-            callback.onFailure(finalError)
+            throw error
         }
         else {
             for (element in this.revealElements) {
