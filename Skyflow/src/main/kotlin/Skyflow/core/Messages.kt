@@ -20,8 +20,8 @@ enum class Messages(val message: String) {
     CREATED_COLLECT_ELEMENT("Created collect element %s"),
     CREATED_REVEAL_ELEMENT("Created reveal element %s"),
 
-    RETRIEVING_BEARER_TOKEN("Retrieving bearer token successfully."),
-    BEARER_TOKEN_RECEIVED("BearerToken received successfully"),
+    RETRIEVING_BEARER_TOKEN("Retrieving bearer token."),
+    BEARER_TOKEN_RECEIVED("BearerToken received successfully."),
     RETRIEVING_BEARER_TOKEN_FAILED("Retrieving bearer token failed"),
 
     ELEMENT_MOUNTED("%s1 Element mounted"),

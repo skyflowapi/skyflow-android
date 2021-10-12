@@ -164,7 +164,7 @@ class PullFunds : AppCompatActivity() {
                             if (!response.isSuccessful)
                                 throw IOException("Unexpected code $response")
                             val accessTokenObject =
-                                JSONObject(response.body()!!.string().toString())
+                                JSONObject(response.body!!.string())
                             val accessToken = accessTokenObject["accessToken"]
 //                        val accessToken = ""
                             callback.onSuccess("$accessToken")

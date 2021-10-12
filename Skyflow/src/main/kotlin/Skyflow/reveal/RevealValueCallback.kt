@@ -2,9 +2,7 @@ package Skyflow.reveal
 
 import Skyflow.Callback
 import Skyflow.Label
-import Skyflow.utils.Utils
 import androidx.core.content.res.ResourcesCompat
-import org.json.JSONArray
 import org.json.JSONObject
 
 @Suppress("DEPRECATION")
@@ -23,7 +21,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
             val fieldsObj = recordObj.getJSONObject("fields")
             val value = fieldsObj.get(fieldsObj.keys().next()).toString()
             elementsMap[tokenId]!!.placeholder.text = value
-            elementsMap[tokenId]!!.value = value
+            elementsMap[tokenId]!!.actualValue = value
             recordObj.remove("fields")
         }
         val errorArray = responseJSON.getJSONArray("errors")
@@ -51,6 +49,5 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
 
     override fun onFailure(exception: Any) {
         callback.onFailure(exception)
-
     }
 }

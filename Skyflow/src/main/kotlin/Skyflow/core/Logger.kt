@@ -16,7 +16,9 @@ internal class Logger {
         }
 
         fun error(tag:String? = null, message: String, logLevel: LogLevel){
-            Log.e(tag, "error: $message")
+            if(logLevel.ordinal < 3) {
+                Log.e(tag, "error: $message")
+            }
         }
 
     }

@@ -3,6 +3,7 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.core.LogLevel
 import Skyflow.Options
+import Skyflow.utils.EventName
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
@@ -31,10 +32,10 @@ class CollectActivity : AppCompatActivity() {
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
             tokenProvider,
-            Options(LogLevel.INFO)
+            Options(LogLevel.PROD)
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
-        val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
         val padding = Skyflow.Padding(8, 8, 8, 8)
         val bstyle = Skyflow.Style(
             Color.parseColor("#403E6B"),
@@ -114,6 +115,22 @@ class CollectActivity : AppCompatActivity() {
         val expirationDate = collectContainer.create(this, expiryDateInput)
         val name = collectContainer.create(this, nameInput, options)
         val cvv = collectContainer.create(this, cvvInput)
+        
+        cardNumber.on(EventName.FOCUS) { state ->
+                    Log.d(TAG, "focus: sate $state")
+        }
+
+        cardNumber.on(EventName.BLUR) { state ->
+            Log.d(TAG, "blur: sate $state")
+        }
+
+        cardNumber.on(EventName.CHANGE) { state ->
+            Log.d(TAG, "change: sate $state")
+        }
+
+        cardNumber.on(EventName.READY) { state ->
+            Log.d(TAG, "ready: sate $state")
+        }
 
         val expiryDateInput1 = Skyflow.RevealElementInput(
             "reveal token",
@@ -177,7 +194,6 @@ class CollectActivity : AppCompatActivity() {
 
 
 private fun pureInsert(){
-    Log.d("enter", "testingFunction: called")
     val tokenProvider = DemoTokenProvider()
     val skyflowConfiguration = Skyflow.Configuration(
         BuildConfig.VAULT_ID,
@@ -227,7 +243,7 @@ class DemoTokenProvider : Skyflow.TokenProvider {
                         if (!response.isSuccessful)
                             throw IOException("Unexpected code $response")
                         val accessTokenObject =
-                            JSONObject(response.body()!!.string().toString())
+                            JSONObject(response.body!!.string().toString())
                         val accessToken = accessTokenObject["accessToken"]
 //                        val accessToken = ""
                         callback.onSuccess("$accessToken")

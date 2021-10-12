@@ -46,7 +46,7 @@ class APIClient (
     val vaultId: String,
     val vaultURL: String,
     private val tokenProvider: TokenProvider,
-    private val logLevel: LogLevel,
+    val logLevel: LogLevel,
     private var token: String = ""
 ){
     private val tag = APIClient::class.qualifiedName
@@ -70,8 +70,7 @@ class APIClient (
                     }
 
                     override fun onFailure(exception: Any) {
-                        Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
-                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
+                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
                         callback.onFailure(Utils.constructError(error))
                     }
                 })
@@ -166,12 +165,12 @@ class APIClient (
         if(!isValidResponseBody) return
         val requestBody = JSONObject()
         Utils.copyJSON(gatewayConfig.requestBody,requestBody)
-        val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback)
+        val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback, logLevel)
         gatewayConfig.requestBody = JSONObject()
         if(isBodyConstructed)
         {
             val newGateway = gatewayConfig.copy(requestBody = requestBody)
-            val gateway = GatewayApiCallback(newGateway,callback)
+            val gateway = GatewayApiCallback(newGateway,callback, logLevel)
             this.getAccessToken(gateway)
         }
         else

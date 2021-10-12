@@ -6,6 +6,7 @@ import Skyflow.SkyflowErrorCode
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -13,22 +14,23 @@ import java.io.IOException
 internal class RevealApiCallback(
     var callback: Callback,
     var apiClient: APIClient,
-    var records: MutableList<Skyflow.reveal.RevealRequestRecord>
+    var records: MutableList<RevealRequestRecord>
 ) :
     Callback {
-
+    private val tag = RevealApiCallback::class.qualifiedName
     override fun onSuccess(responseBody: Any) {
         try {
-            val okHttpClient = OkHttpClient();
+            val okHttpClient = OkHttpClient()
 
-            val revealResponse = RevealResponse(records.size, callback)
+            val revealResponse = RevealResponse(records.size, callback, apiClient.logLevel)
 
             for (record in records) {
                 val url = apiClient.vaultURL + apiClient.vaultId + "/tokens"
-                val requestUrlBuilder = HttpUrl.parse(url)?.newBuilder()
+                val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
                 if(requestUrlBuilder == null){
-                    val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL)
-                    error.setErrorResponse(apiClient.vaultURL)
+                    val error = SkyflowError(
+                        SkyflowErrorCode.INVALID_VAULT_URL,
+                        tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
                     callback.onFailure(Utils.constructError(error))
                     return
                 }
@@ -49,17 +51,17 @@ internal class RevealApiCallback(
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             try {
-                                if (!response.isSuccessful && response.body() != null) {
+                                if (!response.isSuccessful && response.body != null) {
                                     val resObj = JSONObject()
-                                    val responseErrorBody = JSONObject(response.body()!!.string())
-                                    val skyflowError = SkyflowError()
+                                    val responseErrorBody = JSONObject(response.body!!.string())
+                                    val skyflowError = SkyflowError(tag= tag, logLevel = apiClient.logLevel)
                                     skyflowError.setErrorMessage((responseErrorBody.get("error") as JSONObject).get("message").toString())
-                                    skyflowError.setErrorCode( response.code())
+                                    skyflowError.setErrorCode(response.code)
                                     resObj.put("error", skyflowError)
                                     resObj.put("token", record.token)
                                     revealResponse.insertResponse(resObj, false)
-                                } else if (response.body() != null) {
-                                    val responseString = response.body()!!.string().toString()
+                                } else if (response.body != null) {
+                                    val responseString = response.body!!.string()
                                     revealResponse.insertResponse(
                                         JSONObject(
                                             responseString.replace(
@@ -69,7 +71,7 @@ internal class RevealApiCallback(
                                     )
                                 } else {
                                     val resObj = JSONObject()
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST)
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
                                     resObj.put("error", skyflowError)
                                     resObj.put("token", record.token)
                                     revealResponse.insertResponse(resObj, false)
@@ -79,7 +81,7 @@ internal class RevealApiCallback(
                             }
                         }
                     }
-            })
+                })
             }
         }catch (e: Exception){
             callback.onFailure(Utils.constructError(e))
@@ -89,7 +91,7 @@ internal class RevealApiCallback(
 
 
     override fun onFailure(exception: Any) {
-         callback.onFailure(exception)
+        callback.onFailure(exception)
 
     }
 

@@ -6,6 +6,7 @@ import Skyflow.SkyflowErrorCode
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -16,21 +17,19 @@ internal class RevealByIdCallback(
     var records: MutableList<GetByIdRecord>
 ) :
     Callback {
-
+    private val tag = RevealByIdCallback::class.qualifiedName
     override fun onSuccess(responseBody: Any) {
         try {
             val okHttpClient = OkHttpClient();
 
-            val revealResponse = RevealResponseByID(records.size, callback)
+            val revealResponse = RevealResponseByID(records.size, callback, apiClient.logLevel)
 
             for (record in records) {
                 val url = apiClient.vaultURL + apiClient.vaultId + "/"+record.table
-                val requestUrlBuilder = HttpUrl.parse(url)?.newBuilder()
+                val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
                 if(requestUrlBuilder == null){
-                    val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL)
-                    error.setErrorResponse(apiClient.vaultURL)
+                    val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
                     callback.onFailure(Utils.constructError(error))
-
                     return
                 }
                 for( id in record.skyflow_ids)
@@ -51,18 +50,18 @@ internal class RevealByIdCallback(
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             try {
-                                if (!response.isSuccessful && response.body() != null) {
-                                    val responsebody =response.body()!!.string()
+                                if (!response.isSuccessful && response.body != null) {
+                                    val responsebody = response.body!!.string()
                                     val resObj = JSONObject()
                                     val responseErrorBody = JSONObject(responsebody)
-                                    val skyflowError = SkyflowError()
+                                    val skyflowError = SkyflowError(tag=tag, logLevel = apiClient.logLevel)
                                     skyflowError.setErrorMessage((responseErrorBody.get("error") as JSONObject).get("message").toString())
-                                    skyflowError.setErrorCode( response.code())
+                                    skyflowError.setErrorCode(response.code)
                                     resObj.put("error", skyflowError)
                                     resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
-                                } else if (response.body() != null) {
-                                    val fields =JSONObject(response.body()!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
+                                } else if (response.body != null) {
+                                    val fields =JSONObject(response.body!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
                                     var i = 0
                                     val newJsonArray = JSONArray()
                                     while (i<fields.length())
@@ -79,7 +78,7 @@ internal class RevealByIdCallback(
                                     )
                                 } else {
                                     val resObj = JSONObject()
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST)
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
                                     resObj.put("error", skyflowError)
                                     resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)

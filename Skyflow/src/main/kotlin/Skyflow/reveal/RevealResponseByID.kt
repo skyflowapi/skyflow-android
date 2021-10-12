@@ -3,16 +3,20 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.core.LogLevel
+import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponseByID(var size: Int, var callback: Callback) {
+class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD) {
     var responseBody = JSONObject().put("records", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
 
     var failureResponses = 0
+
+    private val tag = RevealResponseByID::class.qualifiedName
 
 
     @Synchronized fun insertResponse(responseObject : JSONArray? = null, isSuccess:Boolean = false){
@@ -36,16 +40,9 @@ class RevealResponseByID(var size: Int, var callback: Callback) {
 
         if(successResponses + failureResponses == size) {
             if (successResponses == 0) {
-                val finalError = JSONObject()
-                val errors = JSONArray()
-                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
-                val error = JSONObject()
-                error.put("error",skyflowError)
-                errors.put(error)
-                finalError.put("errors",errors)
-                callback.onFailure(finalError)
+                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
+                callback.onFailure(Utils.constructError(skyflowError))
             } else {
-               // callback.onSuccess(responseBody)
                 if(failureResponses==0)
                     callback.onSuccess(responseBody)
                 else

@@ -4,4 +4,5 @@ enum class LogLevel {
     INFO,
     DEBUG,
     PROD,
+    DEMO,
 }
