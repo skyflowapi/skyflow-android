@@ -6,16 +6,22 @@ import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
 import Skyflow.utils.Utils
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
 class GatewayApiCallback(
     val gatewayConfig : GatewayConfiguration,
-    val callback: Callback
+    val callback: Callback,
+    val logLevel: LogLevel = LogLevel.PROD,
 ) : Callback{
 
     private val okHttpClient = OkHttpClient()
+
+    private val tag = GatewayApiCallback::class.qualifiedName
 
     override fun onSuccess(responseBody: Any) {
         try{
@@ -23,31 +29,31 @@ class GatewayApiCallback(
             {
                 val finalError = JSONObject()
                 val errors = JSONArray()
-                errors.put(SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL))
+                errors.put(SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL, tag, logLevel))
                 finalError.put("errors",errors)
                 callback.onFailure(finalError)
             }
             //adding path params
-            val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,gatewayConfig.pathParams,callback)
+            val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,
+                gatewayConfig.pathParams,callback, logLevel)
             if(gatewayUrl.equals(""))
                 return
-            val requestUrlBuilder = HttpUrl.parse(gatewayUrl)?.newBuilder()
+            val requestUrlBuilder = gatewayUrl.toHttpUrlOrNull()?.newBuilder()
             if(requestUrlBuilder == null){
-                val error = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL)
-                error.setErrorResponse(gatewayConfig.gatewayURL)
+                val error = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,
+                    tag, logLevel, arrayOf(gatewayConfig.gatewayURL))
                 callback.onFailure(Utils.constructError(error))
                 return
             }
             //creating url with query params
-            val isQueryparamsAdded = Utils.addQueryParams(requestUrlBuilder,gatewayConfig,callback)
+            val isQueryparamsAdded = Utils.addQueryParams(requestUrlBuilder,gatewayConfig,callback, logLevel)
             if(!isQueryparamsAdded)
                 return
             val requestUrl = requestUrlBuilder.build()
 
             //body for API
-            val body: RequestBody = RequestBody.create(
-                MediaType.parse("application/json".toByteArray().toString()), gatewayConfig.requestBody.toString()
-            )
+            val body: RequestBody = gatewayConfig.requestBody.toString()
+                .toRequestBody("application/json".toByteArray().toString().toMediaTypeOrNull())
             val request = Request
                 .Builder()
                 .method(gatewayConfig.methodName.toString(), body)
@@ -55,7 +61,7 @@ class GatewayApiCallback(
                 .addHeader("Content-Type","application/json")
                 .url(requestUrl)
             //adding header
-            val isHeaderAdded = Utils.addRequestHeader(request,gatewayConfig,callback)
+            val isHeaderAdded = Utils.addRequestHeader(request,gatewayConfig,callback, logLevel)
             if(!isHeaderAdded)
                 return
 
@@ -70,13 +76,16 @@ class GatewayApiCallback(
                     response.use {
                         if (!response.isSuccessful)
                         {
-                            callback.onFailure(Utils.constructError(Exception(" ${response.body()?.string()}"),response.code()))
+                            callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
+                                response.code
+                            ))
 
                         }
                         else
                         {
-                            val responseFromGateway =JSONObject(response.body()!!.string())
-                            Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,responseFromGateway,callback)
+                            val responseFromGateway =JSONObject(response.body!!.string())
+                            Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,
+                                responseFromGateway,callback,logLevel)
                             callback.onSuccess(responseFromGateway)
                         }
                     }

@@ -16,31 +16,38 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import Skyflow.collect.elements.utils.VibrationHelper
+import Skyflow.core.LogLevel
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
+import Skyflow.utils.EventName
 import com.skyflow_android.R
+import org.json.JSONObject
 import kotlin.String
+import kotlin.math.log
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
+    context: Context, val logLevel: LogLevel, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : Skyflow.Element(context, attrs, defStyleAttr) {
 
     internal var label = TextView(context)
     internal var inputField = EditText(context)
     internal var error = TextView(context)
     private var validationRules = SkyflowValidationSet()
-    override var state: State = StateforText(this)
+    override lateinit var state: State
     private var border = GradientDrawable()
     private lateinit var padding: Padding
     private var mErrorAnimator: Animation? = null
+    internal var actualValue: String = ""
+    internal var userOnchangeListener: ((JSONObject) -> Unit)? = null
+    internal var userOnFocusListener: ((JSONObject) -> Unit)? = null
+    internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
+    internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
 
     override fun getValue() : String {
-        if(inputField.text.toString().isEmpty())
-            return ""
-        return inputField.text.toString()
+        return actualValue
     }
 
     override fun validate() : MutableList<SkyflowValidationError> {
@@ -50,6 +57,7 @@ class TextField @JvmOverloads constructor(
 
     override fun setupField(collectInput: CollectElementInput, options: Skyflow.CollectElementOptions) {
         super.setupField(collectInput,options)
+        this.state = StateforText(this)
         validationRules = fieldType.getType().validation
         padding = collectInput.inputStyles.base.padding
         state = StateforText(this)
@@ -104,18 +112,29 @@ class TextField @JvmOverloads constructor(
         error.gravity = collectInput.errorTextStyles.base.textAlignment
     }
 
+    public fun on(eventName: EventName, handler: (state:JSONObject) -> Unit) {
+        when (eventName) {
+            EventName.CHANGE -> this.userOnchangeListener = handler
+            EventName.READY -> this.userOnReadyListener = handler
+            EventName.BLUR -> this.userOnBlurListener = handler
+            EventName.FOCUS -> this.userOnFocusListener = handler
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         super.setOrientation(VERTICAL)
-        getListenersForText()
+        setListenersForText()
+        if(userOnReadyListener !== null)
+            userOnReadyListener?.let{it((state as StateforText).getState(logLevel))}
         addView(label)
         addView(inputField)
         addView(error)
     }
 
-    private fun getListenersForText() {
+    private fun setListenersForText() {
         //when text changes
         inputField.addTextChangedListener( object : TextWatcher
         {
@@ -128,8 +147,10 @@ class TextField @JvmOverloads constructor(
             }
 
             override fun afterTextChanged(s: Editable?) {
+                actualValue = inputField.text.toString()
                 state = StateforText(this@TextField)
-
+                if(userOnchangeListener !== null)
+                    userOnchangeListener?.let { it((state as StateforText).getState(logLevel)) }
             }
 
         })
@@ -151,6 +172,8 @@ class TextField @JvmOverloads constructor(
                 inputField.gravity = collectInput.inputStyles.focus.textAlignment
                 inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
+                if(userOnFocusListener !== null)
+                    userOnFocusListener?.let { it((state as StateforText).getState(logLevel)) }
             } else {
 
                 val labelPadding = collectInput.labelStyles.base.padding
@@ -160,9 +183,8 @@ class TextField @JvmOverloads constructor(
                 label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
                 label.gravity = collectInput.labelStyles.base.textAlignment
 
-
-                val state = this.state.getState()
-                if(state["isEmpty"] as Boolean) {
+                val internalState = this.state.getInternalState()
+                if(internalState["isEmpty"] as Boolean) {
 
                     val inputFieldPadding = collectInput.inputStyles.empty.padding
                     inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
@@ -173,7 +195,7 @@ class TextField @JvmOverloads constructor(
                     inputField.gravity = collectInput.inputStyles.empty.textAlignment
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
 
-                } else if(!(state["isValid"] as Boolean)) {
+                } else if(!(internalState["isValid"] as Boolean)) {
 
                     val inputFieldPadding = collectInput.inputStyles.invalid.padding
                     inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
@@ -198,8 +220,11 @@ class TextField @JvmOverloads constructor(
                     inputField.gravity = collectInput.inputStyles.complete.textAlignment
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
+                if(userOnBlurListener !== null)
+                    userOnBlurListener?.let { it((state as StateforText).getState(logLevel)) }
             }
         }.also { inputField.onFocusChangeListener = it }
+
     }
 
     internal fun setError(error: String)

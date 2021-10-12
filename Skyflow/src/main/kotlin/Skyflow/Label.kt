@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -16,7 +15,7 @@ class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    internal  var value: String =""
+    internal  var actualValue: String =""
     internal var label = TextView(context)
     internal var placeholder = TextView(context)
     internal var error = TextView(context)
@@ -98,7 +97,7 @@ class Label @JvmOverloads constructor(
 
     @JvmName("getValue1")
     internal fun getValue(): String {
-        return value
+        return actualValue
     }
 
 
