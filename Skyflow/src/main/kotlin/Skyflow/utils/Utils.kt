@@ -2,6 +2,10 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.core.LogLevel
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
+import android.content.res.Resources
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -15,6 +19,7 @@ class Utils {
         val tag = Utils::class.qualifiedName
         fun checkUrl(url: String): Boolean {
             if (!URLUtil.isValidUrl(url) || !URLUtil.isHttpsUrl(url)) {
+                Logger.error(logTag, Messages.INVALID_URL.getMessage(url), logLevel)
                 return false
             }
             return true
@@ -75,7 +80,7 @@ class Utils {
                             } else if (responseBody.get(keys.getString(j)) is JSONObject) {
                                 constructJsonKeyForGatewayResponse(responseBody.get(keys.getString(j)) as JSONObject,
                                     responseFromGateway.getJSONObject(keys.getString(j)),
-                                    callback, logLevel)
+                                    callback)
 
                             }
                         }
@@ -180,7 +185,7 @@ class Utils {
                             {
                                 val isValid =
                                     constructJsonKeyForGatewayRequest(arrayValue.get(k)  as JSONObject,
-                                        callback, logLevel)
+                                        callback)
                                 if (isValid)
                                     value = JSONObject(arrayValue.get(k) .toString())
                                 else
@@ -280,7 +285,7 @@ class Utils {
         }
 
         //adding path params to gatewaye url
-        fun addPathparamsToURL(url: String, params: JSONObject, callback: Callback, logLevel: LogLevel) : String
+        fun addPathparamsToURL(url: String, params: JSONObject, callback: Callback) : String
         {
             try {
                 var newURL = url
