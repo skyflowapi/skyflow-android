@@ -6,6 +6,7 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import android.content.res.Resources
+import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -119,6 +120,10 @@ class Utils {
                     if (records.get(keys.getString(j)) is Element) {
                         val element = (records.get(keys.getString(j)) as Element)
                         val check = checkElement(element, callback)
+                        if (check)
+                            value = (records.get(keys.getString(j)) as Element).getValue()
+                        else
+                            return false
                         if(!checkIfElementsMounted(element))
                         {
                             val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
@@ -126,10 +131,6 @@ class Utils {
                             callback.onFailure(Utils.constructError(error))
                             return false
                         }
-                        else if (check)
-                            value = (records.get(keys.getString(j)) as Element).getValue()
-                        else
-                            return false
                     } else if (records.get(keys.getString(j)) is Label) {
                         if(!checkIfElementsMounted(records.get(keys.getString(j)) as Label))
                         {
@@ -158,6 +159,10 @@ class Utils {
                             {
                                 val element = (arrayValue.get(k) as Element)
                                 val check = checkElement(element, callback)
+                                 if (check)
+                                    value = (arrayValue.get(k)  as Element).getValue()
+                                else
+                                    return false
                                 if(!checkIfElementsMounted(element))
                                 {
                                     val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
@@ -165,10 +170,6 @@ class Utils {
                                     callback.onFailure(Utils.constructError(error))
                                     return false
                                 }
-                                else if (check)
-                                    value = (arrayValue.get(k)  as Element).getValue()
-                                else
-                                    return false
                             }
                             else if(arrayValue.get(k) is Label)
                             {
@@ -215,6 +216,13 @@ class Utils {
                                 {
                                     val element = (arrayValue.get(k)  as Element)
                                     val check = checkElement(element, callback)
+
+                                     if (check)
+                                    {
+                                        value = (arrayValue.get(k)  as Element).getValue()
+                                    }
+                                    else
+                                        return false
                                     if(!checkIfElementsMounted(element))
                                     {
                                         val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
@@ -222,12 +230,6 @@ class Utils {
                                         callback.onFailure(Utils.constructError(error))
                                         return false
                                     }
-                                    else if (check)
-                                    {
-                                        value = (arrayValue.get(k)  as Element).getValue()
-                                    }
-                                    else
-                                        return false
                                 }
                                 else if(arrayValue.get(k) is Label)
                                 {
@@ -301,6 +303,12 @@ class Utils {
                         if (value is Element) {
                             val element = value
                             val check = checkElement(element, callback)
+
+                            if (check)
+                                newURL = newURL.replace("{" + keys.getString(j) + "}",
+                                    element.getValue())
+                            else
+                                return ""
                             if(!checkIfElementsMounted(element))
                             {
                                 val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
@@ -308,11 +316,6 @@ class Utils {
                                 callback.onFailure(Utils.constructError(error))
                                 return ""
                             }
-                            else if (check)
-                                newURL = newURL.replace("{" + keys.getString(j) + "}",
-                                    element.getValue())
-                            else
-                                return ""
                         } else if (value is Label) {
                             if(!checkIfElementsMounted(value))
                             {
@@ -390,6 +393,11 @@ class Utils {
             {
                 val element = value
                 val isValid = checkElement(element, callback)
+
+                 if (isValid)
+                    requestUrlBuilder.addQueryParameter(key,element.getValue())
+                else
+                    return false
                 if(!checkIfElementsMounted(element))
                 {
                     val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
@@ -397,10 +405,6 @@ class Utils {
                     callback.onFailure(Utils.constructError(error))
                     return false
                 }
-                else if (isValid)
-                    requestUrlBuilder.addQueryParameter(key,element.getValue())
-                else
-                    return false
             }
             else if (value is Label)
             {
@@ -565,10 +569,10 @@ class Utils {
             responseFromGateway: JSONObject,
             callback: Callback,
         ): Boolean {
+            try {
             val keys = responseBody.names()
             if(keys !=null) {
                 for (j in 0 until keys.length()) {
-                    try {
                         if (responseBody.get(keys.getString(j)) is JSONObject) {
                             val check =
                                 checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
@@ -577,14 +581,34 @@ class Utils {
                             if (!check)
                                 return false
                         } else if (!(responseBody.get(keys.getString(j)) is Element) && !(responseBody.get(
-                                keys.getString(j)) is Label)
-                        )
+                                keys.getString(j)) is Label))
                             throw Exception("invalid field " + keys.getString(j) + " present in response body")
-                    } catch (e: Exception) {
-                        callback.onFailure(constructError(e))
-                        return false
+                        else if(responseBody.get(keys.getString(j)) is Element)
+                        {
+                            val element = (responseBody.get(keys.getString(j))) as Element
+                            if(!checkIfElementsMounted(element))
+                            {
+                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
+                                error.setErrorResponse(element.collectInput.column)
+                                throw error
+                            }
+                        }
+                        else if(responseBody.get(keys.getString(j)) is Label)
+                        {
+                            val element = (responseBody.get(keys.getString(j))) as Label
+                            if(!checkIfElementsMounted(element))
+                            {
+                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
+                                error.setErrorResponse(element.revealInput.label)
+                                throw error
+                            }
+                        }
                     }
                 }
+            }
+            catch (e: Exception) {
+                callback.onFailure(constructError(e))
+                return false
             }
             return true
         }
@@ -620,26 +644,48 @@ class Utils {
                 for (j in 0 until keys.length()) {
 
                     try {
-                        if (responseBody.get(keys.getString(j)) is JSONObject) {
+
+                        if(responseBody.get(keys.getString(j)) is Element)
+                        {
+                            val element = (responseBody.get(keys.getString(j))) as Element
+                            if(!checkIfElementsMounted(element))
+                            {
+                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
+                                error.setErrorResponse(element.collectInput.column)
+                                throw error
+                            }
+                        }
+                        else if(responseBody.get(keys.getString(j)) is Label)
+                        {
+                            val element = (responseBody.get(keys.getString(j))) as Label
+                            if(!checkIfElementsMounted(element))
+                            {
+                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED)
+                                error.setErrorResponse(element.revealInput.label)
+                                throw error
+                            }
+                        }
+                        else if (responseBody.get(keys.getString(j)) is JSONObject) {
                             val check =
                                 checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject,
                                     callback,
                                     elementList)
                             if (!check)
                                 return false
-                        }
-                        if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(
+                        } else if (!(responseBody.get(keys.getString(j)) is Element) && !(responseBody.get(
+                                keys.getString(j)) is Label))
+                            throw Exception("invalid field " + keys.getString(j) + " present in response body")
+                        else if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(
                                 j)) is Label
                         ) {
                             if (elementList.contains(responseBody.get(keys.getString(j)).hashCode()
                                     .toString()))
                                 throw SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND)
-                               // throw SkyflowError("duplicate field " + keys.getString(j) + " present in response body")
                             else
                                 elementList.add(responseBody.get(keys.getString(j)).hashCode()
                                     .toString())
                         }
-                    } catch (e: SkyflowError) {
+                    } catch (e: Exception) {
                         callback.onFailure(constructError(e))
                         return false
                     }
