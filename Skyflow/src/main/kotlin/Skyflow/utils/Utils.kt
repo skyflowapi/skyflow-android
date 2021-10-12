@@ -499,6 +499,11 @@ class Utils {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR))
                         return JSONObject()
                     }
+                    else if(jsonObj.getJSONObject("fields").toString().equals("{}"))
+                    {
+                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_FIELDS))
+                        return JSONObject()
+                    }
 
                     val map = HashMap<String, Any>()
                     map["tableName"] = jsonObj["table"]

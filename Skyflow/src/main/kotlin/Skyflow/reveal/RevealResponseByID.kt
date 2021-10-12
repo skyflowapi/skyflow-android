@@ -32,7 +32,7 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
 
         }
         else if(responseObject != null && !isSuccess){
-            successResponses +=1
+            failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject.getJSONObject(0))
         }else{
             failureResponses += 1
