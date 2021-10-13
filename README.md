@@ -95,7 +95,8 @@ the Skyflow.TokenProvider interface*/
 val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
     vaultURL = <VAULT_URL>,
-    tokenProvider = demoTokenProvider
+    tokenProvider = demoTokenProvider,
+    options: Skyflow.Options(logLevel : Skyflow.LogLevel) // optional, if not specified default is PROD
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -144,11 +145,32 @@ class DemoTokenProvider: Skyflow.TokenProvider {
 
 NOTE: You should pass access token as `String` value in the success callback of getBearerToken.
 
+For `logLevel` parameter, there are 3 accepted values in Skyflow.LogLevel
+
+- `INFO`
+
+  When `Skyflow.LogLevel.INFO` is passed, will get info logs for every event that has occurred during the SDK flow execution along with error logs on the console.
+
+- `DEBUG`
+
+  Logs will be same as in `INFO`. 
+
+  In Event Listeners actual vaule of element can be accessed inside the handler. 
+
+- `PROD`
+
+  When `Skyflow.LogLevel.PROD` is passed, will get only error logs on the console.
+
+`Note`:
+  - since `logLevel` is optional, by default the logLevel will be  `PROD`.
+  - Use `logLevel` option with caution, make sure the logLevel is set to `PROD` when using `skyflow-iOS` in production. 
+
 
 ---
 # Securely collecting data client-side
 -  [**Inserting data into the vault**](#inserting-data-into-the-vault)
 -  [**Using Skyflow Elements to collect data**](#using-skyflow-elements-to-collect-data)
+-  [**Event Listener on Collect Elements**](#event-listener-on-collect-elements)
 
 ## Inserting data into the vault
 
@@ -449,6 +471,85 @@ container.collect(options = collectOptions, callback = insertCallback)
 }
 
 ```
+### Event Listener on Collect Elements
+
+
+Helps to communicate with skyflow elements / iframes by listening to an event
+
+```kt
+element.on(eventName = Skyflow.EventName) { state ->
+  //handle function
+}
+```
+
+There are 4 events in `Skyflow.EventName`
+- `CHANGE`  
+  Change event is triggered when the Element's value changes.
+- `READY`   
+   Ready event is triggered when the Element is fully rendered
+- `FOCUS`   
+ Focus event is triggered when the Element gains focus
+- `BLUR`    
+  Blur event is triggered when the Element loses focus.
+The handler ```(state: [String: Any]) -> Void``` is a callback function you provide, that will be called when the event is fired with the state object as shown below. 
+
+```kt
+let state = [
+  "elementType": Skyflow.ElementType,
+  "isEmpty": Bool ,
+  "isFocused": Bool,
+  "isValid": Bool,
+  "value": String 
+]
+```
+`Note:`
+values of SkyflowElements will be returned in elementstate object only when LogLevel is  `DEBUG`,  else it is an empty string.
+
+##### Sample code snippet for using listeners
+```kt
+//create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
+
+val skyflowClient = Skyflow.initialize(config)
+
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
+ 
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+    table = "cards",
+    column = "cardNumber",
+    type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardNumber = container.create(input = cardNumberInput)
+
+//subscribing to CHANGE event, which gets triggered when element changes
+cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
+  // Your implementation when Change event occurs
+  log.info("on change", state)
+}
+```
+##### Sample Element state object when `logLevel` is `DEBUG`
+```kt
+{
+   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "isEmpty": false,
+   "isFocused": true,
+   "isValid": false,
+   "value": "411"
+}
+```
+##### Sample Element state object when `logLevel` is `PROD` or `INFO`
+```kt
+{
+   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "isEmpty": false,
+   "isFocused": true,
+   "isValid": false,
+   "value": ""
+}
+```
+
 ---
 # Securely revealing data client-side
 -  [**Retrieving data from the vault**](#retrieving-data-from-the-vault)
