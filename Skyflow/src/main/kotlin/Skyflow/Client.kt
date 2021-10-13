@@ -117,7 +117,7 @@ class Client internal constructor(
                             } else if (!jsonObj.has("ids")) {
                                 throw SkyflowError(SkyflowErrorCode.MISSING_IDS,tag, configuration.options.logLevel)
                             } else if (jsonObj.getString("table").isEmpty()) {
-                                throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                                throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME,tag, configuration.options.logLevel)
                             } else if (jsonObj.getString("redaction").isEmpty()) {
                                 throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE,tag, configuration.options.logLevel)
                             } else if (!(jsonObj.get("redaction").toString()
@@ -129,7 +129,6 @@ class Client internal constructor(
                                     .toString()
                                     .equals("REDACTED"))
                             ) {
-                                throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag, configuration.options.logLevel)
                             } else {
                                 var skyflow_ids = jsonObj.get("ids")
                                 try {
@@ -170,10 +169,10 @@ class Client internal constructor(
 
     fun invokeGateway(gatewayConfig: GatewayConfiguration, callback: Callback) {
         if (configuration.vaultURL.isEmpty() || configuration.vaultURL.equals("/v1/vaults/")) {
-            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,gatewayConfig.gatewayURL)
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag, configuration.options.logLevel)
             callback.onFailure(Utils.constructError(error))
         } else if (configuration.vaultID.isEmpty()) {
-            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,gatewayConfig.gatewayURL)
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,tag, configuration.options.logLevel)
             callback.onFailure(Utils.constructError(error))
         } else {
             Logger.info(tag,
@@ -211,9 +210,6 @@ class Client internal constructor(
         }
         return Container<T>(apiClient, configuration)
     }
-
-
-
 
     inner class loggingCallback(
         private val clientCallback: Callback,

@@ -27,7 +27,7 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                 .put(responseObject.getJSONArray("records")[0])
         }
         else if(responseObject != null && !isSuccess){
-            successResponses +=1
+            failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject)
         }else{
             failureResponses += 1

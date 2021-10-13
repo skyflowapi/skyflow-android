@@ -55,5 +55,6 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
         }
         else
             callback.onFailure(exception)
+
     }
 }

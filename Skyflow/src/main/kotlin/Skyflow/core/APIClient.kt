@@ -79,17 +79,17 @@ class APIClient (
                 callback.onSuccess(token)
             }
         }catch (e: Exception){
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
+            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
             callback.onFailure(error)
         }
     }
 
 
     internal fun post(records: JSONObject, callback: Callback, options: InsertOptions){
-        val finalRecords = Utils.constructBatchRequestBody(records, options,callback)
+        val finalRecords = Utils.constructBatchRequestBody(records, options,callback,logLevel)
         if(!finalRecords.toString().equals("{}"))
         {
-            val collectApiCallback = CollectAPICallback(this, records, callback, options)
+            val collectApiCallback = CollectAPICallback(this, records, callback, options,logLevel)
             this.getAccessToken(collectApiCallback)
         }
         else
@@ -102,43 +102,43 @@ class APIClient (
         try {
             if(vaultURL.isEmpty() || vaultURL.equals("/v1/vaults/"))
             {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag,logLevel)
             }
             else if(vaultId.isEmpty())
             {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,tag,logLevel)
             }
             else if (!records.has("records")) {
-                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
             }
             else if(records.get("records").toString().isEmpty())
             {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
             }
             else if(!(records.get("records") is JSONArray))
             {
-                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
             }
             else {
                 if(!records.has("records"))
-                    throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+                    throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
                 else if(records.get("records") !is JSONArray)
-                    throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                    throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
                 val jsonArray = records.getJSONArray("records")
                 if(jsonArray.length() == 0)
-                    throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
                 val list = mutableListOf<RevealRequestRecord>()
                 var i = 0
                 while (i < jsonArray.length()) {
                     val jsonobj1 = jsonArray.getJSONObject(i)
                     if (!jsonobj1.has("token")) {
-                        throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                        throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN,tag,logLevel)
                     } else if (!jsonobj1.has("redaction")) {
-                        throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
+                        throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR,tag,logLevel)
                     } else if (jsonobj1.get("token").toString().isEmpty()) {
-                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag,logLevel)
                     } else if (jsonobj1.get("redaction").toString().isEmpty()) {
-                        throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
+                        throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE,tag,logLevel)
                     } else if (!(jsonobj1.get("redaction").toString()
                             .equals("PLAIN_TEXT") || jsonobj1.get("redaction").toString()
                             .equals("DEFAULT") ||
@@ -146,7 +146,7 @@ class APIClient (
                                     .equals("MASKED") || jsonobj1.get("redaction").toString()
                             .equals("REDACTED"))
                     ) {
-                        throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
+                        throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag,logLevel)
                     } else {
                         list.add(
                             RevealRequestRecord(

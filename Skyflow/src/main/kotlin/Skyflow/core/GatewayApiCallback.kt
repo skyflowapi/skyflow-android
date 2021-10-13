@@ -25,14 +25,6 @@ class GatewayApiCallback(
 
     override fun onSuccess(responseBody: Any) {
         try{
-            if(gatewayConfig.gatewayURL.isEmpty())
-            {
-                val finalError = JSONObject()
-                val errors = JSONArray()
-                errors.put(SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL, tag, logLevel))
-                finalError.put("errors",errors)
-                callback.onFailure(finalError)
-            }
             //adding path params
             val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,
                 gatewayConfig.pathParams,callback, logLevel)
