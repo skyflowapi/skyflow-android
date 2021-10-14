@@ -7,10 +7,12 @@ import androidx.test.core.app.ApplicationProvider
 import com.skyflow_android.BuildConfig
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
+import okhttp3.OkHttpClient
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 class InsertTest {
 
@@ -291,5 +293,31 @@ class InsertTest {
             }
 
         })
+    }
+}
+
+class DemoTokenProvider: TokenProvider {
+    override fun getBearerToken(callback: Skyflow.Callback) {
+        val url = "https://go-server.skyflow.dev/sa-token/b359c43f1b844ff4bea0f098d2c0"
+        val request = okhttp3.Request.Builder().url(url).build()
+        val okHttpClient = OkHttpClient()
+        try {
+            val thread = Thread {
+                run {
+                    okHttpClient.newCall(request).execute().use { response ->
+                        if (!response.isSuccessful)
+                            throw IOException("Unexpected code $response")
+                        //  val accessTokenObject = JSONObject(response.body()!!.string().toString())
+                        //  val accessToken = accessTokenObject["accessToken"]
+                        val accessToken = ""
+                        callback.onSuccess("$accessToken")
+                    }
+                }
+            }
+            thread.start()
+        }catch (exception:Exception){
+            Log.d("okhttp exc",exception.toString())
+            callback.onFailure(exception)
+        }
     }
 }

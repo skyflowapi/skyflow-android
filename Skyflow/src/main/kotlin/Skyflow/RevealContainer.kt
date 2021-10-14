@@ -46,6 +46,11 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
         else {
             for (element in this.revealElements) {
                 val token = element.revealInput.token
+                if(!checkIfElementsMounted(element))
+                {
+                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.revealInput.label))
+                    throw error
+                }
                 if (element.isTokenNull) {
                     throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, configuration.options.logLevel)
                 } else if (element.isRedactionNull) {
@@ -53,11 +58,7 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
                 } else if (token!!.isEmpty()) {
                     throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, configuration.options.logLevel)
                 }
-                else if(!checkIfElementsMounted(element))
-                {
-                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.revealInput.label))
-                    throw error
-                }
+
             }
             val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
             if (isUrlValid) {

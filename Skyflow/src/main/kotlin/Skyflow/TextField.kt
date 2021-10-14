@@ -22,6 +22,7 @@ import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
+import android.graphics.Typeface
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
@@ -77,7 +78,8 @@ class TextField @JvmOverloads constructor(
         label.textSize = 16F
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
         label.setTextColor(collectInput.labelStyles.base.textColor)
-        label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
+        if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
+            label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
         label.gravity = collectInput.labelStyles.base.textAlignment
 
     }
@@ -97,7 +99,8 @@ class TextField @JvmOverloads constructor(
         inputField.gravity = collectInput.inputStyles.base.textAlignment
         inputField.hint = collectInput.placeholder
         inputField.setTextColor(collectInput.inputStyles.base.textColor)
-        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
+        if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
+            inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
     }
 
@@ -108,7 +111,8 @@ class TextField @JvmOverloads constructor(
         error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
         mErrorAnimator = AnimationUtils.loadAnimation(context, R.anim.error_animation)
         error.setTextColor(collectInput.errorTextStyles.base.textColor)
-        error.typeface = ResourcesCompat.getFont(context,collectInput.errorTextStyles.base.font)
+        if(!collectInput.errorTextStyles.base.font.equals(Typeface.NORMAL))
+            error.typeface = ResourcesCompat.getFont(context,collectInput.errorTextStyles.base.font)
         error.gravity = collectInput.errorTextStyles.base.textAlignment
     }
 
@@ -123,7 +127,7 @@ class TextField @JvmOverloads constructor(
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    override fun onAttachedToWindow() {
+    public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         super.setOrientation(VERTICAL)
         setListenersForText()
@@ -160,7 +164,8 @@ class TextField @JvmOverloads constructor(
                 val labelPadding = collectInput.labelStyles.focus.padding
                 label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
                 label.setTextColor(collectInput.labelStyles.focus.textColor)
-                label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
+                if(!collectInput.labelStyles.focus.font.equals(Typeface.NORMAL))
+                 label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
                 label.gravity = collectInput.labelStyles.focus.textAlignment
 
                 val inputFieldPadding = collectInput.inputStyles.focus.padding
@@ -170,7 +175,8 @@ class TextField @JvmOverloads constructor(
                 border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
                 inputField.setBackgroundDrawable(border)
                 inputField.gravity = collectInput.inputStyles.focus.textAlignment
-                inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
+                if(!collectInput.inputStyles.focus.font.equals(Typeface.NORMAL))
+                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
                 if(userOnFocusListener !== null)
                     userOnFocusListener?.let { it((state as StateforText).getState(logLevel)) }
@@ -180,7 +186,8 @@ class TextField @JvmOverloads constructor(
                 label.textSize = 16F
                 label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
                 label.setTextColor(collectInput.labelStyles.base.textColor)
-                label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
+                if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
+                 label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
                 label.gravity = collectInput.labelStyles.base.textAlignment
 
                 val internalState = this.state.getInternalState()
@@ -193,7 +200,8 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.empty.textAlignment
-                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
+                    if(!collectInput.inputStyles.empty.font.equals(Typeface.NORMAL))
+                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
 
                 } else if(!(internalState["isValid"] as Boolean)) {
 
@@ -204,7 +212,8 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.invalid.textAlignment
-                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
+                    if(!collectInput.inputStyles.invalid.font.equals(Typeface.NORMAL))
+                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
                     VibrationHelper.vibrate(context, 10)
                     error.visibility = View.VISIBLE
                     startAnimation(mErrorAnimator)
@@ -218,7 +227,8 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.complete.textAlignment
-                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
+                    if(!collectInput.inputStyles.complete.font.equals(Typeface.NORMAL))
+                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
                 if(userOnBlurListener !== null)
                     userOnBlurListener?.let { it((state as StateforText).getState(logLevel)) }
