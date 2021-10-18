@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.core.LogLevel
+import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -50,19 +51,20 @@ class Utils {
 
         //displaying data to pci elements and removing pci element values from response
         var errors = JSONArray()
+        var gatewayResponse = JSONObject()
         fun constructJsonKeyForGatewayResponse(
             responseBody: JSONObject,
             responseFromGateway: JSONObject,
             callback: Callback,
             logLevel: LogLevel
-        )
+        ) : JSONObject
         {
             val keys = responseBody.names()
             if(keys != null) {
                 for (j in 0 until keys.length()) {
                     try {
 
-                        if (responseFromGateway.has(keys.getString(j))) {
+
                             if (responseBody.get(keys.getString(j)) is Element) {
                                 val ans = responseFromGateway.getString(keys.getString(j))
                                 (responseBody.get(keys.getString(j)) as TextField).inputField.setText(
@@ -80,16 +82,26 @@ class Utils {
                                     callback,logLevel)
 
                             }
-                        }
+
                     }
                     catch (e:Exception)
                     {
 
                         val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE, tag, logLevel, arrayOf(keys.getString(j)))
-                        callback.onFailure(constructError(error))
+                        val finalError = JSONObject()
+                        finalError.put("error",error)
+                        if(!gatewayResponse.has("errors"))
+                            gatewayResponse.put("errors",JSONArray())
+                        gatewayResponse.getJSONArray("errors").put(finalError)
+                        responseFromGateway.remove(keys.getString(j))
                     }
                 }
             }
+            if(!gatewayResponse.has("success"))
+                gatewayResponse.put("success",JSONArray())
+            gatewayResponse.getJSONArray("success").put(0,responseFromGateway)
+            gatewayResponse.getJSONArray("success").remove(1)
+            return gatewayResponse
         }
 
         //requestbody for invokegateway
@@ -544,7 +556,7 @@ class Utils {
         }
 
         //check whether pci element is valid or not inside requestbody of gatewayconfig
-        private fun checkElement(element: Element, callback: Callback, logLevel: LogLevel): Boolean
+         fun checkElement(element: Element, callback: Callback, logLevel: LogLevel): Boolean
         {
             val state = element.getState()
             var errors = ""
@@ -567,7 +579,7 @@ class Utils {
         }
 
         //checking invalidfields in response body of gatewayconfig
-        private fun checkInvalidFields(
+         fun checkInvalidFields(
             responseBody: JSONObject,
             responseFromGateway: JSONObject,
             callback: Callback,
@@ -615,7 +627,7 @@ class Utils {
         }
 
         //removing empty json objects
-        private fun removeEmptyAndNullFields(response: JSONObject) {
+         fun removeEmptyAndNullFields(response: JSONObject) {
             val keys = response.names()
             if(keys !=null) {
                 for (j in 0 until keys.length()) {
@@ -733,7 +745,7 @@ class Utils {
             val finalError = JSONObject()
             val errors = JSONArray()
             val error = JSONObject()
-            error.put("error",e)
+            error.put("error",skyflowError)
             errors.put(error)
             finalError.put("errors",errors)
             return finalError

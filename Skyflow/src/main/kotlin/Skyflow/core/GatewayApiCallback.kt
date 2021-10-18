@@ -76,9 +76,9 @@ class GatewayApiCallback(
                         else
                         {
                             val responseFromGateway =JSONObject(response.body!!.string())
-                            Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,
+                            val finaleResponse = Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,
                                 responseFromGateway,callback,logLevel)
-                            callback.onSuccess(responseFromGateway)
+                            callback.onSuccess(finaleResponse)
                         }
                     }
                 }

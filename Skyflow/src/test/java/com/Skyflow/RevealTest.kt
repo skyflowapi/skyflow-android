@@ -256,6 +256,48 @@ class RevealTest {
 
     }
 
+    @Test
+    fun testEmptyStyles()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput(
+            "51b1406a-0a30-49bf-b303-0eef66bd502d",RedactionType.PLAIN_TEXT,
+            label =  "expire_date"
+
+        )
+        val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
+        assertEquals(2,revealElement.revealInput.inputStyles.base.borderWidth)
+    }
+
+    @Test
+    fun testEmptyStyle()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput(
+            "51b1406a-0a30-49bf-b303-0eef66bd502d",RedactionType.PLAIN_TEXT,
+            label =  "expire_date",inputStyles = Styles()
+
+        )
+        val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
+        assertEquals(2,revealElement.revealInput.inputStyles.base.borderWidth)
+
+    }
+
+    @Test
+    fun testNullStyle()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput(
+            "51b1406a-0a30-49bf-b303-0eef66bd502d",RedactionType.PLAIN_TEXT,
+            label =  "expire_date",inputStyles = Styles(null)
+
+        )
+        val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
+        assertEquals(2,revealElement.revealInput.inputStyles.base.borderWidth)
+
+
+    }
+
     fun getErrorMessage(error: JSONObject): String {
         val errors = error.getJSONArray("errors")
         val skyflowError = errors.getJSONObject(0).get("error") as SkyflowError

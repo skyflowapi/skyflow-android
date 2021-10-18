@@ -375,7 +375,7 @@ class CollectTest {
         })
     }
     @Test
-    fun nullColumnName()
+    fun testNullColumnName()
     {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
@@ -402,7 +402,7 @@ class CollectTest {
     }
 
     @Test
-    fun emptyColumnName()
+    fun testEmptyColumnName()
     {
         val container = skyflow.container(ContainerType.COLLECT)
         val padding = Padding(30,20,20,20)
@@ -426,6 +426,51 @@ class CollectTest {
 
 
         })
+    }
+
+    @Test
+    fun testEmptyStyles()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val padding = Padding(30,20,20,20)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111 1111 1111 1111")
+        activity.addContentView(card_number,layoutParams)
+        assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
+    }
+
+    @Test
+    fun testEmptyStyle()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val padding = Padding(30,20,20,20)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number",inputStyles = Styles()
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111 1111 1111 1111")
+        activity.addContentView(card_number,layoutParams)
+        assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
+    }
+
+    @Test
+    fun testNullStyle()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val padding = Padding(30,20,20,20)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number",inputStyles =Styles(null)
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111 1111 1111 1111")
+        activity.addContentView(card_number,layoutParams)
+        assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
     }
 }
 

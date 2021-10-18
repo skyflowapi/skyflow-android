@@ -97,7 +97,7 @@ class APIClient (
 
     }
 
-    internal fun get(records:JSONObject, callback : Callback){
+     fun get(records:JSONObject, callback : Callback){
 
         try {
             if(vaultURL.isEmpty() || vaultURL.equals("/v1/vaults/"))
