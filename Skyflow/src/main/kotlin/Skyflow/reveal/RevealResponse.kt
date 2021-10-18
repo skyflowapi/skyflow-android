@@ -39,7 +39,10 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
                 if(failureResponses==0)
+                {
+                    responseBody.remove("errors")
                     callback.onSuccess(responseBody)
+                }
                 else
                     callback.onFailure(responseBody)
             }

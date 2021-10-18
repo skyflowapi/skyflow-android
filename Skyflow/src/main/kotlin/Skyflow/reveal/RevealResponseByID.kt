@@ -43,9 +43,10 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
                 val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
-                if(failureResponses==0)
+                if(failureResponses==0) {
+                    responseBody.remove("errors")
                     callback.onSuccess(responseBody)
-                else
+                }                else
                     callback.onFailure(responseBody)
             }
         }
