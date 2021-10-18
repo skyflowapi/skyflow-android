@@ -58,7 +58,7 @@ class APIClient (
         }
     }
 
-    private fun getAccessToken(callback: Callback) {
+     fun getAccessToken(callback: Callback) {
         try {
             if (!isValidToken(token)) {
                 Logger.info(tag, Messages.RETRIEVING_BEARER_TOKEN.getMessage(), logLevel)
