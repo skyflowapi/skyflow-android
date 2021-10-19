@@ -28,25 +28,6 @@ internal class RevealApiCallback(
             val revealResponse = RevealResponse(records.size, callback, apiClient.logLevel)
 
             for (record in records) {
-//                ```let url = URL(string: (connectionUrl + "/detokenize"))
-//                revealRequestGroup.enter()
-//                var request = URLRequest(url: url!)
-//                request.httpMethod = "POST"
-//                request.addValue("application/json; utf-8", forHTTPHeaderField: "Content-Type")
-//                request.addValue("application/json", forHTTPHeaderField: "Accept")
-//                request.addValue(("Bearer " + self.apiClient.token), forHTTPHeaderField: "Authorization")
-//
-//                do {
-//                    let bodyObject: [String: Any] =
-//                    [
-//                        "detokenizationParameters": [
-//                    [
-//                        "token": record.token
-//                    ]
-//                    ]
-//                    ]
-//                    let data = try JSONSerialization.data(withJSONObject: bodyObject)
-//                        request.httpBody = data```
                 val url = apiClient.vaultURL + apiClient.vaultId + "/detokenize"
                 val body = JSONObject()
                 val detokenizationParameters = JSONArray()
@@ -59,22 +40,6 @@ internal class RevealApiCallback(
                     .addHeader("Authorization", "$responseBody")
                     .url(url)
                     .build()
-//                val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
-//                if(requestUrlBuilder == null){
-//                    val error = SkyflowError(
-//                        SkyflowErrorCode.INVALID_VAULT_URL,
-//                        tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
-//                    callback.onFailure(Utils.constructError(error))
-//                    return
-//                }
-
-//                val requestUrl = requestUrlBuilder.addQueryParameter(
-//                    "redaction",
-//                    record.redaction
-//                ).build()
-//                val request = Request.Builder()
-//                    .addHeader("Authorization", "$responseBody").url(requestUrl).build()
-
                 okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
                     override fun onFailure(call: Call, e: IOException) {
                         revealResponse.insertResponse()
@@ -93,7 +58,6 @@ internal class RevealApiCallback(
                                     revealResponse.insertResponse(resObj, false)
                                 } else if (response.body != null) {
                                     val responseString = response.body!!.string()
-                                    Log.d("res", "onResponse: $responseString")
                                     revealResponse.insertResponse(
                                         JSONObject(
                                             responseString)
@@ -107,7 +71,6 @@ internal class RevealApiCallback(
                                     revealResponse.insertResponse(resObj, false)
                                 }
                             }catch (e: Exception){
-                                Log.d("err", "onResponse: $e")
                                 val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf(e.message.toString()))
                                 skyflowError.setErrorCode(400)
                                 callback.onFailure(Utils.constructError(e))

@@ -41,7 +41,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
             for (element in revealElements){
                 elementsMap[element.revealInput.token!!] = element
             }
-            val recordsArray = responseJSON.getJSONArray("records")
+            val recordsArray = responseJSON.getJSONArray("success")
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")

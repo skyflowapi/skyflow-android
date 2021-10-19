@@ -49,6 +49,11 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                     responseBody.remove("errors")
                     callback.onSuccess(responseBody)
                 }
+                else if(successResponses == 0)
+                {
+                    responseBody.remove("success")
+                    callback.onFailure(responseBody)
+                }
                 else
                     callback.onFailure(responseBody)
             }

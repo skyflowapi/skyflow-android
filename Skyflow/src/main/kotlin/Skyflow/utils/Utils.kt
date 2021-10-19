@@ -94,10 +94,7 @@ class Utils {
                     }
                 }
             }
-            if(!gatewayResponse.has("success"))
-                gatewayResponse.put("success",JSONArray())
-            gatewayResponse.getJSONArray("success").put(0,responseFromGateway)
-            gatewayResponse.getJSONArray("success").remove(1)
+            gatewayResponse.put("success",responseFromGateway)
             return gatewayResponse
         }
 

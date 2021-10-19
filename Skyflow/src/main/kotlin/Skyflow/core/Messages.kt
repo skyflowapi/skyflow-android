@@ -76,7 +76,7 @@ enum class Messages(val message: String) {
     REQUIRED_INPUTS_NOT_PROVIDED("required inputs are not provided"),
     INVALID_EVENT_TYPE("provide a valid event type"),
     INVALID_EVENT_LISTENER("provide valid event listener"),
-    UNKNOWN_ERROR("unknown error %s"),
+    UNKNOWN_ERROR("%s"),
     TRANSACTION_ERROR("an error occurred during transaction"),
     CONNECTION_ERROR("error while initializing the connection"),
     MISSING_REDACTION_VALUE("missing redaction value"),
