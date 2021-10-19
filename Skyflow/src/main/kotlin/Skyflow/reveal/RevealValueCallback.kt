@@ -22,7 +22,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
         try {
             val elementsMap = HashMap<String, Label>()
             val responseJSON = JSONObject(exception.toString())
-            if(responseJSON.has("success"))
+            if(responseJSON.has("records"))
                 revealSuccessRecords(responseJSON,elementsMap)
             revealErrors(responseJSON,elementsMap)
             callback.onFailure(exception)
@@ -41,7 +41,7 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
             for (element in revealElements){
                 elementsMap[element.revealInput.token!!] = element
             }
-            val recordsArray = responseJSON.getJSONArray("success")
+            val recordsArray = responseJSON.getJSONArray("records")
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")

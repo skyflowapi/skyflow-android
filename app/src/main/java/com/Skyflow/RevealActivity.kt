@@ -85,7 +85,7 @@ class RevealActivity : AppCompatActivity() {
 
 
         reveal.setOnClickListener {
-//            getByIds()
+            getByIds()
             detokenize()
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
@@ -118,8 +118,8 @@ class RevealActivity : AppCompatActivity() {
         record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
-        skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
-        skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+        skyflowIds.add("003ec101-c657-4564-9b86-47c3491faf50")
+        skyflowIds.add("054c9b27-fa9b-412e-884d-fd5736668882")
         record.put("ids",skyflowIds)
         recordsArray.put(record)
         val records = JSONObject()
