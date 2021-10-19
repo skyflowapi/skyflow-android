@@ -3,12 +3,12 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
-import Skyflow.core.LogLevel
+import Skyflow.LogLevel
 import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD){
+class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR){
 
     var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
@@ -17,24 +17,30 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
 
     var failureResponses = 0
 
+    var emptyResponses = 0
+
     private val tag = RevealResponse::class.qualifiedName
 
 
     @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean = false){
         if(responseObject != null && isSuccess) {
             successResponses +=1
+            val revealRecord = JSONObject(responseObject.getJSONArray("records")[0].toString())
+            if(revealRecord.has("valueType"))
+                revealRecord.remove("valueType")
             (responseBody.get("success") as JSONArray)
-                .put(responseObject.getJSONArray("records")[0])
+                .put(revealRecord)
         }
         else if(responseObject != null && !isSuccess){
             failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject)
-        }else{
-            failureResponses += 1
+        }
+        else{
+            emptyResponses += 1
         }
 
-        if(successResponses + failureResponses == size) {
-            if (successResponses == 0) {
+        if(successResponses + failureResponses + emptyResponses == size) {
+            if (successResponses + failureResponses == 0) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
@@ -42,6 +48,11 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                 {
                     responseBody.remove("errors")
                     callback.onSuccess(responseBody)
+                }
+                else if(successResponses == 0)
+                {
+                    responseBody.remove("success")
+                    callback.onFailure(responseBody)
                 }
                 else
                     callback.onFailure(responseBody)

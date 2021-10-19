@@ -57,6 +57,7 @@ enum class SkyflowErrorCode(val code:Int, var message:String)
     NOT_FOUND_IN_RESPONSE(400,Messages.NOT_FOUND_IN_RESPONSE.message),
     BAD_REQUEST(400,Messages.BAD_REQUEST.message),
     MISSING_COLUMN(400,Messages.MISSING_COLUMN.message),
+    SERVER_ERROR(500, Messages.SERVER_ERROR.message),
     EMPTY_FIELDS(400,Messages.EMPTY_FIELDS.message);
 
     @JvmName("getCode1")

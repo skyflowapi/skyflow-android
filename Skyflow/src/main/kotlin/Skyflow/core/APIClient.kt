@@ -115,7 +115,7 @@ class APIClient (
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
             }
-            else if(!(records.get("records") is JSONArray))
+            else if(records.get("records") !is JSONArray)
             {
                 throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
             }
@@ -133,25 +133,16 @@ class APIClient (
                     val jsonobj1 = jsonArray.getJSONObject(i)
                     if (!jsonobj1.has("token")) {
                         throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN,tag,logLevel)
-                    } else if (!jsonobj1.has("redaction")) {
-                        throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR,tag,logLevel)
-                    } else if (jsonobj1.get("token").toString().isEmpty()) {
+                    }
+                    else if (jsonobj1.get("token").toString().isEmpty()) {
                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag,logLevel)
-                    } else if (jsonobj1.get("redaction").toString().isEmpty()) {
-                        throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE,tag,logLevel)
-                    } else if (!(jsonobj1.get("redaction").toString()
-                            .equals("PLAIN_TEXT") || jsonobj1.get("redaction").toString()
-                            .equals("DEFAULT") ||
-                                jsonobj1.get("redaction").toString()
-                                    .equals("MASKED") || jsonobj1.get("redaction").toString()
-                            .equals("REDACTED"))
-                    ) {
-                        throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag,logLevel)
-                    } else {
+                    }
+
+                    else {
                         list.add(
                             RevealRequestRecord(
                                 jsonobj1.get("token").toString(),
-                                jsonobj1.get("redaction").toString()
+                                "null"
                             )
                         )
                     }

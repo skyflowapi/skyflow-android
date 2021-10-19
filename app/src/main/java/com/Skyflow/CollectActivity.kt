@@ -1,7 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.core.LogLevel
+import Skyflow.LogLevel
 import Skyflow.Options
 import Skyflow.utils.EventName
 import android.app.AlertDialog
@@ -32,7 +32,7 @@ class CollectActivity : AppCompatActivity() {
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
             tokenProvider,
-            Options(LogLevel.PROD)
+            Options(Skyflow.LogLevel.ERROR, Env.PROD)
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(ContainerType.COLLECT)
@@ -83,16 +83,16 @@ class CollectActivity : AppCompatActivity() {
             Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput(
-            "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
+            "persons", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
             error_styles, "Card Number", "CardNumber"
         )
         val expiryDateInput = Skyflow.CollectElementInput(
-            "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
+            "persons", "card_expiration", SkyflowElementType.EXPIRATION_DATE,
             styles, labelStyles, error_styles, label = "expiry date", placeholder = "expiry date"
         )
         val nameInput = Skyflow.CollectElementInput(
-            "cards",
-            "fullname",
+            "persons",
+            "name.first_name",
             Skyflow.SkyflowElementType.CARDHOLDER_NAME,
             styles,
             labelStyles,
@@ -101,7 +101,7 @@ class CollectActivity : AppCompatActivity() {
             "Full Name"
         )
         val cvvInput = Skyflow.CollectElementInput(
-            "cards",
+            "persons",
             "cvv",
             SkyflowElementType.CVV,
             styles,
@@ -159,7 +159,7 @@ class CollectActivity : AppCompatActivity() {
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
             val record = JSONObject()
-            record.put("table", "cards")
+            record.put("table", "persons")
             val fieldsInAdditionalObject = JSONObject()
             record.put("fields", fieldsInAdditionalObject)
             //additionalFields.put("records", recordsArray)
@@ -176,8 +176,8 @@ class CollectActivity : AppCompatActivity() {
                     val fields = jsonobj.getJSONObject("fields")
                     val intent = Intent(this@CollectActivity, RevealActivity::class.java)
                     intent.putExtra("cardNumber", fields["card_number"].toString())
-                    intent.putExtra("expiryDate", fields["expiry_date"].toString())
-                    intent.putExtra("name", fields["fullname"].toString())
+                    intent.putExtra("expiryDate", fields["card_expiration"].toString())
+                    intent.putExtra("name", JSONObject(fields["name"].toString()).getString("first_name"))
                     intent.putExtra("cvv", fields["cvv"].toString())
                     startActivity(intent)
 
@@ -199,7 +199,7 @@ private fun pureInsert(){
         BuildConfig.VAULT_ID,
         BuildConfig.VAULT_URL,
         tokenProvider,
-        Options(LogLevel.INFO)
+        Options(LogLevel.ERROR)
     )
     val skyflow = Skyflow.init(skyflowConfiguration)
 
@@ -207,7 +207,7 @@ private fun pureInsert(){
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
-        record.put("table", "cards")
+        record.put("table", "persons")
         val fields = JSONObject()
         fields.put("cvv", "123")
         fields.put("card_number", "41111111111")
@@ -233,7 +233,7 @@ private fun pureInsert(){
 
 class DemoTokenProvider : Skyflow.TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = BuildConfig.TOKEN_URL
+        val url = BuildConfig.TOKEN_LOCAL_URL
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {

@@ -4,7 +4,7 @@ import Skyflow.utils.Utils
 import com.skyflow_android.R
 
 enum class Messages(val message: String) {
-    INVALID_URL("Bad or missing URL"),
+    INVALID_URL("URL %s is invalid"),
     INITIALIZE_CLIENT("Initializing skyflow client"),
     CLIENT_INITIALIZED("Initialized skyflow client successfully"),
     CREATE_COLLECT_CONTAINER("Creating Collect container"),
@@ -20,8 +20,8 @@ enum class Messages(val message: String) {
     CREATED_COLLECT_ELEMENT("Created collect element %s"),
     CREATED_REVEAL_ELEMENT("Created reveal element %s"),
 
-    RETRIEVING_BEARER_TOKEN("Retrieving bearer token successfully."),
-    BEARER_TOKEN_RECEIVED("BearerToken received successfully"),
+    RETRIEVING_BEARER_TOKEN("Retrieving bearer token."),
+    BEARER_TOKEN_RECEIVED("BearerToken received successfully."),
     RETRIEVING_BEARER_TOKEN_FAILED("Retrieving bearer token failed"),
 
     ELEMENT_MOUNTED("%s1 Element mounted"),
@@ -48,7 +48,7 @@ enum class Messages(val message: String) {
 
     INVALID_VAULT_ID("vault id invalid cannot be found"),
     INVALID_VAULT_URL("vault url %s is invalid or not secure"),
-    EMPTY_VAULT_ID("vault id is empty."),
+    EMPTY_VAULT_ID("vaultid is empty."),
     EMPTY_VAULT_URL("vault url is empty."),
     INVALID_BEARER_TOKEN("bearer token is invalid or expired"),
     INVALID_TABLE_NAME("Key 'table' doesn't have a value of type String"),
@@ -76,7 +76,7 @@ enum class Messages(val message: String) {
     REQUIRED_INPUTS_NOT_PROVIDED("required inputs are not provided"),
     INVALID_EVENT_TYPE("provide a valid event type"),
     INVALID_EVENT_LISTENER("provide valid event listener"),
-    UNKNOWN_ERROR("unknown error"),
+    UNKNOWN_ERROR("%s"),
     TRANSACTION_ERROR("an error occurred during transaction"),
     CONNECTION_ERROR("error while initializing the connection"),
     MISSING_REDACTION_VALUE("missing redaction value"),
@@ -98,8 +98,7 @@ enum class Messages(val message: String) {
     BAD_REQUEST("bad request"),
     MISSING_COLUMN("column name is missing"),
     EMPTY_FIELDS("fields is empty"),
-
-
+    SERVER_ERROR("Server error %s"),
 }
 
 fun Messages.getMessage(vararg values: String?): String{

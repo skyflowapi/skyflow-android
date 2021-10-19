@@ -6,10 +6,9 @@ import org.json.JSONObject
 import Skyflow.Element
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
-import Skyflow.core.LogLevel
+import Skyflow.LogLevel
 import com.google.gson.JsonObject
 import kotlin.Exception
-import kotlin.math.log
 
 class CollectRequestBody {
     companion object {
@@ -135,8 +134,7 @@ class CollectRequestBody {
                 }
                 catch (e:Exception)
                 {
-                    val skyflowError = SkyflowError()
-                    skyflowError.setErrorMessage(e.message.toString())
+                    val skyflowError = SkyflowError(tag = tag, logLevel = logLevel, params = arrayOf(e.message.toString()))
                     callback.onFailure(skyflowError)
                     return ""
                 }

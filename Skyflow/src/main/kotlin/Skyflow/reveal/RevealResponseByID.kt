@@ -3,12 +3,12 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
-import Skyflow.core.LogLevel
+import Skyflow.LogLevel
 import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD) {
+class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR) {
     var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 
@@ -46,7 +46,13 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
                 if(failureResponses==0) {
                     responseBody.remove("errors")
                     callback.onSuccess(responseBody)
-                }                else
+                }
+                else if(successResponses == 0)
+                {
+                    responseBody.remove("success")
+                    callback.onFailure(responseBody)
+                }
+                else
                     callback.onFailure(responseBody)
             }
         }

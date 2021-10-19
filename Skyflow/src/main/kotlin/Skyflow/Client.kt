@@ -129,6 +129,7 @@ class Client internal constructor(
                                     .toString()
                                     .equals("REDACTED"))
                             ) {
+                                throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag, configuration.options.logLevel)
                             } else {
                                 var skyflow_ids = jsonObj.get("ids")
                                 try {

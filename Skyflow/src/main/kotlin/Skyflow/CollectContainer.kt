@@ -20,7 +20,7 @@ private val tag = CollectContainer::class.qualifiedName
 fun Container<CollectContainer>.create(context: Context, input : CollectElementInput, options : CollectElementOptions = CollectElementOptions()) : TextField
 {
     Logger.info(tag, Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label), configuration.options.logLevel)
-    val collectElement = TextField(context, configuration.options.logLevel)
+    val collectElement = TextField(context, configuration.options)
     collectElement.setupField(input,options)
     elements.add(collectElement)
     return collectElement
