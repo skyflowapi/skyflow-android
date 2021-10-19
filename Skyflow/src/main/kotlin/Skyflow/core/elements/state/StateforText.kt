@@ -1,10 +1,10 @@
 package Skyflow.core.elements.state
 
+import Skyflow.Env
 import Skyflow.SkyflowElementType
 import Skyflow.TextField
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import Skyflow.State
-import Skyflow.core.LogLevel
 import org.json.JSONObject
 
 class StateforText internal constructor(val tf: TextField) : State(tf.columnName, tf.isRequired) {
@@ -57,14 +57,14 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         return result
     }
 
-    internal fun getState(logLevel: LogLevel) : JSONObject{
+    internal fun getState(env: Env) : JSONObject{
         val state = JSONObject()
         state.put("elementType", fieldType)
         state.put("isEmpty", isEmpty)
         state.put("isFocused", isFocused)
         state.put("isValid", isValid)
         var value = ""
-        if(logLevel == LogLevel.DEBUG || logLevel == LogLevel.DEMO) {
+        if(env == Env.DEV) {
             value =  tf.getValue()
         }
         state.put("value", value)

@@ -42,8 +42,7 @@ class RevealActivity : AppCompatActivity() {
 
         val expiryDateInput = Skyflow.RevealElementInput(
             expiry_date.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles, error_styles,
-            label =  "expire date","mm/yyyy"
+            label =  "expire date",altText = "mm/yyyy"
         )
 
         val fullNameInput = Skyflow.RevealElementInput(
@@ -51,6 +50,7 @@ class RevealActivity : AppCompatActivity() {
             redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
             label =  "Name","Name"
         )
+
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
@@ -85,7 +85,7 @@ class RevealActivity : AppCompatActivity() {
 
 
         reveal.setOnClickListener {
-            getByIds()
+//            getByIds()
             detokenize()
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
@@ -114,7 +114,7 @@ class RevealActivity : AppCompatActivity() {
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
-        record.put("table","cards")
+        record.put("table","persons")
         record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
@@ -147,10 +147,10 @@ class RevealActivity : AppCompatActivity() {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "3220-5794-9231-7876")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         val recordObj1 = JSONObject()
-        recordObj1.put("token", "d3ef5cdf-b177-4b60-a5d2-db11663fbd44")
+        recordObj1.put("token", "a1d84ea3-d2d4-4eeb-a21f-928ff9d01d1c")
         recordObj1.put("redaction", Skyflow.RedactionType.DEFAULT)
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)

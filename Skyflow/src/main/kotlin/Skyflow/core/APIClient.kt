@@ -115,7 +115,7 @@ class APIClient (
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
             }
-            else if(!(records.get("records") is JSONArray))
+            else if(records.get("records") !is JSONArray)
             {
                 throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
             }
@@ -139,12 +139,8 @@ class APIClient (
                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag,logLevel)
                     } else if (jsonobj1.get("redaction").toString().isEmpty()) {
                         throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE,tag,logLevel)
-                    } else if (!(jsonobj1.get("redaction").toString()
-                            .equals("PLAIN_TEXT") || jsonobj1.get("redaction").toString()
-                            .equals("DEFAULT") ||
-                                jsonobj1.get("redaction").toString()
-                                    .equals("MASKED") || jsonobj1.get("redaction").toString()
-                            .equals("REDACTED"))
+                    } else if (!(jsonobj1.get("redaction").toString() == "PLAIN_TEXT" || jsonobj1.get("redaction").toString() == "DEFAULT" ||
+                                jsonobj1.get("redaction").toString() == "MASKED" || jsonobj1.get("redaction").toString() == "REDACTED")
                     ) {
                         throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag,logLevel)
                     } else {

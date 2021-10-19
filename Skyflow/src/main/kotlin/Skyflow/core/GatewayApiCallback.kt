@@ -1,9 +1,7 @@
 package Skyflow.core
 
+import Skyflow.*
 import Skyflow.Callback
-import Skyflow.GatewayConfiguration
-import Skyflow.SkyflowError
-import Skyflow.SkyflowErrorCode
 import Skyflow.utils.Utils
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -16,7 +14,7 @@ import java.io.IOException
 class GatewayApiCallback(
     val gatewayConfig : GatewayConfiguration,
     val callback: Callback,
-    val logLevel: LogLevel = LogLevel.PROD,
+    val logLevel: LogLevel = LogLevel.ERROR,
 ) : Callback{
 
     private val okHttpClient = OkHttpClient()

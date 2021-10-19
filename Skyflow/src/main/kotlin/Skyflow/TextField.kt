@@ -16,7 +16,6 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import Skyflow.collect.elements.utils.VibrationHelper
-import Skyflow.core.LogLevel
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
@@ -26,11 +25,10 @@ import android.graphics.Typeface
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
-import kotlin.math.log
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
-    context: Context, val logLevel: LogLevel, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, val options: Options, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : Skyflow.Element(context, attrs, defStyleAttr) {
 
     internal var label = TextView(context)
@@ -132,7 +130,7 @@ class TextField @JvmOverloads constructor(
         super.setOrientation(VERTICAL)
         setListenersForText()
         if(userOnReadyListener !== null)
-            userOnReadyListener?.let{it((state as StateforText).getState(logLevel))}
+            userOnReadyListener?.let{it((state as StateforText).getState(options.env))}
         addView(label)
         addView(inputField)
         addView(error)
@@ -154,7 +152,7 @@ class TextField @JvmOverloads constructor(
                 actualValue = inputField.text.toString()
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
-                    userOnchangeListener?.let { it((state as StateforText).getState(logLevel)) }
+                    userOnchangeListener?.let { it((state as StateforText).getState(options.env)) }
             }
 
         })
@@ -179,7 +177,7 @@ class TextField @JvmOverloads constructor(
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
                 if(userOnFocusListener !== null)
-                    userOnFocusListener?.let { it((state as StateforText).getState(logLevel)) }
+                    userOnFocusListener?.let { it((state as StateforText).getState(options.env)) }
             } else {
 
                 val labelPadding = collectInput.labelStyles.base.padding
@@ -231,7 +229,7 @@ class TextField @JvmOverloads constructor(
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
                 if(userOnBlurListener !== null)
-                    userOnBlurListener?.let { it((state as StateforText).getState(logLevel)) }
+                    userOnBlurListener?.let { it((state as StateforText).getState(options.env)) }
             }
         }.also { inputField.onFocusChangeListener = it }
 

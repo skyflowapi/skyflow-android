@@ -53,9 +53,7 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
                 }
                 if (element.isTokenNull) {
                     throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, configuration.options.logLevel)
-                } else if (element.isRedactionNull) {
-                    throw  SkyflowError(SkyflowErrorCode.MISSING_REDACTION, tag, configuration.options.logLevel)
-                } else if (token!!.isEmpty()) {
+                }  else if (token!!.isEmpty()) {
                     throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, configuration.options.logLevel)
                 }
 

@@ -1,12 +1,10 @@
 package Skyflow.collect.client
 
+import Skyflow.*
+import Skyflow.Callback
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
-import Skyflow.Callback
-import Skyflow.InsertOptions
-import Skyflow.SkyflowError
-import Skyflow.SkyflowErrorCode
 import Skyflow.core.*
 import Skyflow.core.Logger
 import Skyflow.utils.Utils
@@ -52,9 +50,8 @@ internal class CollectAPICallback(
                     response.use {
                         if (!response.isSuccessful)
                         {
-                            val skyflowError = SkyflowError(tag= tag, logLevel = apiClient.logLevel)
-                            skyflowError.setErrorMessage("Unexpected code ${response.body?.string()}")
-                            skyflowError.setErrorCode(400)
+                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(response.body?.string()))
+                            skyflowError.setErrorCode(response.code)
                             callback.onFailure(skyflowError)
                         }
                         else
@@ -65,8 +62,7 @@ internal class CollectAPICallback(
                     }
                 }
             })}catch (e: Exception){
-            val skyflowError = SkyflowError(tag = tag, logLevel = apiClient.logLevel)
-            skyflowError.setErrorMessage(e.message.toString())
+            val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf(e.message.toString()))
             skyflowError.setErrorCode(400)
             callback.onFailure(skyflowError)
         }
@@ -77,14 +73,22 @@ internal class CollectAPICallback(
     }
 
     private fun buildResponse(responseJson: JSONArray) : JSONObject{
+        
         val inputRecords = this.records["records"] as JSONArray
         val recordsArray = JSONArray()
         val responseObject = JSONObject()
         if(this.options.tokens){
             for (i in responseJson.length()/2 until responseJson.length()){
+                val skyflowIDsObject = JSONObject(responseJson[i -
+                        (responseJson.length() - responseJson.length()/2)].toString())
+                val skyflowIDs = skyflowIDsObject.getJSONArray("records")
+                val skyflowID = JSONObject(skyflowIDs[0].toString()).get("skyflow_id")
                 val record = JSONObject(responseJson[i].toString())
                 val inputRecord = inputRecords.get(i - responseJson.length()/2) as JSONObject
                 record.put("table", inputRecord["table"])
+                val fields = JSONObject(record.get("fields").toString())
+                fields.put("skyflow_id", skyflowID)
+                record.put("fields", fields)
                 recordsArray.put(record)
             }
         }

@@ -1,13 +1,11 @@
 package Skyflow
 
-import Skyflow.core.LogLevel
 import Skyflow.core.Logger
-import Skyflow.core.Messages
 import Skyflow.utils.Utils
 
 
 
-class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNKNOWN_ERROR, val tag : String? = "", logLevel: LogLevel = LogLevel.PROD, params: Array<String?> = arrayOf()) : Exception(skyflowErrorCode.getMessage()) {
+class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNKNOWN_ERROR, val tag : String? = "", logLevel: LogLevel = LogLevel.ERROR, params: Array<String?> = arrayOf()) : Exception(skyflowErrorCode.getMessage()) {
 
     override var message = ""
     private var code = skyflowErrorCode.getCode()
@@ -27,10 +25,10 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
         return this.code
     }
 
-    fun setErrorMessage(message:String)
-    {
-        this.message = message
-    }
+//    fun setErrorMessage(message:String)
+//    {
+//        this.message = message
+//    }
 
     fun getErrorMessage() :String
     {

@@ -38,18 +38,18 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
     fun revealSuccessRecords(responseJSON: JSONObject, elementsMap: HashMap<String, Label>)
     {
         try {
-            for (element in revealElements) {
+            for (element in revealElements){
                 elementsMap[element.revealInput.token!!] = element
             }
-            val recordsArray = responseJSON.getJSONArray("success")
-            for (i in 0 until recordsArray.length()) {
+            val recordsArray = responseJSON.getJSONArray("records")
+            for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
-                val fieldsObj = recordObj.getJSONObject("fields")
-                val value = fieldsObj.get(fieldsObj.keys().next()).toString()
+//            val fieldsObj = recordObj.getJSONObject("value")
+                val value = recordObj.getString("value")
                 elementsMap[tokenId]!!.placeholder.text = value
                 elementsMap[tokenId]!!.actualValue = value
-                recordObj.remove("fields")
+                recordObj.remove("value")
             }
         }
         catch (e:Exception){}

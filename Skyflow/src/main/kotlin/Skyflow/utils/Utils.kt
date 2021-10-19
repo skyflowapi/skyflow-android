@@ -1,15 +1,13 @@
 package Skyflow.utils
 
 import Skyflow.*
-import Skyflow.core.LogLevel
-import android.util.Log
+import Skyflow.LogLevel
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.Exception
-import kotlin.math.log
 
 class Utils {
 
@@ -17,7 +15,6 @@ class Utils {
         val tag = Utils::class.qualifiedName
         fun checkUrl(url: String): Boolean {
             if (!URLUtil.isValidUrl(url) || !URLUtil.isHttpsUrl(url)) {
-                //Logger.error(logTag, Messages.INVALID_URL.getMessage(url), logLevel)
                 return false
             }
             return true
@@ -447,7 +444,8 @@ class Utils {
 
         //adding requestHeader for gateway url
         fun addRequestHeader(request: Request.Builder, gatewayConfig: GatewayConfiguration,
-                             callback: Callback, logLevel: LogLevel): Boolean {
+                             callback: Callback, logLevel: LogLevel
+        ): Boolean {
             val headers = (gatewayConfig.requestHeader as JSONObject).names()
             if (headers != null) {
                 for(i in 0 until headers.length())
@@ -739,8 +737,7 @@ class Utils {
 
         fun constructError(e:Exception,code:Int=400) : JSONObject
         {
-            val skyflowError = SkyflowError()
-            skyflowError.setErrorMessage(e.message.toString())
+            val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
             skyflowError.setErrorCode(code)
             val finalError = JSONObject()
             val errors = JSONArray()
