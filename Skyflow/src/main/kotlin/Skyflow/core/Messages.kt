@@ -4,7 +4,7 @@ import Skyflow.utils.Utils
 import com.skyflow_android.R
 
 enum class Messages(val message: String) {
-    INVALID_URL("URL %s is invalid"),
+    INVALID_URL("Bad or missing URL"),
     INITIALIZE_CLIENT("Initializing skyflow client"),
     CLIENT_INITIALIZED("Initialized skyflow client successfully"),
     CREATE_COLLECT_CONTAINER("Creating Collect container"),
@@ -20,8 +20,8 @@ enum class Messages(val message: String) {
     CREATED_COLLECT_ELEMENT("Created collect element %s"),
     CREATED_REVEAL_ELEMENT("Created reveal element %s"),
 
-    RETRIEVING_BEARER_TOKEN("Retrieving bearer token."),
-    BEARER_TOKEN_RECEIVED("BearerToken received successfully."),
+    RETRIEVING_BEARER_TOKEN("Retrieving bearer token successfully."),
+    BEARER_TOKEN_RECEIVED("BearerToken received successfully"),
     RETRIEVING_BEARER_TOKEN_FAILED("Retrieving bearer token failed"),
 
     ELEMENT_MOUNTED("%s1 Element mounted"),
@@ -48,11 +48,11 @@ enum class Messages(val message: String) {
 
     INVALID_VAULT_ID("vault id invalid cannot be found"),
     INVALID_VAULT_URL("vault url %s is invalid or not secure"),
-    EMPTY_VAULT_ID("vaultid is empty."),
+    EMPTY_VAULT_ID("vault id is empty."),
     EMPTY_VAULT_URL("vault url is empty."),
     INVALID_BEARER_TOKEN("bearer token is invalid or expired"),
-    INVALID_TABLE_NAME("table name is not valid"),
-    EMPTY_TABLE_NAME("empty table name passed"),
+    INVALID_TABLE_NAME("Key 'table' doesn't have a value of type String"),
+    EMPTY_TABLE_NAME("Table Name is empty"),
     RECORDS_KEY_NOT_FOUND("records object key value not found"),
     EMPTY_RECORDS("records object is empty"),
     TABLE_KEY_ERROR("key \'table\' is missing or payload is incorrectly formatted"),
@@ -66,12 +66,12 @@ enum class Messages(val message: String) {
     INVALID_REDACTION_TYPE("provided redaction type value doesn’t match with one of : \'plain_text\', \'redacted\' ,\'default\' or \'masked\'"),
     INVALID_FIELD("invalid field %s"),
     MISSING_TOKEN("missing token property"),
-    MISSING_IDS("missing ids property"),
+    MISSING_KEY_IDS("Key 'ids' is not present in the JSON object passed."),
     EMPTY_RECORD_IDS("record ids cannot be empty"),
     INVALID_RECORD_ID_TYPE("invalid type of records id"),
     MISSING_TABLE("missing table property"),
     INVALID_RECORD_TABLE_VALUE("invalid record table value"),
-    INVALID_GATEWAY_URL("invalid gateway url"),
+    INVALID_GATEWAY_URL("invalid gateway url %s"),
     INVALID_INPUT("%s"),
     REQUIRED_INPUTS_NOT_PROVIDED("required inputs are not provided"),
     INVALID_EVENT_TYPE("provide a valid event type"),
@@ -81,22 +81,25 @@ enum class Messages(val message: String) {
     CONNECTION_ERROR("error while initializing the connection"),
     MISSING_REDACTION_VALUE("missing redaction value"),
     ELEMENT_NOT_MOUNTED("element %s not mounted"),
-    DUPLICATE_COLUMN_FOUND("Duplicate column %s is found"),
-    DUPLICATE_ELEMENT_FOUND("duplicate element %s is found"),
-    INVALID_RECORDS("records are not valid"),
+    DUPLICATE_COLUMN_FOUND("Duplicate element with <TABLE_NAME> and <COLUMN_NAME> found in container"),
+    DUPLICATE_ELEMENT_FOUND("Duplicate Element found in response body"),
+    INVALID_RECORDS_TYPE("Key 'records' is of invalid type"),
     INVALID_RECORD_IDS("ids are not valid"),
     MISSING_REDACTION("redaction is missing"),
     EMPTY_KEY_IN_QUERY_PARAMS("empty key present in query parameters"),
     EMPTY_KEY_IN_PATH_PARAMS("empty key present in path parameter"),
     EMPTY_KEY_IN_REQUEST_HEADER_PARAMS("empty key present in request header"),
     INVALID_FIELD_IN_PATH_PARAMS("invalid field %s present in path parameters"),
-    INVALID_FIELD_IN_QUERY_PARAMS("invalid field %s present in qyery parameters"),
+    INVALID_FIELD_IN_QUERY_PARAMS("invalid field %s present in query parameters"),
     INVALID_FIELD_IN_REQUEST_HEADER_PARAMS("invalid field %s present in request header"),
-    FAILED_TO_REVEAL("Failed to reveal elements"),
+    FAILED_TO_REVEAL("Failed to reveal"),
     EMPTY_GATEWAY_URL("Empty gateway url is passed"),
     NOT_FOUND_IN_RESPONSE("%s is not found in response"),
     BAD_REQUEST("bad request"),
-    MISSING_COLUMN("column name is missing");
+    MISSING_COLUMN("column name is missing"),
+    EMPTY_FIELDS("fields is empty"),
+
+
 }
 
 fun Messages.getMessage(vararg values: String?): String{

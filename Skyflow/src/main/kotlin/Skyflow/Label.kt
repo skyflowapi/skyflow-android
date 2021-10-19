@@ -2,6 +2,7 @@ package Skyflow
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.AttributeSet
@@ -53,7 +54,8 @@ class Label @JvmOverloads constructor(
         val errorPadding = revealInput.errorTextStyles.base.padding
         error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
         error.setTextColor(revealInput.errorTextStyles.base.textColor)
-        error.typeface = ResourcesCompat.getFont(context,revealInput.errorTextStyles.base.font)
+        if(!revealInput.errorTextStyles.base.font.equals(Typeface.NORMAL))
+          error.typeface = ResourcesCompat.getFont(context,revealInput.errorTextStyles.base.font)
         error.gravity = revealInput.errorTextStyles.base.textAlignment
     }
 
@@ -65,7 +67,8 @@ class Label @JvmOverloads constructor(
         else
             placeholder.text = revealInput.altText
 
-        placeholder.typeface = ResourcesCompat.getFont(context,revealInput.inputStyles.base.font)
+        if(!revealInput.inputStyles.base.font.equals(Typeface.NORMAL))
+             placeholder.typeface = ResourcesCompat.getFont(context,revealInput.inputStyles.base.font)
         placeholder.textSize = 20f
         placeholder.gravity = revealInput.inputStyles.base.textAlignment
         placeholder.setPadding(padding.left,padding.top,padding.right,padding.bottom)
@@ -84,7 +87,8 @@ class Label @JvmOverloads constructor(
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
         label.setTextColor(revealInput.labelStyles.base.textColor)
         label.gravity = revealInput.labelStyles.base.textAlignment
-        label.typeface = ResourcesCompat.getFont(context,revealInput.labelStyles.base.font)
+        if(!revealInput.labelStyles.base.font.equals(Typeface.NORMAL))
+            label.typeface = ResourcesCompat.getFont(context,revealInput.labelStyles.base.font)
     }
 
     override fun onAttachedToWindow() {

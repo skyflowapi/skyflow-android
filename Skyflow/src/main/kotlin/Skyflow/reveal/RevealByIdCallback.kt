@@ -98,7 +98,12 @@ internal class RevealByIdCallback(
 
 
     override fun onFailure(exception: Any) {
-         callback.onFailure(exception)
+        if(exception is Exception)
+        {
+            callback.onFailure(Utils.constructError(exception))
+        }
+        else
+            callback.onFailure(exception)
 
     }
 

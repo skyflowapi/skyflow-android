@@ -1,6 +1,5 @@
 package Skyflow.collect.client
 
-import Skyflow.core.APIClient
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -8,11 +7,9 @@ import Skyflow.Callback
 import Skyflow.InsertOptions
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.core.*
 import Skyflow.core.Logger
-import Skyflow.core.Messages
-import Skyflow.core.getMessage
 import Skyflow.utils.Utils
-import android.util.Log
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
@@ -23,6 +20,7 @@ internal class CollectAPICallback(
     private val records: JSONObject,
     val callback: Callback,
     private val options: InsertOptions,
+    val logLevel : LogLevel
 ) : Callback
 {
     private val okHttpClient = OkHttpClient()
@@ -32,10 +30,12 @@ internal class CollectAPICallback(
         try{
             val url =apiClient.vaultURL + apiClient.vaultId
             Logger.info(tag, Messages.VALIDATE_RECORDS.getMessage(), apiClient.logLevel)
-            val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options,callback)
+            val jsonBody: JSONObject = Utils.constructBatchRequestBody(records,
+                options,
+                callback,
+                logLevel)
             if(jsonBody.toString() == "{}") return
-            val body: RequestBody = jsonBody.toString()
-                .toRequestBody("application/json".toMediaTypeOrNull())
+            val body: RequestBody = jsonBody.toString().toRequestBody("application/json".toMediaTypeOrNull())
             val request = Request
                 .Builder()
                 .method("POST", body)

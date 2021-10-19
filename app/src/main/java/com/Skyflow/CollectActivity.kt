@@ -162,7 +162,7 @@ class CollectActivity : AppCompatActivity() {
             record.put("table", "cards")
             val fieldsInAdditionalObject = JSONObject()
             record.put("fields", fieldsInAdditionalObject)
-            additionalFields.put("records", recordsArray)
+            //additionalFields.put("records", recordsArray)
 
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")

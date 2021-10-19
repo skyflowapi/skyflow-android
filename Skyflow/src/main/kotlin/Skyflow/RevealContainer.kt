@@ -6,6 +6,7 @@ import Skyflow.core.getMessage
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import Skyflow.reveal.RevealRequestBody
+import Skyflow.reveal.RevealRequestRecord
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
@@ -39,16 +40,17 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
         else if(apiClient.vaultId.isEmpty())
         {
 
-            val finalError = JSONObject()
-            val errors = JSONArray()
-            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
-            errors.put(error)
-            finalError.put("errors",errors)
-            callback.onFailure(finalError)
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+            throw error
         }
         else {
             for (element in this.revealElements) {
                 val token = element.revealInput.token
+                if(!checkIfElementsMounted(element))
+                {
+                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.revealInput.label))
+                    throw error
+                }
                 if (element.isTokenNull) {
                     throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, configuration.options.logLevel)
                 } else if (element.isRedactionNull) {
@@ -56,11 +58,7 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
                 } else if (token!!.isEmpty()) {
                     throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, configuration.options.logLevel)
                 }
-                else if(!checkIfElementsMounted(element))
-                {
-                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.revealInput.label))
-                    throw error
-                }
+
             }
             val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
             if (isUrlValid) {

@@ -9,7 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD) {
-    var responseBody = JSONObject().put("records", JSONArray())
+    var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
@@ -25,14 +25,14 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
             var i = 0
             while(i<responseObject.length())
             {
-                (responseBody.get("records") as JSONArray)
+                (responseBody.get("success") as JSONArray)
                     .put(responseObject.getJSONObject(i))
                 i++
             }
 
         }
         else if(responseObject != null && !isSuccess){
-            successResponses +=1
+            failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject.getJSONObject(0))
         }else{
             failureResponses += 1
@@ -43,9 +43,10 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
                 val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
-                if(failureResponses==0)
+                if(failureResponses==0) {
+                    responseBody.remove("errors")
                     callback.onSuccess(responseBody)
-                else
+                }                else
                     callback.onFailure(responseBody)
             }
         }
