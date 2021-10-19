@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2021-10-19
+
+### Added
+
+- `logLevel` option to allow different levels of logging
+- event listeners for collect element
+- `env` option for accessibilty of value in event listners
+
+### Changed
+- Standardized error information for easier debugging.
+- deprecated redaction in `detokenize` method and `revealElementInput` initializer.
+- change in `detokenize` response format.
+
 ## [1.2.0] - 2021-10-05
 
 ### Added

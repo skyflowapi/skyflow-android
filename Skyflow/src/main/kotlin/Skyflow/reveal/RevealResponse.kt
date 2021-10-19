@@ -10,7 +10,7 @@ import org.json.JSONObject
 
 class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR){
 
-    var responseBody = JSONObject().put("success", JSONArray())
+    var responseBody = JSONObject().put("records", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
@@ -28,7 +28,7 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
             val revealRecord = JSONObject(responseObject.getJSONArray("records")[0].toString())
             if(revealRecord.has("valueType"))
                 revealRecord.remove("valueType")
-            (responseBody.get("success") as JSONArray)
+            (responseBody.get("records") as JSONArray)
                 .put(revealRecord)
         }
         else if(responseObject != null && !isSuccess){
@@ -51,7 +51,7 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                 }
                 else if(successResponses == 0)
                 {
-                    responseBody.remove("success")
+                    responseBody.remove("records")
                     callback.onFailure(responseBody)
                 }
                 else
