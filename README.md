@@ -52,7 +52,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.2.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.3.0'
   ```
 
 ### Using maven
