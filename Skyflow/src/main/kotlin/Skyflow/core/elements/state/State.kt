@@ -1,23 +1,22 @@
 package Skyflow
 
+import org.json.JSONObject
+
 open class State(var columnName:String,var isRequired:Boolean? = false) {
 
-    open fun show():String
-    {
-        var result = ""
-        result = """
+    open fun show(): String {
+        return """
         "$columnName": {
             "isRequired": $isRequired
         }
         """
-        return result
     }
 
-    open fun getState() : HashMap<String,Any>
+    open fun getInternalState() : JSONObject
     {
-        val result = HashMap<String,Any>()
-        result["isRequired"] = isRequired as Any
-        result["columnName"] = columnName as Any
+        val result = JSONObject()
+        result.put("isRequired", isRequired)
+        result.put("columnName", columnName)
 
         return result
     }

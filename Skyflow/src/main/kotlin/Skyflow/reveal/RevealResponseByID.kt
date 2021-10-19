@@ -1,16 +1,22 @@
 package Skyflow.reveal
 
 import Skyflow.Callback
+import Skyflow.SkyflowError
+import Skyflow.SkyflowErrorCode
+import Skyflow.LogLevel
+import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponseByID(var size: Int, var callback: Callback) {
-    var responseBody = JSONObject().put("records", JSONArray())
+class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR) {
+    var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
 
     var failureResponses = 0
+
+    private val tag = RevealResponseByID::class.qualifiedName
 
 
     @Synchronized fun insertResponse(responseObject : JSONArray? = null, isSuccess:Boolean = false){
@@ -19,14 +25,14 @@ class RevealResponseByID(var size: Int, var callback: Callback) {
             var i = 0
             while(i<responseObject.length())
             {
-                (responseBody.get("records") as JSONArray)
+                (responseBody.get("success") as JSONArray)
                     .put(responseObject.getJSONObject(i))
                 i++
             }
 
         }
         else if(responseObject != null && !isSuccess){
-            successResponses +=1
+            failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject.getJSONObject(0))
         }else{
             failureResponses += 1
@@ -34,9 +40,20 @@ class RevealResponseByID(var size: Int, var callback: Callback) {
 
         if(successResponses + failureResponses == size) {
             if (successResponses == 0) {
-                callback.onFailure(Exception("Reveal failed"))
+                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
+                callback.onFailure(Utils.constructError(skyflowError))
             } else {
-                callback.onSuccess(responseBody)
+                if(failureResponses==0) {
+                    responseBody.remove("errors")
+                    callback.onSuccess(responseBody)
+                }
+                else if(successResponses == 0)
+                {
+                    responseBody.remove("success")
+                    callback.onFailure(responseBody)
+                }
+                else
+                    callback.onFailure(responseBody)
             }
         }
     }

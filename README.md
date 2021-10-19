@@ -95,7 +95,11 @@ the Skyflow.TokenProvider interface*/
 val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
     vaultURL = <VAULT_URL>,
-    tokenProvider = demoTokenProvider
+    tokenProvider = demoTokenProvider,
+    options: Skyflow.Options(
+      logLevel : Skyflow.LogLevel, // optional, if not specified loglevel is ERROR.
+       env: SKyflow.Env //optiuona, if not specified env is PROD.
+       ) 
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -144,11 +148,49 @@ class DemoTokenProvider: Skyflow.TokenProvider {
 
 NOTE: You should pass access token as `String` value in the success callback of getBearerToken.
 
+For `logLevel` parameter, there are 4 accepted values in Skyflow.LogLevel
+
+- `DEBUG`
+    
+  When `Skyflow.LogLevel.DEBUG` is passed, all level of logs will be printed(DEBUG, INFO, WARN, ERROR).
+
+- `INFO`
+
+  When `Skyflow.LogLevel.INFO` is passed, INFO logs for every event that has occurred during the SDK flow execution will be printed along with WARN and ERROR logs.
+
+
+- `WARN`
+
+  When `Skyflow.LogLevel.WARN` is passed, WARN and ERROR logs will be printed.
+
+- `ERROR`
+
+  When `Skyflow.LogLevel.ERROR` is passed, only ERROR logs will be printed.
+
+`Note`:
+  - The ranking of logging levels is as follows :  DEBUG < INFO < WARN < ERROR
+  - since `logLevel` is optional, by default the logLevel will be  `ERROR`.
+
+
+
+For `env` parameter, there are 2 accepted values in Skyflow.Env
+
+- `PROD`
+- `DEV`
+
+  In [Event Listeners](#event-listener-on-collect-elements), actual value of element can only be accessed inside the handler when the `env` is set to `DEV`.
+
+`Note`:
+  - since `env` is optional, by default the env will be  `PROD`.
+  - Use `env` option with caution, make sure the env is set to `PROD` when using `skyflow-js` in production. 
+
+
 
 ---
 # Securely collecting data client-side
 -  [**Inserting data into the vault**](#inserting-data-into-the-vault)
 -  [**Using Skyflow Elements to collect data**](#using-skyflow-elements-to-collect-data)
+-  [**Event Listener on Collect Elements**](#event-listener-on-collect-elements)
 
 ## Inserting data into the vault
 
@@ -449,6 +491,85 @@ container.collect(options = collectOptions, callback = insertCallback)
 }
 
 ```
+### Event Listener on Collect Elements
+
+
+Helps to communicate with skyflow elements / iframes by listening to an event
+
+```kt
+element.on(eventName: Skyflow.EventName) { state ->
+  //handle function
+}
+```
+
+There are 4 events in `Skyflow.EventName`
+- `CHANGE`  
+  Change event is triggered when the Element's value changes.
+- `READY`   
+   Ready event is triggered when the Element is fully rendered
+- `FOCUS`   
+ Focus event is triggered when the Element gains focus
+- `BLUR`    
+  Blur event is triggered when the Element loses focus.
+The handler ```(state: JSONObject) -> Unit``` is a callback function you provide, that will be called when the event is fired with the state object as shown below. 
+
+```kt
+val state = {
+  "elementType": Skyflow.ElementType,
+  "isEmpty": Bool,
+  "isFocused": Bool,
+  "isValid": Bool,
+  "value": String 
+}
+```
+`Note:`
+values of SkyflowElements will be returned in elementstate object only when env is `DEV`,  else it is an empty string.
+
+##### Sample code snippet for using listeners
+```kt
+//create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
+
+val skyflowClient = Skyflow.initialize(config)
+
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
+ 
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+    table = "cards",
+    column = "cardNumber",
+    type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardNumber = container.create(input = cardNumberInput)
+
+//subscribing to CHANGE event, which gets triggered when element changes
+cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
+  // Your implementation when Change event occurs
+  log.info("on change", state)
+}
+```
+##### Sample Element state object when `Env` is `DEV`
+```kt
+{
+   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "isEmpty": false,
+   "isFocused": true,
+   "isValid": false,
+   "value": "411"
+}
+```
+##### Sample Element state object when `Env` is `PROD`
+```kt
+{
+   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "isEmpty": false,
+   "isFocused": true,
+   "isValid": false,
+   "value": ""
+}
+```
+
 ---
 # Securely revealing data client-side
 -  [**Retrieving data from the vault**](#retrieving-data-from-the-vault)
@@ -463,8 +584,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     {
       "records":[
         {
-          token: "string",                 // token for the record to be fetched
-          redaction: Skyflow.RedactionType    //redaction to be applied to retrieved data
+          "token": "string",                 // token for the record to be fetched
         }
       ]
     }
@@ -478,7 +598,6 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   val recordsArray = JSONArray()
   val recordObj = JSONObject()
   recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
-  recordObj.put("redaction", RedactionType.PLAIN_TEXT)
   recordsArray.put(recordObj)
   records.put("records", recordsArray)
 
@@ -490,7 +609,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     "records": [
       {
         "token": "131e70dc-6f76-4319-bdd3-96281e051051",
-        "date_of_birth": "1990-01-01",
+        "value": "1990-01-01",
       }
     ]
   }
@@ -575,11 +694,11 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   }
   ```
 
-There are four enum values in Skyflow.RedactionType:
-- `PLAIN_TEXT`
-- `MASKED`
-- `REDACTED`
-- `DEFAULT`
+  There are four enum values in Skyflow.RedactionType:
+  - `PLAIN_TEXT`
+  - `MASKED`
+  - `REDACTED`
+  - `DEFAULT`
 
 
 ## Using Skyflow Elements to reveal data
@@ -595,7 +714,6 @@ Then define a Skyflow Element to reveal data as shown below.
 ```kt
 val revealElementInput = Skyflow.RevealElementInput(
         token = "string",
-        redaction = Skyflow.RedactionType.DEFAULT,
         inputStyles = Skyflow.Styles(),        //optional, styles to be applied to the element
         labelStyles = Skyflow.Styles(),  //optional, styles to be applied to the label of the reveal element
         errorTextStyles = Skyflow.Styles(),  //optional styles that will be applied to the errorText of the reveal element
@@ -603,11 +721,10 @@ val revealElementInput = Skyflow.RevealElementInput(
         altText = "XXXX XXXX XXXX XXXX" //optional, string that is shown before reveal, will show token if altText is not provided
     )
 ```
-The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state. For a list of acceptable redaction types, see the [section above](#Retrieving-data-from-the-vault).
+The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
 
 The `labelStyles` and `errorTextStyles` fields accept the above mentioned `Skyflow.Styles` object as described in the [previous section](#step-2-create-a-collect-element), the only state available for a reveal element is the base state.
 
-For a list of acceptable RedactionTypes, see the [section above](#Retrieving-data-from-the-vault).
 The `inputStyles`, `labelStyles` and  `errorTextStyles` parameters accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but only a single variant is available i.e. base. 
 
 An example of a inputStyles object:
@@ -671,7 +788,6 @@ val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
 //Create Reveal Elements
 val cardNumberInput = Skyflow.RevealElementInput(
         token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
-        redaction = Skyflow.RedactionType.PLAIN_TEXT,
         inputStyles = inputStyles,
         labelStyles = labelStyles,
         errorTextStyles = errorTextStyles,
@@ -683,7 +799,6 @@ val cardNumberElement = container.create(context = Context, input = cardNumberIn
 
 val cvvInput = Skyflow.RevealElementInput(
         token = "89024714-6a26-4256-b9d4-55ad69aa4047",
-        redaction = Skyflow.RedactionType.PLAIN_TEXT
         inputStyles = inputStyles,
         labelStyles = labelStyles,
         errorTextStyles = errorTextStyles,
@@ -716,7 +831,7 @@ container.reveal(callback = revealCallback)
 The response below shows that some tokens assigned to the reveal elements get revealed successfully, while others fail and remain unrevealed.
 
 
-#### Sample Response:
+#### Sample Response:Callback
 ```json
 {
   "success": [
@@ -871,7 +986,7 @@ Sample Response:
 ```
 
 `Note`:
-- `token` and `redaction` are optional for creating reveal element, if it is used for invokeGateway
+- `token` is optional for creating reveal element, if it is used for invokeGateway
 - responseBody contains collect or reveal elements to render the response from the gateway on UI
 
 

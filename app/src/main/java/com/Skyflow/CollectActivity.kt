@@ -1,13 +1,15 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.LogLevel
+import Skyflow.Options
+import Skyflow.utils.EventName
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
@@ -29,10 +31,11 @@ class CollectActivity : AppCompatActivity() {
         val skyflowConfiguration = Skyflow.Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
-            tokenProvider
+            tokenProvider,
+            Options(Skyflow.LogLevel.ERROR, Env.PROD)
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
-        val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
         val padding = Skyflow.Padding(8, 8, 8, 8)
         val bstyle = Skyflow.Style(
             Color.parseColor("#403E6B"),
@@ -80,16 +83,16 @@ class CollectActivity : AppCompatActivity() {
             Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput(
-            "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
+            "persons", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
             error_styles, "Card Number", "CardNumber"
         )
         val expiryDateInput = Skyflow.CollectElementInput(
-            "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
+            "persons", "card_expiration", SkyflowElementType.EXPIRATION_DATE,
             styles, labelStyles, error_styles, label = "expiry date", placeholder = "expiry date"
         )
         val nameInput = Skyflow.CollectElementInput(
-            "cards",
-            "fullname",
+            "persons",
+            "name.first_name",
             Skyflow.SkyflowElementType.CARDHOLDER_NAME,
             styles,
             labelStyles,
@@ -98,7 +101,7 @@ class CollectActivity : AppCompatActivity() {
             "Full Name"
         )
         val cvvInput = Skyflow.CollectElementInput(
-            "cards",
+            "persons",
             "cvv",
             SkyflowElementType.CVV,
             styles,
@@ -112,6 +115,22 @@ class CollectActivity : AppCompatActivity() {
         val expirationDate = collectContainer.create(this, expiryDateInput)
         val name = collectContainer.create(this, nameInput, options)
         val cvv = collectContainer.create(this, cvvInput)
+        
+        cardNumber.on(EventName.FOCUS) { state ->
+                    Log.d(TAG, "focus: sate $state")
+        }
+
+        cardNumber.on(EventName.BLUR) { state ->
+            Log.d(TAG, "blur: sate $state")
+        }
+
+        cardNumber.on(EventName.CHANGE) { state ->
+            Log.d(TAG, "change: sate $state")
+        }
+
+        cardNumber.on(EventName.READY) { state ->
+            Log.d(TAG, "ready: sate $state")
+        }
 
         val expiryDateInput1 = Skyflow.RevealElementInput(
             "reveal token",
@@ -140,10 +159,10 @@ class CollectActivity : AppCompatActivity() {
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
             val record = JSONObject()
-            record.put("table", "cards")
+            record.put("table", "persons")
             val fieldsInAdditionalObject = JSONObject()
             record.put("fields", fieldsInAdditionalObject)
-            additionalFields.put("records", recordsArray)
+            //additionalFields.put("records", recordsArray)
 
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
@@ -157,16 +176,16 @@ class CollectActivity : AppCompatActivity() {
                     val fields = jsonobj.getJSONObject("fields")
                     val intent = Intent(this@CollectActivity, RevealActivity::class.java)
                     intent.putExtra("cardNumber", fields["card_number"].toString())
-                    intent.putExtra("expiryDate", fields["expiry_date"].toString())
-                    intent.putExtra("name", fields["fullname"].toString())
+                    intent.putExtra("expiryDate", fields["card_expiration"].toString())
+                    intent.putExtra("name", JSONObject(fields["name"].toString()).getString("first_name"))
                     intent.putExtra("cvv", fields["cvv"].toString())
                     startActivity(intent)
 
                 }
 
-                override fun onFailure(exception: Exception) {
+                override fun onFailure(exception: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect failure: ${exception.message.toString()}")
+                    Log.d(TAG, "collect failure: ${exception.toString()}")
                 }
             }, CollectOptions(true, additionalFields))
         }
@@ -175,12 +194,12 @@ class CollectActivity : AppCompatActivity() {
 
 
 private fun pureInsert(){
-    Log.d("enter", "testingFunction: called")
     val tokenProvider = DemoTokenProvider()
     val skyflowConfiguration = Skyflow.Configuration(
         BuildConfig.VAULT_ID,
         BuildConfig.VAULT_URL,
-        tokenProvider
+        tokenProvider,
+        Options(LogLevel.ERROR)
     )
     val skyflow = Skyflow.init(skyflowConfiguration)
 
@@ -188,7 +207,7 @@ private fun pureInsert(){
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
-        record.put("table", "cards")
+        record.put("table", "persons")
         val fields = JSONObject()
         fields.put("cvv", "123")
         fields.put("card_number", "41111111111")
@@ -198,10 +217,10 @@ private fun pureInsert(){
 
         skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
             override fun onSuccess(responseBody: Any) {
-                Log.d(ContentValues.TAG, "success: $responseBody")
+                Log.d("insert", "success: $responseBody")
             }
 
-            override fun onFailure(exception: Exception) {
+            override fun onFailure(exception: Any) {
                 Log.d(ContentValues.TAG, "failure: $exception")
             }
 
@@ -214,7 +233,7 @@ private fun pureInsert(){
 
 class DemoTokenProvider : Skyflow.TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = BuildConfig.TOKEN_URL
+        val url = BuildConfig.TOKEN_LOCAL_URL
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {
@@ -224,7 +243,7 @@ class DemoTokenProvider : Skyflow.TokenProvider {
                         if (!response.isSuccessful)
                             throw IOException("Unexpected code $response")
                         val accessTokenObject =
-                            JSONObject(response.body()!!.string().toString())
+                            JSONObject(response.body!!.string().toString())
                         val accessToken = accessTokenObject["accessToken"]
 //                        val accessToken = ""
                         callback.onSuccess("$accessToken")

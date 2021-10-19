@@ -35,15 +35,14 @@ class RevealActivity : AppCompatActivity() {
         val base_error_style = Skyflow.Style(Color.RED, 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
         val error_styles = Styles(base_error_style)
         val cardNumberInput = Skyflow.RevealElementInput(
-            card_number.toString(),
+           card_number.toString(),
             Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
             "card number"
         )
 
         val expiryDateInput = Skyflow.RevealElementInput(
             expiry_date.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles, error_styles,
-            label =  "expire date","mm/yyyy"
+            label =  "expire date",altText = "mm/yyyy"
         )
 
         val fullNameInput = Skyflow.RevealElementInput(
@@ -51,6 +50,7 @@ class RevealActivity : AppCompatActivity() {
             redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
             label =  "Name","Name"
         )
+
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
@@ -96,9 +96,9 @@ class RevealActivity : AppCompatActivity() {
                     Log.d(TAG, "reveal success: ${responseBody}")
                 }
 
-                override fun onFailure(exception: Exception) {
+                override fun onFailure(exception: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "reveal failure: ${exception.printStackTrace()}")
+                    Log.d(TAG, "reveal failure: ${exception.toString()}")
                 }})
         }
     }
@@ -114,13 +114,12 @@ class RevealActivity : AppCompatActivity() {
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
-        record.put("table","cards")
+        record.put("table","persons")
         record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
-        skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
-        skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
-        skyflowIds.add("xxx")
+        skyflowIds.add("003ec101-c657-4564-9b86-47c3491faf50")
+        skyflowIds.add("054c9b27-fa9b-412e-884d-fd5736668882")
         record.put("ids",skyflowIds)
         recordsArray.put(record)
         val records = JSONObject()
@@ -131,8 +130,8 @@ class RevealActivity : AppCompatActivity() {
                 Log.d("getbyskyflow_ids",responseBody.toString())
             }
 
-            override fun onFailure(exception: Exception) {
-                Log.d("exception",exception.toString())
+            override fun onFailure(exception: Any) {
+                Log.d("getbyskyflow_ids",exception.toString())
 
             }
 
@@ -148,10 +147,10 @@ class RevealActivity : AppCompatActivity() {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
-        recordObj.put("redaction", Skyflow.RedactionType.PLAIN_TEXT)
+        recordObj.put("token", "3220-5794-9231-7876")
+        recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         val recordObj1 = JSONObject()
-        recordObj1.put("token", "d3ef5cdf-b177-4b60-a5d2-db11663fbd44")
+        recordObj1.put("token", "a1d84ea3-d2d4-4eeb-a21f-928ff9d01d1c")
         recordObj1.put("redaction", Skyflow.RedactionType.DEFAULT)
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)
@@ -162,8 +161,8 @@ class RevealActivity : AppCompatActivity() {
                 Log.d("detokenize", "onSuccess: $responseBody")
             }
 
-            override fun onFailure(exception: Exception) {
-                Log.d("detokenize", "onFailure: $exception")
+            override fun onFailure(exception: Any) {
+                Log.d("detokenize", "onFailure: ${exception.toString()}")
             }
 
         })

@@ -1,8 +1,12 @@
 package Skyflow.reveal
 
 import Skyflow.Callback
+import Skyflow.SkyflowError
+import Skyflow.SkyflowErrorCode
 import Skyflow.core.APIClient
+import Skyflow.utils.Utils
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -13,18 +17,19 @@ internal class RevealByIdCallback(
     var records: MutableList<GetByIdRecord>
 ) :
     Callback {
-
+    private val tag = RevealByIdCallback::class.qualifiedName
     override fun onSuccess(responseBody: Any) {
         try {
             val okHttpClient = OkHttpClient();
 
-            val revealResponse = RevealResponseByID(records.size, callback)
+            val revealResponse = RevealResponseByID(records.size, callback, apiClient.logLevel)
 
             for (record in records) {
                 val url = apiClient.vaultURL + apiClient.vaultId + "/"+record.table
-                val requestUrlBuilder = HttpUrl.parse(url)?.newBuilder()
+                val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
                 if(requestUrlBuilder == null){
-                    onFailure(Exception("Bad or missing url"))
+                    val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
+                    callback.onFailure(Utils.constructError(error))
                     return
                 }
                 for( id in record.skyflow_ids)
@@ -32,7 +37,7 @@ internal class RevealByIdCallback(
 
                 val requestUrl = requestUrlBuilder.addQueryParameter(
                     "redaction",
-                    record.redaction.toString()
+                    record.redaction
                 ).build()
                 val request = Request.Builder()
                     .addHeader("Authorization", "$responseBody").url(requestUrl).build()
@@ -45,21 +50,17 @@ internal class RevealByIdCallback(
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             try {
-                                if (!response.isSuccessful && response.body() != null) {
-                                    val responsebody =response.body()!!.string()
+                                if (!response.isSuccessful && response.body != null) {
+                                    val responsebody = response.body!!.string()
                                     val resObj = JSONObject()
-                                    val errorObj = JSONObject()
                                     val responseErrorBody = JSONObject(responsebody)
-                                    errorObj.put("code", response.code().toString())
-                                    errorObj.put(
-                                        "description",
-                                        (responseErrorBody.get("error") as JSONObject).get("message")
-                                    )
-                                    resObj.put("error", errorObj)
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR ,tag=tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
+                                    skyflowError.setErrorCode(response.code)
+                                    resObj.put("error", skyflowError)
                                     resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
-                                } else if (response.body() != null) {
-                                    val fields =JSONObject(response.body()!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
+                                } else if (response.body != null) {
+                                    val fields =JSONObject(response.body!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
                                     var i = 0
                                     val newJsonArray = JSONArray()
                                     while (i<fields.length())
@@ -76,29 +77,33 @@ internal class RevealByIdCallback(
                                     )
                                 } else {
                                     val resObj = JSONObject()
-                                    val errorObj = JSONObject()
-                                    errorObj.put("code", "400")
-                                    errorObj.put("description", "Bad Request")
-                                    resObj.put("error", errorObj)
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
+                                    resObj.put("error", skyflowError)
                                     resObj.put("ids", record.skyflow_ids)
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                                 }
                             }catch (e: Exception){
-                                callback.onFailure(e)
+                                callback.onFailure(Utils.constructError(e))
                             }
                         }
                     }
                 })
             }
         }catch (e: Exception){
-            callback.onFailure(e)
+            callback.onFailure(Utils.constructError(e))
         }
 
     }
 
 
-    override fun onFailure(exception: Exception) {
-        callback.onFailure(exception)
+    override fun onFailure(exception: Any) {
+        if(exception is Exception)
+        {
+            callback.onFailure(Utils.constructError(exception))
+        }
+        else
+            callback.onFailure(exception)
+
     }
 
 }

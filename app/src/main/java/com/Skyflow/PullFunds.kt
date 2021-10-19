@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_generate_cvv.*
+import okhttp3.OkHttpClient
 import org.json.JSONObject
+import java.io.IOException
 
 class PullFunds : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,10 +130,21 @@ class PullFunds : AppCompatActivity() {
             skyflowClient.invokeGateway(bodyForGateway,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
+                    runOnUiThread(Runnable {
+                        kotlin.run {
+                            Toast.makeText(
+                                this@PullFunds,
+                                "Payment is successful with transaction id ${
+                                    (responseBody as JSONObject).get("transactionIdentifier")
+                                }",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    })
                     Log.d("gateway success",responseBody.toString())
                 }
 
-                override fun onFailure(exception: Exception) {
+                override fun onFailure(exception: Any) {
                     Log.d("gateway failure",exception.toString())
                 }
 
@@ -140,7 +154,27 @@ class PullFunds : AppCompatActivity() {
 
     class DemoTokenProvider : Skyflow.TokenProvider {
         override fun getBearerToken(callback: Skyflow.Callback) {
-            callback.onSuccess(BuildConfig.GATEWAY_ACCESS_TOKEN)
+            val url = BuildConfig.TOKEN_LOCAL_URL
+            val request = okhttp3.Request.Builder().url(url).build()
+            val okHttpClient = OkHttpClient()
+            try {
+                val thread = Thread {
+                    run {
+                        okHttpClient.newCall(request).execute().use { response ->
+                            if (!response.isSuccessful)
+                                throw IOException("Unexpected code $response")
+                            val accessTokenObject =
+                                JSONObject(response.body!!.string())
+                            val accessToken = accessTokenObject["accessToken"]
+//                        val accessToken = ""
+                            callback.onSuccess("$accessToken")
+                        }
+                    }
+                }
+                thread.start()
+            } catch (exception: Exception) {
+                callback.onFailure(exception)
+            }
         }
     }
 }

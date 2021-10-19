@@ -1,8 +1,9 @@
 package Skyflow
 
+
 class RevealElementInput(
     internal var token: String? = null,
-    internal var redaction: RedactionType? = null,
+    @Deprecated("redaction parameter is deprecated", level = DeprecationLevel.WARNING) internal var redaction: RedactionType? = null,
     internal var inputStyles: Styles = Styles(),
     internal var labelStyles:Styles = Styles(),
     internal var errorTextStyles:Styles=Styles(),
