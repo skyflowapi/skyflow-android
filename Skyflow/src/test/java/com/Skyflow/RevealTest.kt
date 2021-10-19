@@ -229,32 +229,7 @@ class RevealTest {
                     getErrorMessage(exception as JSONObject))
             }})
     }
-    @Test
-    fun testMissingRedaction()
-    {
-        val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
-            "https://sb1.area51.vault.skyflowapis.tech",
-            AccessTokenProvider()
-        )
-        val skyflow = Client(skyflowConfiguration)
-        val revealContainer = skyflow.container(ContainerType.REVEAL)
-        val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d",null,
-            label =  "expire_date"
-        )
-        val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
-        activity.addContentView(revealElement,layoutParams)
-        revealContainer.reveal(object: Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_REDACTION)
-                assertEquals(skyflowError.getErrorMessage(),
-                    getErrorMessage(exception as JSONObject))
-            }})
-
-    }
+   
 
     @Test
     fun testEmptyStyles()

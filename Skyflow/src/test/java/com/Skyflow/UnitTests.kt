@@ -2,7 +2,6 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.APIClient
-import Skyflow.core.LogLevel
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.Utils
 import android.app.Activity
@@ -689,7 +688,7 @@ class UnitTests {
     @Test
     fun testEmptyTokenForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -716,7 +715,7 @@ class UnitTests {
     @Test
     fun testMissingTokenForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -743,7 +742,7 @@ class UnitTests {
     @Test
     fun testMissingRedactionForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -771,7 +770,7 @@ class UnitTests {
     @Test
     fun testInvalidRedactionForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -798,7 +797,7 @@ class UnitTests {
     @Test
     fun testRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -825,7 +824,7 @@ class UnitTests {
     @Test
     fun testInvalidRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         revealRecords.put("records", JSONObject())
         apiClient.get(revealRecords, object : Callback
@@ -847,7 +846,7 @@ class UnitTests {
     @Test
     fun testEmptyRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.PROD)
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         revealRecords.put("records", JSONArray())
         apiClient.get(revealRecords, object : Callback
@@ -1108,7 +1107,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         val newRequest = "https://www.google.com?card_number=4111&cvv=123".toHttpUrlOrNull()?.newBuilder()
 
@@ -1128,7 +1127,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
         assertEquals(generatedUrl,"https://www.google.com/4111/123")
     }
 
@@ -1160,7 +1159,7 @@ class UnitTests {
                     getErrorMessage(exception as JSONObject))
             }
 
-        }, HashSet(),LogLevel.PROD)
+        }, HashSet(),LogLevel.ERROR)
     }
 
     @Test
@@ -1219,7 +1218,7 @@ class UnitTests {
 
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertTrue(isConstructed)
     }
@@ -1247,7 +1246,7 @@ class UnitTests {
 
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertFalse(isConstructed)
     }
@@ -1275,7 +1274,7 @@ class UnitTests {
 
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertFalse(isConstructed)
     }
@@ -1310,7 +1309,7 @@ class UnitTests {
                     SkyflowErrorCode.RECORDS_KEY_NOT_FOUND.getMessage())
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
     }
 
     @Test
@@ -1336,7 +1335,7 @@ class UnitTests {
                     SkyflowErrorCode.INVALID_RECORDS.getMessage())
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
     }
 
     @Test
@@ -1362,7 +1361,7 @@ class UnitTests {
                     SkyflowErrorCode.MISSING_TABLE.getMessage())
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
@@ -1388,7 +1387,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
@@ -1414,7 +1413,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
@@ -1442,7 +1441,7 @@ class UnitTests {
                     SkyflowErrorCode.MISSING_TABLE.getMessage())
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
@@ -1467,7 +1466,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertTrue(isValid)
     }
@@ -1490,7 +1489,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
             }
 
-        },LogLevel.PROD)
+        },LogLevel.ERROR)
 
         assertTrue(!isValid)
     }
@@ -1507,7 +1506,7 @@ class UnitTests {
     @Test
     fun testBearerTokenFunction() //success
     {
-        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForSuccess(),LogLevel.PROD)
+        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForSuccess(),LogLevel.ERROR)
         client.getAccessToken(object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1524,7 +1523,7 @@ class UnitTests {
     @Test
     fun testBearerTokenFunctionFailed() // invalid token
     {
-        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForFail(),LogLevel.PROD)
+        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForFail(),LogLevel.ERROR)
         client.getAccessToken(object : Callback
         {
             override fun onSuccess(responseBody: Any) {

@@ -112,50 +112,7 @@ class GetTest {
         })
     }
 
-    @Test
-    fun testEmptyRedaction()
-    {
 
-        val revealRecords = JSONObject()
-        val revealRecordsArray = JSONArray()
-        val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
-        recordObj.put("redaction", "")
-        revealRecordsArray.put(recordObj)
-        revealRecords.put("records", revealRecordsArray)
-        skyflow.detokenize(records = revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
-                assertEquals(skyflowError.getErrorMessage(),getErrorMessage(exception as JSONObject))
-            }
-
-        })
-    }
-
-    @Test
-    fun testInvalidRedaction()
-    {
-        val revealRecords = JSONObject()
-        val revealRecordsArray = JSONArray()
-        val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
-        recordObj.put("redaction", "something")
-        revealRecordsArray.put(recordObj)
-        revealRecords.put("records", revealRecordsArray)
-        skyflow.detokenize(records = revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
-                assertEquals(skyflowError.getErrorMessage(),getErrorMessage(exception as JSONObject))
-            }
-
-        })
-    }
 
     @Test
     fun testMissingToken()
@@ -208,28 +165,7 @@ class GetTest {
         })
     }
 
-    @Test
-    fun testMissingRedaction()
-    {
 
-        val revealRecords = JSONObject()
-        val revealRecordsArray = JSONArray()
-        val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
-        //recordObj.put("redaction", "")
-        revealRecordsArray.put(recordObj)
-        revealRecords.put("records", revealRecordsArray)
-        skyflow.detokenize(records = revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
-                assertEquals(skyflowError.getErrorMessage(),getErrorMessage(exception as JSONObject))
-            }
-
-        })
-    }
 
     @Test
     fun testMissingRecords()
