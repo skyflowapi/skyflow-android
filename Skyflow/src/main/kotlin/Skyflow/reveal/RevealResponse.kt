@@ -10,7 +10,7 @@ import org.json.JSONObject
 
 class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD){
 
-    var responseBody = JSONObject().put("records", JSONArray())
+    var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
@@ -23,7 +23,7 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
     @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean = false){
         if(responseObject != null && isSuccess) {
             successResponses +=1
-            (responseBody.get("records") as JSONArray)
+            (responseBody.get("success") as JSONArray)
                 .put(responseObject.getJSONArray("records")[0])
         }
         else if(responseObject != null && !isSuccess){

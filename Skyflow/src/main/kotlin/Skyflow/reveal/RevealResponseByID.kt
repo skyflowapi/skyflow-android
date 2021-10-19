@@ -9,7 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.PROD) {
-    var responseBody = JSONObject().put("records", JSONArray())
+    var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 
     var successResponses = 0
@@ -25,7 +25,7 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
             var i = 0
             while(i<responseObject.length())
             {
-                (responseBody.get("records") as JSONArray)
+                (responseBody.get("success") as JSONArray)
                     .put(responseObject.getJSONObject(i))
                 i++
             }
