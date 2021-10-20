@@ -1,13 +1,26 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.collect.client.CollectAPICallback
+import Skyflow.collect.client.CollectRequestBody
+import Skyflow.collect.elements.utils.Card
+import Skyflow.collect.elements.utils.CardType
+import Skyflow.collect.elements.utils.DateValidator
+import Skyflow.collect.elements.utils.SecurityCode
 import Skyflow.core.APIClient
+import Skyflow.core.Logger
 import Skyflow.core.elements.state.StateforText
+import Skyflow.reveal.GetByIdRecord
+import Skyflow.reveal.RevealApiCallback
+import Skyflow.reveal.RevealByIdCallback
+import Skyflow.reveal.RevealRequestRecord
 import Skyflow.utils.Utils
 import android.app.Activity
+import android.util.Log
 import android.view.ViewGroup
-import com.Skyflow.AccessTokenProvider
-import com.Skyflow.TestApplication
+import android.widget.CheckBox
+import com.Skyflow.collect.elements.validations.SkyflowValidationError
+import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
@@ -23,7 +36,6 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class UnitTests {
 
     lateinit var skyflow : Client
@@ -48,27 +60,34 @@ class UnitTests {
     }
     @Test
     fun testCreateSkyflowElement(){
+        val padding = Padding(10,10,5,5)
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
+        val styles = Styles(base = Style(padding = padding))
         val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number",inputStyles = styles
         )
         val card_number = container.create(activity,collectInput, options) as? TextField
         card_number!!.inputField.setText("4111")
         activity.addContentView(card_number,layoutParams)
         card_number.inputField.setText("4111 1111 1111 1111")
         Assert.assertEquals(card_number.getValue(), "4111 1111 1111 1111")
+        Assert.assertEquals(10,card_number.collectInput.inputStyles.base.padding.top)
+        Assert.assertEquals(10,card_number.collectInput.inputStyles.base.padding.left)
+        Assert.assertEquals(5,card_number.collectInput.inputStyles.base.padding.right)
+        Assert.assertEquals(5,card_number.collectInput.inputStyles.base.padding.bottom)
+        assertNotNull(card_number.validate())
     }
     @Test
     fun testEmptyState()
     {
         val container = skyflow.container(ContainerType.COLLECT)
-        val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
         )
-        val cardNumber = container.create(activity,collectInput)
-        cardNumber.inputField.setText("4111 1111 1111 1111")
-        cardNumber.state = StateforText(cardNumber)
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        cvv.inputField.setText("123")
+        cvv.state = StateforText(cvv)
 
     }
 
@@ -77,12 +96,12 @@ class UnitTests {
     {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
-        val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,label = "card number"
+        val collectInput = CollectElementInput("cards","expiry_date",
+            SkyflowElementType.EXPIRATION_DATE,label = "expiry date"
         )
-        val card_number = container.create(activity,collectInput, options) as? TextField
+        val date = container.create(activity,collectInput, options) as? TextField
         Assert.assertEquals(container.elements.count(), 1)
-        Assert.assertTrue(container.elements[0].fieldType == SkyflowElementType.CARD_NUMBER)
+        Assert.assertTrue(container.elements[0].fieldType == SkyflowElementType.EXPIRATION_DATE)
     }
 
     @Test
@@ -136,7 +155,7 @@ class UnitTests {
             label =  "card number",inputStyles = Styles(null)
 
         )
-        val cardNumber = container.create(activity,revealInput)
+        val cardNumber = container.create(activity,revealInput,RevealElementOptions())
         assertEquals(false,Utils.checkIfElementsMounted(cardNumber))
     }
 
@@ -324,6 +343,42 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+
+    @Test
+    fun testEmptySkyflowId()
+    {
+        val configuration = Configuration(
+            "1234",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val client = Client(configuration)
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table","cards")
+        record.put("redaction",RedactionType.PLAIN_TEXT)
+
+        val skyflowIds = ArrayList<String>()
+        skyflowIds.add("")
+        record.put("ids",skyflowIds)
+        recordsArray.put(record)
+        val records = JSONObject()
+        records.put("records",recordsArray)
+        client.getById(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
                 Assert.assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -680,6 +735,43 @@ class UnitTests {
 
         })
     }
+
+
+    @Test
+    fun testValidRequestForGetById()
+    {
+        val configuration = Configuration(
+            "23456",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val client = Client(configuration)
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table","cards")
+        record.put("redaction",RedactionType.REDACTED)
+
+        val skyflowIds = ArrayList<String>()
+        skyflowIds.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+        skyflowIds.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+        record.put("ids",skyflowIds)
+        recordsArray.put(record)
+        val records = JSONObject()
+        records.put("records",recordsArray)
+        client.getById(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
     //end getbyid
 
 
@@ -693,7 +785,7 @@ class UnitTests {
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
         recordObj.put("token", "")
-        recordObj.put("redaction", RedactionType.PLAIN_TEXT)
+        recordObj.put("redaction", RedactionType.MASKED)
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback
@@ -720,7 +812,7 @@ class UnitTests {
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
        // recordObj.put("token", "")
-        recordObj.put("redaction", RedactionType.PLAIN_TEXT)
+        recordObj.put("redaction", RedactionType.DEFAULT)
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback
@@ -740,61 +832,6 @@ class UnitTests {
     }
 
     @Test
-    fun testMissingRedactionForDetokenize()
-    {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
-        val revealRecords = JSONObject()
-        val revealRecordsArray = JSONArray()
-        val recordObj = JSONObject()
-        recordObj.put("token", "1234-134")
-       // recordObj.put("redaction", RedactionType.PLAIN_TEXT)
-        revealRecordsArray.put(recordObj)
-        revealRecords.put("records", revealRecordsArray)
-        apiClient.get(revealRecords, object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    getErrorMessage(exception as JSONObject))
-            }
-
-        })
-
-    }
-
-
-    @Test
-    fun testInvalidRedactionForDetokenize()
-    {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
-        val revealRecords = JSONObject()
-        val revealRecordsArray = JSONArray()
-        val recordObj = JSONObject()
-        recordObj.put("token", "1234-134")
-        recordObj.put("redaction", "some")
-        revealRecordsArray.put(recordObj)
-        revealRecords.put("records", revealRecordsArray)
-        apiClient.get(revealRecords, object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    getErrorMessage(exception as JSONObject))
-            }
-
-        })
-
-    }
-
-    @Test
     fun testRecordsForDetokenize()
     {
         val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
@@ -802,7 +839,7 @@ class UnitTests {
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
         recordObj.put("token", "1234-134")
-         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
+         recordObj.put("redaction", RedactionType.REDACTED)
         revealRecordsArray.put(recordObj)
        // revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback
@@ -954,6 +991,56 @@ class UnitTests {
 
         })
     }
+
+
+    @Test
+    fun testValidRequestForDetokenize()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val revealRecords = JSONObject()
+        val revealRecordsArray = JSONArray()
+        val recordObj = JSONObject()
+         recordObj.put("token", "cards")
+        revealRecordsArray.put(recordObj)
+        revealRecords.put("records", revealRecordsArray)
+        apiClient.get(revealRecords, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+
+            }
+
+        })
+
+    }
+
+    @Test
+    fun testValidRequestForDetokenizeInClient()
+    {
+        val configuration = Configuration(
+            "",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val client = Client(configuration)
+        val revealRecords = JSONObject()
+        client.detokenize(revealRecords, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+
+            }
+
+        })
+
+    }
+
 
 
 
@@ -1201,13 +1288,13 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput("cards",null,
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+            SkyflowElementType.CARDHOLDER_NAME,placeholder = "name"
         )
-        val card_number = container.create(activity,collectInput, options) as? TextField
-        card_number!!.inputField.setText("4111 1111 1111 1111")
+        val name = container.create(activity,collectInput, options) as? TextField
+        name!!.inputField.setText("4111 1111 1111 1111")
         val records = JSONObject()
-        records.put("cardNumber",card_number)
-        activity.addContentView(card_number,layoutParams)
+        records.put("name",name)
+        activity.addContentView(name,layoutParams)
         val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1235,6 +1322,7 @@ class UnitTests {
         card_number!!.inputField.setText("4111 1111 1111 1111")
         val records = JSONObject()
         records.put("cardNumber",card_number)
+        val containerOptions = ContainerOptions()
        // activity.addContentView(card_number,layoutParams)
         val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
         {
@@ -1506,7 +1594,7 @@ class UnitTests {
     @Test
     fun testBearerTokenFunction() //success
     {
-        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForSuccess(),LogLevel.ERROR)
+        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForSuccess(),LogLevel.ERROR,"")
         client.getAccessToken(object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1544,7 +1632,691 @@ class UnitTests {
 
 
 
+    //collect
 
+    @Test
+    fun testduplicateElement()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val cvv1 = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        CollectRequestBody.createRequestBody(container.elements, JSONObject(),object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput.table,collectInput.column))
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", "")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testMissingTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        //fields.put("table", "")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+    @Test
+    fun testInvalidTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", JSONObject())
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testMissingFieldsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", "")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+       // record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyFieldsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","cards")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyRecordsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testInvalidRecordsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        records.put("records", JSONObject())
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+    @Test
+    fun testDuplicatesInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","cards")
+        fields.put("card_number","123")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput1.table,collectInput1.column))
+                assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+
+
+
+
+
+    //end collect
+
+
+    //client
+
+    @Test
+    fun testInsertEmptyVaultID()
+    {
+        val skyflowConfiguration = Skyflow.Configuration(
+            "",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val records = JSONObject()
+        val skyflowClient = Client(skyflowConfiguration)
+        skyflowClient.insert(records = records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        })
+
+    }
+
+    @Test
+    fun testInsertEmptyVaultURL()
+    {
+        val skyflowConfiguration = Skyflow.Configuration(
+            "b359c43f1b844ff4bea0f098d2",
+            "",
+            AccessTokenProvider()
+        )
+        val records = JSONObject()
+        val skyflowClient = Client(skyflowConfiguration)
+        skyflowClient.insert(records = records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        })
+    }
+
+    @Test
+    fun testInsertInvalidVaultURL()
+    {
+        val skyflowConfiguration = Skyflow.Configuration(
+            "b359c43f1b844ff4bea0f098d2c",
+            "http://www.goog.com",
+            AccessTokenProvider()
+        )
+        val records = JSONObject()
+        val skyflowClient = Client(skyflowConfiguration)
+        skyflowClient.insert(records = records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(skyflowConfiguration.vaultURL))
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        })
+    }
+
+    @Test
+    fun testValidRequestForInsert()
+    {
+        val skyflowConfiguration = Skyflow.Configuration(
+            "b359c43f1b844ff4bea0f098d2c",
+            "https://www.google.com",
+            AccessTokenProvider()
+        )
+        val records = JSONObject()
+        val skyflowClient = Client(skyflowConfiguration)
+        skyflowClient.insert(records = records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+
+            }
+
+        })
+    }
+
+
+    //end client
+
+
+    //api client
+
+    @Test
+    fun testPostMethod()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","")
+        fields.put("card_number","123")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        apiClient.post(records, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        }, InsertOptions())
+    }
+
+    @Test
+    fun testValidRequestForPostMethod()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","cards")
+        fields.put("card_number","123")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        apiClient.post(records, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        }, InsertOptions())
+    }
+
+
+    @Test
+    fun testInvokeGateway()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val requestRecord = JSONObject()
+        requestRecord.put("xxx",CheckBox(activity))
+        val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
+        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+
+        apiClient.invokeGateway(gatewayRequestBody, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        })
+
+    }
+
+    @Test
+    fun testValidForInvokeGateway()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val requestRecord = JSONObject()
+        requestRecord.put("card_number","41111")
+        val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
+        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+
+        apiClient.invokeGateway(gatewayRequestBody, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+
+            }
+
+        })
+
+    }
+    //end api client
+
+    //element
+
+    @Test
+    fun testValidateFunction()
+    {
+        val element = Element(activity)
+        assertEquals(element.getValue(),"")
+        assertEquals(element.validate(), mutableListOf<SkyflowValidationError>())
+    }
+    @Test
+    fun testStateClass()
+    {
+        val state= State("card_number",true)
+        assertNotNull(state.show())
+        assertEquals(state.getInternalState().get("columnName"),"card_number")
+    }
+    @Test
+    fun testLoggerClass()
+    {
+        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+        Logger.debug("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.error("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.info("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.warn("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+    }
+
+    @Test
+    fun testCardType()
+    {
+        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv")
+        val card = CardType.AMEX
+        assertEquals(card.minCardLength,15)
+        assertEquals(newCard.maxCardLength,3)
+        assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
+        assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
+
+    }
+
+    @Test
+    fun testSecurityCode()
+    {
+        val securityCode = SecurityCode.cid
+        assertEquals(securityCode.rawValue,"cid")
+    }
+
+    @Test
+    fun testDateValidator()
+    {
+        val date = DateValidator()
+        assertTrue(date.isValid("10","22"))
+        assertFalse(date.isValid("xx","12"))
+        assertFalse(date.isValid("","22"))
+        assertFalse(date.isValid("10",""))
+        assertFalse(date.isValid("22","22"))
+        assertFalse(date.isValid("10","12"))
+        assertTrue(date.isValid("10","2032"))
+        assertFalse(date.isValid("10","2011"))
+        assertFalse(date.isValid("02","2021"))
+        assertFalse(date.isValid("02","202222"))
+
+    }
+    //end element
+
+
+    //collectapicallback
+
+    @Test
+    fun testCollectApiCallback()
+    {
+        val apiClient = APIClient("b359c43f1b844ff4bea0f098d2c09193","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table", "careeds")
+        val fields = JSONObject()
+        fields.put("fullname", "san")
+        fields.put("card_number", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        Log.d("xx","yy")
+        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                Log.d("Exception",exception.toString())
+                assertEquals(2,(exception as Exception).message.toString())
+
+            }
+
+        }, InsertOptions(),LogLevel.ERROR)
+
+        collectAPICallback.onSuccess("token")
+
+    }
+
+    //end collectapicallback
+
+
+    //RevealApicallback
+
+    @Test
+    fun testRevealApiCallback()
+    {
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val revealRecords = mutableListOf<RevealRequestRecord>()
+        revealRecords.add(RevealRequestRecord("1234","null"))
+        revealRecords.add(RevealRequestRecord("3456","null"))
+        val revealApiCallback = RevealApiCallback(object : Callback {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+
+            }
+
+        },apiClient,records = revealRecords)
+        revealApiCallback.onSuccess("token")
+    }
+
+    //end revealapicallback
+
+
+    //revealbyid callback
+
+    @Test
+    fun testRevealByIdCallback()
+    {
+        val records = mutableListOf<GetByIdRecord>()
+        records.add(GetByIdRecord(arrayListOf("1234"),"cards",RedactionType.REDACTED.toString()))
+        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val revealByidCallback = RevealByIdCallback(
+            object : Callback
+            {
+                override fun onSuccess(responseBody: Any) {
+
+                }
+
+                override fun onFailure(exception: Any) {
+
+                }
+
+            }
+        ,apiClient,records = records)
+
+        revealByidCallback.onSuccess("token")
+    }
+
+    //end revealbyid callback
 }
 
 class APITokenProviderForSuccess : TokenProvider {

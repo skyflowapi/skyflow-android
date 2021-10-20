@@ -2,6 +2,7 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.elements.state.StateforText
+import Skyflow.utils.EventName
 import android.app.Activity
 import android.view.ViewGroup
 import com.skyflow_android.R
@@ -17,10 +18,10 @@ import org.robolectric.annotation.Config
 import java.io.IOException
 import android.util.Log
 import junit.framework.Assert
+import junit.framework.Assert.assertNotNull
 
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class CollectTest {
         lateinit var skyflow : Client
         private lateinit var activityController: ActivityController<Activity>
@@ -34,6 +35,7 @@ class CollectTest {
                 "https://sb1.area51.vault.skyflowapis.tech",
                 AccessTokenProvider()
             )
+            val container = CollectContainer()
             skyflow = Client(configuration)
              layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -108,10 +110,12 @@ class CollectTest {
         )
         val card_number = container.create(activity,collectInput) as? TextField
         card_number!!.inputField.setText("4111")
-
-
-        val state = StateforText(card_number).getInternalState()
-        Assert.assertFalse(state["isValid"] as Boolean)
+        card_number.state = StateforText(card_number)
+        val state = StateforText(card_number)
+        Assert.assertFalse(state.getInternalState()["isValid"] as Boolean)
+        assertNotNull(card_number.state.show())
+        assertEquals(state.getInternalState().get("inputLength"),4)
+        assertEquals(state.getState(Env.DEV).get("value"),"") // value will change when text event afterTextChanged triggers
 
     }
 
@@ -154,6 +158,7 @@ class CollectTest {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(card_number.columnName))
                 assertEquals((exception as SkyflowError).message.trim(),skyflowError.getErrorMessage().trim())
+                assertEquals(400,skyflowError.getErrorcode())
             }
         })
     }
@@ -472,6 +477,65 @@ class CollectTest {
         activity.addContentView(card_number,layoutParams)
         assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
     }
+
+    @Test
+    fun testOnReadyListener() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+        )
+        val card_number = container.create(activity, collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111 1111 1111 1111")
+        activity.addContentView(card_number, layoutParams)
+
+        card_number.isFocusableInTouchMode = true
+        card_number.requestFocus()
+
+        card_number.on(EventName.FOCUS) { state ->
+        }
+
+        card_number.on(EventName.BLUR) { state ->
+        }
+
+        card_number.on(EventName.CHANGE) { state ->
+        }
+
+        card_number.on(EventName.READY) { state ->
+        }
+
+
+    }
+
+
+    @Test
+    fun testValidCollect()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111 1111 1111 1111")
+        activity.addContentView(card_number,layoutParams)
+
+        container.collect(object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                //its valid
+            }
+
+
+        })
+    }
+
+
+
 }
 
 

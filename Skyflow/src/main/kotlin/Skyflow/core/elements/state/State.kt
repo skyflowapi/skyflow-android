@@ -8,8 +8,7 @@ open class State(var columnName:String,var isRequired:Boolean? = false) {
         return """
         "$columnName": {
             "isRequired": $isRequired
-        }
-        """
+        }    """
     }
 
     open fun getInternalState() : JSONObject
@@ -17,8 +16,4 @@ open class State(var columnName:String,var isRequired:Boolean? = false) {
         val result = JSONObject()
         result.put("isRequired", isRequired)
         result.put("columnName", columnName)
-
-        return result
-    }
-
-}
+        return result } }
