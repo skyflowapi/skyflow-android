@@ -58,5 +58,4 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                     callback.onFailure(responseBody)
             }
         }
-    }
-}
+    } }

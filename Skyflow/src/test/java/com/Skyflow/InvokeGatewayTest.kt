@@ -384,9 +384,9 @@ class InvokeGatewayTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,params = arrayOf(cvv.columnName))
-                assertEquals(skyflowError.getErrorMessage(),
-                    getErrorMessage(exception as JSONObject))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv [INVALID_LENGTH_MATCH]"))
+                assertEquals(skyflowError.getErrorMessage().trim(),
+                    getErrorMessage(exception as JSONObject).trim())
             }
 
         })
