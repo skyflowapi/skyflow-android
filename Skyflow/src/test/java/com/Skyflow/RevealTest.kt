@@ -239,7 +239,7 @@ class RevealTest {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
             "51b1406a-0a30-49bf-b303-0eef66bd502d",RedactionType.PLAIN_TEXT,
-            label =  "expire_date"
+            label =  "expire_date",altText = "redacted token"
 
         )
         val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())

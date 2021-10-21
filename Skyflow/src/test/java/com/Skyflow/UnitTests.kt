@@ -12,12 +12,9 @@ import Skyflow.core.elements.state.StateforText
 import Skyflow.reveal.*
 import Skyflow.utils.Utils
 import android.app.Activity
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.CheckBox
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
-import com.skyflow_android.R
-import io.mockk.Call
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
@@ -30,7 +27,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 class UnitTests {
@@ -1343,7 +1339,7 @@ class UnitTests {
 
 
     @Test
-    fun testDuplicateInResponseBody()
+    fun testDuplicateInResponseBodyForReveal()
     {
         val skyflowConfiguration = Skyflow.Configuration(
             "29182989857575878",
@@ -1355,6 +1351,41 @@ class UnitTests {
         val cvv = revealContainer.create(activity,RevealElementInput())
         val responseBody = JSONObject()
         responseBody.put("cardNumber",cvv)
+        responseBody.put("cvv",cvv)
+        activity.addContentView(cvv,layoutParams)
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        Utils.checkDuplicateInResponseBody(responseBody,object :Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND)
+                Assert.assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        }, HashSet(),LogLevel.ERROR)
+    }
+
+
+
+    @Test
+    fun testDuplicateInResponseBodyForCollect()
+    {
+        val skyflowConfiguration = Skyflow.Configuration(
+            "29182989857575878",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
+        val cvv = collectContainer.create(activity, CollectElementInput(type = SkyflowElementType.CVV))
+        val responseBody = JSONObject()
+        val nestedJson = JSONObject()
+        nestedJson.put("cardNumber",cvv)
+        responseBody.put("nested",nestedJson)
         responseBody.put("cvv",cvv)
         activity.addContentView(cvv,layoutParams)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
@@ -1538,10 +1569,21 @@ class UnitTests {
     @Test
     fun testConstructRequestBodyFailedForRevealElementNotMounted() //for unmounting
     {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv"))
         val records = JSONObject()
-        records.put("cvv",cvv)
+        val array = JSONArray()
+        array.put(cvv)
+        array.put(card_number)
+        array.put("1234")
+        records.put("exp","11/22")
+        records.put("JsonArray",array)
 
         val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
         {
@@ -1571,10 +1613,15 @@ class UnitTests {
             SkyflowElementType.CARD_NUMBER,placeholder = "card number"
         )
         val card_number = container.create(activity,collectInput, options) as? TextField
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv"))
         val records = JSONObject()
         val nested = JSONObject()
-        nested.put("card",card_number)
-        records.put("cardNumber",nested)
+        val array = arrayOf(card_number,cvv,"1234")
+
+        nested.put("card",array)
+        nested.put("number","1234")
+        records.put("jsonobject",nested)
         activity.addContentView(card_number,layoutParams)
         card_number!!.inputField.setText("4111 11 1111 1111")
         val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
@@ -1592,6 +1639,106 @@ class UnitTests {
         },LogLevel.ERROR)
 
         assertFalse(isConstructed)
+    }
+
+
+    @Test
+    fun testConstructRequestBodyEmptyKey()
+    {
+        val records = JSONObject()
+        records.put("","1234")
+         val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME).getErrorMessage().trim(),
+                    (exception as SkyflowError).getErrorMessage().trim())
+            }
+
+        },LogLevel.ERROR)
+
+        assertFalse(isConstructed)
+    }
+
+
+    @Test
+    fun testAddPathParamsEmptyKey()
+    {
+        val pathParams = JSONObject()
+        pathParams.put("","4111")
+        pathParams.put("cvv","123")
+        val url = "https://www.google.com/{card_number}/{cvv}"
+        val generatedUrl = Utils.addPathparamsToURL(url,pathParams,object : Callback{
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_PATH_PARAMS).getErrorMessage().trim(),
+                    (exception as SkyflowError).getErrorMessage().trim())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testAddQueryParamsEmptyKey()
+    {
+        val queryParams = JSONObject()
+        queryParams.put("","4111")
+        queryParams.put("cvv","123")
+        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_QUERY_PARAMS).getErrorMessage().trim(),
+                    (exception as SkyflowError).getErrorMessage().trim())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testconstructResponseBodyFromGateway()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv"))
+
+        val records = JSONObject()
+        val nested = JSONObject()
+        nested.put("card_number",card_number)
+        records.put("nested",nested)
+        records.put("cvv",cvv)
+
+        val recordFromGateway = JSONObject()
+        recordFromGateway.put("cvv","123")
+        val records1 = JSONObject()
+        records1.put("card_number",card_number)
+        recordFromGateway.put("nested",records1)
+        recordFromGateway.put("exp","11/22")
+
+        val response = Utils.constructResponseBodyFromGateway(records,recordFromGateway
+            ,object : Callback
+            {
+                override fun onSuccess(responseBody: Any) {
+                }
+
+                override fun onFailure(exception: Any) {
+
+                }
+
+            },LogLevel.ERROR)
+
+        assertNotNull(response)
     }
 
     //end invokegateway
@@ -2446,10 +2593,10 @@ class UnitTests {
     fun testLoggerClass()
     {
         val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-        Logger.debug("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.error("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.info("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.warn("",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.debug("debug",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.error("error",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.info("info",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.warn("warn",skyflowError.getErrorMessage(),LogLevel.DEBUG)
     }
 
     @Test

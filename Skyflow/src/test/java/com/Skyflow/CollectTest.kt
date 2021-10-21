@@ -262,7 +262,7 @@ class CollectTest {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(true)
         val collectInput1 = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,label = "card number"
+            SkyflowElementType.CARD_NUMBER,label = "card number",altText = "41111"
         )
         val collectInput2 = CollectElementInput("cards","expiry_date",SkyflowElementType.EXPIRATION_DATE, label = "expire date")
         val card_number = container.create(activity,collectInput1, options)
