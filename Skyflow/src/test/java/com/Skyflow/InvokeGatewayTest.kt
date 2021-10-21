@@ -18,7 +18,6 @@ import org.robolectric.annotation.Config
 import java.lang.annotation.ElementType
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class InvokeGatewayTest {
 
     lateinit var skyflow : Client
@@ -180,8 +179,15 @@ class InvokeGatewayTest {
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val revealContainer = skyflowClient.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput())
+
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
+        val card_number = collectContainer.create(activity, CollectElementInput(type = SkyflowElementType.CARD_NUMBER))
 
         val pathParams = JSONObject()
+        pathParams.put("card_number",card_number)
+        pathParams.put("cvv",cvv)
         pathParams.put("cardNumber",JSONObject())
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
         val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,pathParams = pathParams,methodName = RequestMethod.POST)
@@ -208,10 +214,17 @@ class InvokeGatewayTest {
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val revealContainer = skyflowClient.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput())
 
-         val queryParams = JSONObject()
-          queryParams.put("check", CheckBox(activity))
-          val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
+        val card_number = collectContainer.create(activity, CollectElementInput(type = SkyflowElementType.CARD_NUMBER))
+
+        val queryParams = JSONObject()
+        queryParams.put("cvv",cvv)
+        queryParams.put("card_number",queryParams)
+        queryParams.put("check", CheckBox(activity))
+        val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
         val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,queryParams = queryParams)
         skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
         {
@@ -371,9 +384,9 @@ class InvokeGatewayTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,params = arrayOf(cvv.columnName))
-                assertEquals(skyflowError.getErrorMessage(),
-                    getErrorMessage(exception as JSONObject))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv [INVALID_LENGTH_MATCH]"))
+                assertEquals(skyflowError.getErrorMessage().trim(),
+                    getErrorMessage(exception as JSONObject).trim())
             }
 
         })

@@ -567,7 +567,7 @@ class Utils {
             }
             if (errors != "") {
                 val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
-                callback.onFailure(error)
+                callback.onFailure(constructError(error))
                 return false
             }
             return true

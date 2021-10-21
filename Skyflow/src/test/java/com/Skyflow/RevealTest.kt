@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.core.Logger
 import android.app.Activity
 import android.view.ViewGroup
 import junit.framework.Assert.*
@@ -16,7 +17,6 @@ import org.robolectric.annotation.Config
 
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class RevealTest {
     lateinit var skyflow: Client
     private lateinit var activityController: ActivityController<Activity>
@@ -30,6 +30,7 @@ class RevealTest {
             "https://sb1.area51.vault.skyflowapis.tech",
             AccessTokenProvider()
         )
+        val container = RevealContainer()
         skyflow = Client(configuration)
         layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -189,7 +190,7 @@ class RevealTest {
         val skyflow = Client(skyflowConfiguration)
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "some",RedactionType.PLAIN_TEXT,
+            "",RedactionType.PLAIN_TEXT,
             label =  "expire_date"
         )
         val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
@@ -224,6 +225,7 @@ class RevealTest {
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
+                assertEquals(revealElement.getValue(),"")
                 val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
@@ -277,6 +279,30 @@ class RevealTest {
         val errors = error.getJSONArray("errors")
         val skyflowError = errors.getJSONObject(0).get("error") as SkyflowError
         return skyflowError.getErrorMessage()
+    }
+
+    @Test
+    fun testValidReveal()
+    {
+        val skyflowConfiguration = Configuration(
+            "b359c43f1b844ff4bea0f0",
+            "https://sb1.area51.vault.skyflowapis.tech",
+            AccessTokenProvider()
+        )
+        val skyflow = Client(skyflowConfiguration)
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput(
+            "cards",RedactionType.PLAIN_TEXT,
+            label =  "expire_date"
+        )
+        val revealElement = revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
+        activity.addContentView(revealElement,layoutParams)
+        revealContainer.reveal(object: Callback {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+                //its valid
+            }})
     }
 
 

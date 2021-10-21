@@ -25,7 +25,6 @@ class Label @JvmOverloads constructor(
     internal lateinit var padding: Padding
     internal var border = GradientDrawable()
     internal var isTokenNull = false
-    internal var isRedactionNull = false
 
     @SuppressLint("NewApi", "WrongConstant")
     internal fun setupField(revealInput: RevealElementInput, options: RevealElementOptions)
@@ -37,11 +36,6 @@ class Label @JvmOverloads constructor(
         {
             isTokenNull = true
             this.revealInput.token = ""
-        }
-        if(this.revealInput.redaction.toString().equals("null"))
-        {
-            isRedactionNull = true
-            this.revealInput.redaction = RedactionType.DEFAULT
         }
         buildLabel()
         buildPlaceholder()

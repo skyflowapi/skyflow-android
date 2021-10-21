@@ -56,5 +56,4 @@ class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: Lo
                     callback.onFailure(responseBody)
             }
         }
-    }
-}
+    } }
