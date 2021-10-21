@@ -1844,7 +1844,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
                 assertEquals(skyflowError.getErrorMessage(),(exception as SkyflowError).getErrorMessage())
             }
 
