@@ -19,6 +19,7 @@ import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -978,7 +979,7 @@ class UnitTests {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-         recordObj.put("token", "cards")
+         recordObj.put("token", "")
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback
@@ -988,7 +989,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                    //valid request
+                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID).getErrorMessage(),getErrorMessage(exception as JSONObject))
             }
 
         })
@@ -999,7 +1000,7 @@ class UnitTests {
     fun testValidRequestForDetokenizeInClient()
     {
         val configuration = Configuration(
-            "",
+            "12344",
             "https://sb1.area51.vault.skyflowapis.tech",
             AccessTokenProvider()
         )
@@ -1012,7 +1013,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                //valid
+                assertEquals(SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND).getErrorMessage(),getErrorMessage(exception as JSONObject))
             }
 
         })
@@ -1177,6 +1178,49 @@ class UnitTests {
         val newRequest = "https://www.google.com?card_number=4111&cvv=123".toHttpUrlOrNull()?.newBuilder()
 
         assertEquals(requestUrlBuilder.toString().trim(),newRequest.toString().trim())
+
+    }
+
+    @Test
+    fun testValidInputForAddRequestHeader()
+    {
+        val requestHeader = JSONObject()
+        requestHeader.put("card_number","4111")
+        requestHeader.put("cvv","123")
+        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val request = Request
+            .Builder()
+            .addHeader("Content-Type","application/json")
+            .url(gatewayConfiguration.gatewayURL)
+       val isValid = Utils.addRequestHeader(request,gatewayConfiguration,object : Callback{
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+            }
+        },LogLevel.ERROR)
+
+        assertTrue(isValid)
+    }
+
+    @Test
+    fun testInvalidInputForAddRequestHeader()
+    {
+        val requestHeader = JSONObject()
+        requestHeader.put("card_number",JSONObject())
+        requestHeader.put("cvv","123")
+        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val request = Request
+            .Builder()
+            .addHeader("Content-Type","application/json")
+            .url(gatewayConfiguration.gatewayURL)
+        val isValid = Utils.addRequestHeader(request,gatewayConfiguration,object : Callback{
+            override fun onSuccess(responseBody: Any) {
+            }override fun onFailure(exception: Any) {
+
+            }
+        },LogLevel.ERROR)
+
+        assertFalse(isValid)
     }
 
     @Test
@@ -1208,6 +1252,7 @@ class UnitTests {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
+        queryParams.put("array", arrayOf(cvv,"1234"))
         val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
@@ -1229,6 +1274,7 @@ class UnitTests {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
+        queryParams.put("array", arrayOf(cvv,"1234"))
         cvv.inputField.setText("12")
         activity.addContentView(cvv,layoutParams)
         cvv.state = StateforText(cvv)
@@ -1564,6 +1610,18 @@ class UnitTests {
         },LogLevel.ERROR)
 
         assertFalse(isConstructed)
+
+        Utils.constructJsonKeyForGatewayRequest(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                assertEquals(SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf("card_number")).getErrorMessage(),getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR)
     }
 
     @Test
@@ -1718,6 +1776,8 @@ class UnitTests {
         nested.put("card_number",card_number)
         records.put("nested",nested)
         records.put("cvv",cvv)
+        activity.addContentView(cvv,layoutParams)
+        activity.addContentView(card_number,layoutParams)
 
         val recordFromGateway = JSONObject()
         recordFromGateway.put("cvv","123")
@@ -1727,7 +1787,7 @@ class UnitTests {
         recordFromGateway.put("exp","11/22")
 
         val response = Utils.constructResponseBodyFromGateway(records,recordFromGateway
-            ,object : Callback
+          ,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
                 }
@@ -1739,7 +1799,23 @@ class UnitTests {
             },LogLevel.ERROR)
 
         assertNotNull(response)
+
+        val response1 = Utils.constructJsonKeyForGatewayResponse(records,recordFromGateway
+            ,object : Callback
+            {
+                override fun onSuccess(responseBody: Any) {
+                }
+
+                override fun onFailure(exception: Any) {
+
+                }
+
+            },LogLevel.ERROR)
+
+        assertNotNull(response1)
+        assertTrue(response1.has("success"))
     }
+
 
     //end invokegateway
 
@@ -2588,11 +2664,25 @@ class UnitTests {
         val state= State("card_number",true)
         assertNotNull(state.show())
         assertEquals(state.getInternalState().get("columnName"),"card_number")
+
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput) as TextField
+        activity.addContentView(card_number,layoutParams)
+        val stateforText = StateforText(card_number)
+        assertTrue(stateforText.isEmpty)
+        assertTrue(stateforText.isValid)
+        assertFalse(stateforText.isFocused)
+        assertEquals(0,stateforText.inputLength)
+        assertEquals(SkyflowElementType.CARD_NUMBER,stateforText.fieldType)
     }
     @Test
     fun testLoggerClass()
     {
         val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+        val logger = Logger()
         Logger.debug("debug",skyflowError.getErrorMessage(),LogLevel.DEBUG)
         Logger.error("error",skyflowError.getErrorMessage(),LogLevel.DEBUG)
         Logger.info("info",skyflowError.getErrorMessage(),LogLevel.DEBUG)
@@ -2788,6 +2878,17 @@ class UnitTests {
 
         },apiClient,records = revealRecords)
         revealApiCallback.onFailure("failed")
+
+        RevealApiCallback(object : Callback {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                assertEquals("failed",getErrorMessage(exception as JSONObject))
+            }
+
+        },apiClient,records = revealRecords).onFailure(Exception("failed"))
     }
 
 
@@ -2841,6 +2942,20 @@ class UnitTests {
             ,apiClient,records = records)
 
         revealByidCallback.onFailure("failed")
+
+        RevealByIdCallback(
+            object : Callback
+            {
+                override fun onSuccess(responseBody: Any) {
+
+                }
+
+                override fun onFailure(exception: Any) {
+                    assertEquals("failed",getErrorMessage(exception as JSONObject))
+                }
+
+            }
+            ,apiClient,records = records).onFailure(Exception("failed"))
     }
 
     //end revealbyid callback
@@ -3243,6 +3358,7 @@ class UnitTests {
     fun testJwtUtils()
     {
         assertNotNull(JWTUtils.isExpired("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL21hbmFnZS5za3lmbG93YXBpcy50ZWNoIiwiY2xpIjoiZWM3NzBlODQyOWNjNDNiM2JhMGI2NDk2MzA3M2EyZDMiLCJleHAiOjE2MzQ4MDkxOTcsImlhdCI6MTYzNDgwNTU5NywiaXNzIjoic2EtYXV0aEBtYW5hZ2Uuc2t5Zmxvd2FwaXMudGVjaCIsImp0aSI6InA0ZjA0YzMwYTczODQyMzM4OGQ2ZGNjYjE4Y2E4Nzg5Iiwic2NwIjpbImFjY291bnRzLnJlYWQiLCJ3b3Jrc3BhY2VzLnJlYWQiLCJ2YXVsdHMucmVhZCIsInZhdWx0VGVtcGxhdGVzLnZhbGlkYXRlIiwic3FsLnJlYWQiLCJyZWNvcmRzLnJlYWQiLCJyZWNvcmRzLmNyZWF0ZSIsInJlY29yZHMudXBkYXRlIiwicmVjb3Jkcy5kZWxldGUiLCJ3b3JrZmxvd3MucmVhZCIsIndvcmtmbG93UnVucy5jcmVhdGUiLCJ3b3JrZmxvd1J1bnMucmVhZCIsIndvcmtmbG93UnVucy51cGRhdGUiLCJhY2NvdW50cy5yZWFkIiwid29ya3NwYWNlcy5yZWFkIiwidmF1bHRzLnJlYWQiLCJ2YXVsdFRlbXBsYXRlcy52YWxpZGF0ZSIsInNxbC5yZWFkIiwicmVjb3Jkcy5yZWFkIiwid29ya2Zsb3dzLnJlYWQiLCJhY2NvdW50cy5yZWFkIiwid29ya3NwYWNlcy5yZWFkIiwidXNlcnMucmVhZCIsInNlcnZpY2VBY2NvdW50LnZhdWx0LmNyZWF0ZSIsInNlcnZpY2VBY2NvdW50LnJlYWQiLCJzZXJ2aWNlQWNjb3VudC51cGRhdGUiLCJzZXJ2aWNlQWNjb3VudC5kZWxldGUiLCJzZXJ2aWNlQWNjb3VudC5zdGF0dXMudXBkYXRlIiwidmF1bHRGdW5jdGlvbkNvbmZpZy52YXVsdC5jcmVhdGUiLCJ2YXVsdEZ1bmN0aW9uQ29uZmlnLnJlYWQiLCJ2YXVsdEZ1bmN0aW9uQ29uZmlnLnVwZGF0ZSIsInZhdWx0RnVuY3Rpb25Db25maWcuZGVsZXRlIiwidmF1bHRGdW5jdGlvbkNvbmZpZy5zdGF0dXMudXBkYXRlIiwic3FsU2VydmljZUFjY291bnQuY3JlYXRlIiwidmF1bHRzLnJlYWQiLCJ2YXVsdHMudXBkYXRlIiwidmF1bHRzLmRlbGV0ZSIsInZhdWx0cy5zdGF0dXMudXBkYXRlIiwia2V5LmNyZWF0ZSIsImtleS51cGRhdGUiLCJrZXkudmF1bHQudXBkYXRlIiwia2V5LnZhdWx0LnJlYWQiLCJ2YXVsdEludGVncmF0aW9ucy5jcmVhdGUiLCJ2YXVsdFRlbXBsYXRlcy52YWxpZGF0ZSIsInNxbC5yZWFkIiwicmVjb3Jkcy5yZWFkIiwicmVjb3Jkcy5jcmVhdGUiLCJyZWNvcmRzLnVwZGF0ZSIsInJlY29yZHMuZGVsZXRlIiwicm9sZXMudmF1bHQuY3JlYXRlIiwicm9sZXMudmF1bHQucmVhZCIsInJvbGVzLnZhdWx0LnVwZGF0ZSIsInJvbGVzLnZhdWx0LmRlbGV0ZSIsInJvbGVzLnZhdWx0Lm1lbWJlcnMucmVhZCIsInJvbGVzLnBvbGljeS5yZWFkIiwicm9sZXMudmF1bHRGdW5jdGlvbkNvbmZpZy5jcmVhdGUiLCJyb2xlcy52YXVsdEZ1bmN0aW9uQ29uZmlnLnJlYWQiLCJyb2xlcy52YXVsdEZ1bmN0aW9uQ29uZmlnLnVwZGF0ZSIsInJvbGVzLnZhdWx0RnVuY3Rpb25Db25maWcuZGVsZXRlIiwicm9sZXMudmF1bHRGdW5jdGlvbkNvbmZpZy5tZW1iZXJzLnJlYWQiLCJyb2xlcy5kZWZpbml0aW9ucy5yZWFkIiwicm9sZXMubWVtYmVyUm9sZXMucmVhZCIsInJvbGVzLm1lbWJlclBlcm1pc3Npb25zLnJlYWQiLCJ3b3JrZmxvd3MucmVhZCIsIndvcmtmbG93UnVucy5jcmVhdGUiLCJ3b3JrZmxvd1J1bnMucmVhZCIsIndvcmtmbG93UnVucy51cGRhdGUiLCJwb2xpY2llcy52YXVsdC5jcmVhdGUiLCJwb2xpY2llcy52YXVsdC5yZWFkIiwicG9saWNpZXMudmF1bHQudXBkYXRlIiwicG9saWNpZXMudmF1bHQuZGVsZXRlIiwicG9saWNpZXMudmF1bHQuc3RhdHVzLnVwZGF0ZSIsInBvbGljaWVzLnJvbGUudmF1bHQucmVhZCJdLCJzdWIiOiJnby1zZXJ2ZXItZm9yLWFuZHJvaWQtdGVzdGluZyJ9.Qqx4_4NUFt3ah86Pl09leSMi7g8r3JH680r6CW9jzoJh4c6DBuupuqFVJ-R0-5tWh3Qk8KpIqwZ0xDN-XQiGwwGd_Ho6lszmAU4yyx23wcAocZfBY4TQ1QIfzVDBEwVXkYdAxkcfpfiKHIRZTjkSa5lkYYveIwNBYzpG96ZNFNXWvixCVlwXcNhxryG93GPWPQVFbhAiu3tctbncf7TxnlqW8RJW7jqJo9dWL6prw03-4bl_71TdSJm2BuXryaIIpxxkgrsp_xinOZ2kLOmJVga3pyMgwrDe92yrYdCOPMKvb8IbCmvNAxEJBlHuPx_rrREmpU-1lFkjvI9-el4IZA"))
+
     }
 
     //end JwtUtils

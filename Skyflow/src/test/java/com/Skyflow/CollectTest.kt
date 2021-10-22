@@ -6,7 +6,6 @@ import Skyflow.utils.EventName
 import android.app.Activity
 import android.view.ViewGroup
 import com.skyflow_android.R
-import junit.framework.Assert.assertEquals
 import okhttp3.OkHttpClient
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +17,8 @@ import org.robolectric.annotation.Config
 import java.io.IOException
 import android.util.Log
 import junit.framework.Assert
-import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.*
+import org.json.JSONObject
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -77,6 +77,13 @@ class CollectTest {
     @Test
     fun testEmptyStateForSkyflowElement()
     {
+        val configuration = Configuration(
+            "b359c43f1b844ff4bea0f098",
+            "https://sb1.area51.vault.skyflowapis.tech/",
+            AccessTokenProvider()
+        )
+        val collectContainer = CollectContainer()
+
         val container = skyflow.container(ContainerType.COLLECT)
         val collectInput = CollectElementInput("cards","card_number",
             SkyflowElementType.CARD_NUMBER,placeholder = "card number"
@@ -485,26 +492,27 @@ class CollectTest {
         val collectInput = CollectElementInput("cards", "card_number",
             SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
+        var onReadyCalled = false
         val card_number = container.create(activity, collectInput, options) as? TextField
         card_number!!.inputField.setText("4111 1111 1111 1111")
         activity.addContentView(card_number, layoutParams)
-
-        card_number.isFocusableInTouchMode = true
-        card_number.requestFocus()
-
         card_number.on(EventName.FOCUS) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.BLUR) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.CHANGE) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.READY) { state ->
+            Log.d("state",state.toString())
+            onReadyCalled = true
         }
-
-
+        assertFalse(onReadyCalled)
     }
 
 
