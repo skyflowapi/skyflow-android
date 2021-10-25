@@ -162,7 +162,7 @@ class TextField @JvmOverloads constructor(
                 val labelPadding = collectInput.labelStyles.focus.padding
                 label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
                 label.setTextColor(collectInput.labelStyles.focus.textColor)
-                if(!collectInput.labelStyles.focus.font.equals(Typeface.NORMAL))
+                if(collectInput.labelStyles.focus.font != Typeface.NORMAL)
                  label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
                 label.gravity = collectInput.labelStyles.focus.textAlignment
 
@@ -173,7 +173,7 @@ class TextField @JvmOverloads constructor(
                 border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
                 inputField.setBackgroundDrawable(border)
                 inputField.gravity = collectInput.inputStyles.focus.textAlignment
-                if(!collectInput.inputStyles.focus.font.equals(Typeface.NORMAL))
+                if(collectInput.inputStyles.focus.font != Typeface.NORMAL)
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
                 if(userOnFocusListener !== null)
@@ -198,7 +198,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.empty.textAlignment
-                    if(!collectInput.inputStyles.empty.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.empty.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
 
                 } else if(!(internalState["isValid"] as Boolean)) {
@@ -210,7 +210,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.invalid.textAlignment
-                    if(!collectInput.inputStyles.invalid.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.invalid.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
                     VibrationHelper.vibrate(context, 10)
                     error.visibility = View.VISIBLE
@@ -225,7 +225,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.complete.textAlignment
-                    if(!collectInput.inputStyles.complete.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.complete.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
                 if(userOnBlurListener !== null)
