@@ -1508,12 +1508,14 @@ class UnitTests {
         element?.on(EventName.FOCUS){
             state ->
             assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
-            assertTrue(state.get("isEmpty").equals(true))
-            assertTrue(state.get("isValid").equals(true))
+            assertTrue(state.get("isEmpty").equals(false))
+            assertTrue(state.get("isValid").equals(false))
         }
         activity.addContentView(element,layoutParams)
-        element?.requestFocus()
-        element?.clearFocus()
+        element!!.inputField.setText("4111")
+        element.state = StateforText(element)
+        element.requestFocus()
+        element.clearFocus()
     }
 
     @Test
@@ -1528,12 +1530,14 @@ class UnitTests {
         element?.on(EventName.BLUR){
                 state ->
             assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
-            assertTrue(state.get("isEmpty").equals(true))
+            assertTrue(state.get("isEmpty").equals(false))
             assertTrue(state.get("isValid").equals(true))
         }
+        element!!.inputField.setText("4111 1111 1111 1111")
+        element.state = StateforText(element)
         activity.addContentView(element,layoutParams)
-        element?.requestFocus()
-        element?.clearFocus()
+        element.requestFocus()
+        element.clearFocus()
     }
 
     @Test
@@ -1552,6 +1556,8 @@ class UnitTests {
             assertTrue(state.get("isValid").equals(true))
         }
         activity.addContentView(element,layoutParams)
+        element!!.requestFocus()
+        element.clearFocus()
     }
 
     companion object
