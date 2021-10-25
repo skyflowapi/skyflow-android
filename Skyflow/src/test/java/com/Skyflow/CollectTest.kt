@@ -1,12 +1,15 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.collect.client.CollectAPICallback
+import Skyflow.collect.client.CollectRequestBody
+import Skyflow.core.APIClient
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
+import Skyflow.utils.Utils
 import android.app.Activity
 import android.view.ViewGroup
 import com.skyflow_android.R
-import junit.framework.Assert.assertEquals
 import okhttp3.OkHttpClient
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +21,10 @@ import org.robolectric.annotation.Config
 import java.io.IOException
 import android.util.Log
 import junit.framework.Assert
-import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.*
+import junit.framework.TestCase
+import org.json.JSONArray
+import org.json.JSONObject
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -45,19 +51,6 @@ class CollectTest {
         }
 
 
-    @Test
-    fun testCreateSkyflowElement(){
-        val container = skyflow.container(ContainerType.COLLECT)
-        val options = CollectElementOptions(false)
-        val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
-        )
-        val card_number = container.create(activity,collectInput, options) as? TextField
-        card_number!!.inputField.setText("4111")
-        activity.addContentView(card_number,layoutParams)
-        card_number.inputField.setText("4111 1111 1111 1111")
-        assertEquals(card_number.getValue(),"4111 1111 1111 1111")
-    }
 
     @Test
     fun testValidValueSkyflowElement()
@@ -77,6 +70,13 @@ class CollectTest {
     @Test
     fun testEmptyStateForSkyflowElement()
     {
+        val configuration = Configuration(
+            "b359c43f1b844ff4bea0f098",
+            "https://sb1.area51.vault.skyflowapis.tech/",
+            AccessTokenProvider()
+        )
+        val collectContainer = CollectContainer()
+
         val container = skyflow.container(ContainerType.COLLECT)
         val collectInput = CollectElementInput("cards","card_number",
             SkyflowElementType.CARD_NUMBER,placeholder = "card number"
@@ -262,7 +262,7 @@ class CollectTest {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(true)
         val collectInput1 = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,label = "card number"
+            SkyflowElementType.CARD_NUMBER,label = "card number",altText = "41111"
         )
         val collectInput2 = CollectElementInput("cards","expiry_date",SkyflowElementType.EXPIRATION_DATE, label = "expire date")
         val card_number = container.create(activity,collectInput1, options)
@@ -485,26 +485,27 @@ class CollectTest {
         val collectInput = CollectElementInput("cards", "card_number",
             SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
+        var onReadyCalled = false
         val card_number = container.create(activity, collectInput, options) as? TextField
         card_number!!.inputField.setText("4111 1111 1111 1111")
         activity.addContentView(card_number, layoutParams)
-
-        card_number.isFocusableInTouchMode = true
-        card_number.requestFocus()
-
         card_number.on(EventName.FOCUS) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.BLUR) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.CHANGE) { state ->
+            Log.d("state",state.toString())
         }
 
         card_number.on(EventName.READY) { state ->
+            Log.d("state",state.toString())
+            onReadyCalled = true
         }
-
-
+        assertFalse(onReadyCalled)
     }
 
 
@@ -533,6 +534,545 @@ class CollectTest {
 
         })
     }
+
+    @Test
+    fun testCreateSkyflowElement(){
+        val padding = Padding(10,10,5,5)
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val styles = Styles(base = Style(padding = padding))
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number",inputStyles = styles
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        card_number!!.inputField.setText("4111")
+        activity.addContentView(card_number,layoutParams)
+        card_number.inputField.setText("4111 1111 1111 1111")
+        Assert.assertEquals(card_number.getValue(), "4111 1111 1111 1111")
+        Assert.assertEquals(10,card_number.collectInput.inputStyles.base.padding.top)
+        Assert.assertEquals(10,card_number.collectInput.inputStyles.base.padding.left)
+        Assert.assertEquals(5,card_number.collectInput.inputStyles.base.padding.right)
+        Assert.assertEquals(5,card_number.collectInput.inputStyles.base.padding.bottom)
+        TestCase.assertNotNull(card_number.validate())
+    }
+
+    @Test
+    fun testCheckCollectContainer()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput("cards","expiry_date",
+            SkyflowElementType.EXPIRATION_DATE,label = "expiry date"
+        )
+        val date = container.create(activity,collectInput, options) as? TextField
+        Assert.assertEquals(container.elements.count(), 1)
+        Assert.assertTrue(container.elements[0].fieldType == SkyflowElementType.EXPIRATION_DATE)
+    }
+
+    @Test
+    fun testCollectElementNotMounted()
+    {
+
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cardNumber = container.create(activity,collectInput)
+        TestCase.assertEquals(false, Utils.checkIfElementsMounted(cardNumber))
+    }
+
+
+    @Test
+    fun testCollectElementMounted()
+    {
+
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cardNumber = container.create(activity,collectInput)
+        activity.addContentView(cardNumber,layoutParams)
+        TestCase.assertEquals(true, Utils.checkIfElementsMounted(cardNumber))
+    }
+
+
+
+
+    //collectapicallback
+
+    @Test
+    fun testCollectApiCallback()
+    {
+        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://sb1.area51.vault.skyflowapis.tech/v1/vaults",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table", "careeds")
+        val fields = JSONObject()
+        fields.put("fullname", "san")
+        fields.put("card_number", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                //valid request
+            }
+
+        }, InsertOptions(),LogLevel.ERROR)
+
+        collectAPICallback.onSuccess("token")
+
+    }
+
+
+    @Test
+    fun testOnfailureInCollectApiCallback()
+    {
+        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table", "cards")
+        val fields = JSONObject()
+        fields.put("fullname", "san")
+        fields.put("card_number", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(apiClient.vaultURL))
+                TestCase.assertEquals(skyflowError.getErrorMessage(),(exception as Exception).message.toString())
+            }
+
+        }, InsertOptions(),LogLevel.ERROR)
+
+        collectAPICallback.onSuccess("token")
+
+    }
+
+    @Test
+    fun testBuildResponse()
+    {
+        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table", "cards")
+        val fields = JSONObject()
+        fields.put("fullname", "san")
+        fields.put("card_number", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+            }
+
+        }, InsertOptions(),LogLevel.ERROR)
+
+        val response = """
+            [{"records":[{"skyflow_id":"376ddd3a-7f29-4e68-9a48-aafcbd87c6f5"}]},{"fields":{"card_number":"5ec9cd13-c410-4588-bf22-54cbb771b263","cvv":"082b3265-559a-4068-87af-7d83946a04c2","expiry_date":"658ef0a3-0fd6-4bdd-9989-f5aceb8c6cf6","fullname":"e0e8cc7f-9124-42e4-9850-c322d72fec14"}}]
+        """.trimIndent()
+
+        val responseFromApi = JSONArray(response)
+
+        val responsetoClient = collectAPICallback.buildResponse(responseFromApi)
+
+        val recordsInResponse = responsetoClient.getJSONArray("records").getJSONObject(0)
+
+        TestCase.assertTrue(recordsInResponse.has("fields"))
+        TestCase.assertTrue(recordsInResponse.has("table"))
+    }
+
+    //end collectapicallback
+
+
+    //collect
+
+    @Test
+    fun testduplicateElement()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val cvv1 = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        CollectRequestBody.createRequestBody(container.elements, JSONObject(),object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput.table,collectInput.column))
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", "")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testMissingTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        //fields.put("table", "")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+    @Test
+    fun testInvalidTableInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", JSONObject())
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testMissingFieldsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", "cards")
+        fields.put("cardNumber", "41111111111")
+        fields.put("expiry_date","11/22")
+        // record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+    @Test
+    fun testMissingColumnInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table", "cards")
+        fields.put("", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyFieldsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","cards")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testEmptyRecordsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    @Test
+    fun testInvalidRecordsInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        records.put("records", JSONObject())
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+
+    @Test
+    fun testDuplicatesInAdditionalFields()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","cvv",
+            SkyflowElementType.CVV,placeholder = "cvv"
+        )
+        val collectInput1 = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val card_number = container.create(activity,collectInput1,CollectElementOptions())
+
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        val fields = JSONObject()
+        record.put("table","cards")
+        fields.put("card_number","123")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+
+        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput1.table,collectInput1.column))
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage())
+            }
+
+        },LogLevel.ERROR)
+    }
+
+    //end collect
+
+
 
 
 
