@@ -12,6 +12,7 @@ import android.app.Activity
 import android.view.ViewGroup
 import android.widget.CheckBox
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
+import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
@@ -859,13 +860,12 @@ class UnitTests {
     @Test
     fun testCardType()
     {
-        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv")
+        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv", R.drawable.ic_emptycard)
         val card = CardType.AMEX
         assertEquals(card.minCardLength,15)
         assertEquals(newCard.maxCardLength,3)
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
-
     }
 
     @Test
