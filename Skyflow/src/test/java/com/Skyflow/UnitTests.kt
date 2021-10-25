@@ -1,15 +1,12 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.collect.client.CollectAPICallback
-import Skyflow.collect.client.CollectRequestBody
 import Skyflow.collect.elements.utils.*
 import Skyflow.core.APIClient
-import Skyflow.core.GatewayApiCallback
 import Skyflow.core.JWTUtils
 import Skyflow.core.Logger
 import Skyflow.core.elements.state.StateforText
-import Skyflow.reveal.*
+import Skyflow.utils.EventName
 import Skyflow.utils.Utils
 import android.app.Activity
 import android.view.ViewGroup
@@ -18,8 +15,6 @@ import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -1486,6 +1481,71 @@ class UnitTests {
     }
     //end getbyid
 
+//    @Test
+//    fun testOnChangeListener(){
+//        val container = skyflow.container(ContainerType.COLLECT)
+//        val options = CollectElementOptions(false)
+//        val collectInput = CollectElementInput("cards","card_number",
+//            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+//        )
+//        val card_number = container.create(activity,collectInput, options) as? TextField
+//        card_number!!.inputField.setText("4111")
+//        activity.addContentView(card_number,layoutParams)
+//
+//        card_number.inputField.setText("4111 1111 1111 1111")
+//    }
+
+    @Test
+    fun testOnFocucChangeListener() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput(
+            "cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+        )
+        val element = (container.create(activity, collectInput, options) as? TextField)
+        element?.on(EventName.FOCUS){
+            state ->
+                assertEquals(true, true)
+        }
+        activity.addContentView(element,layoutParams)
+        element?.requestFocus()
+        element?.clearFocus()
+    }
+
+    @Test
+    fun testOnBlurChangeListner() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput(
+            "cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+        )
+        val element = (container.create(activity, collectInput, options) as? TextField)
+        element?.on(EventName.BLUR){
+                state ->
+            assertEquals(true, true)
+        }
+        activity.addContentView(element,layoutParams)
+        element?.requestFocus()
+        element?.clearFocus()
+    }
+
+    @Test
+    fun testOnElementReadyListener() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(false)
+        val collectInput = CollectElementInput(
+            "cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+        )
+        val element = (container.create(activity, collectInput, options) as? TextField)
+        element?.on(EventName.READY){
+                state ->
+            assertEquals(true, true)
+        }
+        activity.addContentView(element,layoutParams)
+    }
 
     companion object
     {

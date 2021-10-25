@@ -698,6 +698,44 @@ class CollectTest {
 
         TestCase.assertTrue(recordsInResponse.has("fields"))
         TestCase.assertTrue(recordsInResponse.has("table"))
+        TestCase.assertTrue(recordsInResponse.getJSONObject("fields").has("skyflow_id"))
+    }
+
+    @Test
+    fun testBuildResponseWithoutTokens()
+    {
+        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val records = JSONObject()
+        val recordsArray = JSONArray()
+        val record = JSONObject()
+        record.put("table", "cards")
+        val fields = JSONObject()
+        fields.put("fullname", "san")
+        fields.put("card_number", "41111111111")
+        fields.put("expiry_date","11/22")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        records.put("records", recordsArray)
+        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+            }
+
+        }, InsertOptions(false),LogLevel.ERROR)
+
+        val response = """
+            [{"records":[{"skyflow_id":"376ddd3a-7f29-4e68-9a48-aafcbd87c6f5"}]}]"""
+
+        val responseFromApi = JSONArray(response)
+
+        val responsetoClient = collectAPICallback.buildResponse(responseFromApi)
+
+        val recordsInResponse = responsetoClient.getJSONArray("records").getJSONObject(0)
+
+        TestCase.assertTrue(recordsInResponse.has("skyflow_id"))
+        TestCase.assertTrue(recordsInResponse.has("table"))
     }
 
     //end collectapicallback
