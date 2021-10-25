@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
+import java.lang.annotation.ElementType
 
 @RunWith(RobolectricTestRunner::class)
 class UnitTests {
@@ -1506,7 +1507,9 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.FOCUS){
             state ->
-                assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(true))
+            assertTrue(state.get("isValid").equals(true))
         }
         activity.addContentView(element,layoutParams)
         element?.requestFocus()
@@ -1524,7 +1527,9 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.BLUR){
                 state ->
-            assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(true))
+            assertTrue(state.get("isValid").equals(true))
         }
         activity.addContentView(element,layoutParams)
         element?.requestFocus()
@@ -1542,7 +1547,9 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.READY){
                 state ->
-            assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(true))
+            assertTrue(state.get("isValid").equals(true))
         }
         activity.addContentView(element,layoutParams)
     }
