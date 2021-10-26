@@ -39,11 +39,8 @@ class Utils {
                 else
                     return JSONObject()
             }
-            catch (e:Exception)
-            {
-                return JSONObject()
-            }
-        }
+            catch (e:Exception) {return JSONObject()}
+             }
 
 
         //displaying data to pci elements and removing pci element values from response
@@ -92,8 +89,7 @@ class Utils {
                         gatewayResponse.getJSONArray("errors").put(finalError)
                         responseFromGateway.remove(keys.getString(j))
                     }
-                }
-            }
+                } }
             gatewayResponse.put("success",responseFromGateway)
             return gatewayResponse
         }
@@ -105,19 +101,17 @@ class Utils {
                 constructJsonKeyForGatewayRequest(records, callback, logLevel)
             } catch (e: Exception) {
                 false
-            }
-
-        }
+            } }
 
         var arrayInRequestBody : JSONArray = JSONArray()
         //changing pci elements to actual values in it for request to gateway
-        private fun constructJsonKeyForGatewayRequest(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean {
+        internal fun constructJsonKeyForGatewayRequest(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean {
             val keys = records.names()
             if(keys !=null) {
                 for (j in 0 until keys.length()) {
                     if(keys.getString(j).isEmpty())
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, logLevel))
+                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_BODY, tag, logLevel))
                         return false
                     }
                     var value: Any
@@ -151,7 +145,6 @@ class Utils {
                             value = JSONObject(records.get(keys.getString(j)).toString())
                         else
                             return false
-
                     }
                     else if(records.get(keys.getString(j)) is JSONArray)
                     {
@@ -200,7 +193,7 @@ class Utils {
                             }
                             else
                             {
-                                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD, tag,
+                                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag,
                                     logLevel, arrayOf(keys.getString(j)))
                                 callback.onFailure(skyflowError)
                                 return false
@@ -260,7 +253,7 @@ class Utils {
                                 }
                                 else
                                 {
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD,
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY,
                                         tag, logLevel, arrayOf(keys.getString(j)))
                                     callback.onFailure(skyflowError)
                                     return false
@@ -269,21 +262,19 @@ class Utils {
                             }
                             value = arrayInRequestBody
                             arrayInRequestBody = JSONArray()
-
                     }
                     else if (records.get(keys.getString(j)) is String || records.get(keys.getString(
                             j)) is Number || records.get(keys.getString(j)) is Boolean
                     )
                         value = records.get(keys.getString(j)).toString()
                     else {
-                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD, tag,
+                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag,
                             logLevel, arrayOf(keys.getString(j)))
                         callback.onFailure(skyflowError)
                         return false
                     }
                     records.put(keys.getString(j), value)
-                }
-            }
+                } }
             return true
         }
 
@@ -341,16 +332,13 @@ class Utils {
                                 tag, logLevel, arrayOf(keys.getString(j)))
                             callback.onFailure(constructError(skyflowError))
                             return ""
-                        }
-                    }
-                }
+                        } } }
                 return newURL
             }
             catch (e:Exception)
             {
                 return ""
-            }
-        }
+            } }
 
         //adding query params for gateway url
         fun addQueryParams(
@@ -376,18 +364,14 @@ class Utils {
                                 queryParams.getString(i),callback, logLevel)
                             if(!isValid)
                                 return false
-                        }
-                    }
+                        } }
                     else {
                         val isValid = helperForQueryParams(value,requestUrlBuilder,
                             queryParams.getString(i),callback, logLevel)
                         if(!isValid)
                             return false
-                    }
-                }
-            }
+                    } } }
             return true
-
         }
 
         private fun helperForQueryParams(
@@ -461,9 +445,7 @@ class Utils {
                         val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS, tag, logLevel, arrayOf(headers.getString(i)))
                         callback.onFailure(constructError(skyflowError))
                         return false
-                    }
-                }
-            }
+                    } } }
             return true
         }
 
@@ -567,7 +549,7 @@ class Utils {
             }
             if (errors != "") {
                 val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
-                callback.onFailure(error)
+                callback.onFailure(constructError(error))
                 return false
             }
             return true
@@ -609,11 +591,7 @@ class Utils {
                             {
                                 val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(element.revealInput.label))
                                 throw error
-                            }
-                        }
-                    }
-                }
-            }
+                            } } } } }
             catch (e: Exception) {
                 callback.onFailure(constructError(e))
                 return false
@@ -639,9 +617,7 @@ class Utils {
                         }
                     } catch (e: Exception) {
                     }
-                }
-            }
-        }
+                } } }
 
         // checking duplicate fields present in responseBody of gatewayconfig
         fun  checkDuplicateInResponseBody(
@@ -725,8 +701,7 @@ class Utils {
                 for (j in 0 until keys.length()) {
                     finalRecords.put(keys.getString(j),records.get(keys.getString(j)))
                 }
-            }
-        }
+            } }
 
         fun constructMessage(message:String, vararg values : String?): String{
             return String.format(message, *values)
@@ -743,9 +718,7 @@ class Utils {
             errors.put(error)
             finalError.put("errors",errors)
             return finalError
-        }
-
-    }
+        } }
 
 
 }

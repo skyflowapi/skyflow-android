@@ -25,7 +25,6 @@ class Label @JvmOverloads constructor(
     internal lateinit var padding: Padding
     internal var border = GradientDrawable()
     internal var isTokenNull = false
-    internal var isRedactionNull = false
 
     @SuppressLint("NewApi", "WrongConstant")
     internal fun setupField(revealInput: RevealElementInput, options: RevealElementOptions)
@@ -38,11 +37,6 @@ class Label @JvmOverloads constructor(
             isTokenNull = true
             this.revealInput.token = ""
         }
-        if(this.revealInput.redaction.toString().equals("null"))
-        {
-            isRedactionNull = true
-            this.revealInput.redaction = RedactionType.DEFAULT
-        }
         buildLabel()
         buildPlaceholder()
         buildError()
@@ -54,20 +48,20 @@ class Label @JvmOverloads constructor(
         val errorPadding = revealInput.errorTextStyles.base.padding
         error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
         error.setTextColor(revealInput.errorTextStyles.base.textColor)
-        if(!revealInput.errorTextStyles.base.font.equals(Typeface.NORMAL))
+        if(revealInput.errorTextStyles.base.font != Typeface.NORMAL)
           error.typeface = ResourcesCompat.getFont(context,revealInput.errorTextStyles.base.font)
         error.gravity = revealInput.errorTextStyles.base.textAlignment
     }
 
     private fun buildPlaceholder() {
-        if(revealInput.altText.isEmpty() || revealInput.altText.equals(""))
+        if(revealInput.altText.isEmpty() || revealInput.altText == "")
         {
             placeholder.text = revealInput.token
         }
         else
             placeholder.text = revealInput.altText
 
-        if(!revealInput.inputStyles.base.font.equals(Typeface.NORMAL))
+        if(revealInput.inputStyles.base.font != Typeface.NORMAL)
              placeholder.typeface = ResourcesCompat.getFont(context,revealInput.inputStyles.base.font)
         placeholder.textSize = 20f
         placeholder.gravity = revealInput.inputStyles.base.textAlignment
@@ -87,7 +81,7 @@ class Label @JvmOverloads constructor(
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
         label.setTextColor(revealInput.labelStyles.base.textColor)
         label.gravity = revealInput.labelStyles.base.textAlignment
-        if(!revealInput.labelStyles.base.font.equals(Typeface.NORMAL))
+        if(revealInput.labelStyles.base.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context,revealInput.labelStyles.base.font)
     }
 

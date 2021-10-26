@@ -8,6 +8,7 @@ import org.json.JSONObject
 import Skyflow.core.*
 import Skyflow.core.Logger
 import Skyflow.utils.Utils
+import android.util.Log
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
@@ -43,7 +44,7 @@ internal class CollectAPICallback(
             okHttpClient.newCall(request).enqueue(object : okhttp3.Callback{
                 override fun onFailure(call: Call, e: IOException) {
                     val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
-                    callback.onFailure(error)
+                    (this@CollectAPICallback).onFailure(error)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
@@ -72,7 +73,7 @@ internal class CollectAPICallback(
         callback.onFailure(exception)
     }
 
-    private fun buildResponse(responseJson: JSONArray) : JSONObject{
+    internal fun buildResponse(responseJson: JSONArray) : JSONObject{
         
         val inputRecords = this.records["records"] as JSONArray
         val recordsArray = JSONArray()
@@ -101,5 +102,4 @@ internal class CollectAPICallback(
         }
         return responseObject.put("records", recordsArray)
     }
-
 }

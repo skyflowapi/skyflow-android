@@ -1,5 +1,6 @@
 package Skyflow
 
+import Skyflow.collect.elements.utils.CardType
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -100,6 +101,14 @@ class TextField @JvmOverloads constructor(
         if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
+        if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
+        {
+            val cardtype = CardType.forCardNumber(inputField.text.toString())
+//            inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            inputField.compoundDrawablePadding = 8
+        }
+
     }
 
     private fun buildError()
@@ -150,6 +159,11 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 actualValue = inputField.text.toString()
+                if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
+                {
+                    val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
+                    inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
+                }
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
                     userOnchangeListener?.let { it((state as StateforText).getState(options.env)) }
@@ -162,7 +176,7 @@ class TextField @JvmOverloads constructor(
                 val labelPadding = collectInput.labelStyles.focus.padding
                 label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
                 label.setTextColor(collectInput.labelStyles.focus.textColor)
-                if(!collectInput.labelStyles.focus.font.equals(Typeface.NORMAL))
+                if(collectInput.labelStyles.focus.font != Typeface.NORMAL)
                  label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
                 label.gravity = collectInput.labelStyles.focus.textAlignment
 
@@ -173,7 +187,7 @@ class TextField @JvmOverloads constructor(
                 border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
                 inputField.setBackgroundDrawable(border)
                 inputField.gravity = collectInput.inputStyles.focus.textAlignment
-                if(!collectInput.inputStyles.focus.font.equals(Typeface.NORMAL))
+                if(collectInput.inputStyles.focus.font != Typeface.NORMAL)
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
                 if(userOnFocusListener !== null)
@@ -198,7 +212,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.empty.textAlignment
-                    if(!collectInput.inputStyles.empty.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.empty.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
 
                 } else if(!(internalState["isValid"] as Boolean)) {
@@ -210,7 +224,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.invalid.textAlignment
-                    if(!collectInput.inputStyles.invalid.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.invalid.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
                     VibrationHelper.vibrate(context, 10)
                     error.visibility = View.VISIBLE
@@ -225,7 +239,7 @@ class TextField @JvmOverloads constructor(
                     border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
                     inputField.setBackgroundDrawable(border)
                     inputField.gravity = collectInput.inputStyles.complete.textAlignment
-                    if(!collectInput.inputStyles.complete.font.equals(Typeface.NORMAL))
+                    if(collectInput.inputStyles.complete.font != Typeface.NORMAL)
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
                 if(userOnBlurListener !== null)

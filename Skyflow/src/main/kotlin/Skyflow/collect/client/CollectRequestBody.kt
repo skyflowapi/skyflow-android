@@ -75,7 +75,7 @@ class CollectRequestBody {
                         }
                         else if(jsonobj.getJSONObject("fields").toString() == "{}")
                         {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_FIELD, tag, logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_FIELDS, tag, logLevel))
                             return ""
 
                         }
@@ -134,8 +134,8 @@ class CollectRequestBody {
                 }
                 catch (e:Exception)
                 {
-                    val skyflowError = SkyflowError(tag = tag, logLevel = logLevel, params = arrayOf(e.message.toString()))
-                    callback.onFailure(skyflowError)
+                   // val skyflowError = SkyflowError(tag = tag, logLevel = logLevel, params = arrayOf(e.message.toString()))
+                    callback.onFailure(exception = e)
                     return ""
                 }
             }

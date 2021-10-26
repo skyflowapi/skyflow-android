@@ -3,6 +3,7 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.Label
 import Skyflow.utils.Utils
+import android.graphics.Typeface
 import androidx.core.content.res.ResourcesCompat
 import org.json.JSONObject
 import java.lang.Exception
@@ -65,9 +66,10 @@ class RevealValueCallback(var callback: Callback, var revealElements: MutableLis
                 val tokenId = recordObj.get("token").toString()
 
                 elementsMap[tokenId]!!.error.text = "invalid token"
-                elementsMap[tokenId]!!.placeholder.typeface =
-                    ResourcesCompat.getFont(elementsMap[tokenId]!!.context,
-                        elementsMap[tokenId]!!.revealInput.inputStyles.invalid.font)
+                if(elementsMap[tokenId]!!.revealInput.inputStyles.invalid.font != Typeface.NORMAL)
+                    elementsMap[tokenId]!!.placeholder.typeface =
+                        ResourcesCompat.getFont(elementsMap[tokenId]!!.context,
+                            elementsMap[tokenId]!!.revealInput.inputStyles.invalid.font)
                 elementsMap[tokenId]!!.placeholder.gravity =
                     elementsMap[tokenId]!!.revealInput.inputStyles.invalid.textAlignment
                 val padding = elementsMap[tokenId]!!.revealInput.inputStyles.invalid.padding
