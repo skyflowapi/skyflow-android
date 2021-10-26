@@ -76,7 +76,7 @@ enum class  CardType (var defaultName:String,var regex: String,var minCardLength
             val cards = enumValues<CardType>()
             cards.forEach {
                 val pattern = Pattern.compile(it.regex)
-                if (pattern.matcher(cardNumber).matches()) {
+                if (pattern.matcher(cardNumber).matches() && cardNumber.length <= it.maxCardLength) {
                     return it
                 }
             }

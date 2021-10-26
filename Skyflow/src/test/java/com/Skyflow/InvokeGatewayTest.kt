@@ -1244,6 +1244,31 @@ class InvokeGatewayTest {
         TestCase.assertFalse(isConstructed)
     }
 
+    @Test
+    fun testConstructRequestBodyForInvalidDatatype()
+    {
+        val records = JSONObject()
+        val nested = JSONObject()
+        nested.put("mm",CheckBox(activity))
+        records.put("mm",nested)
+        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY,params = arrayOf("mm")).getErrorMessage()
+                    .trim(),
+                    (exception as SkyflowError).getErrorMessage().trim())
+            }
+
+        },LogLevel.ERROR)
+
+        TestCase.assertFalse(isConstructed)
+    }
+
+
 
     @Test
     fun testAddPathParamsEmptyKey()

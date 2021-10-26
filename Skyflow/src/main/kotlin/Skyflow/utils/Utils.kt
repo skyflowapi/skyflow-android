@@ -111,7 +111,7 @@ class Utils {
                 for (j in 0 until keys.length()) {
                     if(keys.getString(j).isEmpty())
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, logLevel))
+                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_BODY, tag, logLevel))
                         return false
                     }
                     var value: Any
@@ -193,7 +193,7 @@ class Utils {
                             }
                             else
                             {
-                                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD, tag,
+                                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag,
                                     logLevel, arrayOf(keys.getString(j)))
                                 callback.onFailure(skyflowError)
                                 return false
@@ -253,7 +253,7 @@ class Utils {
                                 }
                                 else
                                 {
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD,
+                                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY,
                                         tag, logLevel, arrayOf(keys.getString(j)))
                                     callback.onFailure(skyflowError)
                                     return false
@@ -268,7 +268,7 @@ class Utils {
                     )
                         value = records.get(keys.getString(j)).toString()
                     else {
-                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD, tag,
+                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag,
                             logLevel, arrayOf(keys.getString(j)))
                         callback.onFailure(skyflowError)
                         return false
