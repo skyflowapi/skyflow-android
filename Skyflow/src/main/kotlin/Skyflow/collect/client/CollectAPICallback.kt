@@ -102,5 +102,4 @@ internal class CollectAPICallback(
         }
         return responseObject.put("records", recordsArray)
     }
-
 }

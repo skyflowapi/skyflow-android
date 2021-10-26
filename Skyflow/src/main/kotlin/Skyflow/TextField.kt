@@ -1,5 +1,6 @@
 package Skyflow
 
+import Skyflow.collect.elements.utils.CardType
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -100,6 +101,14 @@ class TextField @JvmOverloads constructor(
         if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
+        if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
+        {
+            val cardtype = CardType.forCardNumber(inputField.text.toString())
+//            inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            inputField.compoundDrawablePadding = 8
+        }
+
     }
 
     private fun buildError()
@@ -150,6 +159,11 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 actualValue = inputField.text.toString()
+                if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
+                {
+                    val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
+                    inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
+                }
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
                     userOnchangeListener?.let { it((state as StateforText).getState(options.env)) }

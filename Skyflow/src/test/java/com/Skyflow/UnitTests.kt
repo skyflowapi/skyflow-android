@@ -12,6 +12,7 @@ import android.app.Activity
 import android.view.ViewGroup
 import android.widget.CheckBox
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
+import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
@@ -858,13 +859,12 @@ class UnitTests {
     @Test
     fun testCardType()
     {
-        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv")
+        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv", R.drawable.ic_emptycard)
         val card = CardType.AMEX
         assertEquals(card.minCardLength,15)
         assertEquals(newCard.maxCardLength,3)
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
-
     }
 
     @Test
@@ -1506,11 +1506,15 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.FOCUS){
             state ->
-                assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(false))
+            assertTrue(state.get("isValid").equals(false))
         }
         activity.addContentView(element,layoutParams)
-        element?.requestFocus()
-        element?.clearFocus()
+        element!!.inputField.setText("4111")
+        element.state = StateforText(element)
+        element.requestFocus()
+        element.clearFocus()
     }
 
     @Test
@@ -1524,11 +1528,15 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.BLUR){
                 state ->
-            assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(false))
+            assertTrue(state.get("isValid").equals(true))
         }
+        element!!.inputField.setText("4111 1111 1111 1111")
+        element.state = StateforText(element)
         activity.addContentView(element,layoutParams)
-        element?.requestFocus()
-        element?.clearFocus()
+        element.requestFocus()
+        element.clearFocus()
     }
 
     @Test
@@ -1542,11 +1550,37 @@ class UnitTests {
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.READY){
                 state ->
-            assertEquals(true, true)
+            assertTrue(state.get("elementType").equals(SkyflowElementType.CARD_NUMBER))
+            assertTrue(state.get("isEmpty").equals(true))
+            assertTrue(state.get("isValid").equals(true))
         }
         activity.addContentView(element,layoutParams)
+        element!!.requestFocus()
+        element.clearFocus()
     }
 
+    @Test
+    fun testCardTypeClass()
+    {
+        val cardNumber1 = "4929939187355598"
+        var cardtype  = CardType.forCardNumber(cardNumber1)
+        assertTrue(cardtype.equals(CardType.VISA))
+        assertTrue(cardtype.defaultName.equals("Visa"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_visa))
+
+        val cardNumber2 = "5454422955385717"
+        cardtype  = CardType.forCardNumber(cardNumber2)
+        assertTrue(cardtype.equals(CardType.MASTERCARD))
+        assertTrue(cardtype.defaultName.equals("MasterCard"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_mastercard))
+
+        val cardNumber3 = "11111"
+        cardtype  = CardType.forCardNumber(cardNumber3)
+        assertTrue(cardtype.equals(CardType.EMPTY))
+        assertTrue(cardtype.defaultName.equals("Empty"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_emptycard))
+
+    }
     companion object
     {
         fun getErrorMessage(error: JSONObject): String {
