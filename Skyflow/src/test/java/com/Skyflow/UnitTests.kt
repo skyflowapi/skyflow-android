@@ -24,7 +24,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import java.lang.annotation.ElementType
 
 @RunWith(RobolectricTestRunner::class)
 class UnitTests {
@@ -1560,6 +1559,28 @@ class UnitTests {
         element.clearFocus()
     }
 
+    @Test
+    fun testCardTypeClass()
+    {
+        val cardNumber1 = "4929939187355598"
+        var cardtype  = CardType.forCardNumber(cardNumber1)
+        assertTrue(cardtype.equals(CardType.VISA))
+        assertTrue(cardtype.defaultName.equals("Visa"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_visa))
+
+        val cardNumber2 = "5454422955385717"
+        cardtype  = CardType.forCardNumber(cardNumber2)
+        assertTrue(cardtype.equals(CardType.MASTERCARD))
+        assertTrue(cardtype.defaultName.equals("MasterCard"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_mastercard))
+
+        val cardNumber3 = "11111"
+        cardtype  = CardType.forCardNumber(cardNumber3)
+        assertTrue(cardtype.equals(CardType.EMPTY))
+        assertTrue(cardtype.defaultName.equals("Empty"))
+        assertTrue(cardtype.image.equals(R.drawable.ic_emptycard))
+
+    }
     companion object
     {
         fun getErrorMessage(error: JSONObject): String {
