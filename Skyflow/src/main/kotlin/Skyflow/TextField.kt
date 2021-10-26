@@ -104,7 +104,9 @@ class TextField @JvmOverloads constructor(
         if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
         {
             val cardtype = CardType.forCardNumber(inputField.text.toString())
-            inputField.setCompoundDrawablesWithIntrinsicBounds(0, 0, cardtype.image, 0);
+//            inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            inputField.compoundDrawablePadding = 8
         }
 
     }
@@ -159,8 +161,8 @@ class TextField @JvmOverloads constructor(
                 actualValue = inputField.text.toString()
                 if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
                 {
-                    val cardtype = CardType.forCardNumber(inputField.text.toString())
-                    inputField.setCompoundDrawablesWithIntrinsicBounds(0, 0, cardtype.image, 0);
+                    val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  ""))
+                    inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
                 }
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
