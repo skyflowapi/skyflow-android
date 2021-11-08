@@ -4,7 +4,7 @@ import Skyflow.*
 import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import junit.framework.Assert.assertEquals
+import junit.framework.TestCase.assertEquals
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -18,7 +18,7 @@ class GetByIdsTest {
     fun setup() {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098d2c09",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             DemoTokenProvider()
         )
         skyflowClient = Client(configuration)
@@ -31,10 +31,10 @@ class GetByIdsTest {
     {
         val skyflowConfiguration =  Configuration(
             "",
-            "http://sb1.area51.vault.skyflowapis.tech",
+            "http://vaulturl.com",
             DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -65,11 +65,11 @@ class GetByIdsTest {
     fun testEmptyVaultURL()
     {
         val skyflowConfiguration =  Configuration(
-            "b359c43f1b844ff4bea0f098d2c0",
+            "vault_id",
             "",
             DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -100,11 +100,11 @@ class GetByIdsTest {
     fun testInvalidVaultURL()
     {
         val skyflowConfiguration =  Configuration(
-            "b359c43f1b844ff4bea0f098d2",
-            "http://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "http://vaulturl.com",
             DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")

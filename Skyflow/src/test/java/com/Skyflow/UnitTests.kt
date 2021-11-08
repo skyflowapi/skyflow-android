@@ -38,7 +38,7 @@ class UnitTests {
         MockKAnnotations.init(this)
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         skyflow = Client(configuration)
@@ -84,7 +84,7 @@ class UnitTests {
     @Test
     fun testEmptyTokenForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -111,7 +111,7 @@ class UnitTests {
     @Test
     fun testMissingTokenForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -138,7 +138,7 @@ class UnitTests {
     @Test
     fun testRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -165,7 +165,7 @@ class UnitTests {
     @Test
     fun testInvalidRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         revealRecords.put("records", JSONObject())
         apiClient.get(revealRecords, object : Callback
@@ -187,7 +187,7 @@ class UnitTests {
     @Test
     fun testEmptyRecordsForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         revealRecords.put("records", JSONArray())
         apiClient.get(revealRecords, object : Callback
@@ -213,7 +213,7 @@ class UnitTests {
     {
         val skyflowConfiguration = Skyflow.Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val revealRecords = JSONObject()
@@ -242,7 +242,7 @@ class UnitTests {
     fun testEmptyVaultURL2()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2",
+            "vault_id",
             "",
             AccessTokenProvider()
         )
@@ -271,7 +271,7 @@ class UnitTests {
     fun testInvalidVaultURL2()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2c",
+            "vault_id",
             "http://www.goog.com",
             AccessTokenProvider()
         )
@@ -300,7 +300,7 @@ class UnitTests {
     @Test
     fun testValidRequestForDetokenize()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
@@ -326,7 +326,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "12344",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -576,7 +576,7 @@ class UnitTests {
     @Test
     fun testBearerTokenFunction() //success
     {
-        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForSuccess(),LogLevel.ERROR,"")
+        val client = APIClient("1234","https://vaulturl.com",APITokenProviderForSuccess(),LogLevel.ERROR,"")
         client.getAccessToken(object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -593,7 +593,7 @@ class UnitTests {
     @Test
     fun testBearerTokenFunctionFailed() // invalid token
     {
-        val client = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",APITokenProviderForFail(),LogLevel.ERROR)
+        val client = APIClient("1234","https://vaulturl.com",APITokenProviderForFail(),LogLevel.ERROR)
         client.getAccessToken(object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -619,7 +619,7 @@ class UnitTests {
     {
         val skyflowConfiguration = Skyflow.Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val records = JSONObject()
@@ -642,7 +642,7 @@ class UnitTests {
     fun testInsertEmptyVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2",
+            "vault_id",
             "",
             AccessTokenProvider()
         )
@@ -665,7 +665,7 @@ class UnitTests {
     fun testInsertInvalidVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2c",
+            "vault_id",
             "http://www.goog.com",
             AccessTokenProvider()
         )
@@ -688,7 +688,7 @@ class UnitTests {
     fun testValidRequestForInsert()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2c",
+            "vault_id",
             "https://www.google.com",
             AccessTokenProvider()
         )
@@ -714,7 +714,7 @@ class UnitTests {
     @Test
     fun testPostMethod()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -742,7 +742,7 @@ class UnitTests {
     @Test
     fun testValidRequestForPostMethod()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -769,15 +769,15 @@ class UnitTests {
 
 
     @Test
-    fun testInvokeGateway()
+    fun testInvokeConnection()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val requestRecord = JSONObject()
         requestRecord.put("xxx",CheckBox(activity))
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
 
-        apiClient.invokeGateway(gatewayRequestBody, object : Callback
+        apiClient.invokeConnection(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -794,15 +794,15 @@ class UnitTests {
     }
 
     @Test
-    fun testValidForInvokeGateway()
+    fun testValidForInvokeConnection()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val requestRecord = JSONObject()
         requestRecord.put("card_number","41111")
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
 
-        apiClient.invokeGateway(gatewayRequestBody, object : Callback
+        apiClient.invokeConnection(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -916,7 +916,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -942,7 +942,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -968,7 +968,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -994,7 +994,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1030,7 +1030,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1065,7 +1065,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1099,7 +1099,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1132,7 +1132,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1166,7 +1166,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1199,7 +1199,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1233,7 +1233,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1270,7 +1270,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1306,7 +1306,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "1234",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1414,7 +1414,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)
@@ -1451,7 +1451,7 @@ class UnitTests {
     {
         val configuration = Configuration(
             "23456",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val client = Client(configuration)

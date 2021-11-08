@@ -18,7 +18,7 @@ class GetTest {
     fun setup() {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098d2c",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             DemoTokenProvider()
         )
         skyflow = Client(configuration)
@@ -32,7 +32,7 @@ class GetTest {
     {
         val skyflowConfiguration = Skyflow.Configuration(
            "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             DemoTokenProvider()
         )
         val revealRecords = JSONObject()
@@ -60,7 +60,7 @@ class GetTest {
     fun testEmptyVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2",
+            "vault_id",
             "",
             DemoTokenProvider()
         )
@@ -88,8 +88,8 @@ class GetTest {
     fun testInvalidVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2c",
-            "http://www.goog.com",
+            "vault_id",
+            "http://vault.url.com",
             DemoTokenProvider()
         )
         val revealRecords = JSONObject()
@@ -141,7 +141,7 @@ class GetTest {
     fun testEmptyToken()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "b359c43f1b844ff4bea0f098d2c0",
+            "vault_id",
             "",
             DemoTokenProvider()
         )

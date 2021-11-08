@@ -8,6 +8,7 @@ import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealByIdCallback
 import Skyflow.reveal.RevealRequestRecord
 import Skyflow.utils.Utils
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -64,6 +65,7 @@ class APIClient (
                 Logger.info(tag, Messages.RETRIEVING_BEARER_TOKEN.getMessage(), logLevel)
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
+                        Log.d("token success", "onSuccess: ")
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         token = "Bearer $responseBody"
                         callback.onSuccess(token)
@@ -89,6 +91,7 @@ class APIClient (
         val finalRecords = Utils.constructBatchRequestBody(records, options,callback,logLevel)
         if(!finalRecords.toString().equals("{}"))
         {
+            Log.d("post", "post: $records")
             val collectApiCallback = CollectAPICallback(this, records, callback, options,logLevel)
             this.getAccessToken(collectApiCallback)
         }
@@ -161,21 +164,21 @@ class APIClient (
         this.getAccessToken(revealApiCallback)
     }
 
-    fun invokeGateway(
-        gatewayConfig: GatewayConfiguration,
+    fun invokeConnection(
+        connectionConfig: ConnectionConfiguration,
         callback: Callback
     ) {
-        val isValidResponseBody = Utils.checkDuplicateInResponseBody(gatewayConfig.responseBody,callback,HashSet(),logLevel)
+        val isValidResponseBody = Utils.checkDuplicateInResponseBody(connectionConfig.responseBody,callback,HashSet(),logLevel)
         if(!isValidResponseBody) return
         val requestBody = JSONObject()
-        Utils.copyJSON(gatewayConfig.requestBody,requestBody)
-        val isBodyConstructed = Utils.constructRequestBodyForGateway(requestBody,callback, logLevel)
-        gatewayConfig.requestBody = JSONObject()
+        Utils.copyJSON(connectionConfig.requestBody,requestBody)
+        val isBodyConstructed = Utils.constructRequestBodyForConnection(requestBody,callback, logLevel)
+        connectionConfig.requestBody = JSONObject()
         if(isBodyConstructed)
         {
-            val newGateway = gatewayConfig.copy(requestBody = requestBody)
-            val gateway = GatewayApiCallback(newGateway,callback, logLevel)
-            this.getAccessToken(gateway)
+            val newConnection = connectionConfig.copy(requestBody = requestBody)
+            val connection = ConnectionApiCallback(newConnection,callback, logLevel)
+            this.getAccessToken(connection)
         }
         else
             return

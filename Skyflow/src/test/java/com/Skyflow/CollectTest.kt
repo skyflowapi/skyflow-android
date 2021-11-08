@@ -38,7 +38,7 @@ class CollectTest {
         {
             val configuration = Configuration(
                 "b359c43f1b844ff4bea0f098",
-                "https://sb1.area51.vault.skyflowapis.tech",
+                "https://vaulturl.com",
                 AccessTokenProvider()
             )
             val container = CollectContainer()
@@ -72,7 +72,7 @@ class CollectTest {
     {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098",
-            "https://sb1.area51.vault.skyflowapis.tech/",
+            "https://vaulturl.com/",
             AccessTokenProvider()
         )
         val collectContainer = CollectContainer()
@@ -228,7 +228,7 @@ class CollectTest {
     fun testEmptyVaultIDWithSkyflowElement()
     {
         val skyflowConfiguration = Configuration( "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider())
         val skyflow = Client(skyflowConfiguration)
         val container = skyflow.container(ContainerType.COLLECT)
@@ -603,7 +603,7 @@ class CollectTest {
     @Test
     fun testCollectApiCallback()
     {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://sb1.area51.vault.skyflowapis.tech/v1/vaults",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -634,7 +634,7 @@ class CollectTest {
     @Test
     fun testOnfailureInCollectApiCallback()
     {
-        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("78789","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -665,7 +665,7 @@ class CollectTest {
     @Test
     fun testBuildResponse()
     {
-        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("78789","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -704,7 +704,7 @@ class CollectTest {
     @Test
     fun testBuildResponseWithoutTokens()
     {
-        val apiClient = APIClient("78789","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("78789","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()

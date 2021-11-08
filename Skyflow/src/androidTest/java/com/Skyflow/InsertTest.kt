@@ -8,6 +8,7 @@ import com.skyflow_android.BuildConfig
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -22,8 +23,8 @@ class InsertTest {
     @Before
     fun setup() {
         val configuration = Configuration(
-            "b359c43f1b844ff4bea0f098d2c",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "b359c43f1b844ff4bea0f098d2c09193",
+            "https://vaulturl.com",
             DemoTokenProvider()
         )
         skyflow = Client(configuration)
@@ -62,7 +63,7 @@ class InsertTest {
     fun testEmptyVaultID()
     {
         val configuration = Configuration( "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             DemoTokenProvider())
         val skyflow = Client(configuration)
         val records = JSONObject()
@@ -232,10 +233,11 @@ class InsertTest {
         fields.put("expiry_date","11/22")
         record.put("fields", fields)
         recordsArray.put(record)
-        //records.put("records", recordsArray)
+        records.put("records", recordsArray)
         skyflow.insert(records, InsertOptions(),object : Callback
         {
             override fun onSuccess(responseBody: Any) {
+                assertEquals(true, responseBody)
             }
 
             override fun onFailure(exception: Any) {
@@ -298,20 +300,23 @@ class InsertTest {
 
 class DemoTokenProvider: TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = "https://go-server.skyflow.dev/sa-token/b359c43f1b844ff4bea0f098d2c0"
+        val url = "https://go-server.skyflow.dev/sa-token/b359c43f1b844ff4bea0f098d2c09193"
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {
             val thread = Thread {
                 run {
-                    okHttpClient.newCall(request).execute().use { response ->
+                    val response =  okHttpClient.newCall(request).execute()
+//                        .use { response ->
+                        Log.d("token get", "getBearerToken: ")
                         if (!response.isSuccessful)
                             throw IOException("Unexpected code $response")
-                        //  val accessTokenObject = JSONObject(response.body()!!.string().toString())
-                        //  val accessToken = accessTokenObject["accessToken"]
-                        val accessToken = ""
+                        val accessTokenObject = JSONObject(response.body!!.string().toString())
+                        val accessToken = accessTokenObject["accessToken"]
+                        Log.d("access", "getBearerToken: $accessToken")
+//                        val accessToken = ""
                         callback.onSuccess("$accessToken")
-                    }
+//                    }
                 }
             }
             thread.start()

@@ -7,7 +7,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - [**Initializing Skyflow-android**](#initializing-skyflow-android)
 - [**Securely collecting data client-side**](#securely-collecting-data-client-side)
 - [**Securely revealing data client-side**](#securely-revealing-data-client-side)
-- [**Securely invoking gateway client-side**](#Securely-invoking-gateway-client-side)
+- [**Securely invoking connection client-side**](#Securely-invoking-connection-client-side)
 
 
 # Installing skyflow-android
@@ -594,7 +594,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   ```kt
   val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
 
-  val recods = JSONObject()
+  val records = JSONObject()
   val recordsArray = JSONArray()
   val recordObj = JSONObject()
   recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
@@ -851,12 +851,12 @@ The response below shows that some tokens assigned to the reveal elements get re
 }
 ```
 
-# Securely invoking gateway client-side
-Using Skyflow gateway, end-user applications can integrate checkout/card issuance flow without any of their apps/systems touching the PCI compliant fields like cvv, card number. To invoke gateway, use the `invokeGateway(gatewayConfig)` method of the Skyflow client.
+# Securely invoking connection client-side
+Using Skyflow connection, end-user applications can integrate checkout/card issuance flow without any of their apps/systems touching the PCI compliant fields like cvv, card number. To invoke connection, use the `invokeConnection(connectionConfig)` method of the Skyflow client.
 
 ```kt
-val gatewayConfig = GatewayConfiguration(
-  gatewayURL: string, // gateway url recevied when creating a skyflow gateway integration
+val connectionConfig = ConnectionConfiguration(
+  connectionURL: string, // connection url received when creating a skyflow connection integration
   methodName: Skyflow.RequestMethod,
   pathParams: JSONObject,	// optional
   queryParams: JSONObject,	// optional
@@ -865,7 +865,7 @@ val gatewayConfig = GatewayConfiguration(
   responseBody: JSONObject	// optional
 )
 
-skyflowClient.invokeGateway(gatewayConfig,callback);
+skyflowClient.invokeConnection(connectionConfig,callback);
 ```
 `methodName` supports the following methods:
 
@@ -875,14 +875,14 @@ skyflowClient.invokeGateway(gatewayConfig,callback);
 - PATCH
 - DELETE
 
-**pathParams, queryParams, requestHeader, requestBody** are the JSON objects that will be sent through the gateway integration url.
+**pathParams, queryParams, requestHeader, requestBody** are the JSON objects that will be sent through the connection integration url.
 
 The values in the above parameters can contain collect elements, reveal elements or actual values. When elements are provided inplace of values, they get replaced with the value entered in the collect elements or value present in the reveal elements
 
 **responseBody**:  
 It is a JSON object that specifies where to render the response in the UI. The values in the responseBody can contain collect elements or reveal elements. 
 
-Sample use-cases on using invokeGateway():
+Sample use-cases on using invokeConnection():
 
 ###  Sample use-case 1:
 
@@ -913,13 +913,13 @@ val cvvElement = collectContainer.create(context = Context,input = cvvInput, opt
 val requestBody = JSONObject()
 requestBody.put("card_number",cardNumberElement)
 requestBody.put("cvv",cvvElement)
-val gatewayConfig = GatewayConfiguration( 
-  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/v2/pay",
+val connectionConfig = ConnectionConfiguration( 
+  connectionURL = "https://area51.connection.skyflow.com/v1/connection/inboundRoutes/abc-1213/v2/pay",
   methodName = Skyflow.RequestMethod.POST,
   requestBody = requestBody
 )
 
-skyflowClient.invokeGateway(gatewayConfig,callback);
+skyflowClient.invokeConnection(connectionConfig,callback);
 ```
 
 Sample Response:
@@ -933,7 +933,7 @@ In the above example,  CVV is being collected from the user input at the time of
 
 `Note:`  
 - card_number can be either container element or plain text value (tokens or actual value)
-- `table` and `column` names are not required for creating collect element, if it is used for invokeGateway method, since they will not be stored in the vault
+- `table` and `column` names are not required for creating collect element, if it is used for invokeConnection method, since they will not be stored in the vault
 
  ### Sample use-case 2:
  
@@ -964,9 +964,9 @@ pathParams.put("card_number","0905-8672-0773-0628") //it can be skyflow element(
 val requestBody = JSONObject()
 requestBody.put("expirationDate",expiryDateElement)
 val responseBody = JSONObject()
-responseBody.put(resource,JSONObject().put("cvv",cvvElement)) // pass the element where the cvv response from the gateway will be mounted
-val gatewayConfig = GatewayConfiguration(
-  gatewayURL = "https://area51.gateway.skyflow.com/v1/gateway/inboundRoutes/abc-1213/cards/{card_number}/cvv2generation",
+responseBody.put(resource,JSONObject().put("cvv",cvvElement)) // pass the element where the cvv response from the connection will be mounted
+val connectionConfig = ConnectionConfiguration(
+  connectionURL = "https://area51.connection.skyflow.com/v1/connection/inboundRoutes/abc-1213/cards/{card_number}/cvv2generation",
   methodName = Skyflow.RequestMethod.POST,
   pathParams = pathParams,
   requestBody = requestBody,
@@ -974,7 +974,7 @@ val gatewayConfig = GatewayConfiguration(
    
 )
 
-skyflowClient.invokeGateway(gatewayConfig, callback);
+skyflowClient.invokeConnection(connectionConfig, callback);
 ```
 
 Sample Response:
@@ -986,8 +986,8 @@ Sample Response:
 ```
 
 `Note`:
-- `token` is optional for creating reveal element, if it is used for invokeGateway
-- responseBody contains collect or reveal elements to render the response from the gateway on UI
+- `token` is optional for creating reveal element, if it is used for invokeConnection
+- responseBody contains collect or reveal elements to render the response from the connection on UI
 
 
 ## Limitation
