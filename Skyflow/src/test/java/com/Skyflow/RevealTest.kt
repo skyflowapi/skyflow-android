@@ -2,8 +2,6 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.APIClient
-import Skyflow.core.GatewayApiCallback
-import Skyflow.core.Logger
 import Skyflow.reveal.*
 import Skyflow.utils.Utils
 import android.app.Activity
@@ -12,14 +10,12 @@ import junit.framework.Assert.*
 import junit.framework.TestCase
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.annotation.Config
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -33,7 +29,7 @@ class RevealTest {
     fun setup() {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val container = RevealContainer()
@@ -81,7 +77,7 @@ class RevealTest {
     fun testWitInvalidVaultURLWithLabel()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f098",
+            "vault_id",
             "http://sb1.area51.vault.skyflapis.tech",
             AccessTokenProvider()
         )
@@ -113,7 +109,7 @@ class RevealTest {
     {
         val skyflowConfiguration = Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflow = Client(skyflowConfiguration)
@@ -138,7 +134,7 @@ class RevealTest {
     fun testEmptyVaultURLWithLabel()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
+            "vault_id",
             "",
             AccessTokenProvider()
         )
@@ -163,8 +159,8 @@ class RevealTest {
     fun testElementNotMounted()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflow = Client(skyflowConfiguration)
@@ -189,8 +185,8 @@ class RevealTest {
     fun testTokenEmpty()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflow = Client(skyflowConfiguration)
@@ -215,8 +211,8 @@ class RevealTest {
     fun testMissingToken()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflow = Client(skyflowConfiguration)
@@ -291,8 +287,8 @@ class RevealTest {
     fun testValidReveal()
     {
         val skyflowConfiguration = Configuration(
-            "b359c43f1b844ff4bea0f0",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflow = Client(skyflowConfiguration)
@@ -522,7 +518,7 @@ class RevealTest {
     @Test
     fun testRevealApiCallback()
     {
-        val apiClient = APIClient("b359c43f1b844ff4bea0f098d2c09193","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("b359c43f1b844ff4bea0f098d2c09193","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = mutableListOf<RevealRequestRecord>()
         revealRecords.add(RevealRequestRecord("a1d84ea3-d2d4-4eeb-a21f-928ff9d01d1c","null"))
         revealRecords.add(RevealRequestRecord("3456","null"))
@@ -543,7 +539,7 @@ class RevealTest {
     @Test
     fun testOnFailedRevealApiCallback()
     {
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealRecords = mutableListOf<RevealRequestRecord>()
         revealRecords.add(RevealRequestRecord("1234","null"))
         revealRecords.add(RevealRequestRecord("3456","null"))
@@ -583,7 +579,7 @@ class RevealTest {
     {
         val records = mutableListOf<GetByIdRecord>()
         records.add(GetByIdRecord(arrayListOf("1234"),"cards",RedactionType.REDACTED.toString()))
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealByidCallback = RevealByIdCallback(
             object : Callback
             {
@@ -607,7 +603,7 @@ class RevealTest {
     {
         val records = mutableListOf<GetByIdRecord>()
         records.add(GetByIdRecord(arrayListOf("1234"),"cards",RedactionType.REDACTED.toString()))
-        val apiClient = APIClient("1234","https://sb1.area51.vault.skyflowapis.tech",AccessTokenProvider(),LogLevel.ERROR)
+        val apiClient = APIClient("1234","https://vaulturl.com",AccessTokenProvider(),LogLevel.ERROR)
         val revealByidCallback = RevealByIdCallback(
             object : Callback
             {

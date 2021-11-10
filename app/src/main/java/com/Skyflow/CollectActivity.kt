@@ -61,7 +61,7 @@ class CollectActivity : AppCompatActivity() {
             padding,
             6,
             R.font.roboto_light,
-            Gravity.END,
+            Gravity.START,
             Color.GREEN
         )
         val estyle = Skyflow.Style(
@@ -80,19 +80,19 @@ class CollectActivity : AppCompatActivity() {
 
         var labelStyles = Styles(bstyle, null, estyle, fstyle, istyle)
         var base_error_styles =
-            Style(null, null, padding, null, R.font.roboto_light, Gravity.END, Color.RED)
+            Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
         val error_styles = Styles(base_error_styles)
         val cardNumberInput = Skyflow.CollectElementInput(
-            "persons", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
+            "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
             error_styles, "Card Number", "CardNumber"
         )
         val expiryDateInput = Skyflow.CollectElementInput(
-            "persons", "card_expiration", SkyflowElementType.EXPIRATION_DATE,
+            "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
             styles, labelStyles, error_styles, label = "expiry date", placeholder = "expiry date"
         )
         val nameInput = Skyflow.CollectElementInput(
-            "persons",
-            "name.first_name",
+            "cards",
+            "fullname",
             Skyflow.SkyflowElementType.CARDHOLDER_NAME,
             styles,
             labelStyles,
@@ -101,7 +101,7 @@ class CollectActivity : AppCompatActivity() {
             "Full Name"
         )
         val cvvInput = Skyflow.CollectElementInput(
-            "persons",
+            "cards",
             "cvv",
             SkyflowElementType.CVV,
             styles,
@@ -176,8 +176,8 @@ class CollectActivity : AppCompatActivity() {
                     val fields = jsonobj.getJSONObject("fields")
                     val intent = Intent(this@CollectActivity, RevealActivity::class.java)
                     intent.putExtra("cardNumber", fields["card_number"].toString())
-                    intent.putExtra("expiryDate", fields["card_expiration"].toString())
-                    intent.putExtra("name", JSONObject(fields["name"].toString()).getString("first_name"))
+                    intent.putExtra("expiryDate", fields["expiry_date"].toString())
+                    intent.putExtra("name", fields["fullname"].toString())
                     intent.putExtra("cvv", fields["cvv"].toString())
                     startActivity(intent)
 
@@ -233,7 +233,7 @@ private fun pureInsert(){
 
 class DemoTokenProvider : Skyflow.TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = BuildConfig.TOKEN_LOCAL_URL
+        val url = BuildConfig.TOKEN_URL
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {

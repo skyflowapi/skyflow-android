@@ -2,8 +2,8 @@ package Skyflow
 
 import org.json.JSONObject
 
-data class GatewayConfiguration(
-    val gatewayURL: String,
+data class ConnectionConfig(
+    val connectionURL: String,
     val methodName: RequestMethod,
     val pathParams: JSONObject = JSONObject(),
     val queryParams: JSONObject = JSONObject(),

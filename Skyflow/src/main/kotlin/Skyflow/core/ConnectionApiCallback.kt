@@ -7,51 +7,50 @@ import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
-class GatewayApiCallback(
-    val gatewayConfig : GatewayConfiguration,
+class ConnectionApiCallback(
+    val connectionConfig : ConnectionConfig,
     val callback: Callback,
     val logLevel: LogLevel = LogLevel.ERROR,
 ) : Callback{
 
     private val okHttpClient = OkHttpClient()
 
-    private val tag = GatewayApiCallback::class.qualifiedName
+    private val tag = ConnectionApiCallback::class.qualifiedName
 
     override fun onSuccess(responseBody: Any) {
         try{
             //adding path params
-            val gatewayUrl = Utils.addPathparamsToURL(gatewayConfig.gatewayURL,
-                gatewayConfig.pathParams,callback, logLevel)
-            if(gatewayUrl.equals(""))
+            val connectionUrl = Utils.addPathparamsToURL(connectionConfig.connectionURL,
+                connectionConfig.pathParams,callback, logLevel)
+            if(connectionUrl.equals(""))
                 return
-            val requestUrlBuilder = gatewayUrl.toHttpUrlOrNull()?.newBuilder()
+            val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
             if(requestUrlBuilder == null){
-                val error = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,
-                    tag, logLevel, arrayOf(gatewayConfig.gatewayURL))
+                val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,
+                    tag, logLevel, arrayOf(connectionConfig.connectionURL))
                 callback.onFailure(Utils.constructError(error))
                 return
             }
             //creating url with query params
-            val isQueryparamsAdded = Utils.addQueryParams(requestUrlBuilder,gatewayConfig,callback, logLevel)
+            val isQueryparamsAdded = Utils.addQueryParams(requestUrlBuilder,connectionConfig,callback, logLevel)
             if(!isQueryparamsAdded)
                 return
             val requestUrl = requestUrlBuilder.build()
 
             //body for API
-            val body: RequestBody = gatewayConfig.requestBody.toString()
+            val body: RequestBody = connectionConfig.requestBody.toString()
                 .toRequestBody("application/json".toByteArray().toString().toMediaTypeOrNull())
             val request = Request
                 .Builder()
-                .method(gatewayConfig.methodName.toString(), body)
+                .method(connectionConfig.methodName.toString(), body)
                 .addHeader("X-Skyflow-Authorization",responseBody.toString().split("Bearer ")[1])
                 .addHeader("Content-Type","application/json")
                 .url(requestUrl)
             //adding header
-            val isHeaderAdded = Utils.addRequestHeader(request,gatewayConfig,callback, logLevel)
+            val isHeaderAdded = Utils.addRequestHeader(request,connectionConfig,callback, logLevel)
             if(!isHeaderAdded)
                 return
 
@@ -73,9 +72,9 @@ class GatewayApiCallback(
                         }
                         else
                         {
-                            val responseFromGateway =JSONObject(response.body!!.string())
-                            val finaleResponse = Utils.constructResponseBodyFromGateway(gatewayConfig.responseBody,
-                                responseFromGateway,callback,logLevel)
+                            val responseFromConnection =JSONObject(response.body!!.string())
+                            val finaleResponse = Utils.constructResponseBodyFromConnection(connectionConfig.responseBody,
+                                responseFromConnection,callback,logLevel)
                             callback.onSuccess(finaleResponse)
                         }
                     }

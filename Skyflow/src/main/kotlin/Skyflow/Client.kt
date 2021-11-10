@@ -4,6 +4,7 @@ import Skyflow.core.*
 import Skyflow.core.Logger
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.utils.Utils
+import android.util.Log
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONArray
 import org.json.JSONObject
@@ -20,6 +21,8 @@ class Client internal constructor(
 
     fun insert(records:  JSONObject, options: InsertOptions? = InsertOptions(), callback: Callback){
 
+        Log.d("insert", "insert: $records")
+
         if(configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/")
         {
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
@@ -35,6 +38,7 @@ class Client internal constructor(
             if (isUrlValid)
             {
                 Logger.info(tag, Messages.INSERTING_RECORDS.getMessage(configuration.vaultID), configuration.options.logLevel)
+                Log.d("calling post", "insert: ")
                 apiClient.post(records,
                     loggingCallback(
                         callback,
@@ -131,22 +135,22 @@ class Client internal constructor(
                             ) {
                                 throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag, configuration.options.logLevel)
                             } else {
-                                var skyflow_ids = jsonObj.get("ids")
+                                var skyflowIds = jsonObj.get("ids")
                                 try {
-                                    skyflow_ids = skyflow_ids as ArrayList<String>
+                                    skyflowIds = skyflowIds as ArrayList<String>
                                 }
                                 catch (e:Exception)
                                 {
                                     throw SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS,tag, configuration.options.logLevel)
                                 }
-                                if (skyflow_ids.isEmpty()) {
+                                if (skyflowIds.isEmpty()) {
                                     throw SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS,tag, configuration.options.logLevel)
                                 }
-                                for (j in 0 until skyflow_ids.size) {
-                                    if (skyflow_ids.get(j).isEmpty())
+                                for (j in 0 until skyflowIds.size) {
+                                    if (skyflowIds.get(j).isEmpty())
                                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag, configuration.options.logLevel)
                                 }
-                                val record = GetByIdRecord(skyflow_ids,
+                                val record = GetByIdRecord(skyflowIds,
                                     jsonObj.get("table").toString(),
                                     jsonObj.get("redaction").toString())
                                 result.add(record)
@@ -168,7 +172,7 @@ class Client internal constructor(
 
     }
 
-    fun invokeGateway(gatewayConfig: GatewayConfiguration, callback: Callback) {
+    fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback) {
         if (configuration.vaultURL.isEmpty() || configuration.vaultURL.equals("/v1/vaults/")) {
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag, configuration.options.logLevel)
             callback.onFailure(Utils.constructError(error))
@@ -177,25 +181,25 @@ class Client internal constructor(
             callback.onFailure(Utils.constructError(error))
         } else {
             Logger.info(tag,
-                Messages.INVOKE_GATEWAY_CALLED.getMessage(),
+                Messages.INVOKE_CONNECTION_CALLED.getMessage(),
                 configuration.options.logLevel)
-            val checkUrl = Utils.checkUrl(gatewayConfig.gatewayURL)
+            val checkUrl = Utils.checkUrl(connectionConfig.connectionURL)
             if(!Utils.checkUrl(apiClient.vaultURL))
             {
                 val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,tag, configuration.options.logLevel,
                     arrayOf(apiClient.vaultURL))
                 callback.onFailure(Utils.constructError(error))
             }
-            else if(gatewayConfig.gatewayURL.isEmpty())
+            else if(connectionConfig.connectionURL.isEmpty())
             {
-                val error = SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL,tag, configuration.options.logLevel)
+                val error = SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL,tag, configuration.options.logLevel)
                 callback.onFailure(Utils.constructError(error))
             }
             else if (checkUrl)
-                this.apiClient.invokeGateway(gatewayConfig, callback)
+                this.apiClient.invokeConnection(connectionConfig, callback)
             else {
-                val error = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,tag, configuration.options.logLevel,
-                    arrayOf(gatewayConfig.gatewayURL))
+                val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,tag, configuration.options.logLevel,
+                    arrayOf(connectionConfig.connectionURL))
                 callback.onFailure(Utils.constructError(error))
 
             }

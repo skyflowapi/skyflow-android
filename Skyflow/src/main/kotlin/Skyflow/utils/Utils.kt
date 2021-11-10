@@ -20,35 +20,34 @@ class Utils {
             return true
         }
 
-        //response for invokegateway
-        fun constructResponseBodyFromGateway(
+        //response for invokeConnection
+        fun constructResponseBodyFromConnection(
             responseBody: JSONObject,
-            responseFromGateway: JSONObject,
+            responseFromConnection: JSONObject,
             callback: Callback,
             logLevel: LogLevel
         ) : JSONObject
         {
-            try {
-                val isValid = checkInvalidFields(responseBody,responseFromGateway,callback)
-                if(isValid)
-                {
-                    constructJsonKeyForGatewayResponse(responseBody,responseFromGateway,callback, logLevel)
-                    removeEmptyAndNullFields(responseFromGateway)
-                    return responseFromGateway
-                }
-                else
-                    return JSONObject()
+            return try {
+                val isValid = checkInvalidFields(responseBody,responseFromConnection,callback)
+                if(isValid) {
+                    constructJsonKeyForConnectionResponse(responseBody,responseFromConnection,callback, logLevel)
+                    removeEmptyAndNullFields(responseFromConnection)
+                    responseFromConnection
+                } else
+                    JSONObject()
+            } catch (e:Exception) {
+                JSONObject()
             }
-            catch (e:Exception) {return JSONObject()}
              }
 
 
         //displaying data to pci elements and removing pci element values from response
         var errors = JSONArray()
-        var gatewayResponse = JSONObject()
-        fun constructJsonKeyForGatewayResponse(
+        var connectionResponse = JSONObject()
+        fun constructJsonKeyForConnectionResponse(
             responseBody: JSONObject,
-            responseFromGateway: JSONObject,
+            responseFromConnection: JSONObject,
             callback: Callback,
             logLevel: LogLevel
         ) : JSONObject
@@ -60,19 +59,19 @@ class Utils {
 
 
                             if (responseBody.get(keys.getString(j)) is Element) {
-                                val ans = responseFromGateway.getString(keys.getString(j))
+                                val ans = responseFromConnection.getString(keys.getString(j))
                                 (responseBody.get(keys.getString(j)) as TextField).inputField.setText(
                                     ans)
-                                responseFromGateway.remove(keys.getString(j))
+                                responseFromConnection.remove(keys.getString(j))
                             } else if (responseBody.get(keys.getString(j)) is Label) {
-                                val ans = responseFromGateway.getString(keys.getString(j))
+                                val ans = responseFromConnection.getString(keys.getString(j))
                                 (responseBody.get(keys.getString(j)) as Label).placeholder.setText(
                                     ans)
                                 (responseBody.get(keys.getString(j)) as Label).actualValue = ans
-                                responseFromGateway.remove(keys.getString(j))
+                                responseFromConnection.remove(keys.getString(j))
                             } else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                                constructJsonKeyForGatewayResponse(responseBody.get(keys.getString(j)) as JSONObject,
-                                    responseFromGateway.getJSONObject(keys.getString(j)),
+                                constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
+                                    responseFromConnection.getJSONObject(keys.getString(j)),
                                     callback,logLevel)
 
                             }
@@ -84,28 +83,28 @@ class Utils {
                         val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE, tag, logLevel, arrayOf(keys.getString(j)))
                         val finalError = JSONObject()
                         finalError.put("error",error)
-                        if(!gatewayResponse.has("errors"))
-                            gatewayResponse.put("errors",JSONArray())
-                        gatewayResponse.getJSONArray("errors").put(finalError)
-                        responseFromGateway.remove(keys.getString(j))
+                        if(!connectionResponse.has("errors"))
+                            connectionResponse.put("errors",JSONArray())
+                        connectionResponse.getJSONArray("errors").put(finalError)
+                        responseFromConnection.remove(keys.getString(j))
                     }
                 } }
-            gatewayResponse.put("success",responseFromGateway)
-            return gatewayResponse
+            connectionResponse.put("success",responseFromConnection)
+            return connectionResponse
         }
 
-        //requestbody for invokegateway
-        fun constructRequestBodyForGateway(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean
+        //requestbody for invokeConnection
+        fun constructRequestBodyForConnection(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean
         {
             return try {
-                constructJsonKeyForGatewayRequest(records, callback, logLevel)
+                constructJsonKeyForConnectionRequest(records, callback, logLevel)
             } catch (e: Exception) {
                 false
             } }
 
         var arrayInRequestBody : JSONArray = JSONArray()
-        //changing pci elements to actual values in it for request to gateway
-        internal fun constructJsonKeyForGatewayRequest(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean {
+        //changing pci elements to actual values in it for request to connection
+        internal fun constructJsonKeyForConnectionRequest(records: JSONObject, callback: Callback, logLevel: LogLevel) : Boolean {
             val keys = records.names()
             if(keys !=null) {
                 for (j in 0 until keys.length()) {
@@ -139,7 +138,7 @@ class Utils {
                         value = (records.get(keys.getString(j)) as Label).revealInput.token!!
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
-                            constructJsonKeyForGatewayRequest(records.get(keys.getString(j)) as JSONObject,
+                            constructJsonKeyForConnectionRequest(records.get(keys.getString(j)) as JSONObject,
                                 callback, logLevel)
                         if (isValid)
                             value = JSONObject(records.get(keys.getString(j)).toString())
@@ -180,7 +179,7 @@ class Utils {
                             else if(arrayValue.get(k) is JSONObject)
                             {
                                 val isValid =
-                                    constructJsonKeyForGatewayRequest(arrayValue.get(k)  as JSONObject,
+                                    constructJsonKeyForConnectionRequest(arrayValue.get(k)  as JSONObject,
                                         callback,logLevel)
                                 if (isValid)
                                     value = JSONObject(arrayValue.get(k) .toString())
@@ -240,7 +239,7 @@ class Utils {
                                 else if(arrayValue[k] is JSONObject)
                                 {
                                     val isValid =
-                                        constructJsonKeyForGatewayRequest(arrayValue.get(k)  as JSONObject,
+                                        constructJsonKeyForConnectionRequest(arrayValue.get(k)  as JSONObject,
                                             callback, logLevel)
                                     if (isValid)
                                         value = JSONObject(arrayValue[k].toString())
@@ -278,7 +277,7 @@ class Utils {
             return true
         }
 
-        //adding path params to gatewaye url
+        //adding path params to connection url
         fun addPathparamsToURL(
             url: String,
             params: JSONObject,
@@ -340,14 +339,14 @@ class Utils {
                 return ""
             } }
 
-        //adding query params for gateway url
+        //adding query params for connection url
         fun addQueryParams(
             requestUrlBuilder: HttpUrl.Builder,
-            gatewayConfig: GatewayConfiguration,
+            connectionConfig: ConnectionConfig,
             callback: Callback,
             logLevel: LogLevel
         ): Boolean {
-            val queryParams = (gatewayConfig.queryParams).names()
+            val queryParams = (connectionConfig.queryParams).names()
             if(queryParams != null) {
                 for (i in 0 until queryParams.length()) {
                     if(queryParams.getString(i).isEmpty())
@@ -355,7 +354,7 @@ class Utils {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_QUERY_PARAMS))//empty key
                         return false
                     }
-                    val value = gatewayConfig.queryParams.get(queryParams.getString(i))
+                    val value = connectionConfig.queryParams.get(queryParams.getString(i))
                     if(value is Array<*>)
                     {
                         for(j in 0 until value.size)
@@ -423,11 +422,11 @@ class Utils {
         }
 
 
-        //adding requestHeader for gateway url
-        fun addRequestHeader(request: Request.Builder, gatewayConfig: GatewayConfiguration,
+        //adding requestHeader for connection url
+        fun addRequestHeader(request: Request.Builder, connectionConfig: ConnectionConfig,
                              callback: Callback, logLevel: LogLevel
         ): Boolean {
-            val headers = (gatewayConfig.requestHeader as JSONObject).names()
+            val headers = (connectionConfig.requestHeader as JSONObject).names()
             if (headers != null) {
                 for(i in 0 until headers.length())
                 {
@@ -436,9 +435,9 @@ class Utils {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS)) //empty key
                         return false
                     }
-                    if(gatewayConfig.requestHeader.get(headers.getString(i)) is String || gatewayConfig.requestHeader.get(headers.getString(i)) is Number
-                        || gatewayConfig.requestHeader.get(headers.getString(i)) is Boolean)
-                        request.addHeader(headers.getString(i),gatewayConfig.requestHeader.getString(headers.getString(i)))
+                    if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
+                        || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
+                        request.addHeader(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
                     else
                     {
                         //callback.onFailure(Exception("invalid field \"${headers.getString(i)}\" present in requestHeader"))
@@ -532,7 +531,7 @@ class Utils {
             return JSONObject()
         }
 
-        //check whether pci element is valid or not inside requestbody of gatewayconfig
+        //check whether pci element is valid or not inside requestbody of connectionConfig
          fun checkElement(element: Element, callback: Callback, logLevel: LogLevel): Boolean
         {
             val state = element.getState()
@@ -555,10 +554,10 @@ class Utils {
             return true
         }
 
-        //checking invalidfields in response body of gatewayconfig
+        //checking invalidfields in response body of connectionConfig
          fun checkInvalidFields(
             responseBody: JSONObject,
-            responseFromGateway: JSONObject,
+            responseFromConnection: JSONObject,
             callback: Callback,
         ): Boolean {
             try {
@@ -568,7 +567,7 @@ class Utils {
                         if (responseBody.get(keys.getString(j)) is JSONObject) {
                             val check =
                                 checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
-                                    responseFromGateway.getJSONObject(keys.getString(j)),
+                                    responseFromConnection.getJSONObject(keys.getString(j)),
                                     callback)
                             if (!check)
                                 return false
@@ -619,7 +618,7 @@ class Utils {
                     }
                 } } }
 
-        // checking duplicate fields present in responseBody of gatewayconfig
+        // checking duplicate fields present in responseBody of connectionConfig
         fun  checkDuplicateInResponseBody(
             responseBody: JSONObject,
             callback: Callback, elementList: HashSet<String>, logLevel: LogLevel

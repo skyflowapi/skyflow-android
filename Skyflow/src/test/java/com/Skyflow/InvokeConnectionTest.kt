@@ -1,13 +1,12 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.core.GatewayApiCallback
+import Skyflow.core.ConnectionApiCallback
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.Utils
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.CheckBox
-import junit.framework.Assert
 import junit.framework.Assert.assertEquals
 import junit.framework.TestCase
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -20,11 +19,9 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.annotation.Config
-import java.lang.annotation.ElementType
 
 @RunWith(RobolectricTestRunner::class)
-class InvokeGatewayTest {
+class InvokeConnectionTest {
 
     lateinit var skyflow : Client
     private lateinit var activityController: ActivityController<Activity>
@@ -36,7 +33,7 @@ class InvokeGatewayTest {
     {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098d2c09",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         skyflow = Client(configuration)
@@ -53,13 +50,13 @@ class InvokeGatewayTest {
     {
         val skyflowConfiguration = Skyflow.Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -78,14 +75,14 @@ class InvokeGatewayTest {
     fun testEmptyVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "9898989898",
+            "vault_id",
             "",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -105,14 +102,14 @@ class InvokeGatewayTest {
     fun testInvalidVaultURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "http://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "http://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -128,23 +125,23 @@ class InvokeGatewayTest {
 
     }
     @Test
-    fun emptyGatewayURL1()
+    fun emptyConnectionURL1()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL)
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -153,23 +150,23 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testInvalidGatewayURL1()
+    fun testInvalidConnectionURL1()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "something" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,params = arrayOf(gatewayRequestBody.gatewayURL))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,params = arrayOf(connectionRequestBody.connectionURL))
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -180,8 +177,8 @@ class InvokeGatewayTest {
     fun testInvalidPathParams()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -196,14 +193,14 @@ class InvokeGatewayTest {
         pathParams.put("cvv",cvv)
         pathParams.put("cardNumber",JSONObject())
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,pathParams = pathParams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,pathParams = pathParams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_PATH_PARAMS,params = arrayOf(gatewayRequestBody.gatewayURL))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_PATH_PARAMS,params = arrayOf(connectionRequestBody.connectionURL))
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -215,8 +212,8 @@ class InvokeGatewayTest {
     fun testInvalidQueryParams()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vault.url.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -231,14 +228,14 @@ class InvokeGatewayTest {
         queryParams.put("card_number",queryParams)
         queryParams.put("check", CheckBox(activity))
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST,queryParams = queryParams)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST,queryParams = queryParams)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS,params = arrayOf(gatewayRequestBody.gatewayURL))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS,params = arrayOf(connectionRequestBody.connectionURL))
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -250,22 +247,22 @@ class InvokeGatewayTest {
     fun testInvalidRequestHeader()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val requestHeader = JSONObject()
         requestHeader.put("Authorization",JSONObject())
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = requestHeader,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = requestHeader,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS,params = arrayOf(gatewayRequestBody.gatewayURL))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS,params = arrayOf(connectionRequestBody.connectionURL))
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -277,8 +274,8 @@ class InvokeGatewayTest {
     fun testDuplicateInResponseBody()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -289,15 +286,15 @@ class InvokeGatewayTest {
         pathParams.put("cardNumber",cvv)
         pathParams.put("cvv",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -309,8 +306,8 @@ class InvokeGatewayTest {
     fun testRevealElementNotMountedInRequestBody()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -320,15 +317,15 @@ class InvokeGatewayTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(cvv.label.text.toString()))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -339,8 +336,8 @@ class InvokeGatewayTest {
     fun testCollectElementNotMountedInRequestBody()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -350,8 +347,8 @@ class InvokeGatewayTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -369,8 +366,8 @@ class InvokeGatewayTest {
     fun testElementNotValidInRequestBody()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -380,11 +377,11 @@ class InvokeGatewayTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
         activity.addContentView(cvv,layoutParams)
         cvv.inputField.setText("12")
         cvv.state = StateforText(cvv)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -403,8 +400,8 @@ class InvokeGatewayTest {
     {
 
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -415,8 +412,8 @@ class InvokeGatewayTest {
         pathParams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
 
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -434,8 +431,8 @@ class InvokeGatewayTest {
     fun testRevealElementNotMountedInPathParams()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -445,8 +442,8 @@ class InvokeGatewayTest {
         val pathparams = JSONObject()
         pathparams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),pathParams = pathparams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathparams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -468,8 +465,8 @@ class InvokeGatewayTest {
     {
 
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -480,8 +477,8 @@ class InvokeGatewayTest {
         queryParams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
 
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -500,8 +497,8 @@ class InvokeGatewayTest {
     {
 
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -511,8 +508,8 @@ class InvokeGatewayTest {
         val queryparams = JSONObject()
         queryparams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,requestHeader = JSONObject(),queryParams = queryparams,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryparams,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -535,28 +532,28 @@ class InvokeGatewayTest {
 
 
 
-    //invoke gateway
+    //invoke connection
 
     @Test
-    fun testEmptyVaultIdForGateway()
+    fun testEmptyVaultIdForConnection()
     {
         val configuration = Configuration(
             "",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
 
         val client = Client(configuration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        client.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        client.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -564,24 +561,24 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testEmptyVaultURLForGateway() {
+    fun testEmptyVaultURLForConnection() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "9898989898",
+            "vault_id",
             "",
             AccessTokenProvider()
         )
 
         val client = Client(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        client.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        client.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -590,24 +587,24 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testInvalidVaultURLForGateway()
+    fun testInvalidVaultURLForConnection()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "http://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "http://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(skyflowConfiguration.vaultURL))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -616,24 +613,24 @@ class InvokeGatewayTest {
 
     }
     @Test
-    fun emptyGatewayURL()
+    fun emptyConnectionURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_GATEWAY_URL)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL)
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -641,24 +638,24 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testInvalidGatewayURL()
+    fun testInvalidConnectionURL()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "something" // eg:  url.../{cardNumber}/...
-        val gatewayRequestBody = GatewayConfiguration(gatewayURL = url,methodName = RequestMethod.POST)
-        skyflowClient.invokeGateway(gatewayRequestBody,object : Callback
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
+        skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,params = arrayOf(gatewayRequestBody.gatewayURL))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,params = arrayOf(connectionRequestBody.connectionURL))
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -672,9 +669,9 @@ class InvokeGatewayTest {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv","123")
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -694,12 +691,12 @@ class InvokeGatewayTest {
         val requestHeader = JSONObject()
         requestHeader.put("card_number","4111")
         requestHeader.put("cvv","123")
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
         val request = Request
             .Builder()
             .addHeader("Content-Type","application/json")
-            .url(gatewayConfiguration.gatewayURL)
-        val isValid = Utils.addRequestHeader(request,gatewayConfiguration,object : Callback{
+            .url(connectionConfiguration.connectionURL)
+        val isValid = Utils.addRequestHeader(request,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -715,12 +712,12 @@ class InvokeGatewayTest {
         val requestHeader = JSONObject()
         requestHeader.put("card_number",JSONObject())
         requestHeader.put("cvv","123")
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
         val request = Request
             .Builder()
             .addHeader("Content-Type","application/json")
-            .url(gatewayConfiguration.gatewayURL)
-        val isValid = Utils.addRequestHeader(request,gatewayConfiguration,object : Callback{
+            .url(connectionConfiguration.connectionURL)
+        val isValid = Utils.addRequestHeader(request,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }override fun onFailure(exception: Any) {
 
@@ -738,9 +735,9 @@ class InvokeGatewayTest {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -762,9 +759,9 @@ class InvokeGatewayTest {
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
         queryParams.put("array", arrayOf(cvv,"1234"))
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -789,9 +786,9 @@ class InvokeGatewayTest {
         cvv.inputField.setText("12")
         activity.addContentView(cvv,layoutParams)
         cvv.state = StateforText(cvv)
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -832,9 +829,9 @@ class InvokeGatewayTest {
         val pathParams = JSONObject()
         pathParams.put("card_number","4111")
         pathParams.put("cvv",cvv)
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -855,9 +852,9 @@ class InvokeGatewayTest {
         val pathParams = JSONObject()
         pathParams.put("card_number","4111")
         pathParams.put("cvv",cvv)
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -881,9 +878,9 @@ class InvokeGatewayTest {
         cvv.inputField.setText("12")
         activity.addContentView(cvv,layoutParams)
         cvv.state = StateforText(cvv)
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -903,8 +900,8 @@ class InvokeGatewayTest {
     fun testDuplicateInResponseBodyForReveal()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -923,7 +920,7 @@ class InvokeGatewayTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -936,8 +933,8 @@ class InvokeGatewayTest {
     fun testDuplicateInResponseBodyForCollect()
     {
         val skyflowConfiguration = Skyflow.Configuration(
-            "29182989857575878",
-            "https://sb1.area51.vault.skyflowapis.tech",
+            "vault_id",
+            "https://vaulturl.com",
             AccessTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -958,7 +955,7 @@ class InvokeGatewayTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1007,7 +1004,7 @@ class InvokeGatewayTest {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf("name")).getErrorMessage(),
+                assertEquals(SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf("name")).getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1038,7 +1035,7 @@ class InvokeGatewayTest {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf("cvv")).getErrorMessage(),
+                assertEquals(SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf("cvv")).getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1060,7 +1057,7 @@ class InvokeGatewayTest {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals("invalid field cvv present in response body",
+                assertEquals("invalid field cvv present in response body",
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1083,7 +1080,7 @@ class InvokeGatewayTest {
         val records = JSONObject()
         records.put("name",name)
         activity.addContentView(name,layoutParams)
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1112,7 +1109,7 @@ class InvokeGatewayTest {
         records.put("cardNumber",card_number)
         val containerOptions = ContainerOptions()
         // activity.addContentView(card_number,layoutParams)
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1128,7 +1125,7 @@ class InvokeGatewayTest {
 
         TestCase.assertFalse(isConstructed)
 
-        Utils.constructJsonKeyForGatewayRequest(records,object : Callback
+        Utils.constructJsonKeyForConnectionRequest(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1162,7 +1159,7 @@ class InvokeGatewayTest {
         records.put("exp","11/22")
         records.put("JsonArray",array)
 
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1203,7 +1200,7 @@ class InvokeGatewayTest {
         records.put("jsonobject",nested)
         activity.addContentView(card_number,layoutParams)
         card_number!!.inputField.setText("4111 11 1111 1111")
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1227,7 +1224,7 @@ class InvokeGatewayTest {
     {
         val records = JSONObject()
         records.put("","1234")
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1251,7 +1248,7 @@ class InvokeGatewayTest {
         val nested = JSONObject()
         nested.put("mm",CheckBox(activity))
         records.put("mm",nested)
-        val isConstructed = Utils.constructRequestBodyForGateway(records,object : Callback
+        val isConstructed = Utils.constructRequestBodyForConnection(records,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1295,9 +1292,9 @@ class InvokeGatewayTest {
         val queryParams = JSONObject()
         queryParams.put("","4111")
         queryParams.put("cvv","123")
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
-        val requestUrlBuilder = gatewayConfiguration.gatewayURL.toHttpUrlOrNull()?.newBuilder()
-        Utils.addQueryParams(requestUrlBuilder!!,gatewayConfiguration,object : Callback{
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
+        Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -1310,7 +1307,7 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testconstructResponseBodyFromGateway()
+    fun testconstructResponseBodyFromConnection()
     {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
@@ -1329,14 +1326,14 @@ class InvokeGatewayTest {
         activity.addContentView(cvv,layoutParams)
         activity.addContentView(card_number,layoutParams)
 
-        val recordFromGateway = JSONObject()
-        recordFromGateway.put("cvv","123")
+        val recordFromConnection = JSONObject()
+        recordFromConnection.put("cvv","123")
         val records1 = JSONObject()
         records1.put("card_number",card_number)
-        recordFromGateway.put("nested",records1)
-        recordFromGateway.put("exp","11/22")
+        recordFromConnection.put("nested",records1)
+        recordFromConnection.put("exp","11/22")
 
-        val response = Utils.constructResponseBodyFromGateway(records,recordFromGateway
+        val response = Utils.constructResponseBodyFromConnection(records,recordFromConnection
             ,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
@@ -1350,7 +1347,7 @@ class InvokeGatewayTest {
 
         TestCase.assertNotNull(response)
 
-        val response1 = Utils.constructJsonKeyForGatewayResponse(records,recordFromGateway
+        val response1 = Utils.constructJsonKeyForConnectionResponse(records,recordFromConnection
             ,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {
@@ -1366,13 +1363,13 @@ class InvokeGatewayTest {
         TestCase.assertTrue(response1.has("success"))
     }
 
-    //end invokegateway
+    //end invokeconnection
 
 
-    //gatewayapicallback
+    //connectionapicallback
 
     @Test
-    fun testGatewayApiCallbackInvalidPathparams()
+    fun testConnectionApiCallbackInvalidPathparams()
     {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
@@ -1380,8 +1377,8 @@ class InvokeGatewayTest {
 
         val pathParams = JSONObject()
         pathParams.put("cvv",JSONObject())
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
-        GatewayApiCallback(gatewayConfiguration,object : Callback
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
+        ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1397,7 +1394,7 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testGatewayApiCallbackInvalidQueryparams()
+    fun testConnectionApiCallbackInvalidQueryparams()
     {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
@@ -1405,8 +1402,8 @@ class InvokeGatewayTest {
 
         val pathParams = JSONObject()
         pathParams.put("cvv","123")
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
-        GatewayApiCallback(gatewayConfiguration,object : Callback
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
+        ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1422,14 +1419,14 @@ class InvokeGatewayTest {
     }
 
     @Test
-    fun testGatewayApiCallbackInvalidRequestHeader()
+    fun testConnectionApiCallbackInvalidRequestHeader()
     {
         val requestHeader = JSONObject()
         requestHeader.put("card_number","4111")
         requestHeader.put("cvv",CheckBox(activity))
 
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com/",RequestMethod.POST,requestHeader = requestHeader)
-        GatewayApiCallback(gatewayConfiguration,object : Callback
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST,requestHeader = requestHeader)
+        ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1446,34 +1443,34 @@ class InvokeGatewayTest {
 
 
     @Test
-    fun testValidGatewayApiCallback()
+    fun testValidConnectionApiCallback()
     {
-        val gatewayConfiguration = GatewayConfiguration("https://www.google.com/",RequestMethod.POST)
-        val gateway =   GatewayApiCallback(gatewayConfiguration,object : Callback
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST)
+        val connection =   ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
 
             override fun onFailure(exception: Any) {
-                TestCase.assertEquals("failed",exception.toString())
+                TestCase.assertEquals("failed 12",exception.toString())
             }
 
         },LogLevel.ERROR)
 
-        gateway.onSuccess("Bearer token")
-        gateway.onFailure("failed")
+        connection.onSuccess("Bearer token")
+//        connection.onFailure("failed")
     }
 
     @Test
-    fun testGatewayApiCallbackInvalidUrl()
+    fun testConnectionApiCallbackInvalidUrl()
     {
-        val gatewayConfiguration = GatewayConfiguration("httpsm/",RequestMethod.POST)
-        GatewayApiCallback(gatewayConfiguration,object : Callback
+        val connectionConfiguration = ConnectionConfig("httpsm/",RequestMethod.POST)
+        ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
-                TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_GATEWAY_URL,params = arrayOf(gatewayConfiguration.gatewayURL))
+                TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,params = arrayOf(connectionConfiguration.connectionURL))
                     .getErrorMessage(), UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1481,6 +1478,6 @@ class InvokeGatewayTest {
 
     }
 
-    //end gatewayapi
+    //end connectionapi
     
 }
