@@ -342,7 +342,7 @@ class Utils {
         //adding query params for connection url
         fun addQueryParams(
             requestUrlBuilder: HttpUrl.Builder,
-            connectionConfig: ConnectionConfiguration,
+            connectionConfig: ConnectionConfig,
             callback: Callback,
             logLevel: LogLevel
         ): Boolean {
@@ -423,7 +423,7 @@ class Utils {
 
 
         //adding requestHeader for connection url
-        fun addRequestHeader(request: Request.Builder, connectionConfig: ConnectionConfiguration,
+        fun addRequestHeader(request: Request.Builder, connectionConfig: ConnectionConfig,
                              callback: Callback, logLevel: LogLevel
         ): Boolean {
             val headers = (connectionConfig.requestHeader as JSONObject).names()

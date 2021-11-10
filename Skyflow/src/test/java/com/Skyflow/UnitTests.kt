@@ -775,7 +775,7 @@ class UnitTests {
         val requestRecord = JSONObject()
         requestRecord.put("xxx",CheckBox(activity))
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
 
         apiClient.invokeConnection(connectionRequestBody, object : Callback
         {
@@ -800,7 +800,7 @@ class UnitTests {
         val requestRecord = JSONObject()
         requestRecord.put("card_number","41111")
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST,requestBody = requestRecord)
 
         apiClient.invokeConnection(connectionRequestBody, object : Callback
         {

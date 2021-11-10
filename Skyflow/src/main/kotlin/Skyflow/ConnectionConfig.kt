@@ -2,7 +2,7 @@ package Skyflow
 
 import org.json.JSONObject
 
-data class ConnectionConfiguration(
+data class ConnectionConfig(
     val connectionURL: String,
     val methodName: RequestMethod,
     val pathParams: JSONObject = JSONObject(),

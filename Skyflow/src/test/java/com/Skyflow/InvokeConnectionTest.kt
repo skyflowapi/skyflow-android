@@ -55,7 +55,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -81,7 +81,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -108,7 +108,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -134,7 +134,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -159,7 +159,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
         val url = "something" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -193,7 +193,7 @@ class InvokeConnectionTest {
         pathParams.put("cvv",cvv)
         pathParams.put("cardNumber",JSONObject())
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,pathParams = pathParams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,pathParams = pathParams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -228,7 +228,7 @@ class InvokeConnectionTest {
         queryParams.put("card_number",queryParams)
         queryParams.put("check", CheckBox(activity))
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST,queryParams = queryParams)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST,queryParams = queryParams)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -255,7 +255,7 @@ class InvokeConnectionTest {
         val requestHeader = JSONObject()
         requestHeader.put("Authorization",JSONObject())
         val url = "https://www.something.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = requestHeader,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = requestHeader,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -286,7 +286,7 @@ class InvokeConnectionTest {
         pathParams.put("cardNumber",cvv)
         pathParams.put("cvv",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -317,7 +317,7 @@ class InvokeConnectionTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -347,7 +347,7 @@ class InvokeConnectionTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -377,7 +377,7 @@ class InvokeConnectionTest {
         val requestBody = JSONObject()
         requestBody.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
         activity.addContentView(cvv,layoutParams)
         cvv.inputField.setText("12")
         cvv.state = StateforText(cvv)
@@ -412,7 +412,7 @@ class InvokeConnectionTest {
         pathParams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
 
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -442,7 +442,7 @@ class InvokeConnectionTest {
         val pathparams = JSONObject()
         pathparams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),pathParams = pathparams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathparams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -477,7 +477,7 @@ class InvokeConnectionTest {
         queryParams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
 
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -508,7 +508,7 @@ class InvokeConnectionTest {
         val queryparams = JSONObject()
         queryparams.put("cardNumber",cvv)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = JSONObject(),queryParams = queryparams,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryparams,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -545,7 +545,7 @@ class InvokeConnectionTest {
 
         val client = Client(configuration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         client.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -570,7 +570,7 @@ class InvokeConnectionTest {
 
         val client = Client(skyflowConfiguration)
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         client.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -596,7 +596,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -622,7 +622,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -647,7 +647,7 @@ class InvokeConnectionTest {
         )
         val skyflowClient =  Client(skyflowConfiguration)
         val url = "something" // eg:  url.../{cardNumber}/...
-        val connectionRequestBody = ConnectionConfiguration(connectionURL = url,methodName = RequestMethod.POST)
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,methodName = RequestMethod.POST)
         skyflowClient.invokeConnection(connectionRequestBody,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -669,7 +669,7 @@ class InvokeConnectionTest {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv","123")
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -691,7 +691,7 @@ class InvokeConnectionTest {
         val requestHeader = JSONObject()
         requestHeader.put("card_number","4111")
         requestHeader.put("cvv","123")
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
         val request = Request
             .Builder()
             .addHeader("Content-Type","application/json")
@@ -712,7 +712,7 @@ class InvokeConnectionTest {
         val requestHeader = JSONObject()
         requestHeader.put("card_number",JSONObject())
         requestHeader.put("cvv","123")
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,requestHeader = requestHeader)
         val request = Request
             .Builder()
             .addHeader("Content-Type","application/json")
@@ -735,7 +735,7 @@ class InvokeConnectionTest {
         val queryParams = JSONObject()
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -759,7 +759,7 @@ class InvokeConnectionTest {
         queryParams.put("card_number","4111")
         queryParams.put("cvv",cvv)
         queryParams.put("array", arrayOf(cvv,"1234"))
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -786,7 +786,7 @@ class InvokeConnectionTest {
         cvv.inputField.setText("12")
         activity.addContentView(cvv,layoutParams)
         cvv.state = StateforText(cvv)
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -829,7 +829,7 @@ class InvokeConnectionTest {
         val pathParams = JSONObject()
         pathParams.put("card_number","4111")
         pathParams.put("cvv",cvv)
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -852,7 +852,7 @@ class InvokeConnectionTest {
         val pathParams = JSONObject()
         pathParams.put("card_number","4111")
         pathParams.put("cvv",cvv)
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -878,7 +878,7 @@ class InvokeConnectionTest {
         cvv.inputField.setText("12")
         activity.addContentView(cvv,layoutParams)
         cvv.state = StateforText(cvv)
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,pathParams = pathParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -1292,7 +1292,7 @@ class InvokeConnectionTest {
         val queryParams = JSONObject()
         queryParams.put("","4111")
         queryParams.put("cvv","123")
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val requestUrlBuilder = connectionConfiguration.connectionURL.toHttpUrlOrNull()?.newBuilder()
         Utils.addQueryParams(requestUrlBuilder!!,connectionConfiguration,object : Callback{
             override fun onSuccess(responseBody: Any) {
@@ -1377,7 +1377,7 @@ class InvokeConnectionTest {
 
         val pathParams = JSONObject()
         pathParams.put("cvv",JSONObject())
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
         ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1402,7 +1402,7 @@ class InvokeConnectionTest {
 
         val pathParams = JSONObject()
         pathParams.put("cvv","123")
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
         ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1425,7 +1425,7 @@ class InvokeConnectionTest {
         requestHeader.put("card_number","4111")
         requestHeader.put("cvv",CheckBox(activity))
 
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com/",RequestMethod.POST,requestHeader = requestHeader)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST,requestHeader = requestHeader)
         ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1445,7 +1445,7 @@ class InvokeConnectionTest {
     @Test
     fun testValidConnectionApiCallback()
     {
-        val connectionConfiguration = ConnectionConfiguration("https://www.google.com/",RequestMethod.POST)
+        val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST)
         val connection =   ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {
@@ -1464,7 +1464,7 @@ class InvokeConnectionTest {
     @Test
     fun testConnectionApiCallbackInvalidUrl()
     {
-        val connectionConfiguration = ConnectionConfiguration("httpsm/",RequestMethod.POST)
+        val connectionConfiguration = ConnectionConfig("httpsm/",RequestMethod.POST)
         ConnectionApiCallback(connectionConfiguration,object : Callback
         {
             override fun onSuccess(responseBody: Any) {

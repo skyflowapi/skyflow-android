@@ -1,7 +1,7 @@
 package com.Skyflow
 
 import Skyflow.Callback
-import Skyflow.ConnectionConfiguration
+import Skyflow.ConnectionConfig
 import Skyflow.RequestMethod
 import Skyflow.create
 import androidx.appcompat.app.AppCompatActivity
@@ -61,7 +61,7 @@ class GenerateCvv : AppCompatActivity() {
             val requestHeader = JSONObject()
             requestHeader.put("Authorization",BuildConfig.GATEWAY_TOKEN)
             val url = BuildConfig.GATEWAY_CVV_GEN_URL  // eg:  url.../{cardNumber}/...
-            val gatewayRequestBody = ConnectionConfiguration(connectionURL = url,requestHeader = requestHeader,pathParams = pathParams,methodName = RequestMethod.POST,requestBody = requestBody, responseBody =  responseBody,queryParams = queryParams)
+            val gatewayRequestBody = ConnectionConfig(connectionURL = url,requestHeader = requestHeader,pathParams = pathParams,methodName = RequestMethod.POST,requestBody = requestBody, responseBody =  responseBody,queryParams = queryParams)
             skyflowClient.invokeConnection(gatewayRequestBody,object : Callback
             {
                 override fun onSuccess(responseBody: Any) {

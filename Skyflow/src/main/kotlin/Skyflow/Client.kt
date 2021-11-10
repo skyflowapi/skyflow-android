@@ -135,22 +135,22 @@ class Client internal constructor(
                             ) {
                                 throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag, configuration.options.logLevel)
                             } else {
-                                var skyflow_ids = jsonObj.get("ids")
+                                var skyflowIds = jsonObj.get("ids")
                                 try {
-                                    skyflow_ids = skyflow_ids as ArrayList<String>
+                                    skyflowIds = skyflowIds as ArrayList<String>
                                 }
                                 catch (e:Exception)
                                 {
                                     throw SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS,tag, configuration.options.logLevel)
                                 }
-                                if (skyflow_ids.isEmpty()) {
+                                if (skyflowIds.isEmpty()) {
                                     throw SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS,tag, configuration.options.logLevel)
                                 }
-                                for (j in 0 until skyflow_ids.size) {
-                                    if (skyflow_ids.get(j).isEmpty())
+                                for (j in 0 until skyflowIds.size) {
+                                    if (skyflowIds.get(j).isEmpty())
                                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag, configuration.options.logLevel)
                                 }
-                                val record = GetByIdRecord(skyflow_ids,
+                                val record = GetByIdRecord(skyflowIds,
                                     jsonObj.get("table").toString(),
                                     jsonObj.get("redaction").toString())
                                 result.add(record)
@@ -172,7 +172,7 @@ class Client internal constructor(
 
     }
 
-    fun invokeConnection(connectionConfig: ConnectionConfiguration, callback: Callback) {
+    fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback) {
         if (configuration.vaultURL.isEmpty() || configuration.vaultURL.equals("/v1/vaults/")) {
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag, configuration.options.logLevel)
             callback.onFailure(Utils.constructError(error))

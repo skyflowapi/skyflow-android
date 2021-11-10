@@ -165,7 +165,7 @@ class APIClient (
     }
 
     fun invokeConnection(
-        connectionConfig: ConnectionConfiguration,
+        connectionConfig: ConnectionConfig,
         callback: Callback
     ) {
         val isValidResponseBody = Utils.checkDuplicateInResponseBody(connectionConfig.responseBody,callback,HashSet(),logLevel)

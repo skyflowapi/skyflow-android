@@ -855,7 +855,7 @@ The response below shows that some tokens assigned to the reveal elements get re
 Using Skyflow connection, end-user applications can integrate checkout/card issuance flow without any of their apps/systems touching the PCI compliant fields like cvv, card number. To invoke connection, use the `invokeConnection(connectionConfig)` method of the Skyflow client.
 
 ```kt
-val connectionConfig = ConnectionConfiguration(
+val connectionConfig = ConnectionConfig(
   connectionURL: string, // connection url received when creating a skyflow connection integration
   methodName: Skyflow.RequestMethod,
   pathParams: JSONObject,	// optional
@@ -913,7 +913,7 @@ val cvvElement = collectContainer.create(context = Context,input = cvvInput, opt
 val requestBody = JSONObject()
 requestBody.put("card_number",cardNumberElement)
 requestBody.put("cvv",cvvElement)
-val connectionConfig = ConnectionConfiguration( 
+val connectionConfig = ConnectionConfig( 
   connectionURL = "https://area51.connection.skyflow.com/v1/connection/inboundRoutes/abc-1213/v2/pay",
   methodName = Skyflow.RequestMethod.POST,
   requestBody = requestBody
@@ -965,7 +965,7 @@ val requestBody = JSONObject()
 requestBody.put("expirationDate",expiryDateElement)
 val responseBody = JSONObject()
 responseBody.put(resource,JSONObject().put("cvv",cvvElement)) // pass the element where the cvv response from the connection will be mounted
-val connectionConfig = ConnectionConfiguration(
+val connectionConfig = ConnectionConfig(
   connectionURL = "https://area51.connection.skyflow.com/v1/connection/inboundRoutes/abc-1213/cards/{card_number}/cvv2generation",
   methodName = Skyflow.RequestMethod.POST,
   pathParams = pathParams,
