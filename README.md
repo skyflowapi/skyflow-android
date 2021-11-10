@@ -80,7 +80,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.1.0</version>
+   <version>1.5.0</version>
 </dependency>
 ```
 
