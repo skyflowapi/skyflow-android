@@ -98,7 +98,7 @@ val config = Skyflow.Configuration(
     tokenProvider = demoTokenProvider,
     options: Skyflow.Options(
       logLevel : Skyflow.LogLevel, // optional, if not specified loglevel is ERROR.
-       env: SKyflow.Env //optiuona, if not specified env is PROD.
+        env: SKyflow.Env //optiuona, if not specified env is PROD.
        ) 
 )
 
