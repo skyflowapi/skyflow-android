@@ -476,12 +476,16 @@ class CollectTest {
         card_number!!.inputField.setText("4111 1111 1111 1111")
         activity.addContentView(card_number,layoutParams)
         assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
+        card_number.setError("error occured")
+        assertTrue(card_number.error.text.toString().equals("error occured"))
+        card_number.unmount()
+        assertTrue(card_number.actualValue.isEmpty())
     }
 
     @Test
     fun testOnReadyListener() {
         val container = skyflow.container(ContainerType.COLLECT)
-        val options = CollectElementOptions(false)
+        val options = CollectElementOptions(false,enableCardIcon = true)
         val collectInput = CollectElementInput("cards", "card_number",
             SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
@@ -506,6 +510,8 @@ class CollectTest {
             onReadyCalled = true
         }
         assertFalse(onReadyCalled)
+        card_number.setupField(collectInput,options)
+        assertEquals(card_number.isRequired,false)
     }
 
 
@@ -1080,7 +1086,7 @@ class CollectTest {
         val collectInput1 = CollectElementInput("cards","card_number",
             SkyflowElementType.CARD_NUMBER,placeholder = "card number"
         )
-        val cvv = container.create(activity,collectInput,CollectElementOptions())
+        val cvv = container.create(activity,collectInput,CollectElementOptions(enableCardIcon = false))
         val card_number = container.create(activity,collectInput1,CollectElementOptions())
 
         val records = JSONObject()

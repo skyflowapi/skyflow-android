@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 /**
 Validate input in the scope of matching supported cards.
  */
-internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError) : SkyflowValidationProtocol() {
+internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : SkyflowValidationProtocol() {
 
     override fun validate(text: String?) : Boolean {
 

@@ -1,4 +1,9 @@
 package Skyflow
 
-class CollectElementOptions(var required:Boolean = false) {
+import Skyflow.collect.elements.utils.ExpiryDateFormat
+
+class CollectElementOptions(
+    var required:Boolean = false,
+    var enableCardIcon : Boolean = true
+    ) {
 }

@@ -14,7 +14,7 @@ open class Element @JvmOverloads constructor(
     internal var columnName: String  = ""
     internal var tableName: String = ""
     internal lateinit var collectInput : CollectElementInput
-    private lateinit var options : Skyflow.CollectElementOptions
+    internal lateinit var options : Skyflow.CollectElementOptions
     internal lateinit var fieldType: SkyflowElementType
 
     /// Describes `SkyflowElement` input   State`

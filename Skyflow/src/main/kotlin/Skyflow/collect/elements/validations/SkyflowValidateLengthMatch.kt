@@ -3,7 +3,7 @@ package  com.Skyflow.collect.elements.validations
 /**
 Validate input in scope of length.
  */
-internal class SkyflowValidateLengthMatch( val lengths:IntArray,override var error: SkyflowValidationError) : SkyflowValidationProtocol() {
+internal class SkyflowValidateLengthMatch( val lengths:IntArray,override var error: SkyflowValidationError = "") : SkyflowValidationProtocol() {
 
 
     /// validate length of text
