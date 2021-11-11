@@ -21,8 +21,6 @@ class Client internal constructor(
 
     fun insert(records:  JSONObject, options: InsertOptions? = InsertOptions(), callback: Callback){
 
-        Log.d("insert", "insert: $records")
-
         if(configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/")
         {
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
@@ -38,7 +36,6 @@ class Client internal constructor(
             if (isUrlValid)
             {
                 Logger.info(tag, Messages.INSERTING_RECORDS.getMessage(configuration.vaultID), configuration.options.logLevel)
-                Log.d("calling post", "insert: ")
                 apiClient.post(records,
                     loggingCallback(
                         callback,
