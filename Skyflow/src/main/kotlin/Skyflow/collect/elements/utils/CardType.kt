@@ -60,6 +60,9 @@ enum class  CardType (var defaultName:String,var regex: String,var minCardLength
 
     companion object
     {
+        private val AMEX_SPACE_INDICES = intArrayOf(4, 10)
+        private val DEFAULT_SPACE_INDICES = intArrayOf(4, 8, 12)
+
         fun forCardNumber(cardNumber: String) : CardType {
             val patternMatch = forCardPattern(cardNumber)
             if (patternMatch.defaultName != "Empty" && patternMatch.defaultName != "Unknown") {
@@ -82,6 +85,9 @@ enum class  CardType (var defaultName:String,var regex: String,var minCardLength
             }
             return EMPTY
         }
+    }
+    open fun getSpaceIndices(): IntArray {
+        return if (this == AMEX) CardType.AMEX_SPACE_INDICES else CardType.DEFAULT_SPACE_INDICES
     }
 }
 
