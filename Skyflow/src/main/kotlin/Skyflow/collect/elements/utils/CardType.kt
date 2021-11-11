@@ -15,7 +15,7 @@ enum class  CardType (var defaultName:String,var regex: String,var minCardLength
 
     VISA(
         "Visa" , "^4\\d*", 13, 19, "#### #### #### #### ###",
-        3, SecurityCode.cvv.rawValue, R.drawable.ic_visa),
+        3, SecurityCode.cvv.rawValue, R.drawable.ic_visa_2021),
     MASTERCARD(
         "MasterCard","^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
         16,16,"#### #### #### ####",
