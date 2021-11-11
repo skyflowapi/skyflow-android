@@ -42,7 +42,11 @@ internal class RevealApiCallback(
                     .build()
                 okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        revealResponse.insertResponse()
+                        val resObj = JSONObject()
+                        val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                        resObj.put("error", skyflowError)
+                        resObj.put("token", record.token)
+                        revealResponse.insertResponse(resObj, false)
                     }
 
                     override fun onResponse(call: Call, response: Response) {

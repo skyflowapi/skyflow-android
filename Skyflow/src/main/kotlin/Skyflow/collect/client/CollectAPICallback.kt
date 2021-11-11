@@ -43,8 +43,8 @@ internal class CollectAPICallback(
                 .build()
             okHttpClient.newCall(request).enqueue(object : okhttp3.Callback{
                 override fun onFailure(call: Call, e: IOException) {
-                    val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
-                    (this@CollectAPICallback).onFailure(error)
+                    val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                    (this@CollectAPICallback).onFailure(skyflowError)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
