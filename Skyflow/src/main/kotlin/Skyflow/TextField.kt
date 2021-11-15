@@ -97,6 +97,8 @@ class TextField @JvmOverloads constructor(
             inputField.setText(collectInput.altText)
             state = StateforText(this)
         }
+        else
+            inputField.setText("")
         border.setColor(Color.WHITE)
         border.setStroke(collectInput.inputStyles.base.borderWidth,collectInput.inputStyles.base.borderColor)
         border.cornerRadius = collectInput.inputStyles.base.cornerRadius
@@ -108,12 +110,7 @@ class TextField @JvmOverloads constructor(
         if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
-        if(fieldType.equals(SkyflowElementType.CARD_NUMBER) && options.enableCardIcon)
-        {
-            val cardtype = CardType.forCardNumber(inputField.text.toString())
-            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
-            inputField.compoundDrawablePadding = 8
-        }
+        changeCardIcon()
     }
 
     private fun buildError()
@@ -164,12 +161,7 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 actualValue = inputField.text.toString()
-                if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
-                {
-                    val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
-                    if(options.enableCardIcon)
-                        inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
-                }
+                changeCardIcon()
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
                     userOnchangeListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
@@ -254,6 +246,15 @@ class TextField @JvmOverloads constructor(
         }.also { inputField.onFocusChangeListener = it }
 
     }
+    internal fun changeCardIcon()
+    {
+        if(fieldType.equals(SkyflowElementType.CARD_NUMBER) && options.enableCardIcon)
+        {
+            val cardtype = CardType.forCardNumber(inputField.text.toString())
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            inputField.compoundDrawablePadding = 8
+        }
+    }
     internal fun setError(error: String)
     {
         this.error.text = error
@@ -261,7 +262,8 @@ class TextField @JvmOverloads constructor(
 
     fun unmount()
     {
-        this.inputField.setText(collectInput.altText)
+        buildTextField()
+        error.visibility = View.INVISIBLE
         actualValue = ""
     }
 
