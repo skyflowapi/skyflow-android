@@ -36,8 +36,8 @@ class RevealActivity : AppCompatActivity() {
         val error_styles = Styles(base_error_style)
         val cardNumberInput = Skyflow.RevealElementInput(
            card_number.toString(),
-            Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
-            "card number"
+            inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
+            label = "card number",altText =  "41111"
         )
 
         val expiryDateInput = Skyflow.RevealElementInput(
@@ -47,15 +47,15 @@ class RevealActivity : AppCompatActivity() {
 
         val fullNameInput = Skyflow.RevealElementInput(
             name.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,styles,labelStyles,error_styles,
-            label =  "Name","Name"
+            inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
+            label = "name",altText =  "name"
         )
 
 
         val cvvElement = Skyflow.RevealElementInput(
             cvv_token.toString(),
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles,error_styles,
-            label = "CVV", "***"
+            inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
+            label = "CVV",altText =  "***"
         )
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
@@ -148,10 +148,8 @@ class RevealActivity : AppCompatActivity() {
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
         recordObj.put("token", "3220-5794-9231-7876")
-        recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         val recordObj1 = JSONObject()
         recordObj1.put("token", "a1d84ea3-d2d4-4eeb-a21f-928ff9d01d1c")
-        recordObj1.put("redaction", Skyflow.RedactionType.DEFAULT)
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)
         revealRecords.put("records", revealRecordsArray)
