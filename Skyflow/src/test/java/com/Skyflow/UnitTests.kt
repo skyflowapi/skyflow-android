@@ -1566,7 +1566,7 @@ class UnitTests {
         var cardtype  = CardType.forCardNumber(cardNumber1)
         assertTrue(cardtype.equals(CardType.VISA))
         assertTrue(cardtype.defaultName.equals("Visa"))
-        assertTrue(cardtype.image.equals(R.drawable.ic_visa_2021))
+        assertTrue(cardtype.image.equals(R.drawable.ic_visa))
 
         val cardNumber2 = "5454422955385717"
         cardtype  = CardType.forCardNumber(cardNumber2)
