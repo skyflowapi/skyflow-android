@@ -81,7 +81,7 @@ enum class Messages(val message: String) {
     CONNECTION_ERROR("error while initializing the connection"),
     MISSING_REDACTION_VALUE("missing redaction value"),
     ELEMENT_NOT_MOUNTED("element %s not mounted"),
-    DUPLICATE_COLUMN_FOUND("Duplicate element with <TABLE_NAME> and <COLUMN_NAME> found in container"),
+    DUPLICATE_COLUMN_FOUND("Duplicate element with %s and %s found in container"),
     DUPLICATE_ELEMENT_FOUND("Duplicate Element found in response body"),
     INVALID_RECORDS_TYPE("Key 'records' is of invalid type"),
     INVALID_RECORD_IDS("ids are not valid"),
