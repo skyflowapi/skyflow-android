@@ -95,10 +95,10 @@ class TextField @JvmOverloads constructor(
         if(collectInput.altText.isNotEmpty() || collectInput.altText != "")
         {
             inputField.setText(collectInput.altText)
-            state = StateforText(this)
         }
         else
             inputField.setText("")
+        state = StateforText(this)
         border.setColor(Color.WHITE)
         border.setStroke(collectInput.inputStyles.base.borderWidth,collectInput.inputStyles.base.borderColor)
         border.cornerRadius = collectInput.inputStyles.base.cornerRadius

@@ -328,11 +328,14 @@ The parameters in `Skyflow.Style` object that are respected for `label` and `err
 
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
 
-Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 4 types:
+Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 5 types:
+- `INPUT_FIELD`
 - `CARDHOLDER_NAME`
 - `CARD_NUMBER`
 - `EXPIRATION_DATE`
 - `CVV`
+
+The `INPUT_FIELD` type is a custom UI element without any built-in validations.
 
 Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
 the `context` param takes android `Context` object as described below:
@@ -350,7 +353,10 @@ val collectElementInput =  Skyflow.CollectElementInput(
         altText = String,          //optional string that acts as an initial value for the collect element
 )
 
-val collectElementOptions = Skyflow.CollectElementOptions(required: false)  //indicates whether the field is marked as required. Defaults to 'false'
+val collectElementOptions = Skyflow.CollectElementOptions(
+            required: false,  //indicates whether the field is marked as required. Defaults to 'false'
+            enableCardIcon: true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
+                                      )  
 
 const element = container.create(context = Context, collectElementInput, collectElementOptions)
 ```
@@ -370,7 +376,18 @@ element.layoutParams = layoutParams
 existingLayout.addView(element)
 ```
 
-The Skyflow Element is an implementation of native android View so it can be used/mounted similarly.
+The Skyflow Element is an implementation of native android View so it can be used/mounted similarly.Alternatively, you can use the `unmount` method to reset any element to it's initial state.
+
+```kt
+fun clearFields(elements: List<TextField>) {
+
+    //resets all elements to initial value
+    for element in elements {
+        element.unmount()
+    }
+}
+```
+
 
 ### Step 4 :  Collect data from Elements
 When the form is ready to be submitted, call the collect(options: Skyflow.CollectOptions? = nil, callback: Skyflow.Callback) method on the container object. The options parameter takes `Skyflow.CollectOptions` object.
