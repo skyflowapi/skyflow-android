@@ -66,6 +66,8 @@ class TextField @JvmOverloads constructor(
         super.setupField(collectInput,options)
         this.state = StateforText(this)
         validationRules = fieldType.getType().validation
+        if(!collectInput.validations.rules.isEmpty())
+            validationRules.add(collectInput.validations.rules)
         padding = collectInput.inputStyles.base.padding
         state = StateforText(this)
         this.collectInput = collectInput
@@ -111,6 +113,7 @@ class TextField @JvmOverloads constructor(
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
         changeCardIcon()
+        inputField.inputType = fieldType.getType().keyboardType
     }
 
     private fun buildError()
