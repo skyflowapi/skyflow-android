@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - New VISA Card Icon with updated Logo
 
+### Fixed
+- Added column name and table name in duplicate fields error message.
+- Made token mandatory for reveal element while using invokeConnection, if reveal element is used in request body, path or query parameters.
+
 ## [1.5.0] - 2021-11-10
 
 ### Changed
