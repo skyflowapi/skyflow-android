@@ -828,22 +828,22 @@ class UnitTests {
     @Test
     fun testStateClass()
     {
-        val state= State("card_number",true)
+        val state= State("first_name",true)
         assertNotNull(state.show())
-        assertEquals(state.getInternalState().get("columnName"),"card_number")
+        assertEquals(state.getInternalState().get("columnName"),"first_name")
 
         val container = skyflow.container(ContainerType.COLLECT)
         val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+            SkyflowElementType.INPUT_FIELD,placeholder = "card number"
         )
-        val card_number = container.create(activity,collectInput) as TextField
-        activity.addContentView(card_number,layoutParams)
-        val stateforText = StateforText(card_number)
+        val first_name = container.create(activity,collectInput) as TextField
+        activity.addContentView(first_name,layoutParams)
+        val stateforText = StateforText(first_name)
         assertTrue(stateforText.isEmpty)
         assertTrue(stateforText.isValid)
         assertFalse(stateforText.isFocused)
         assertEquals(0,stateforText.inputLength)
-        assertEquals(SkyflowElementType.CARD_NUMBER,stateforText.fieldType)
+        assertEquals(SkyflowElementType.INPUT_FIELD,stateforText.fieldType)
     }
     @Test
     fun testLoggerClass()

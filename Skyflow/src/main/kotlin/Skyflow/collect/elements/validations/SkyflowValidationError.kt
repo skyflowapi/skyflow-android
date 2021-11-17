@@ -1,7 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
 /// skyflow.Skyflow Validation Error object type
-internal typealias SkyflowValidationError = String
+ typealias SkyflowValidationError = String
 
 /// Default validation error types
 internal enum class SkyflowValidationErrorType(var rawValue:String) //: String {

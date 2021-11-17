@@ -1,6 +1,6 @@
 package Skyflow
 
-import Skyflow.collect.elements.utils.CardType
+import Skyflow.collect.elements.utils.*
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -16,20 +16,28 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import Skyflow.collect.elements.utils.VibrationHelper
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.graphics.Typeface
+import android.text.Spanned
+import androidx.core.text.isDigitsOnly
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
+import android.text.InputFilter
+import android.text.InputFilter.LengthFilter
+import android.util.Log
+
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
-    context: Context, val options: Options, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context,
+    val optionsForLogging: Options,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
 ) : Skyflow.Element(context, attrs, defStyleAttr) {
 
     internal var label = TextView(context)
@@ -45,7 +53,6 @@ class TextField @JvmOverloads constructor(
     internal var userOnFocusListener: ((JSONObject) -> Unit)? = null
     internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
-
     override fun getValue() : String {
         return actualValue
     }
@@ -88,8 +95,10 @@ class TextField @JvmOverloads constructor(
         if(collectInput.altText.isNotEmpty() || collectInput.altText != "")
         {
             inputField.setText(collectInput.altText)
-            state = StateforText(this)
         }
+        else
+            inputField.setText("")
+        state = StateforText(this)
         border.setColor(Color.WHITE)
         border.setStroke(collectInput.inputStyles.base.borderWidth,collectInput.inputStyles.base.borderColor)
         border.cornerRadius = collectInput.inputStyles.base.cornerRadius
@@ -101,14 +110,7 @@ class TextField @JvmOverloads constructor(
         if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
-        if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
-        {
-            val cardtype = CardType.forCardNumber(inputField.text.toString())
-//            inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
-            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
-            inputField.compoundDrawablePadding = 8
-        }
-
+        changeCardIcon()
     }
 
     private fun buildError()
@@ -139,7 +141,7 @@ class TextField @JvmOverloads constructor(
         super.setOrientation(VERTICAL)
         setListenersForText()
         if(userOnReadyListener !== null)
-            userOnReadyListener?.let{it((state as StateforText).getState(options.env))}
+            userOnReadyListener?.let{it((state as StateforText).getState(optionsForLogging.env))}
         addView(label)
         addView(inputField)
         addView(error)
@@ -159,14 +161,10 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 actualValue = inputField.text.toString()
-                if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
-                {
-                    val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
-                    inputField.setCompoundDrawablesWithIntrinsicBounds(cardtype.image, 0, 0, 0);
-                }
+                changeCardIcon()
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
-                    userOnchangeListener?.let { it((state as StateforText).getState(options.env)) }
+                    userOnchangeListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
             }
 
         })
@@ -191,7 +189,7 @@ class TextField @JvmOverloads constructor(
                     inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
                 error.visibility = View.INVISIBLE
                 if(userOnFocusListener !== null)
-                    userOnFocusListener?.let { it((state as StateforText).getState(options.env)) }
+                    userOnFocusListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
             } else {
 
                 val labelPadding = collectInput.labelStyles.base.padding
@@ -243,15 +241,30 @@ class TextField @JvmOverloads constructor(
                         inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
                 }
                 if(userOnBlurListener !== null)
-                    userOnBlurListener?.let { it((state as StateforText).getState(options.env)) }
+                    userOnBlurListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
             }
         }.also { inputField.onFocusChangeListener = it }
 
     }
-
+    internal fun changeCardIcon()
+    {
+        if(fieldType.equals(SkyflowElementType.CARD_NUMBER) && options.enableCardIcon)
+        {
+            val cardtype = CardType.forCardNumber(inputField.text.toString())
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            inputField.compoundDrawablePadding = 8
+        }
+    }
     internal fun setError(error: String)
     {
         this.error.text = error
+    }
+
+    fun unmount()
+    {
+        buildTextField()
+        error.visibility = View.INVISIBLE
+        actualValue = ""
     }
 
 }

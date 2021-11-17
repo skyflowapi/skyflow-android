@@ -1,7 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
 
-class SkyflowValidationSet {
+ class SkyflowValidationSet {
 
     internal var rules = mutableListOf<SkyflowValidationProtocol>()
 
@@ -15,6 +15,11 @@ class SkyflowValidationSet {
     /// Add validation rule
     fun add(rule: SkyflowValidationProtocol) {
         rules.add(rule)
+    }
+
+    /// Add validation rules
+    fun add(rule: MutableList<SkyflowValidationProtocol>) {
+        rules.addAll(rule)
     }
 }
 

@@ -1,4 +1,7 @@
 package Skyflow
 
-class CollectElementOptions(var required:Boolean = false) {
+class CollectElementOptions(
+    var required:Boolean = false,
+    var enableCardIcon : Boolean = true
+    ) {
 }

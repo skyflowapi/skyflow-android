@@ -44,7 +44,11 @@ internal class RevealByIdCallback(
 
                 okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        revealResponse.insertResponse()
+                        val resObj = JSONObject()
+                        val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                        resObj.put("error", skyflowError)
+                        resObj.put("ids", record.skyflow_ids)
+                        revealResponse.insertResponse(JSONArray().put(resObj), false)
                     }
 
                     override fun onResponse(call: Call, response: Response) {

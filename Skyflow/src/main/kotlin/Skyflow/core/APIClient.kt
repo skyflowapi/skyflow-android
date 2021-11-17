@@ -65,7 +65,6 @@ class APIClient (
                 Logger.info(tag, Messages.RETRIEVING_BEARER_TOKEN.getMessage(), logLevel)
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
-                        Log.d("token success", "onSuccess: ")
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         token = "Bearer $responseBody"
                         callback.onSuccess(token)
@@ -91,7 +90,6 @@ class APIClient (
         val finalRecords = Utils.constructBatchRequestBody(records, options,callback,logLevel)
         if(!finalRecords.toString().equals("{}"))
         {
-            Log.d("post", "post: $records")
             val collectApiCallback = CollectAPICallback(this, records, callback, options,logLevel)
             this.getAccessToken(collectApiCallback)
         }
