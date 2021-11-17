@@ -52,7 +52,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.5.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.6.0'
   ```
 
 ### Using maven
@@ -80,7 +80,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.5.0</version>
+   <version>1.6.0</version>
 </dependency>
 ```
 
@@ -626,7 +626,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     "records": [
       {
         "token": "131e70dc-6f76-4319-bdd3-96281e051051",
-        "value": "1990-01-01",
+        "value": "1990-01-01"
       }
     ]
   }

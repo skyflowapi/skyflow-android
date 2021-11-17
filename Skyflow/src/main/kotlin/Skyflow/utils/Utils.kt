@@ -135,6 +135,17 @@ class Utils {
                             callback.onFailure(constructError(error))
                             return false
                         }
+                        else if ((records.get(keys.getString(j)) as Label).isTokenNull) {
+                            val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                                tag, logLevel)
+                            callback.onFailure(constructError(error))
+                            return false
+                        }  else if ((records.get(keys.getString(j)) as Label).revealInput.token!!.isEmpty()) {
+                            val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                                tag, logLevel)
+                            callback.onFailure(constructError(error))
+                            return false
+                        }
                         value = (records.get(keys.getString(j)) as Label).revealInput.token!!
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
@@ -171,6 +182,17 @@ class Utils {
                                 if(!checkIfElementsMounted(arrayValue.get(k) as Label))
                                 {
                                     val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf((arrayValue.get(k) as Label).revealInput.label))
+                                    callback.onFailure(constructError(error))
+                                    return false
+                                }
+                                else if ((arrayValue.get(k) as Label).isTokenNull) {
+                                    val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                                        tag, logLevel)
+                                    callback.onFailure(constructError(error))
+                                    return false
+                                }  else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) {
+                                    val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                                        tag, logLevel)
                                     callback.onFailure(constructError(error))
                                     return false
                                 }
@@ -230,6 +252,17 @@ class Utils {
                                     {
                                         val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
                                             tag, logLevel, arrayOf((arrayValue[k] as Label).revealInput.label))
+                                        callback.onFailure(constructError(error))
+                                        return false
+                                    }
+                                    else if ((arrayValue.get(k) as Label).isTokenNull) {
+                                        val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                                            tag, logLevel)
+                                        callback.onFailure(constructError(error))
+                                        return false
+                                    }  else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) {
+                                        val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                                            tag, logLevel)
                                         callback.onFailure(constructError(error))
                                         return false
                                     }
@@ -320,6 +353,17 @@ class Utils {
                                 callback.onFailure(constructError(error))
                                 return ""
                             }
+                            else if (value.isTokenNull) {
+                                val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                                    tag, logLevel)
+                                callback.onFailure(constructError(error))
+                                return ""
+                            }  else if (value.revealInput.token!!.isEmpty()) {
+                                val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                                    tag, logLevel)
+                                callback.onFailure(constructError(error))
+                                return ""
+                            }
                             else
                             value = value.revealInput.token!!
                             newURL = newURL.replace("{" + keys.getString(j) + "}", value)
@@ -404,6 +448,17 @@ class Utils {
                 {
                     val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag,
                         logLevel, arrayOf(value.revealInput.label))
+                    callback.onFailure(constructError(error))
+                    return false
+                }
+                else if (value.isTokenNull) {
+                    val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                        tag, logLevel)
+                    callback.onFailure(constructError(error))
+                    return false
+                }  else if (value.revealInput.token!!.isEmpty()) {
+                    val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                        tag, logLevel)
                     callback.onFailure(constructError(error))
                     return false
                 }
