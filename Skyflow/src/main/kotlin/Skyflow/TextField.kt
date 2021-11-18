@@ -22,14 +22,9 @@ import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.graphics.Typeface
-import android.text.Spanned
-import androidx.core.text.isDigitsOnly
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
-import android.text.InputFilter
-import android.text.InputFilter.LengthFilter
-import android.util.Log
 
 
 @Suppress("DEPRECATION")
@@ -59,22 +54,41 @@ class TextField @JvmOverloads constructor(
 
     override fun validate() : MutableList<SkyflowValidationError> {
         val str = inputField.text.toString()
-        return SkyflowValidator.validate(str,validationRules)
+        val builtinValidations = SkyflowValidator.validate(str,validationRules)
+        if(builtinValidations.isEmpty())
+        {
+            return if(collectInput.validations.rules.isEmpty())
+                mutableListOf()
+            else {
+                val customValidations = SkyflowValidator.validate(str,collectInput.validations)
+                if(customValidations.isEmpty())
+                    mutableListOf()
+                else {
+                    setError(customValidations[0])
+                    customValidations
+                }
+            }
+        }
+        else
+        {
+            if(collectInput.label.isEmpty())
+                setError("invalid field")
+            else
+                setError("invalid "+ collectInput.label)
+            return builtinValidations
+        }
     }
 
     override fun setupField(collectInput: CollectElementInput, options: Skyflow.CollectElementOptions) {
         super.setupField(collectInput,options)
         this.state = StateforText(this)
         validationRules = fieldType.getType().validation
-        if(!collectInput.validations.rules.isEmpty())
-            validationRules.add(collectInput.validations.rules)
+//        if(collectInput.validations.rules.isNotEmpty())
+//            validationRules.add(collectInput.validations.rules)
         padding = collectInput.inputStyles.base.padding
         state = StateforText(this)
         this.collectInput = collectInput
-        if(collectInput.label.isEmpty())
-            setError("Invalid field")
-        else
-            setError("Invalid "+collectInput.label)
+
         buildTextField()
         buildError()
         buildLabel()
@@ -109,7 +123,7 @@ class TextField @JvmOverloads constructor(
         inputField.gravity = collectInput.inputStyles.base.textAlignment
         inputField.hint = collectInput.placeholder
         inputField.setTextColor(collectInput.inputStyles.base.textColor)
-        if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
         changeCardIcon()
@@ -123,7 +137,7 @@ class TextField @JvmOverloads constructor(
         error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
         mErrorAnimator = AnimationUtils.loadAnimation(context, R.anim.error_animation)
         error.setTextColor(collectInput.errorTextStyles.base.textColor)
-        if(!collectInput.errorTextStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.errorTextStyles.base.font != Typeface.NORMAL)
             error.typeface = ResourcesCompat.getFont(context,collectInput.errorTextStyles.base.font)
         error.gravity = collectInput.errorTextStyles.base.textAlignment
     }
@@ -199,7 +213,7 @@ class TextField @JvmOverloads constructor(
                 label.textSize = 16F
                 label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
                 label.setTextColor(collectInput.labelStyles.base.textColor)
-                if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
+                if(collectInput.labelStyles.base.font != Typeface.NORMAL)
                  label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
                 label.gravity = collectInput.labelStyles.base.textAlignment
 

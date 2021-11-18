@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
+import com.Skyflow.collect.elements.validations.RegexMatch
+import com.Skyflow.collect.elements.validations.SkyflowValidationSet
 import kotlinx.android.synthetic.main.activity_collect.*
 import okhttp3.OkHttpClient
 import org.json.JSONArray
@@ -79,26 +81,29 @@ class CollectActivity : AppCompatActivity() {
 
 
         var labelStyles = Styles(bstyle, null, estyle, fstyle, istyle)
-        var base_error_styles =
+        var baseErrorStyles =
             Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
-        val error_styles = Styles(base_error_styles)
+        val errorStyles = Styles(baseErrorStyles)
+        var validationSet = SkyflowValidationSet()
+        validationSet.add(RegexMatch("[123][456][789][0]","regex error"))
         val cardNumberInput = Skyflow.CollectElementInput(
             "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
-            error_styles, "Card Number", "CardNumber"
+            errorStyles, "Card Number", "CardNumber"
         )
         val expiryDateInput = Skyflow.CollectElementInput(
             "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
-            styles, labelStyles, error_styles, label = "expiry date", placeholder = "expiry date"
+            styles, labelStyles, errorStyles, label = "expiry date", placeholder = "expiry date"
         )
         val nameInput = Skyflow.CollectElementInput(
             "cards",
             "fullname",
-            Skyflow.SkyflowElementType.CARDHOLDER_NAME,
+            Skyflow.SkyflowElementType.PIN,
             styles,
             labelStyles,
-            error_styles,
+            errorStyles,
             "Full Name",
-            "Full Name"
+            "Full Name",
+            validations = validationSet
         )
         val cvvInput = Skyflow.CollectElementInput(
             "cards",
@@ -106,7 +111,7 @@ class CollectActivity : AppCompatActivity() {
             SkyflowElementType.CVV,
             styles,
             labelStyles,
-            error_styles,
+            errorStyles,
             "CVV",
             "CVV"
         )
@@ -134,7 +139,7 @@ class CollectActivity : AppCompatActivity() {
 
         val expiryDateInput1 = Skyflow.RevealElementInput(
             "reveal token",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles, error_styles,
+            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles, errorStyles,
             label = "expire date", "mm/yyyy"
         )
         val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
