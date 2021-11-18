@@ -93,6 +93,9 @@ enum class SkyflowElementType {
             PIN  -> {
                 rules.add(LengthMatch(4,12,SkyflowValidationErrorType.invalidPin.rawValue
                 ))
+                rules.add(RegexMatch("[0-9]*",
+                    SkyflowValidationErrorType.allowNumbers.rawValue)
+                )
                 return Type(
                     "####", "\\d*$",
                     rules, InputType.TYPE_CLASS_NUMBER

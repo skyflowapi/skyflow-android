@@ -17,7 +17,6 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.annotation.Config
 import java.io.IOException
 import android.util.Log
 import junit.framework.Assert
@@ -64,6 +63,29 @@ class CollectTest {
 
         val state = StateforText(card_number).getInternalState()
         Assert.assertTrue(state["isValid"] as Boolean)
+
+    }
+
+    @Test
+    fun testValidValueForPIN()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","PIN",
+            SkyflowElementType.PIN,placeholder = "pin"
+        )
+        val pin = container.create(activity,collectInput) as? TextField
+        pin!!.inputField.setText("4111111")
+        var state = StateforText(pin).getInternalState()
+        Assert.assertTrue(state["isValid"] as Boolean)
+
+        pin.inputField.setText("411")
+        state = StateforText(pin).getInternalState()
+        Assert.assertFalse(state["isValid"] as Boolean)
+
+
+        pin.inputField.setText("xyzzz")
+        state = StateforText(pin).getInternalState()
+        Assert.assertFalse(state["isValid"] as Boolean) //accepts only numbers
 
     }
 
