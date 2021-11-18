@@ -7,7 +7,7 @@ import java.util.*
 /**
 Validate input in scope of length.
  */
-internal class SkyflowValidateExpirationDate(override var error: SkyflowValidationError = "") : SkyflowValidationProtocol,SkyflowInternalValidationProtocol {
+internal class SkyflowValidateExpirationDate(override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
 
 
     private var mCalendar: Calendar =  Calendar.getInstance()

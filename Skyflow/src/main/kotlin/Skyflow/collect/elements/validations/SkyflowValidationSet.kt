@@ -3,22 +3,22 @@ package  com.Skyflow.collect.elements.validations
 
  class SkyflowValidationSet {
 
-    internal var rules = mutableListOf<SkyflowValidationProtocol>()
+    internal var rules = mutableListOf<ValidationRule>()
 
 
-     constructor(rules: MutableList<SkyflowValidationProtocol>) {
+     constructor(rules: MutableList<ValidationRule>) {
 
         this.rules = rules
     }
     constructor(){}
 
     /// Add validation rule
-    fun add(rule: SkyflowValidationProtocol) {
+    fun add(rule: ValidationRule) {
         rules.add(rule)
     }
 
     /// Add validation rules
-    fun add(rule: MutableList<SkyflowValidationProtocol>) {
+    fun add(rule: MutableList<ValidationRule>) {
         rules.addAll(rule)
     }
 }

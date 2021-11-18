@@ -1,5 +1,5 @@
 package  com.Skyflow.collect.elements.validations
 
-interface SkyflowValidationProtocol {
+interface ValidationRule {
      var error: SkyflowValidationError
 }

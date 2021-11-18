@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 /**
 Validate input in scope of length.
  */
-class RegexMatch(var regex:String, override var error: SkyflowValidationError = "") : SkyflowValidationProtocol,SkyflowInternalValidationProtocol {
+class RegexMatch(var regex:String, override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
 
 
     /// validate length of text

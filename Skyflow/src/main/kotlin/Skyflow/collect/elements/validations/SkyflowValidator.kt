@@ -9,7 +9,7 @@ internal class SkyflowValidator {
         fun validate(input: String?, rules: SkyflowValidationSet) : MutableList<SkyflowValidationError>
         {
             val errors  = mutableListOf<SkyflowValidationError>()
-            val iterator : MutableIterator<SkyflowValidationProtocol> = rules.rules.iterator()
+            val iterator : MutableIterator<ValidationRule> = rules.rules.iterator()
             while (iterator.hasNext())
             {
                 val value = iterator.next()
