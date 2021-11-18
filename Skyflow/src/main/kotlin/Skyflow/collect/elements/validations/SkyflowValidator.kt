@@ -1,5 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
+import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
+
 internal class SkyflowValidator {
 
     companion object {
@@ -11,6 +13,7 @@ internal class SkyflowValidator {
             while (iterator.hasNext())
             {
                 val value = iterator.next()
+                value as SkyflowInternalValidationProtocol
                 if(!value.validate(input))
                     errors.add(value.error)
             }

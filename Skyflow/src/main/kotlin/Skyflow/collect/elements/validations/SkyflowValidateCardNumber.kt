@@ -1,12 +1,13 @@
 package  com.Skyflow.collect.elements.validations
 
 //import  com.skyflow_android.collect.elements.utils.CardType
+import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import java.util.regex.Pattern
 
 /**
 Validate input in the scope of matching supported cards.
  */
-internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : SkyflowValidationProtocol() {
+internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : SkyflowValidationProtocol,SkyflowInternalValidationProtocol {
 
     override fun validate(text: String?) : Boolean {
 

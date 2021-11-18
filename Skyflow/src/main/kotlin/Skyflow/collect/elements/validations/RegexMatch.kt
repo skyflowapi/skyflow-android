@@ -1,11 +1,12 @@
 package  com.Skyflow.collect.elements.validations
 
+import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import java.util.regex.Pattern
 
 /**
 Validate input in scope of length.
  */
-class RegexMatch(var regex:String, override var error: SkyflowValidationError = "") : SkyflowValidationProtocol() {
+class RegexMatch(var regex:String, override var error: SkyflowValidationError = "") : SkyflowValidationProtocol,SkyflowInternalValidationProtocol {
 
 
     /// validate length of text
