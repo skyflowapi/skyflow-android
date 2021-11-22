@@ -21,6 +21,8 @@ internal enum class SkyflowValidationErrorType(var rawValue:String) //: String {
     /// Default Validation error for `SkyflowValidateExpireDate`
      expireDate("INVALID_EXPIRE_DATE"),
 
-    invalidPin("INVALID_PIN");
+    invalidPin("INVALID_PIN"),
+
+    allowNumbers("ONLY_NUMBERS_ARE_ALLOWED");
 
 }

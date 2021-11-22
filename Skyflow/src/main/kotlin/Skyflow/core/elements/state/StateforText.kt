@@ -20,7 +20,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
     init {
         validationErrors = tf.validate()
         isValid = validationErrors.count() == 0
-        isEmpty = (tf.inputField.text!!.length == 0)
+        isEmpty = (tf.inputField.text!!.isEmpty())
         inputLength = tf.inputField.length()
         isFocused = tf.inputField.hasFocus()
         fieldType = tf.collectInput.type
@@ -42,15 +42,13 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
     override fun getInternalState() : JSONObject
     {
         val result = JSONObject()
+
         result.put("isRequired", isRequired)
-//        result["isRequired"] = isRequired!!
         result.put("elementType", fieldType)
         result.put("columnName", columnName)
-//        result["columnName"] = columnName
         result.put("isEmpty", isEmpty)
         result.put("isValid", isValid)
         result.put("inputLength", inputLength)
-//        result["inputLength"] = inputLength
         result.put("validationErrors", validationErrors.toString())
         result.put("isFocused", isFocused)
 

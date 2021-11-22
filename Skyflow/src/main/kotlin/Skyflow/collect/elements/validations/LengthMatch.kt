@@ -5,7 +5,8 @@ import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 /**
 Validate input in scope of length.
  */
-class LengthMatch(val minLength: Int, val maxLength: Int, override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
+class LengthMatch(val minLength: Int, val maxLength: Int,
+                  override var error: SkyflowValidationError = "VALIDATION FAILED") : ValidationRule,SkyflowInternalValidationProtocol {
 
 
     /// validate length of text
@@ -15,7 +16,7 @@ class LengthMatch(val minLength: Int, val maxLength: Int, override var error: Sk
         {
             return true
         }
-        return text.length >= minLength && text.length <= maxLength
+        return text.length in minLength..maxLength
     }
 
 
