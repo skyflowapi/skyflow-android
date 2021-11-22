@@ -64,13 +64,12 @@ enum class  CardType (var defaultName:String,var regex: String,var minCardLength
         private val DEFAULT_SPACE_INDICES = intArrayOf(4, 8, 12)
 
         fun forCardNumber(cardNumber: String) : CardType {
+            val strippedCardNumber = cardNumber.replace("-","").replace(" ", "")
             val patternMatch = forCardPattern(cardNumber)
-            if (patternMatch.defaultName != "Empty" && patternMatch.defaultName != "Unknown") {
-                return patternMatch
-            }
-            else
-            {
-                return EMPTY
+            return if (patternMatch.defaultName != "Empty" && patternMatch.defaultName != "Unknown") {
+                patternMatch
+            } else {
+                EMPTY
             }
         }
 

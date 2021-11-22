@@ -7,7 +7,7 @@ import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import Skyflow.State
 import org.json.JSONObject
 
-class StateforText internal constructor(val tf: TextField) : State(tf.columnName, tf.isRequired) {
+class StateforText internal constructor(private val tf: TextField) : State(tf.columnName, tf.isRequired) {
 
     var isValid:Boolean = false
     var isEmpty:Boolean = false

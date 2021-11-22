@@ -45,15 +45,19 @@ class TextField @JvmOverloads constructor(
     private var mErrorAnimator: Animation? = null
     internal var actualValue: String = ""
     internal var userOnchangeListener: ((JSONObject) -> Unit)? = null
-    internal var userOnFocusListener: ((JSONObject) -> Unit)? = null
-    internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
-    internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
+    private var userOnFocusListener: ((JSONObject) -> Unit)? = null
+    private var userOnBlurListener: ((JSONObject) -> Unit)? = null
+    private var userOnReadyListener: ((JSONObject) -> Unit)? = null
+    private var userError : String = ""
     override fun getValue() : String {
         return actualValue
     }
 
     override fun validate() : MutableList<SkyflowValidationError> {
         val str = inputField.text.toString()
+        if(userError.isNotEmpty()){
+            return mutableListOf(userError)
+        }
         val builtinValidations = SkyflowValidator.validate(str,validationRules)
         if(builtinValidations.isEmpty())
         {
@@ -265,10 +269,10 @@ class TextField @JvmOverloads constructor(
     }
     internal fun changeCardIcon()
     {
-        if(fieldType.equals(SkyflowElementType.CARD_NUMBER) && options.enableCardIcon)
+        if(fieldType == SkyflowElementType.CARD_NUMBER && options.enableCardIcon)
         {
-            val cardtype = CardType.forCardNumber(inputField.text.toString())
-            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+            val cardType = CardType.forCardNumber(inputField.text.toString())
+            inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardType.image, 0, 0, 0)
             inputField.compoundDrawablePadding = 8
         }
     }
@@ -284,4 +288,14 @@ class TextField @JvmOverloads constructor(
         actualValue = ""
     }
 
+    override fun triggerError(error: String) {
+        this.userError = error
+        setError(userError)
+        state = StateforText(this@TextField)
+    }
+
+    override fun resetError() {
+        this.userError = ""
+        state = StateforText(this)
+    }
 }
