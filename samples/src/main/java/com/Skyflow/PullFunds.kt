@@ -125,7 +125,7 @@ class PullFunds : AppCompatActivity() {
             val requestHeader = JSONObject()
             requestHeader.put("Accept", "application/json")
             requestHeader.put("Authorization",BuildConfig.GATEWAY_TOKEN)
-            val url = "GATEWAY_URL_PULL_FUNDS"
+            val url = "GATEWAY_URL_PULL_FUNDS_URL"
             val bodyForGateway = ConnectionConfig(connectionURL = url,requestHeader = requestHeader,pathParams = pathparams,methodName = RequestMethod.POST, requestBody=reqBodyObj, responseBody =  responseBody,queryParams = queryParams)
             skyflowClient.invokeConnection(bodyForGateway,object : Callback
             {
