@@ -280,6 +280,7 @@ class TextField @JvmOverloads constructor(
     fun unmount()
     {
         buildTextField()
+        buildLabel()
         error.visibility = View.INVISIBLE
         actualValue = ""
     }

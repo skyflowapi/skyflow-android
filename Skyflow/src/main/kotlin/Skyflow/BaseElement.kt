@@ -10,4 +10,3 @@ abstract class BaseElement @JvmOverloads constructor(
 
       internal abstract fun getValue():String
  }
-   // internal fun BaseElement.getValue() = Unit
