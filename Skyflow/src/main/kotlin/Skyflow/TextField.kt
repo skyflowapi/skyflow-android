@@ -33,7 +33,7 @@ class TextField @JvmOverloads constructor(
     val optionsForLogging: Options,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : Skyflow.Element(context, attrs, defStyleAttr) {
+) : Skyflow.Element(context, attrs, defStyleAttr){
 
     internal var label = TextView(context)
     internal var inputField = EditText(context)
