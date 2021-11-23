@@ -33,7 +33,7 @@ class ValidationTests{
     }
     @Test
     fun testValidateFunction(){
-        val skyflowValidationSet = SkyflowValidationSet()
+        val skyflowValidationSet = ValidationSet()
         val regexMatch = RegexMatchRule("[0-9][A-Za-z]", "Regex validation Failed")
         skyflowValidationSet.add(regexMatch)
         val sampleSuccessInput = "1e"
@@ -50,7 +50,7 @@ class ValidationTests{
         val match = LengthMatchRule(2,10,"failed")
         val successInput = 209
         val failedInput = 2
-        val skyflowValidationSet = SkyflowValidationSet()
+        val skyflowValidationSet = ValidationSet()
         skyflowValidationSet.add(match)
         assertEquals("",SkyflowValidator.validate(successInput.toString(),skyflowValidationSet))
         assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet))
@@ -63,7 +63,7 @@ class ValidationTests{
         val match = SkyflowValidateLengthMatch(intArrayOf(2,3,4),"failed")
         val successInput = 209
         val failedInput = 2
-        val skyflowValidationSet = SkyflowValidationSet()
+        val skyflowValidationSet = ValidationSet()
         skyflowValidationSet.add(match)
         assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet))
         assertEquals("",SkyflowValidator.validate("",skyflowValidationSet)) //empty string
@@ -77,7 +77,7 @@ class ValidationTests{
         val successInput = "4111111111111111"
         val failedInput = "1111"
         val failedInputWithAlphabets = "xyz"
-        val skyflowValidationSet = SkyflowValidationSet()
+        val skyflowValidationSet = ValidationSet()
         skyflowValidationSet.add(match)
         assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet))
         assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet))
@@ -91,7 +91,7 @@ class ValidationTests{
         val failedInput = "1111" //not in expire date format
         val failedInputWithAlphabets = "xy/xz" //no digits
         val failedInput2 = "11/20"
-        val skyflowValidationSet = SkyflowValidationSet()
+        val skyflowValidationSet = ValidationSet()
         skyflowValidationSet.add(match)
         assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet))
         assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet))
@@ -107,7 +107,7 @@ class ValidationTests{
         val pin = container.create(activity,collectInput) as? TextField
         pin!!.inputField.setText("4111111")
         pin.actualValue = "4111111"
-        val validationSet = SkyflowValidationSet()
+        val validationSet = ValidationSet()
         validationSet.add(ElementValueMatchRule(pin,"not matched"))
         val collectInput1 = CollectElementInput("cards","PIN",
             SkyflowElementType.PIN,placeholder = "confirm pin",validations = validationSet

@@ -1,7 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
 
- class SkyflowValidationSet {
+ class ValidationSet {
 
     internal var rules = mutableListOf<ValidationRule>()
 

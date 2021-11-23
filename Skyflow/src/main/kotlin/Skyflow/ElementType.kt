@@ -9,7 +9,7 @@ import com.Skyflow.collect.elements.validations.SkyflowValidateLengthMatch
 import com.Skyflow.collect.elements.validations.SkyflowValidationErrorType
 
 class Type(var formatPattern:String, var regex: String,
-           var validation: SkyflowValidationSet, var keyboardType: Int) {
+           var validation: ValidationSet, var keyboardType: Int) {
 
 }
 
@@ -35,7 +35,7 @@ enum class SkyflowElementType {
 
 
     fun getType(): Type {
-        val rules = SkyflowValidationSet()
+        val rules = ValidationSet()
         when (this) {
             CARDHOLDER_NAME -> {
                 rules.add(

@@ -6,7 +6,7 @@ internal class SkyflowValidator {
 
     companion object {
 
-        fun validate(input: String?, rules: SkyflowValidationSet) : SkyflowValidationError
+        fun validate(input: String?, rules: ValidationSet) : SkyflowValidationError
         {
             val iterator : MutableIterator<ValidationRule> = rules.rules.iterator()
             while (iterator.hasNext())

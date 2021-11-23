@@ -17,7 +17,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
-import com.Skyflow.collect.elements.validations.SkyflowValidationSet
+import com.Skyflow.collect.elements.validations.ValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
@@ -38,7 +38,7 @@ class TextField @JvmOverloads constructor(
     internal var label = TextView(context)
     internal var inputField = EditText(context)
     internal var error = TextView(context)
-    private var validationRules = SkyflowValidationSet()
+    private var validationRules = ValidationSet()
     override lateinit var state: State
     private var border = GradientDrawable()
     private lateinit var padding: Padding

@@ -14,7 +14,7 @@ import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.LengthMatchRule
-import com.Skyflow.collect.elements.validations.SkyflowValidationSet
+import com.Skyflow.collect.elements.validations.ValidationSet
 import kotlinx.android.synthetic.main.activity_collect.*
 import okhttp3.OkHttpClient
 import org.json.JSONArray
@@ -84,7 +84,7 @@ class CollectActivity : AppCompatActivity() {
         var baseErrorStyles =
             Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
         val errorStyles = Styles(baseErrorStyles)
-        var validationSet = SkyflowValidationSet()
+        var validationSet = ValidationSet()
         validationSet.add(LengthMatchRule(2,20,"not valid"))
         val cardNumberInput = Skyflow.CollectElementInput(
             "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
