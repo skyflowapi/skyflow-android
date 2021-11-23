@@ -24,13 +24,14 @@
         android:text="submit"
         android:id="@+id/submit"/>
 
-    <TextView
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
-        android:id="@+id/error"/>
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#403E6B"
+        android:text="clear"
+        android:id="@+id/clear"/>
 
 </LinearLayout>

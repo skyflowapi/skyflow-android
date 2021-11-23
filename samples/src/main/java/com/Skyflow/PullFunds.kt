@@ -18,8 +18,8 @@ class PullFunds : AppCompatActivity() {
         setContentView(R.layout.activity_generate_cvv)
 
         val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             DemoTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -30,7 +30,7 @@ class PullFunds : AppCompatActivity() {
 
         val cvvElementInput = Skyflow.CollectElementInput(table="", column = "", SkyflowElementType.CVV, label = "cvv", placeholder = "please enter cvv")
 
-        val expiryDateInput = Skyflow.RevealElementInput(token=BuildConfig.EXPIRATION_DATE_TOKEN, label = "Expiration Date")
+        val expiryDateInput = Skyflow.RevealElementInput(token="EXPIRATION_DATE_TOKEN", label = "Expiration Date")
 
 
         val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
@@ -40,7 +40,7 @@ class PullFunds : AppCompatActivity() {
         val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
         val expiryDate = revealContainer.create(this, expiryDateInput)
         val approvalCodeElement = Skyflow.RevealElementInput(
-            "",
+            "1234",
             redaction = Skyflow.RedactionType.PLAIN_TEXT,
             label =  "approval code",altText = "Approval Code"
         )
@@ -125,7 +125,7 @@ class PullFunds : AppCompatActivity() {
             val requestHeader = JSONObject()
             requestHeader.put("Accept", "application/json")
             requestHeader.put("Authorization",BuildConfig.GATEWAY_TOKEN)
-            val url = BuildConfig.GATEWAY_URL_PULL_FUNDS
+            val url = "GATEWAY_URL_PULL_FUNDS_URL"
             val bodyForGateway = ConnectionConfig(connectionURL = url,requestHeader = requestHeader,pathParams = pathparams,methodName = RequestMethod.POST, requestBody=reqBodyObj, responseBody =  responseBody,queryParams = queryParams)
             skyflowClient.invokeConnection(bodyForGateway,object : Callback
             {
@@ -154,7 +154,7 @@ class PullFunds : AppCompatActivity() {
 
     class DemoTokenProvider : Skyflow.TokenProvider {
         override fun getBearerToken(callback: Skyflow.Callback) {
-            val url = BuildConfig.TOKEN_LOCAL_URL
+            val url = "TOKEN_LOCAL_URL"
             val request = okhttp3.Request.Builder().url(url).build()
             val okHttpClient = OkHttpClient()
             try {

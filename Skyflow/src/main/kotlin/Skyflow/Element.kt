@@ -6,9 +6,9 @@ import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import org.json.JSONObject
 
-open class Element @JvmOverloads constructor(
+open class Element@JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
-) : LinearLayout(context, attrs, defStyleAttr)  {
+) : BaseElement(context, attrs, defStyleAttr)   {
 
     internal var isRequired: Boolean = false
     internal var columnName: String  = ""
@@ -42,7 +42,7 @@ open class Element @JvmOverloads constructor(
         return mutableListOf()
     }
 
-     internal open fun getValue(): String {
+    override fun getValue(): String {
         return ""
     }
 }

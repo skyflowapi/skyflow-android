@@ -14,7 +14,7 @@ import androidx.core.content.res.ResourcesCompat
 @Suppress("DEPRECATION")
 class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
-) : LinearLayout(context, attrs, defStyleAttr) {
+) : BaseElement(context, attrs, defStyleAttr) {
 
     internal  var actualValue: String =""
     internal var label = TextView(context)
@@ -93,8 +93,7 @@ class Label @JvmOverloads constructor(
         addView(error)
     }
 
-    @JvmName("getValue1")
-    internal fun getValue(): String {
+    override fun getValue(): String {
         return actualValue
     }
 
