@@ -1,6 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
 //import  com.skyflow_android.collect.elements.utils.CardType
+import Skyflow.collect.elements.utils.CardType
 import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import java.util.regex.Pattern
 
@@ -10,15 +11,17 @@ Validate input in the scope of matching supported cards.
 internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
 
     override fun validate(text: String?) : Boolean {
-
-        if (text!!.isEmpty()) {
+        val cardNumber = text!!.replace(" ", "").replace("-", "")
+        if (text.isEmpty()) {
             return true
         }
         val pattern = Pattern.compile("^$|^[\\s]*?([0-9]{2,6}[ -]?){3,5}[\\s]*$")
-        if(!pattern.matcher(text).matches())
+        if(!pattern.matcher(cardNumber).matches())
             return false
-        return isLuhnValid(text.replace(" ", "").replace("-", ""))
-
+        val cardType = CardType.forCardNumber(text)
+        if(cardType.equals(CardType.EMPTY)) return false
+        else if(!cardType.cardLength.contains(cardNumber.length)) return false
+        return isLuhnValid(cardNumber)
     }
 
     /// Luhn Algorithm to validate card number

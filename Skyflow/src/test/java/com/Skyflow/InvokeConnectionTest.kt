@@ -387,7 +387,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv [INVALID_LENGTH_MATCH]"))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv INVALID_LENGTH_MATCH"))
                 assertEquals(skyflowError.getErrorMessage().trim(),
                     getErrorMessage(exception as JSONObject).trim())
             }
@@ -793,7 +793,7 @@ class InvokeConnectionTest {
             }
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for cvv [INVALID_LENGTH_MATCH]")).getErrorMessage().trim(),
+                    params = arrayOf("for cvv INVALID_LENGTH_MATCH")).getErrorMessage().trim(),
                     UnitTests.getErrorMessage(exception as JSONObject).trim())
             }
 
@@ -1208,7 +1208,7 @@ class InvokeConnectionTest {
 
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for card_number [INVALID_CARD_NUMBER]\n")).getErrorMessage()
+                    params = arrayOf("for card_number INVALID_CARD_NUMBER\n")).getErrorMessage()
                     .trim(),
                     UnitTests.getErrorMessage(exception as JSONObject).trim())
             }

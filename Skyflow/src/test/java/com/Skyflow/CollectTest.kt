@@ -210,7 +210,7 @@ class CollectTest {
                 }
 
                 override fun onFailure(exception: Any) {
-                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv [INVALID_LENGTH_MATCH]"))
+                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv INVALID_LENGTH_MATCH"))
                     assertEquals((exception as SkyflowError).message.trim(),skyflowError.getErrorMessage().trim())
                 }
             })
@@ -1137,7 +1137,6 @@ class CollectTest {
     }
 
     //end collect
-
 
 
 
