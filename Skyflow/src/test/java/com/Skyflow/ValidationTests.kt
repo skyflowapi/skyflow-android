@@ -39,11 +39,9 @@ class ValidationTests{
         val sampleSuccessInput = "1e"
         val sampleErrorInput = "e1"
         val successResponse = SkyflowValidator.validate(sampleSuccessInput, skyflowValidationSet)
-        val errors = SkyflowValidator.validate(sampleErrorInput, skyflowValidationSet)
-        assertEquals(successResponse, mutableListOf<SkyflowValidationError>())
-        assertEquals(0, successResponse.size)
-        assertEquals(1, errors.size)
-        assertEquals("Regex validation Failed", errors[0])
+        val error = SkyflowValidator.validate(sampleErrorInput, skyflowValidationSet)
+        assertEquals(successResponse, "")
+        assertEquals("Regex validation Failed", error)
     }
 
     @Test
@@ -54,10 +52,9 @@ class ValidationTests{
         val failedInput = 2
         val skyflowValidationSet = SkyflowValidationSet()
         skyflowValidationSet.add(match)
-        assertEquals(0,SkyflowValidator.validate(successInput.toString(),skyflowValidationSet).size)
-        assertEquals(1,SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet).get(0))
-        assertEquals(0,SkyflowValidator.validate("",skyflowValidationSet).size) //empty string
+        assertEquals("",SkyflowValidator.validate(successInput.toString(),skyflowValidationSet))
+        assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet))
+        assertEquals("",SkyflowValidator.validate("",skyflowValidationSet)) //empty string
     }
 
     @Test
@@ -68,10 +65,8 @@ class ValidationTests{
         val failedInput = 2
         val skyflowValidationSet = SkyflowValidationSet()
         skyflowValidationSet.add(match)
-        assertEquals(0,SkyflowValidator.validate(successInput.toString(),skyflowValidationSet).size)
-        assertEquals(1,SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet).get(0))
-        assertEquals(0,SkyflowValidator.validate("",skyflowValidationSet).size) //empty string
+        assertEquals("failed",SkyflowValidator.validate(failedInput.toString(),skyflowValidationSet))
+        assertEquals("",SkyflowValidator.validate("",skyflowValidationSet)) //empty string
 
     }
 
@@ -84,12 +79,9 @@ class ValidationTests{
         val failedInputWithAlphabets = "xyz"
         val skyflowValidationSet = SkyflowValidationSet()
         skyflowValidationSet.add(match)
-        assertEquals(0,SkyflowValidator.validate(successInput,skyflowValidationSet).size)
-        assertEquals(1,SkyflowValidator.validate(failedInput,skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet).get(0))
-        assertEquals(1,SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet).get(0))
-        assertEquals(0,SkyflowValidator.validate("",skyflowValidationSet).size) // empty string
+        assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet))
+        assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet))
+        assertEquals("",SkyflowValidator.validate("",skyflowValidationSet)) // empty string
     }
 
     @Test
@@ -101,12 +93,8 @@ class ValidationTests{
         val failedInput2 = "11/20"
         val skyflowValidationSet = SkyflowValidationSet()
         skyflowValidationSet.add(match)
-        assertEquals(1,SkyflowValidator.validate(failedInput,skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet).get(0))
-        assertEquals(1,SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet).size)
-        assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet).get(0))
-        assertEquals(0,SkyflowValidator.validate("",skyflowValidationSet).size) // empty string
-        assertEquals(1,SkyflowValidator.validate(failedInput2,skyflowValidationSet).size) // empty string
+        assertEquals("failed",SkyflowValidator.validate(failedInput,skyflowValidationSet))
+        assertEquals("failed",SkyflowValidator.validate(failedInputWithAlphabets,skyflowValidationSet))
     }
 
     @Test
@@ -126,7 +114,7 @@ class ValidationTests{
         )
         val confirmPin = container.create(activity,collectInput1) as? TextField
         confirmPin!!.inputField.setText("11111")
-        assertEquals("not matched",confirmPin.validate().get(0))
+        assertEquals("not matched",confirmPin.validate())
 
         confirmPin.inputField.setText("4111111")
         confirmPin.state = StateforText(confirmPin)

@@ -823,7 +823,7 @@ class UnitTests {
     {
         val element = Element(activity)
         assertEquals(element.getValue(),"")
-        assertEquals(element.validate(), mutableListOf<SkyflowValidationError>())
+        assertEquals(element.validate(), "")
     }
     @Test
     fun testStateClass()
