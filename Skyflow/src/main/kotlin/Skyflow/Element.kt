@@ -38,8 +38,8 @@ open class Element@JvmOverloads constructor(
         state = State(columnName,isRequired)
     }
 
-    internal open fun validate() : MutableList<SkyflowValidationError> {
-        return mutableListOf()
+    internal open fun validate() : SkyflowValidationError {
+        return ""
     }
 
     override fun getValue(): String {

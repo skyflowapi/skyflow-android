@@ -1,8 +1,8 @@
 package Skyflow
 import android.text.InputType
 import com.Skyflow.collect.elements.validations.*
-import com.Skyflow.collect.elements.validations.LengthMatch
-import com.Skyflow.collect.elements.validations.RegexMatch
+import com.Skyflow.collect.elements.validations.LengthMatchRule
+import com.Skyflow.collect.elements.validations.RegexMatchRule
 import com.Skyflow.collect.elements.validations.SkyflowValidateCardNumber
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpirationDate
 import com.Skyflow.collect.elements.validations.SkyflowValidateLengthMatch
@@ -39,7 +39,7 @@ enum class SkyflowElementType {
         when (this) {
             CARDHOLDER_NAME -> {
                 rules.add(
-                    RegexMatch("^([a-zA-Z0-9\\ \\,\\.\\-\\']{2,})$",
+                    RegexMatchRule("^([a-zA-Z0-9\\ \\,\\.\\-\\']{2,})$",
                     SkyflowValidationErrorType.pattern.rawValue)
                 )
                 return Type(
@@ -57,7 +57,7 @@ enum class SkyflowElementType {
             }
             CVV -> {
                 rules.add(
-                    RegexMatch("\\d*$",
+                    RegexMatchRule("\\d*$",
                     SkyflowValidationErrorType.pattern.rawValue)
                 )
                 rules.add(
@@ -71,7 +71,7 @@ enum class SkyflowElementType {
             }
             EXPIRATION_DATE -> {
                 rules.add(
-                    RegexMatch("^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
+                    RegexMatchRule("^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
                     SkyflowValidationErrorType.pattern.rawValue)
                 )
                 rules.add(
@@ -91,9 +91,9 @@ enum class SkyflowElementType {
                 )
             }
             PIN  -> {
-                rules.add(LengthMatch(4,12,SkyflowValidationErrorType.invalidPin.rawValue
+                rules.add(LengthMatchRule(4,12,SkyflowValidationErrorType.invalidPin.rawValue
                 ))
-                rules.add(RegexMatch("[0-9]*",
+                rules.add(RegexMatchRule("[0-9]*",
                     SkyflowValidationErrorType.allowNumbers.rawValue)
                 )
                 return Type(
