@@ -353,6 +353,7 @@ val collectElementInput =  Skyflow.CollectElementInput(
         label = "string",            //optional label for the form element
         placeholder = "string",      //optional placeholder for the form element
         altText = String,          //optional string that acts as an initial value for the collect element
+        validations = ValidationSet()       // optional set of validations for the input element
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
@@ -533,29 +534,30 @@ The Sample code below illustrates the usage of custom validations:
 
 ```kt
 /*
-  Reset PIN - A simple example that illustrates custom validations. The below code shows two input fields with custom validations, one to enter a PIN and the second to confirm the same PIN.
+  Reset Password - A simple example that illustrates custom validations. The below code shows two input fields with custom validations, one to enter a Password and the second to confirm the same Password.
 */
 
 var myRuleset = ValidationSet()
-val digitsOnlyRule = RegexMatchRule(regex= "^\\d+$", error= "Only digits allowed") // this rule allows only 1 or more digits
-val lengthRule = LengthMatchRule(minLength= 4, maxLength= 6, error= "Must be between 4 and 6 digits") // this rule allows input length between 4 and 6 characters
+val strongPasswordRule = RegexMatchRule(regex= "^^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]*$", error= "At least one letter and one number") // This rule enforces a strong password
+val lengthRule = LengthMatchRule(minLength= 8, maxLength= 16, error= "Must be between 8 and 16 digits") // this rule allows input length between 8 and 16 characters
 
-// for the PIN element
-myRuleset.add(rule= digitsOnlyRule)
+// for the Password element
+myRuleset.add(rule= strongPasswordRule)
 myRuleset.add(rule= lengthRule)
 
-val PINinput = CollectElementInput(table=  "table", column= "pin", inputStyles= styles, label= "PIN", placeholder= "****", type= ElementType.INPUT_FIELD, validations= myRuleset)
-val PIN = container.create(PINinput)
+val passwordInput = CollectElementInput(inputStyles= styles, label= "Password", placeholder= "****", type= ElementType.INPUT_FIELD, validations= myRuleset)
 
-// For confirm PIN element - shows error when the PINs don't match
-val elementMatchRule = ElementMatchRule(element= PIN, error= "PINs don't match")
+val Password = container.create(passwordInput)
 
-val confirmPINinput = CollectElementInput(table= "table", column= "pin", inputStyles= styles, label= "Confirm PIN", placeholder= "****", type: ElementType.INPUT_FIELD, validations= ValidationSet(rules= mutableListOf(digitsOnlyRule, lengthRule, elementMatchRule)))
-val confirmPIN = container.create(input= confirmPINinput)
+// For confirm Password element - shows error when the PINs don't match
+val elementMatchRule = ElementMatchRule(element= Password, error= "PINs don't match")
+
+val confirmPasswordinput = CollectElementInput(inputStyles= styles, label= "Confirm Password", placeholder= "****", type: ElementType.INPUT_FIELD, validations= ValidationSet(rules= mutableListOf(strongPasswordRule, lengthRule, elementMatchRule)))
+val confirmPassword = container.create(input= confirmPasswordinput)
 
 //mount elements to the screen
-addView(PIN)
-addView(confirmPIN)
+addView(Password)
+addView(confirmPassword)
 
 ```
 
