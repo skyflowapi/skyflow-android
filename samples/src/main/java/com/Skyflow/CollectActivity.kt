@@ -136,14 +136,6 @@ class CollectActivity : AppCompatActivity() {
         cardNumber.on(EventName.READY) { state ->
             Log.d(TAG, "ready: sate $state")
         }
-
-        val expiryDateInput1 = Skyflow.RevealElementInput(
-            "reveal token",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles, errorStyles,
-            label = "expire date", "mm/yyyy"
-        )
-        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
-
         val parent = findViewById<LinearLayout>(R.id.parent)
         val lp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,

@@ -46,13 +46,16 @@
         android:text="PAYMENT DEMO"
         android:id="@+id/payment_demo"/>
 
-    <TextView
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
-        android:id="@+id/error"/>
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#403E6B"
+        android:text="custom validations DEMO"
+        android:id="@+id/validation_demo"/>
+
+
 
 </LinearLayout>

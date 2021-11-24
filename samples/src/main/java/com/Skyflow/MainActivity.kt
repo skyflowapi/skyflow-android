@@ -34,6 +34,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, PullFunds::class.java)
             startActivity(intent)
         }
+        validation_demo.setOnClickListener {
+            val intent = Intent(this, CustomValidationsActivity::class.java)
+            startActivity(intent)
+        }
         }
 }
 
