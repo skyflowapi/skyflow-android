@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
+import com.Skyflow.collect.elements.validations.LengthMatchRule
+import com.Skyflow.collect.elements.validations.ValidationSet
 import kotlinx.android.synthetic.main.activity_collect.*
 import okhttp3.OkHttpClient
 import org.json.JSONArray
@@ -29,8 +31,8 @@ class CollectActivity : AppCompatActivity() {
         setContentView(R.layout.activity_collect)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             tokenProvider,
             Options(Skyflow.LogLevel.ERROR, Env.PROD)
         )
@@ -79,16 +81,18 @@ class CollectActivity : AppCompatActivity() {
 
 
         var labelStyles = Styles(bstyle, null, estyle, fstyle, istyle)
-        var base_error_styles =
+        var baseErrorStyles =
             Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
-        val error_styles = Styles(base_error_styles)
+        val errorStyles = Styles(baseErrorStyles)
+        var validationSet = ValidationSet()
+        validationSet.add(LengthMatchRule(2,20,"not valid"))
         val cardNumberInput = Skyflow.CollectElementInput(
             "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
-            error_styles, "Card Number", "CardNumber"
+            errorStyles, "Card Number", "CardNumber"
         )
         val expiryDateInput = Skyflow.CollectElementInput(
             "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
-            styles, labelStyles, error_styles, label = "expiry date", placeholder = "expiry date"
+            styles, labelStyles, errorStyles, label = "expiry date", placeholder = "expiry date"
         )
         val nameInput = Skyflow.CollectElementInput(
             "cards",
@@ -96,9 +100,10 @@ class CollectActivity : AppCompatActivity() {
             Skyflow.SkyflowElementType.CARDHOLDER_NAME,
             styles,
             labelStyles,
-            error_styles,
+            errorStyles,
             "Full Name",
-            "Full Name"
+            "Full Name",
+            validations = validationSet
         )
         val cvvInput = Skyflow.CollectElementInput(
             "cards",
@@ -106,12 +111,12 @@ class CollectActivity : AppCompatActivity() {
             SkyflowElementType.CVV,
             styles,
             labelStyles,
-            error_styles,
+            errorStyles,
             "CVV",
             "CVV"
         )
         val options = CollectElementOptions(true)
-        val cardNumber = collectContainer.create(this, cardNumberInput)
+        val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(enableCardIcon = true))
         val expirationDate = collectContainer.create(this, expiryDateInput)
         val name = collectContainer.create(this, nameInput, options)
         val cvv = collectContainer.create(this, cvvInput)
@@ -131,14 +136,6 @@ class CollectActivity : AppCompatActivity() {
         cardNumber.on(EventName.READY) { state ->
             Log.d(TAG, "ready: sate $state")
         }
-
-        val expiryDateInput1 = Skyflow.RevealElementInput(
-            "reveal token",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT, styles, labelStyles, error_styles,
-            label = "expire date", "mm/yyyy"
-        )
-        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
-
         val parent = findViewById<LinearLayout>(R.id.parent)
         val lp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -190,14 +187,18 @@ class CollectActivity : AppCompatActivity() {
             }, CollectOptions(true, additionalFields))
         }
 
+        clear.setOnClickListener {
+            clearFields(mutableListOf(cardNumber,cvv,name,expirationDate))
+        }
+
     }
 
 
 private fun pureInsert(){
     val tokenProvider = DemoTokenProvider()
     val skyflowConfiguration = Skyflow.Configuration(
-        BuildConfig.VAULT_ID,
-        BuildConfig.VAULT_URL,
+        "VAULT_ID",
+        "VAULT_URL",
         tokenProvider,
         Options(LogLevel.ERROR)
     )
@@ -230,10 +231,20 @@ private fun pureInsert(){
     }}
 
 
+    //reset elements to initial state
+    fun clearFields(elements:List<TextField>)
+    {
+        for(element in elements)
+        {
+            element.unmount()
+        }
+    }
+
+
 
 class DemoTokenProvider : Skyflow.TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = BuildConfig.TOKEN_URL
+        val url = "TOKEN_ENDPOINT"
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {

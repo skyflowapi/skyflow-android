@@ -599,7 +599,7 @@ class Utils {
                 errors = "$labelName is empty\n"
             }
             if (!(state["isValid"] as Boolean)) {
-                errors = "for " + labelName + " " + (state["validationErrors"] as String) + "\n"
+                errors = "for " + labelName + " " + (state["validationError"] as String) + "\n"
             }
             if (errors != "") {
                 val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))

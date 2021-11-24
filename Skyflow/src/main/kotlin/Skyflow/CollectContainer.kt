@@ -6,6 +6,7 @@ import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import Skyflow.utils.Utils
 import android.content.Context
+import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 
@@ -65,7 +66,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
                         }
                         else -> {
                             val state = element.getState()
-                            val error = state["validationErrors"]
+                            val error = state["validationError"]
                             if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
                                 errors += element.columnName + " is empty" + "\n"
                             }

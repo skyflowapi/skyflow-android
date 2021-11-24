@@ -823,7 +823,7 @@ class UnitTests {
     {
         val element = Element(activity)
         assertEquals(element.getValue(),"")
-        assertEquals(element.validate(), mutableListOf<SkyflowValidationError>())
+        assertEquals(element.validate(), "")
     }
     @Test
     fun testStateClass()
@@ -859,10 +859,9 @@ class UnitTests {
     @Test
     fun testCardType()
     {
-        val newCard = Card("new card","[123]",1,3,"{}",3,"cvv", R.drawable.ic_emptycard)
+        val newCard = Card("new card","[123]", intArrayOf(12,13,14,15),"{}",3,"cvv", R.drawable.ic_emptycard)
         val card = CardType.AMEX
-        assertEquals(card.minCardLength,15)
-        assertEquals(newCard.maxCardLength,3)
+        assertTrue(newCard.cardLength.contains(12))
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
     }

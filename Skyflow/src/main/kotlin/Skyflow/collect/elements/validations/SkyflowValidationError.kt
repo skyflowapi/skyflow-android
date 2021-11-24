@@ -19,6 +19,10 @@ internal enum class SkyflowValidationErrorType(var rawValue:String) //: String {
     lengthMathes("INVALID_LENGTH_MATCH"),
 
     /// Default Validation error for `SkyflowValidateExpireDate`
-     expireDate("INVALID_EXPIRE_DATE");
+     expireDate("INVALID_EXPIRE_DATE"),
+
+    invalidPin("INVALID_PIN"),
+
+    allowNumbers("ONLY_NUMBERS_ARE_ALLOWED");
 
 }

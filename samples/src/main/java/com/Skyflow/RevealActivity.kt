@@ -60,8 +60,8 @@ class RevealActivity : AppCompatActivity() {
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             tokenProvider
         )
 
@@ -107,8 +107,8 @@ class RevealActivity : AppCompatActivity() {
     {
 
         val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             CollectActivity.DemoTokenProvider()
         )
         val skyflowClient = Skyflow.init(skyflowConfiguration)
@@ -118,8 +118,8 @@ class RevealActivity : AppCompatActivity() {
         record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
-        skyflowIds.add("003ec101-c657-4564-9b86-47c3491faf50")
-        skyflowIds.add("054c9b27-fa9b-412e-884d-fd5736668882")
+        skyflowIds.add("003ec10191faf50")
+        skyflowIds.add("054c9b6668882")
         record.put("ids",skyflowIds)
         recordsArray.put(record)
         val records = JSONObject()
@@ -138,18 +138,19 @@ class RevealActivity : AppCompatActivity() {
         })
     }
 
+    //pure reveal
     fun detokenize(){
         val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             CollectActivity.DemoTokenProvider()
         )
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "3220-5794-9231-7876")
+        recordObj.put("token", "32207876")
         val recordObj1 = JSONObject()
-        recordObj1.put("token", "a1d84ea3-d2d4-4eeb-a21f-928ff9d01d1c")
+        recordObj1.put("token", "a1d928ff9d01d1c")
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)
         revealRecords.put("records", revealRecordsArray)

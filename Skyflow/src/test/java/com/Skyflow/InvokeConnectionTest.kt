@@ -387,7 +387,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv [INVALID_LENGTH_MATCH]"))
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv INVALID_LENGTH_MATCH"))
                 assertEquals(skyflowError.getErrorMessage().trim(),
                     getErrorMessage(exception as JSONObject).trim())
             }
@@ -793,7 +793,7 @@ class InvokeConnectionTest {
             }
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for cvv [INVALID_LENGTH_MATCH]")).getErrorMessage().trim(),
+                    params = arrayOf("for cvv INVALID_LENGTH_MATCH")).getErrorMessage().trim(),
                     UnitTests.getErrorMessage(exception as JSONObject).trim())
             }
 
@@ -1208,7 +1208,7 @@ class InvokeConnectionTest {
 
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(SkyflowError(SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for card_number [INVALID_CARD_NUMBER]\n")).getErrorMessage()
+                    params = arrayOf("for card_number INVALID_CARD_NUMBER\n")).getErrorMessage()
                     .trim(),
                     UnitTests.getErrorMessage(exception as JSONObject).trim())
             }
@@ -1479,5 +1479,330 @@ class InvokeConnectionTest {
     }
 
     //end connectionapi
-    
+
+
+    //token null and empty
+
+    fun getNullCvv() : Label
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv"))
+
+        activity.addContentView(cvv,layoutParams)
+        return cvv
+    }
+
+    fun getEmptyTokenCvv() : Label
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = ""))
+
+        activity.addContentView(cvv,layoutParams)
+        return cvv
+    }
+    @Test
+    fun tokenNullInRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv",getNullCvv())
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenNullInJSONObjectRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1",JSONObject().put("cvv",getNullCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenNullInJSONArrayRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1",JSONArray().put(getNullCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenNullInArrayRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1", arrayOf(getNullCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+
+    @Test
+    fun tokenEmptyInRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv",getEmptyTokenCvv())
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenEmptyInJSONObjectRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1",JSONObject().put("cvv",getEmptyTokenCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenEmptyInJSONArrayRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1",JSONArray().put(getEmptyTokenCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+    @Test
+    fun tokenEmptyInArrayRequestBody()
+    {
+        val requestBody = JSONObject()
+        requestBody.put("cvv1", arrayOf(getEmptyTokenCvv()))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),requestBody = requestBody,methodName = RequestMethod.POST)
+        skyflow.invokeConnection(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                assertEquals(skyflowError.getErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+    }
+
+
+    @Test
+    fun tokenEmptyInPathparams()
+    {
+        val pathParams = JSONObject()
+        pathParams.put("cvv1", getEmptyTokenCvv())
+        val url = "https://www.google.com/{cvv1}" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+    @Test
+    fun tokenNullInPathparams()
+    {
+        val pathParams = JSONObject()
+        pathParams.put("cvv",getNullCvv())
+        val url = "https://www.google.com/{cvv}" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+
+    @Test
+    fun tokenEmptyInQueryparams()
+    {
+        val queryParams = JSONObject()
+        queryParams.put("cvv1", getEmptyTokenCvv())
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+    @Test
+    fun tokenNullInQueryParams()
+    {
+        val queryParams = JSONObject()
+        queryParams.put("cvv",getNullCvv())
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+
+    @Test
+    fun tokenEmptyInQueryparamsArray()
+    {
+        val queryParams = JSONObject()
+        queryParams.put("cvv1", arrayOf(getEmptyTokenCvv(),2,3))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+    @Test
+    fun tokenNullInQueryParamsArray()
+    {
+        val queryParams = JSONObject()
+        queryParams.put("cvv", arrayOf(getNullCvv(),2,3))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                TestCase.assertEquals(skyflowError.getErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).onSuccess("token")
+    }
+
+
 }

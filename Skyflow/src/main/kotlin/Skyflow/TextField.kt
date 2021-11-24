@@ -17,19 +17,14 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
-import com.Skyflow.collect.elements.validations.SkyflowValidationSet
+import com.Skyflow.collect.elements.validations.ValidationSet
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.graphics.Typeface
-import android.text.Spanned
-import androidx.core.text.isDigitsOnly
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
-import android.text.InputFilter
-import android.text.InputFilter.LengthFilter
-import android.util.Log
 
 
 @Suppress("DEPRECATION")
@@ -38,12 +33,12 @@ class TextField @JvmOverloads constructor(
     val optionsForLogging: Options,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : Skyflow.Element(context, attrs, defStyleAttr) {
+) : Skyflow.Element(context, attrs, defStyleAttr){
 
     internal var label = TextView(context)
     internal var inputField = EditText(context)
     internal var error = TextView(context)
-    private var validationRules = SkyflowValidationSet()
+    private var validationRules = ValidationSet()
     override lateinit var state: State
     private var border = GradientDrawable()
     private lateinit var padding: Padding
@@ -57,9 +52,31 @@ class TextField @JvmOverloads constructor(
         return actualValue
     }
 
-    override fun validate() : MutableList<SkyflowValidationError> {
+    override fun validate() : SkyflowValidationError {
         val str = inputField.text.toString()
-        return SkyflowValidator.validate(str,validationRules)
+        val builtinValidationError = SkyflowValidator.validate(str,validationRules)
+        if(builtinValidationError.equals(""))
+        {
+            return if(collectInput.validations.rules.isEmpty())
+                ""
+            else {
+                val customValidationError = SkyflowValidator.validate(str,collectInput.validations)
+                if(customValidationError.equals(""))
+                    ""
+                else {
+                    setError(customValidationError)
+                    customValidationError
+                }
+            }
+        }
+        else
+        {
+            if(collectInput.label.isEmpty())
+                setError("invalid field")
+            else
+                setError("invalid "+ collectInput.label)
+            return builtinValidationError
+        }
     }
 
     override fun setupField(collectInput: CollectElementInput, options: Skyflow.CollectElementOptions) {
@@ -69,10 +86,7 @@ class TextField @JvmOverloads constructor(
         padding = collectInput.inputStyles.base.padding
         state = StateforText(this)
         this.collectInput = collectInput
-        if(collectInput.label.isEmpty())
-            setError("Invalid field")
-        else
-            setError("Invalid "+collectInput.label)
+
         buildTextField()
         buildError()
         buildLabel()
@@ -107,10 +121,11 @@ class TextField @JvmOverloads constructor(
         inputField.gravity = collectInput.inputStyles.base.textAlignment
         inputField.hint = collectInput.placeholder
         inputField.setTextColor(collectInput.inputStyles.base.textColor)
-        if(!collectInput.inputStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
         changeCardIcon()
+        inputField.inputType = fieldType.getType().keyboardType
     }
 
     private fun buildError()
@@ -120,7 +135,7 @@ class TextField @JvmOverloads constructor(
         error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
         mErrorAnimator = AnimationUtils.loadAnimation(context, R.anim.error_animation)
         error.setTextColor(collectInput.errorTextStyles.base.textColor)
-        if(!collectInput.errorTextStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.errorTextStyles.base.font != Typeface.NORMAL)
             error.typeface = ResourcesCompat.getFont(context,collectInput.errorTextStyles.base.font)
         error.gravity = collectInput.errorTextStyles.base.textAlignment
     }
@@ -171,77 +186,9 @@ class TextField @JvmOverloads constructor(
         //when focus of text changes
         OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                val labelPadding = collectInput.labelStyles.focus.padding
-                label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
-                label.setTextColor(collectInput.labelStyles.focus.textColor)
-                if(collectInput.labelStyles.focus.font != Typeface.NORMAL)
-                 label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
-                label.gravity = collectInput.labelStyles.focus.textAlignment
-
-                val inputFieldPadding = collectInput.inputStyles.focus.padding
-                inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
-                inputField.setTextColor(collectInput.inputStyles.focus.textColor)
-                border.setStroke(collectInput.inputStyles.focus.borderWidth,collectInput.inputStyles.focus.borderColor)
-                border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
-                inputField.setBackgroundDrawable(border)
-                inputField.gravity = collectInput.inputStyles.focus.textAlignment
-                if(collectInput.inputStyles.focus.font != Typeface.NORMAL)
-                    inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
-                error.visibility = View.INVISIBLE
-                if(userOnFocusListener !== null)
-                    userOnFocusListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
+               onFocusTextField()
             } else {
-
-                val labelPadding = collectInput.labelStyles.base.padding
-                label.textSize = 16F
-                label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
-                label.setTextColor(collectInput.labelStyles.base.textColor)
-                if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
-                 label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
-                label.gravity = collectInput.labelStyles.base.textAlignment
-
-                val internalState = this.state.getInternalState()
-                if(internalState["isEmpty"] as Boolean) {
-
-                    val inputFieldPadding = collectInput.inputStyles.empty.padding
-                    inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
-                    inputField.setTextColor(collectInput.inputStyles.empty.textColor)
-                    border.setStroke(collectInput.inputStyles.empty.borderWidth,collectInput.inputStyles.empty.borderColor)
-                    border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
-                    inputField.setBackgroundDrawable(border)
-                    inputField.gravity = collectInput.inputStyles.empty.textAlignment
-                    if(collectInput.inputStyles.empty.font != Typeface.NORMAL)
-                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
-
-                } else if(!(internalState["isValid"] as Boolean)) {
-
-                    val inputFieldPadding = collectInput.inputStyles.invalid.padding
-                    inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
-                    inputField.setTextColor(collectInput.inputStyles.invalid.textColor)
-                    border.setStroke(collectInput.inputStyles.invalid.borderWidth,collectInput.inputStyles.invalid.borderColor)
-                    border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
-                    inputField.setBackgroundDrawable(border)
-                    inputField.gravity = collectInput.inputStyles.invalid.textAlignment
-                    if(collectInput.inputStyles.invalid.font != Typeface.NORMAL)
-                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
-                    VibrationHelper.vibrate(context, 10)
-                    error.visibility = View.VISIBLE
-                    startAnimation(mErrorAnimator)
-
-                } else {
-
-                    val inputFieldPadding = collectInput.inputStyles.complete.padding
-                    inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
-                    inputField.setTextColor(collectInput.inputStyles.complete.textColor)
-                    border.setStroke(collectInput.inputStyles.complete.borderWidth,collectInput.inputStyles.complete.borderColor)
-                    border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
-                    inputField.setBackgroundDrawable(border)
-                    inputField.gravity = collectInput.inputStyles.complete.textAlignment
-                    if(collectInput.inputStyles.complete.font != Typeface.NORMAL)
-                        inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
-                }
-                if(userOnBlurListener !== null)
-                    userOnBlurListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
+                onBlurTextField()
             }
         }.also { inputField.onFocusChangeListener = it }
 
@@ -255,6 +202,92 @@ class TextField @JvmOverloads constructor(
             inputField.compoundDrawablePadding = 8
         }
     }
+    private fun onFocusTextField()
+    {
+        val labelPadding = collectInput.labelStyles.focus.padding
+        label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
+        label.setTextColor(collectInput.labelStyles.focus.textColor)
+        if(collectInput.labelStyles.focus.font != Typeface.NORMAL)
+            label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.focus.font)
+        label.gravity = collectInput.labelStyles.focus.textAlignment
+
+        val inputFieldPadding = collectInput.inputStyles.focus.padding
+        inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
+        inputField.setTextColor(collectInput.inputStyles.focus.textColor)
+        border.setStroke(collectInput.inputStyles.focus.borderWidth,collectInput.inputStyles.focus.borderColor)
+        border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
+        inputField.setBackgroundDrawable(border)
+        inputField.gravity = collectInput.inputStyles.focus.textAlignment
+        if(collectInput.inputStyles.focus.font != Typeface.NORMAL)
+            inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.focus.font)
+        error.visibility = View.INVISIBLE
+        if(userOnFocusListener !== null)
+            userOnFocusListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
+    }
+
+    private fun onBlurTextField()
+    {
+
+        val labelPadding = collectInput.labelStyles.base.padding
+        label.textSize = 16F
+        label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
+        label.setTextColor(collectInput.labelStyles.base.textColor)
+        if(collectInput.labelStyles.base.font != Typeface.NORMAL)
+            label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
+        label.gravity = collectInput.labelStyles.base.textAlignment
+
+        val internalState = this.state.getInternalState()
+        if(internalState["isEmpty"] as Boolean) {
+            emptyTextField()
+        } else if(!(internalState["isValid"] as Boolean)) {
+            invalidTextField()
+        } else {
+            validTextField()
+        }
+        if(userOnBlurListener !== null)
+            userOnBlurListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
+    }
+
+    private fun validTextField()
+    {
+        val inputFieldPadding = collectInput.inputStyles.complete.padding
+        inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
+        inputField.setTextColor(collectInput.inputStyles.complete.textColor)
+        border.setStroke(collectInput.inputStyles.complete.borderWidth,collectInput.inputStyles.complete.borderColor)
+        border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
+        inputField.setBackgroundDrawable(border)
+        inputField.gravity = collectInput.inputStyles.complete.textAlignment
+        if(collectInput.inputStyles.complete.font != Typeface.NORMAL)
+            inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
+    }
+
+    private fun invalidTextField()
+    {
+        val inputFieldPadding = collectInput.inputStyles.invalid.padding
+        inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
+        inputField.setTextColor(collectInput.inputStyles.invalid.textColor)
+        border.setStroke(collectInput.inputStyles.invalid.borderWidth,collectInput.inputStyles.invalid.borderColor)
+        border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
+        inputField.setBackgroundDrawable(border)
+        inputField.gravity = collectInput.inputStyles.invalid.textAlignment
+        if(collectInput.inputStyles.invalid.font != Typeface.NORMAL)
+            inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.invalid.font)
+        VibrationHelper.vibrate(context, 10)
+        error.visibility = View.VISIBLE
+        startAnimation(mErrorAnimator)
+    }
+    private fun emptyTextField()
+    {
+        val inputFieldPadding = collectInput.inputStyles.empty.padding
+        inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
+        inputField.setTextColor(collectInput.inputStyles.empty.textColor)
+        border.setStroke(collectInput.inputStyles.empty.borderWidth,collectInput.inputStyles.empty.borderColor)
+        border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
+        inputField.setBackgroundDrawable(border)
+        inputField.gravity = collectInput.inputStyles.empty.textAlignment
+        if(collectInput.inputStyles.empty.font != Typeface.NORMAL)
+            inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
+    }
     internal fun setError(error: String)
     {
         this.error.text = error
@@ -263,6 +296,7 @@ class TextField @JvmOverloads constructor(
     fun unmount()
     {
         buildTextField()
+        buildLabel()
         error.visibility = View.INVISIBLE
         actualValue = ""
     }

@@ -1,12 +1,13 @@
 package  com.Skyflow.collect.elements.validations
 
+import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import android.text.TextUtils
 import java.util.*
 
 /**
 Validate input in scope of length.
  */
-internal class SkyflowValidateExpirationDate(override var error: SkyflowValidationError = "") : SkyflowValidationProtocol() {
+internal class SkyflowValidateExpirationDate(override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
 
 
     private var mCalendar: Calendar =  Calendar.getInstance()
