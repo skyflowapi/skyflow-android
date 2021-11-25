@@ -22,9 +22,13 @@ import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.graphics.Typeface
+import android.text.Spanned
+import androidx.core.text.isDigitsOnly
 import com.skyflow_android.R
 import org.json.JSONObject
 import kotlin.String
+import android.text.InputFilter
+import android.text.InputFilter.LengthFilter
 
 
 @Suppress("DEPRECATION")
@@ -121,11 +125,12 @@ class TextField @JvmOverloads constructor(
         inputField.gravity = collectInput.inputStyles.base.textAlignment
         inputField.hint = collectInput.placeholder
         inputField.setTextColor(collectInput.inputStyles.base.textColor)
+        inputField.inputType = fieldType.getType().keyboardType
+
         if(collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
-        changeCardIcon()
-        inputField.inputType = fieldType.getType().keyboardType
+        formatPatternForField(inputField.editableText)
     }
 
     private fun buildError()
@@ -176,7 +181,7 @@ class TextField @JvmOverloads constructor(
 
             override fun afterTextChanged(s: Editable?) {
                 actualValue = inputField.text.toString()
-                changeCardIcon()
+                formatPatternForField(s)
                 state = StateforText(this@TextField)
                 if(userOnchangeListener !== null)
                     userOnchangeListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
@@ -193,14 +198,10 @@ class TextField @JvmOverloads constructor(
         }.also { inputField.onFocusChangeListener = it }
 
     }
-    internal fun changeCardIcon()
+    internal fun changeCardIcon(cardtype:CardType)
     {
-        if(fieldType.equals(SkyflowElementType.CARD_NUMBER) && options.enableCardIcon)
-        {
-            val cardtype = CardType.forCardNumber(inputField.text.toString())
             inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
             inputField.compoundDrawablePadding = 8
-        }
     }
     private fun onFocusTextField()
     {
@@ -287,6 +288,62 @@ class TextField @JvmOverloads constructor(
         inputField.gravity = collectInput.inputStyles.empty.textAlignment
         if(collectInput.inputStyles.empty.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.empty.font)
+    }
+
+    var previousLength = 0
+    private fun addSlashspanToExpiryDate(editable: Editable?, expiryDateFormat: String) {
+
+        val filterArray = arrayOfNulls<InputFilter>(1)
+        filterArray[0] = LengthFilter(expiryDateFormat.length)
+        inputField.setFilters(filterArray)
+        val index = expiryDateFormat.indexOf("/")
+        val length = editable!!.length
+        if (index == length && previousLength<length) {
+            if(inputField.text.isDigitsOnly())
+            {
+                inputField.append("/")
+                previousLength = length+1
+            }
+        }
+        else if(index == length && previousLength>length)
+        {
+            inputField.setText(inputField.text.toString().subSequence(0,inputField.length()-1))
+            previousLength = length -1
+            inputField.setSelection(inputField.length())
+        }
+    }
+
+    private fun addSpaceSpanToCardNumber(editable: Editable?, spaceIndices: IntArray) {
+        val length = editable!!.length
+
+        for (index in spaceIndices) {
+            if (index <= length) {
+                editable.setSpan(
+                    Spacespan(), index - 1, index,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+    }
+    private fun formatPatternForField(s: Editable?)
+    {
+        if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
+        {
+            val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
+            if(options.enableCardIcon)
+                changeCardIcon(cardtype)
+            addSpaceSpanToCardNumber(s,cardtype.getSpaceIndices())
+        }
+        else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
+        {
+            val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
+            if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
+            {
+                addSlashspanToExpiryDate(s,options.expiryDateFormat)
+            }
+            else
+                addSlashspanToExpiryDate(s,"mm/yy")
+        }
     }
     internal fun setError(error: String)
     {

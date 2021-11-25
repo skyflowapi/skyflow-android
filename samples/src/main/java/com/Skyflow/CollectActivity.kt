@@ -116,8 +116,8 @@ class CollectActivity : AppCompatActivity() {
             "CVV"
         )
         val options = CollectElementOptions(true)
-        val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(enableCardIcon = true))
-        val expirationDate = collectContainer.create(this, expiryDateInput)
+        val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(enableCardIcon = false))
+        val expirationDate = collectContainer.create(this, expiryDateInput,CollectElementOptions(expiryDateFormat = "yyyy/mm"))
         val name = collectContainer.create(this, nameInput, options)
         val cvv = collectContainer.create(this, cvvInput)
         
