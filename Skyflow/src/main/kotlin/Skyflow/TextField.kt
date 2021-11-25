@@ -16,9 +16,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import com.Skyflow.collect.elements.validations.SkyflowValidationError
-import com.Skyflow.collect.elements.validations.ValidationSet
-import com.Skyflow.collect.elements.validations.SkyflowValidator
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.graphics.Typeface
@@ -29,6 +26,9 @@ import org.json.JSONObject
 import kotlin.String
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
+import com.Skyflow.collect.elements.validations.*
+import com.Skyflow.collect.elements.validations.SkyflowValidator
+import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
 
 
 @Suppress("DEPRECATION")
@@ -52,6 +52,7 @@ class TextField @JvmOverloads constructor(
     internal var userOnFocusListener: ((JSONObject) -> Unit)? = null
     internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
+    internal var expiryDateFormat = "mm/yy"
     override fun getValue() : String {
         return actualValue
     }
@@ -130,6 +131,14 @@ class TextField @JvmOverloads constructor(
         if(collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
+        val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
+        if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
+        {
+            expiryDateFormat = options.expiryDateFormat
+            validationRules.rules.clear()
+            validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
+
+        }
         formatPatternForField(inputField.editableText)
     }
 
@@ -336,13 +345,7 @@ class TextField @JvmOverloads constructor(
         }
         else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
         {
-            val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
-            if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
-            {
-                addSlashspanToExpiryDate(s,options.expiryDateFormat)
-            }
-            else
-                addSlashspanToExpiryDate(s,"mm/yy")
+            addSlashspanToExpiryDate(s,expiryDateFormat)
         }
     }
     internal fun setError(error: String)
