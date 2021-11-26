@@ -3,6 +3,7 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.collect.client.CollectAPICallback
 import Skyflow.collect.client.CollectRequestBody
+import Skyflow.collect.elements.validations.ElementValueMatchRule
 import Skyflow.core.APIClient
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
@@ -19,9 +20,11 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
 import java.io.IOException
 import android.util.Log
+import com.Skyflow.collect.elements.validations.ValidationSet
 import junit.framework.Assert
 import junit.framework.Assert.*
 import junit.framework.TestCase
+import okhttp3.Call
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -1229,6 +1232,72 @@ class CollectTest {
 
         expireDate.resetError()
         assertEquals("INVALID_EXPIRE_DATE",expireDate.getErrorText())
+
+
+    }
+
+    @Test
+    fun testElementMatchRuleWithDuplicateTableAndColumn() //invalid
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "enter pin"
+        )
+        val pin = container.create(activity,collectInput)
+        val validationSet = ValidationSet()
+        val collectInput1 = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "confirm pin", validations = validationSet
+        )
+        val confirmPin = container.create(activity,collectInput1)
+
+        activity.addContentView(pin,layoutParams)
+        activity.addContentView(confirmPin,layoutParams)
+
+        container.collect(object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                assertEquals("Duplicate element with cards and pin found in container",(exception as Exception).message.toString())
+            }
+
+        })
+
+
+    }
+
+
+    @Test
+    fun testValidElementMatchRuleWithDuplicateTableAndColumn() //valid
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "enter pin"
+        )
+        val pin = container.create(activity,collectInput)
+        val validationSet = ValidationSet()
+        validationSet.add(ElementValueMatchRule(pin,"not matched with pin"))
+        val collectInput1 = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "confirm pin", validations = validationSet
+        )
+        val confirmPin = container.create(activity,collectInput1)
+
+        activity.addContentView(pin,layoutParams)
+        activity.addContentView(confirmPin,layoutParams)
+
+        container.collect(object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                assertEquals("no error",(exception as Exception).message.toString())
+            }
+
+        })
 
 
     }
