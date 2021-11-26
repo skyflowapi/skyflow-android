@@ -22,13 +22,14 @@ internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override va
         }
         val monthChars : Int
         val yearChars : Int
-        if(text.length == 5){
+        if(format.contains("yyyy")){
+            monthChars = SkyflowExpireDateFormat.LONGYEAR.monthCharacters
+            yearChars = SkyflowExpireDateFormat.LONGYEAR.yearCharacters
+
+
+        }else if(format.contains("yy")){
             monthChars = SkyflowExpireDateFormat.SHORTYEAR.monthCharacters
             yearChars = SkyflowExpireDateFormat.SHORTYEAR.yearCharacters
-
-        }else if(text.length == 7){
-             monthChars = SkyflowExpireDateFormat.LONGYEAR.monthCharacters
-            yearChars = SkyflowExpireDateFormat.LONGYEAR.yearCharacters
         }else{
             return false
         }
