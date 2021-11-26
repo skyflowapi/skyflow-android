@@ -1213,6 +1213,25 @@ class CollectTest {
 
     }
 
+    @Test
+    fun testSetAndResetError()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","expire date",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
+        )
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yyyy/mm"))
+        activity.addContentView(expireDate,layoutParams)
+        expireDate.inputField.setText("209/12")
+        expireDate.state = StateforText(expireDate)
+        expireDate.setError("custom error")
+        assertEquals("custom error",expireDate.getErrorText())
+
+        expireDate.resetError()
+        assertEquals("INVALID_EXPIRE_DATE",expireDate.getErrorText())
+
+
+    }
 
 
 

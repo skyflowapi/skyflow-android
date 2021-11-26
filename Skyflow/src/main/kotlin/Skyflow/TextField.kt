@@ -394,4 +394,9 @@ class TextField @JvmOverloads constructor(
         }
     }
 
+    internal fun getErrorText():String
+    {
+        return error.text.toString()
+    }
+
 }

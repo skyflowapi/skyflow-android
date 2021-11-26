@@ -2,6 +2,7 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.APIClient
+import Skyflow.core.elements.state.StateforText
 import Skyflow.reveal.*
 import Skyflow.utils.Utils
 import android.app.Activity
@@ -757,6 +758,23 @@ class RevealTest {
             }
 
         },list).onFailure(response)
+
+    }
+
+    @Test
+    fun testSetAndResetError()
+    {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        activity.addContentView(expireDate,layoutParams)
+
+        expireDate.setError("custom error")
+        assertEquals("custom error",expireDate.getErrorText())
+
+        expireDate.resetError()
+        assertTrue(expireDate.getErrorText().isEmpty())
+
 
     }
     //end RevealValueCallback

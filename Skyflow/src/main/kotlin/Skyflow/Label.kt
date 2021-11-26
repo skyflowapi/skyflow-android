@@ -156,7 +156,7 @@ class Label @JvmOverloads constructor(
         error.gravity = revealInput.errorTextStyles.base.textAlignment
     }
 
-    internal fun getText() :String
+    internal fun getErrorText() :String
     {
         return this.error.text.toString()
     }
