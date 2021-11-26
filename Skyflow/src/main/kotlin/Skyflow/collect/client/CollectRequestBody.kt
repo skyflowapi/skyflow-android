@@ -7,6 +7,7 @@ import Skyflow.Element
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
 import Skyflow.LogLevel
+import Skyflow.collect.elements.validations.ElementValueMatchRule
 import com.google.gson.JsonObject
 import kotlin.Exception
 
@@ -27,10 +28,21 @@ class CollectRequestBody {
                     if(tableWithColumn.contains(element.tableName+element.columnName))
                     {
                      //   callback.onFailure(Exception("duplicate column "+element.columnName+ " found in "+element.tableName))
-                        val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
-                            tag, logLevel, arrayOf(element.tableName,element.columnName))
-                        callback.onFailure(error)
-                        return ""
+                        var hasElementValueMatchRule: Boolean = false
+                        for(validation in element.collectInput.validations.rules) {
+                            if(validation is ElementValueMatchRule) {
+                                hasElementValueMatchRule = true
+                                break;
+                            }
+                        }
+                        if(!hasElementValueMatchRule)
+                        {
+                            val error = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
+                                tag, logLevel, arrayOf(element.tableName,element.columnName))
+                            callback.onFailure(error)
+                            return ""
+                        }
+                        continue;
                     }
                     tableWithColumn.add(element.tableName+element.columnName)
                     val obj = CollectRequestRecord(element.columnName,element.getValue())
