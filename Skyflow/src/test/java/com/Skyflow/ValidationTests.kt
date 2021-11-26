@@ -87,7 +87,7 @@ class ValidationTests{
     @Test
     fun testValidateExpiryDate()
     {
-        val match = SkyflowValidateExpirationDate("failed")
+        val match = SkyflowValidateExpireDate("MM/YY","failed")
         val failedInput = "1111" //not in expire date format
         val failedInputWithAlphabets = "xy/xz" //no digits
         val failedInput2 = "11/20"
