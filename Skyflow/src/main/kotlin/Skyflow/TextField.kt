@@ -54,12 +54,16 @@ class TextField @JvmOverloads constructor(
     internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
     internal var expiryDateFormat = "mm/yy"
+    private var userError : String = ""
     override fun getValue() : String {
         return actualValue
     }
 
     override fun validate() : SkyflowValidationError {
         val str = inputField.text.toString()
+        if(userError.isNotEmpty()){
+            return userError
+        }
         val builtinValidationError = SkyflowValidator.validate(str,validationRules)
         if(builtinValidationError.equals(""))
         {
@@ -70,7 +74,7 @@ class TextField @JvmOverloads constructor(
                 if(customValidationError.equals(""))
                     ""
                 else {
-                    setError(customValidationError)
+                    setErrorText(customValidationError)
                     customValidationError
                 }
             }
@@ -78,9 +82,9 @@ class TextField @JvmOverloads constructor(
         else
         {
             if(collectInput.label.isEmpty())
-                setError("invalid field")
+                setErrorText("invalid field")
             else
-                setError("invalid "+ collectInput.label)
+                setErrorText("invalid "+ collectInput.label)
             return builtinValidationError
         }
     }
@@ -356,7 +360,7 @@ class TextField @JvmOverloads constructor(
             addSlashspanToExpiryDate(s,expiryDateFormat)
         }
     }
-    internal fun setError(error: String)
+    internal fun setErrorText(error: String)
     {
         this.error.text = error
     }
@@ -367,6 +371,27 @@ class TextField @JvmOverloads constructor(
         buildLabel()
         error.visibility = View.INVISIBLE
         actualValue = ""
+    }
+
+    override fun setError(error: String) {
+        this.userError = error
+        setErrorText(userError)
+        state = StateforText(this@TextField)
+    }
+
+    override fun resetError() {
+        this.userError = ""
+        state = StateforText(this)
+        val internalState = state.getInternalState()
+        setErrorText(internalState["validationError"].toString())
+        if(internalState["isValid"] as Boolean)
+        {
+            validTextField()
+        }
+        else
+        {
+            invalidTextField()
+        }
     }
 
 }

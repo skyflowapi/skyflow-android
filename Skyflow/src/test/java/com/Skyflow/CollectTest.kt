@@ -498,7 +498,7 @@ class CollectTest {
         card_number!!.inputField.setText("4111 1111 1111 1111")
         activity.addContentView(card_number,layoutParams)
         assertEquals(2,card_number.collectInput.inputStyles.base.borderWidth)
-        card_number.setError("error occured")
+        card_number.setErrorText("error occured")
         assertTrue(card_number.error.text.toString().equals("error occured"))
         card_number.unmount()
         assertTrue(card_number.actualValue.isEmpty())

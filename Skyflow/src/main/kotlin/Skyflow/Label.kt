@@ -25,6 +25,7 @@ class Label @JvmOverloads constructor(
     internal lateinit var padding: Padding
     internal var border = GradientDrawable()
     internal var isTokenNull = false
+    internal var isError = false
 
     @SuppressLint("NewApi", "WrongConstant")
     internal fun setupField(revealInput: RevealElementInput, options: RevealElementOptions)
@@ -93,9 +94,70 @@ class Label @JvmOverloads constructor(
         addView(error)
     }
 
+    fun setErrorText(error:String)
+    {
+        this.error.text = error
+    }
+
     override fun getValue(): String {
         return actualValue
     }
+    override fun setError(error: String) {
+        isError = true
+        setErrorText(error)
+        showError()
+    }
 
+    override fun resetError() {
+        isError = false
+        hideError()
+    }
 
+    internal fun showError(){
+        setErrorStyles()
+        setInvalidStyles()
+        this.error.visibility = VISIBLE
+    }
+
+    private fun hideError() {
+        setErrorText("")
+        this.error.visibility = INVISIBLE
+        buildPlaceholder()
+        buildLabel()
+    }
+
+    private fun setInvalidStyles(){
+        if(this.revealInput.inputStyles.invalid.font != Typeface.NORMAL)
+            this.placeholder.typeface =
+                ResourcesCompat.getFont(this.context,
+                    this.revealInput.inputStyles.invalid.font)
+        this.placeholder.gravity =
+            this.revealInput.inputStyles.invalid.textAlignment
+        val padding = this.revealInput.inputStyles.invalid.padding
+        this.placeholder.setPadding(padding.left,
+            padding.top,
+            padding.right,
+            padding.bottom)
+        this.placeholder.setTextColor(this.revealInput.inputStyles.invalid.textColor)
+        this.border.setStroke(this.revealInput.inputStyles.invalid.borderWidth,
+            this.revealInput.inputStyles.invalid.borderColor)
+        this.border.cornerRadius =
+            this.revealInput.inputStyles.invalid.cornerRadius
+        this.placeholder.setBackgroundDrawable(this.border)
+    }
+
+    private fun setErrorStyles(){
+        error.textSize = 16F
+        val errorPadding = revealInput.errorTextStyles.base.padding
+        error.setPadding(errorPadding.left,errorPadding.top,errorPadding.right,errorPadding.bottom)
+        error.setTextColor(revealInput.errorTextStyles.base.textColor)
+        if(revealInput.errorTextStyles.base.font != Typeface.NORMAL)
+            error.typeface = ResourcesCompat.getFont(context,revealInput.errorTextStyles.base.font)
+        error.gravity = revealInput.errorTextStyles.base.textAlignment
+    }
+
+    internal fun getText() :String
+    {
+        return this.error.text.toString()
+    }
 }
