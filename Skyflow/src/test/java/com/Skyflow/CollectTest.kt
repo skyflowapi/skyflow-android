@@ -62,7 +62,7 @@ class CollectTest {
         card_number!!.inputField.setText("4111 1111 1111 1111")
 
         val state = StateforText(card_number).getInternalState()
-        Assert.assertTrue(state["isValid"] as Boolean)
+        assertTrue(state["isValid"] as Boolean)
 
     }
 
@@ -76,7 +76,7 @@ class CollectTest {
         val pin = container.create(activity,collectInput) as? TextField
         pin!!.inputField.setText("4111111")
         var state = StateforText(pin).getInternalState()
-        Assert.assertTrue(state["isValid"] as Boolean)
+        assertTrue(state["isValid"] as Boolean)
 
         pin.inputField.setText("411")
         state = StateforText(pin).getInternalState()
@@ -1137,6 +1137,82 @@ class CollectTest {
     }
 
     //end collect
+
+    @Test
+    fun testmmyyExpireDate()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","expire date",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
+        )
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "mm/yy"))
+        activity.addContentView(expireDate,layoutParams)
+        expireDate.inputField.setText("12/39")
+        expireDate.state = StateforText(expireDate)
+        assertTrue(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+        expireDate.inputField.setText("12/20")
+        expireDate.state = StateforText(expireDate)
+        assertFalse(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+    }
+
+    @Test
+    fun testmmyyyyExpireDate()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","expire date",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
+        )
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "mm/yyyy"))
+        activity.addContentView(expireDate,layoutParams)
+        expireDate.inputField.setText("12/2039")
+        expireDate.state = StateforText(expireDate)
+        assertTrue(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+        expireDate.inputField.setText("12/20njn")
+        expireDate.state = StateforText(expireDate)
+        assertFalse(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+    }
+    @Test
+    fun testyymmExpireDate()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","expire date",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
+        )
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yy/mm"))
+        activity.addContentView(expireDate,layoutParams)
+        expireDate.inputField.setText("39/12")
+        expireDate.state = StateforText(expireDate)
+        assertTrue(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+        expireDate.inputField.setText("12/20")
+        expireDate.state = StateforText(expireDate)
+        assertFalse(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+    }
+
+    @Test
+    fun testyyyymmExpireDate()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","expire date",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
+        )
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yyyy/mm"))
+        activity.addContentView(expireDate,layoutParams)
+        expireDate.inputField.setText("2039/12")
+        expireDate.state = StateforText(expireDate)
+        assertTrue(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+        expireDate.inputField.setText("12/20")
+        expireDate.state = StateforText(expireDate)
+        assertFalse(expireDate.state.getInternalState().get("isValid") as Boolean)
+
+    }
+
 
 
 

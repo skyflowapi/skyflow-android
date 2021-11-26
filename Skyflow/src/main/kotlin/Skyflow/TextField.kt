@@ -29,6 +29,7 @@ import android.text.InputFilter.LengthFilter
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
+import java.lang.annotation.ElementType
 
 
 @Suppress("DEPRECATION")
@@ -131,6 +132,14 @@ class TextField @JvmOverloads constructor(
         if(collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.base.font)
 
+        if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
+        {
+            changeExpireDateValidations()
+        }
+        formatPatternForField(inputField.editableText)
+    }
+
+    private fun changeExpireDateValidations() {
         val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
         if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
         {
@@ -139,7 +148,6 @@ class TextField @JvmOverloads constructor(
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
 
         }
-        formatPatternForField(inputField.editableText)
     }
 
     private fun buildError()

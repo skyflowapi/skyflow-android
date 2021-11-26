@@ -4,7 +4,7 @@ import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.LengthMatchRule
 import com.Skyflow.collect.elements.validations.RegexMatchRule
 import com.Skyflow.collect.elements.validations.SkyflowValidateCardNumber
-import com.Skyflow.collect.elements.validations.SkyflowValidateExpirationDate
+import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
 import com.Skyflow.collect.elements.validations.SkyflowValidateLengthMatch
 import com.Skyflow.collect.elements.validations.SkyflowValidationErrorType
 
@@ -75,7 +75,7 @@ enum class SkyflowElementType {
                     SkyflowValidationErrorType.pattern.rawValue)
                 )
                 rules.add(
-                    SkyflowValidateExpirationDate(
+                    SkyflowValidateExpireDate(
                         SkyflowValidationErrorType.expireDate.rawValue
                     )
                 )
