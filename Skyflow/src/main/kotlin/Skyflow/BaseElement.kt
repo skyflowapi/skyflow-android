@@ -9,4 +9,6 @@ abstract class BaseElement @JvmOverloads constructor(
 )  : LinearLayout(context, attrs, defStyleAttr){
 
       internal abstract fun getValue():String
+      abstract fun setError(error:String)
+      abstract fun resetError()
  }

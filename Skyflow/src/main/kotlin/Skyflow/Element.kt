@@ -6,7 +6,7 @@ import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import org.json.JSONObject
 
-open class Element@JvmOverloads constructor(
+open class Element @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : BaseElement(context, attrs, defStyleAttr)   {
 
@@ -44,5 +44,13 @@ open class Element@JvmOverloads constructor(
 
     override fun getValue(): String {
         return ""
+    }
+
+    override fun setError(error: String) {
+
+    }
+
+    override fun resetError() {
+
     }
 }

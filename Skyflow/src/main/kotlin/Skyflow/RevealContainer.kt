@@ -56,6 +56,11 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
                 }  else if (token!!.isEmpty()) {
                     throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, configuration.options.logLevel)
                 }
+                else if(element.isError)
+                {
+                    throw SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, configuration.options.logLevel,
+                        arrayOf("${element.error.text}"))
+                }
 
             }
             val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
