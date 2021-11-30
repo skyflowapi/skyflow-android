@@ -811,7 +811,7 @@ class InvokeConnectionTest {
         pathParams.put("card_number","4111")
         pathParams.put("cvv","123")
         val url = "https://www.google.com/{card_number}/{cvv}"
-        val generatedUrl = Utils.addPathparamsToURL(url,pathParams,object : Callback{
+        val generatedUrl = Utils.addPathParamsToURL(url,pathParams,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
@@ -1274,7 +1274,7 @@ class InvokeConnectionTest {
         pathParams.put("","4111")
         pathParams.put("cvv","123")
         val url = "https://www.google.com/{card_number}/{cvv}"
-        val generatedUrl = Utils.addPathparamsToURL(url,pathParams,object : Callback{
+        val generatedUrl = Utils.addPathParamsToURL(url,pathParams,object : Callback{
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {

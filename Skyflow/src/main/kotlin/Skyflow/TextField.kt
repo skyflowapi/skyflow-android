@@ -30,6 +30,7 @@ import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
 import java.lang.annotation.ElementType
+import java.util.*
 
 
 @Suppress("DEPRECATION")
@@ -60,18 +61,24 @@ class TextField @JvmOverloads constructor(
     }
 
     override fun validate() : SkyflowValidationError {
-        val str = inputField.text.toString()
+        val str = getValue()
         if(userError.isNotEmpty()){
             return userError
         }
-        val builtinValidationError = SkyflowValidator.validate(str,validationRules)
-        if(builtinValidationError.equals(""))
+        var builtinValidationError = ""
+        if(isRequired && str.isEmpty()){
+            builtinValidationError = "value is empty\n"
+            setErrorText("value is required")
+            return builtinValidationError
+        }
+        builtinValidationError += SkyflowValidator.validate(str,validationRules)
+        if(builtinValidationError == "")
         {
             return if(collectInput.validations.rules.isEmpty())
                 ""
             else {
                 val customValidationError = SkyflowValidator.validate(str,collectInput.validations)
-                if(customValidationError.equals(""))
+                if(customValidationError == "")
                     ""
                 else {
                     setErrorText(customValidationError)
@@ -108,7 +115,7 @@ class TextField @JvmOverloads constructor(
         label.textSize = 16F
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
         label.setTextColor(collectInput.labelStyles.base.textColor)
-        if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.labelStyles.base.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
         label.gravity = collectInput.labelStyles.base.textAlignment
 
@@ -145,7 +152,7 @@ class TextField @JvmOverloads constructor(
 
     private fun changeExpireDateValidations() {
         val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
-        if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
+        if(expireDateList.contains(options.expiryDateFormat.toLowerCase(Locale.ROOT)))
         {
             expiryDateFormat = options.expiryDateFormat
             validationRules.rules.clear()
@@ -186,6 +193,10 @@ class TextField @JvmOverloads constructor(
         addView(label)
         addView(inputField)
         addView(error)
+//        error.visibility = INVISIBLE
+        if(userError.isNotEmpty()){
+            invalidTextField()
+        }
     }
 
     private fun setListenersForText() {
@@ -219,7 +230,7 @@ class TextField @JvmOverloads constructor(
         }.also { inputField.onFocusChangeListener = it }
 
     }
-    internal fun changeCardIcon(cardtype:CardType)
+    private fun changeCardIcon(cardtype:CardType)
     {
             inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
             inputField.compoundDrawablePadding = 8
@@ -259,7 +270,7 @@ class TextField @JvmOverloads constructor(
         label.gravity = collectInput.labelStyles.base.textAlignment
 
         val internalState = this.state.getInternalState()
-        if(internalState["isEmpty"] as Boolean) {
+        if(internalState["isEmpty"] as Boolean && !isRequired) {
             emptyTextField()
         } else if(!(internalState["isValid"] as Boolean)) {
             invalidTextField()
@@ -283,7 +294,7 @@ class TextField @JvmOverloads constructor(
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
     }
 
-    private fun invalidTextField()
+    internal fun invalidTextField()
     {
         val inputFieldPadding = collectInput.inputStyles.invalid.padding
         inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
@@ -360,6 +371,7 @@ class TextField @JvmOverloads constructor(
             addSlashspanToExpiryDate(s,expiryDateFormat)
         }
     }
+
     internal fun setErrorText(error: String)
     {
         this.error.text = error

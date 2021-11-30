@@ -371,7 +371,7 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.MISSING_TABLE.getMessage())
+                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT.getMessage())
             }
 
 
@@ -398,7 +398,7 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 Log.d("exc",(exception as SkyflowError).message)
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.EMPTY_TABLE_NAME.getMessage())
+                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME.getMessage())
             }
 
 
@@ -834,7 +834,7 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
                 TestCase.assertEquals(skyflowError.getErrorMessage(),
                     (exception as SkyflowError).getErrorMessage())
             }
@@ -873,7 +873,7 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE)
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT)
                 TestCase.assertEquals(skyflowError.getErrorMessage(),
                     (exception as SkyflowError).getErrorMessage())
             }

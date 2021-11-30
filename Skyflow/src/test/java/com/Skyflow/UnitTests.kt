@@ -11,7 +11,6 @@ import Skyflow.utils.Utils
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.CheckBox
-import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
@@ -425,7 +424,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.MISSING_TABLE.getMessage())
+                    SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT.getMessage())
             }
 
         },LogLevel.ERROR)
@@ -480,7 +479,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.EMPTY_TABLE_NAME.getMessage())
+                    SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME.getMessage())
             }
 
         },LogLevel.ERROR)
@@ -731,7 +730,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
                 Assert.assertEquals(skyflowError.getErrorMessage(),
                     (exception as SkyflowError).getErrorMessage())
             }
@@ -759,7 +758,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
                 Assert.assertEquals(skyflowError.getErrorMessage(),
                     (exception as SkyflowError).getErrorMessage())
             }
@@ -1328,7 +1327,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
                 Assert.assertEquals(skyflowError.getErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }

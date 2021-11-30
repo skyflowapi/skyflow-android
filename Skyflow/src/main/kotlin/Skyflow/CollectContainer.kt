@@ -6,7 +6,6 @@ import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import Skyflow.utils.Utils
 import android.content.Context
-import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 
@@ -29,7 +28,7 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
 
 fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
     
-    if(apiClient.vaultURL.isEmpty() || apiClient.vaultURL.equals("/v1/vaults/"))
+    if(apiClient.vaultURL.isEmpty() || apiClient.vaultURL == "/v1/vaults/")
     {
         val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
         callback.onFailure(error)
@@ -49,28 +48,29 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
                 if (element.isAttachedToWindow()) {
                     when {
                         element.collectInput.table.equals(null) -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE, tag, configuration.options.logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
                             return
                         }
                         element.collectInput.column.equals(null) -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_COLUMN, tag, configuration.options.logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_COLUMN, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
                             return
                         }
                         element.collectInput.table!!.isEmpty() -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME, tag, configuration.options.logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
                             return
                         }
                         element.collectInput.column!!.isEmpty() -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, configuration.options.logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
                             return
                         }
                         else -> {
                             val state = element.getState()
                             val error = state["validationError"]
-                            if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
-                                errors += element.columnName + " is empty" + "\n"
-                            }
+//                            if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
+//                                errors += element.columnName + " is empty" + "\n"
+//                            }
                             if (!(state["isValid"] as Boolean)) {
+                                element.invalidTextField()
                                 errors += "for " + element.columnName + " " + (error as String) + "\n"
                             }
                         }
@@ -90,7 +90,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
             val records = CollectRequestBody.createRequestBody(this.elements,
                 options!!.additionalFields,
                 callback, configuration.options.logLevel)
-            if (!records.isEmpty() || !records.equals("")) {
+            if (records.isNotEmpty() || records != "") {
                 val insertOptions = InsertOptions(options.token)
                 this.apiClient.post(JSONObject(records), callback, insertOptions)
             }

@@ -11,8 +11,9 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
     private var code = skyflowErrorCode.getCode()
 
     init {
-        this.message =  Utils.constructMessage(skyflowErrorCode.getMessage(), *params)
-        Logger.error(tag, message, logLevel)
+        val logMessage =  Utils.constructMessage(skyflowErrorCode.getMessage(), *params)
+        Logger.error(tag, logMessage, logLevel)
+        this.message = "Interface : $tag - $logMessage"
     }
 
 

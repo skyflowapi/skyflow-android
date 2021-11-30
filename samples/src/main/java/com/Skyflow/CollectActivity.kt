@@ -31,8 +31,8 @@ class CollectActivity : AppCompatActivity() {
         setContentView(R.layout.activity_collect)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Skyflow.Configuration(
-            "VAULT_ID",
-            "VAULT_URL",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             tokenProvider,
             Options(Skyflow.LogLevel.ERROR, Env.PROD)
         )
@@ -106,14 +106,14 @@ class CollectActivity : AppCompatActivity() {
             validations = validationSet
         )
         val cvvInput = Skyflow.CollectElementInput(
-            "cards",
-            "cvv",
-            SkyflowElementType.CVV,
-            styles,
-            labelStyles,
-            errorStyles,
-            "CVV",
-            "CVV"
+            table = "cards",
+            column = "cvv",
+            type = SkyflowElementType.CVV,
+            inputStyles = styles,
+             labelStyles = labelStyles,
+            errorTextStyles = errorStyles,
+            placeholder = "CVV",
+            altText = "CVV"
         )
         val options = CollectElementOptions(true)
         val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(enableCardIcon = false))
@@ -156,10 +156,12 @@ class CollectActivity : AppCompatActivity() {
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
             val record = JSONObject()
-            record.put("table", "persons")
+            record.put("table", "cards")
             val fieldsInAdditionalObject = JSONObject()
+            fieldsInAdditionalObject.put("cvv", 123)
             record.put("fields", fieldsInAdditionalObject)
-            //additionalFields.put("records", recordsArray)
+            recordsArray.put(record)
+            additionalFields.put("records", recordsArray)
 
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
@@ -182,9 +184,9 @@ class CollectActivity : AppCompatActivity() {
 
                 override fun onFailure(exception: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect failure: ${exception.toString()}")
+                    Log.d(TAG, "collect failure: ${(exception as Exception).message}")
                 }
-            }, CollectOptions(true, additionalFields))
+            }, CollectOptions(true))
         }
 
         clear.setOnClickListener {
@@ -197,8 +199,8 @@ class CollectActivity : AppCompatActivity() {
 private fun pureInsert(){
     val tokenProvider = DemoTokenProvider()
     val skyflowConfiguration = Skyflow.Configuration(
-        "VAULT_ID",
-        "VAULT_URL",
+        BuildConfig.VAULT_ID,
+        BuildConfig.VAULT_URL,
         tokenProvider,
         Options(LogLevel.ERROR)
     )
@@ -207,13 +209,13 @@ private fun pureInsert(){
     try{
         val records = JSONObject()
         val recordsArray = JSONArray()
-        val record = JSONObject()
-        record.put("table", "persons")
-        val fields = JSONObject()
-        fields.put("cvv", "123")
-        fields.put("card_number", "41111111111")
-        record.put("fields", fields)
-        recordsArray.put(record)
+//        val record = JSONObject()
+//        record.put("table", "persons")
+//        val fields = JSONObject()
+//        fields.put("cvv", "123")
+//        fields.put("card_number", "41111111111")
+//        record.put("fields", fields)
+//        recordsArray.put(record)
         records.put("records", recordsArray)
 
         skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
@@ -244,7 +246,7 @@ private fun pureInsert(){
 
 class DemoTokenProvider : Skyflow.TokenProvider {
     override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = "TOKEN_ENDPOINT"
+        val url = BuildConfig.TOKEN_URL
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {

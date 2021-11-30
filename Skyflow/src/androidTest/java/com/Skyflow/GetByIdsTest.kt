@@ -153,7 +153,7 @@ class GetByIdsTest {
 
             override fun onFailure(exception: Any) {
                 Log.d("exp",exception.toString())
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }

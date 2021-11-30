@@ -88,7 +88,7 @@ class APIClient (
 
     internal fun post(records: JSONObject, callback: Callback, options: InsertOptions){
         val finalRecords = Utils.constructBatchRequestBody(records, options,callback,logLevel)
-        if(!finalRecords.toString().equals("{}"))
+        if(finalRecords.toString() != "{}")
         {
             val collectApiCallback = CollectAPICallback(this, records, callback, options,logLevel)
             this.getAccessToken(collectApiCallback)
@@ -101,7 +101,7 @@ class APIClient (
      fun get(records:JSONObject, callback : Callback){
 
         try {
-            if(vaultURL.isEmpty() || vaultURL.equals("/v1/vaults/"))
+            if(vaultURL.isEmpty() || vaultURL == "/v1/vaults/")
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag,logLevel)
             }
@@ -109,6 +109,9 @@ class APIClient (
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,tag,logLevel)
             }
+//            if(records == {}){
+//                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+//            }
             else if (!records.has("records")) {
                 throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
             }

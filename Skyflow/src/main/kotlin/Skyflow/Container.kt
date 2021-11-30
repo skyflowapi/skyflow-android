@@ -7,7 +7,7 @@ class Container<T: ContainerProtocol>(
     internal val apiClient: APIClient,
     internal val configuration: Configuration
 ) {
-    internal val elements: MutableList<Element> = mutableListOf();
+    internal val elements: MutableList<TextField> = mutableListOf();
     internal val revealElements: MutableList<Label> = mutableListOf();
 }
 

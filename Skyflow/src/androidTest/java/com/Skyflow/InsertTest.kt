@@ -4,11 +4,8 @@ import Skyflow.*
 import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
-import com.skyflow_android.BuildConfig
 import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -138,7 +135,7 @@ class InsertTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.EMPTY_TABLE_NAME.getMessage())
+                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME.getMessage())
             }
 
         })
@@ -189,7 +186,7 @@ class InsertTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.MISSING_TABLE.getMessage())
+                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT.getMessage())
             }
 
         })
