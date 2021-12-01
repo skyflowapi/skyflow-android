@@ -29,7 +29,6 @@ import android.text.InputFilter.LengthFilter
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
-import java.lang.annotation.ElementType
 import java.util.*
 
 
@@ -151,14 +150,17 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun changeExpireDateValidations() {
+        validationRules.rules.clear()
         val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
-        if(expireDateList.contains(options.expiryDateFormat.toLowerCase(Locale.ROOT)))
+        if(expireDateList.contains(options.format.toLowerCase()))
         {
-            expiryDateFormat = options.expiryDateFormat
-            validationRules.rules.clear()
+            expiryDateFormat = options.format
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
 
         }
+        else
+            validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
+
     }
 
     private fun buildError()
@@ -283,6 +285,7 @@ class TextField @JvmOverloads constructor(
 
     private fun validTextField()
     {
+        error.visibility = INVISIBLE
         val inputFieldPadding = collectInput.inputStyles.complete.padding
         inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
         inputField.setTextColor(collectInput.inputStyles.complete.textColor)
@@ -364,6 +367,9 @@ class TextField @JvmOverloads constructor(
             val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
             if(options.enableCardIcon)
                 changeCardIcon(cardtype)
+            val filterArray = arrayOfNulls<InputFilter>(1)
+            filterArray[0] = LengthFilter(cardtype.cardLength.get(cardtype.cardLength.size-1))
+            inputField.setFilters(filterArray)
             addSpaceSpanToCardNumber(s,cardtype.getSpaceIndices())
         }
         else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
@@ -396,14 +402,7 @@ class TextField @JvmOverloads constructor(
         state = StateforText(this)
         val internalState = state.getInternalState()
         setErrorText(internalState["validationError"].toString())
-        if(internalState["isValid"] as Boolean)
-        {
-            validTextField()
-        }
-        else
-        {
-            invalidTextField()
-        }
+        validTextField()
     }
 
     internal fun getErrorText():String

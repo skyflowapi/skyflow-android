@@ -54,6 +54,7 @@ enum class Messages(val message: String) {
     INVALID_TABLE_NAME("Key 'table' doesn't have a value of type String"),
     ELEMENT_EMPTY_TABLE_NAME("element with type %s -  Table key cannot be empty."),
     EMPTY_TABLE_KEY("table key cannot be empty"),
+    EMPTY_COLUMN_KEY("column key cannot be empty"),
     RECORDS_KEY_NOT_FOUND("records object is required"),
     ADDITION_RECORDS_KEY_KEY_NOT_FOUND("records object key value not found inside additional Fields"),
     EMPTY_RECORDS("records object cannot be empty"),

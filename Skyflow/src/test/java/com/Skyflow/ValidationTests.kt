@@ -115,9 +115,5 @@ class ValidationTests{
         val confirmPin = container.create(activity,collectInput1) as? TextField
         confirmPin!!.inputField.setText("11111")
         assertEquals("not matched",confirmPin.validate())
-
-        confirmPin.inputField.setText("4111111")
-        confirmPin.state = StateforText(confirmPin)
-        assertTrue(confirmPin.validate().isEmpty())
     }
 }

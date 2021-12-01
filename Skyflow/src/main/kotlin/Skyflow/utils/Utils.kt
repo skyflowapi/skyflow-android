@@ -567,7 +567,7 @@ class Utils {
                     while (keys.hasNext()) {
                         val key = keys.next()
                         if (key.isEmpty()) {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, logLevel))
+                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY, tag, logLevel))
                             return JSONObject()
                         }
                     }
@@ -749,7 +749,6 @@ class Utils {
             return true
         }
 
-
         fun copyJSON(records: JSONObject,finalRecords:JSONObject)
         {
             val keys = records.names()
@@ -765,7 +764,7 @@ class Utils {
 
         fun constructError(e:Exception,code:Int=400) : JSONObject
         {
-            val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+            val skyflowError = SkyflowError(params = arrayOf(e.message))
             skyflowError.setErrorCode(code)
             val finalError = JSONObject()
             val errors = JSONArray()

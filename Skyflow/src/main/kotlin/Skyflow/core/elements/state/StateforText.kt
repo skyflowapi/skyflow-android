@@ -19,7 +19,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
 
     init {
         validationError = tf.validate()
-        isValid = validationError.isEmpty()
+        isValid = validationError.count() == 0
         isEmpty = (tf.inputField.text!!.isEmpty())
         inputLength = tf.inputField.length()
         isFocused = tf.inputField.hasFocus()

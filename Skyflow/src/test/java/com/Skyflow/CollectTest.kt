@@ -24,7 +24,6 @@ import com.Skyflow.collect.elements.validations.ValidationSet
 import junit.framework.Assert
 import junit.framework.Assert.*
 import junit.framework.TestCase
-import okhttp3.Call
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -80,17 +79,27 @@ class CollectTest {
         pin!!.inputField.setText("4111111")
         var state = StateforText(pin).getInternalState()
         assertTrue(state["isValid"] as Boolean)
-
-        pin.inputField.setText("411")
-        state = StateforText(pin).getInternalState()
-        Assert.assertFalse(state["isValid"] as Boolean)
-
-
-        pin.inputField.setText("xyzzz")
-        state = StateforText(pin).getInternalState()
-        Assert.assertFalse(state["isValid"] as Boolean) //accepts only numbers
-
     }
+
+//    @Test
+//    fun testInvalidValueForPIN()
+//    {
+//        val container = skyflow.container(ContainerType.COLLECT)
+//        val collectInput = CollectElementInput("cards","PIN",
+//            SkyflowElementType.PIN,placeholder = "pin"
+//        )
+//        val pin = container.create(activity,collectInput) as? TextField
+//
+//        pin!!.inputField.setText("411")
+//        var state = StateforText(pin).getInternalState()
+//        assertFalse(state["isValid"] as Boolean)
+//
+//
+//        pin.inputField.setText("xyzzz")
+//        state = StateforText(pin).getInternalState()
+//        Assert.assertFalse(state["isValid"] as Boolean) //accepts only numbers
+//
+//    }
 
     @Test
     fun testEmptyStateForSkyflowElement()
@@ -124,24 +133,6 @@ class CollectTest {
 
         val state = StateforText(card_number!!).getInternalState()
         Assert.assertTrue(state["isEmpty"] as Boolean)
-    }
-
-    @Test
-    fun testInvalidValueSkyflowElement()
-    {
-        val container = skyflow.container(ContainerType.COLLECT)
-        val collectInput = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
-        )
-        val card_number = container.create(activity,collectInput) as? TextField
-        card_number!!.inputField.setText("4111")
-        card_number.state = StateforText(card_number)
-        val state = StateforText(card_number)
-        Assert.assertFalse(state.getInternalState()["isValid"] as Boolean)
-        assertNotNull(card_number.state.show())
-        assertEquals(state.getInternalState().get("inputLength"),4)
-        assertEquals(state.getState(Env.DEV).get("value"),"") // value will change when text event afterTextChanged triggers
-
     }
 
     @Test
@@ -182,7 +173,7 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(card_number.columnName))
-                assertEquals((exception as SkyflowError).message.trim(),skyflowError.getErrorMessage().trim())
+                assertEquals((exception as SkyflowError).getInternalErrorMessage().trim(),skyflowError.getInternalErrorMessage().trim())
                 assertEquals(400,skyflowError.getErrorcode())
             }
         })
@@ -200,7 +191,8 @@ class CollectTest {
             val cvv : TextField = container.create(activity,collectInput2, options)
 
             card_number.inputField.setText("4111 1111 1111 1111")
-            cvv.inputField.setText("2")
+            card_number.actualValue = "4111 1111 1111 1111"
+            cvv.inputField.setText("142")
             activity.addContentView(card_number,layoutParams)
             activity.addContentView(cvv,layoutParams)
             card_number.state = StateforText(card_number)
@@ -213,8 +205,8 @@ class CollectTest {
                 }
 
                 override fun onFailure(exception: Any) {
-                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv INVALID_LENGTH_MATCH"))
-                    assertEquals((exception as SkyflowError).message.trim(),skyflowError.getErrorMessage().trim())
+                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for cvv value is empty"))
+                    assertEquals((exception as SkyflowError).getInternalErrorMessage().trim(),skyflowError.getInternalErrorMessage().trim())
                 }
             })
         }
@@ -232,6 +224,9 @@ class CollectTest {
         val collectInput2 = CollectElementInput("cards","cvv",SkyflowElementType.CVV, label = "cvv")
         val card_number = container.create(activity,collectInput1, options)
         val cvv = container.create(activity,collectInput2,options)
+        cvv.inputField.setText("123")
+        cvv.actualValue = "123"
+        cvv.state = StateforText(cvv)
         activity.addContentView(card_number,layoutParams)
         activity.addContentView(cvv,layoutParams)
 
@@ -242,9 +237,8 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("card_number is empty\n" +
-                        "cvv is empty"))
-                assertEquals((exception as SkyflowError).message.trim(),skyflowError.getErrorMessage().trim())
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_INPUT,params = arrayOf("for card_number value is empty"))
+                assertEquals((exception as SkyflowError).getInternalErrorMessage().trim(),skyflowError.getInternalErrorMessage().trim())
             }
         })
     }
@@ -271,7 +265,8 @@ class CollectTest {
             override fun onSuccess(responseBody: Any) {
             }
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.EMPTY_VAULT_ID.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
         })
 
@@ -307,7 +302,8 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.EMPTY_VAULT_URL.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -346,7 +342,7 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(configuration.vaultURL))
-                assertEquals((exception as SkyflowError).message,skyflowError.getErrorMessage())
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -371,7 +367,8 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, params = arrayOf(card_number.fieldType.toString()))
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -397,8 +394,9 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                Log.d("exc",(exception as SkyflowError).message)
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME.getMessage())
+                Log.d("exc",(exception as SkyflowError).getInternalErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME, params = arrayOf(card_number.fieldType.toString()))
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -423,7 +421,8 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.MISSING_COLUMN.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_COLUMN, params = arrayOf(card_number.fieldType.toString()))
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -451,7 +450,8 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.EMPTY_COLUMN_NAME.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, params = arrayOf(card_number.fieldType.toString()))
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),skyflowError.getInternalErrorMessage())
             }
 
 
@@ -684,7 +684,7 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(apiClient.vaultURL))
-                TestCase.assertEquals(skyflowError.getErrorMessage(),(exception as Exception).message.toString())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),(exception as Exception).message.toString())
             }
 
         }, InsertOptions(),LogLevel.ERROR)
@@ -796,8 +796,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput.table,collectInput.column))
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -834,9 +834,9 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -873,9 +873,9 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -914,8 +914,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -953,52 +953,13 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
     }
 
-
-    @Test
-    fun testMissingColumnInAdditionalFields()
-    {
-        val container = skyflow.container(ContainerType.COLLECT)
-        val collectInput = CollectElementInput("cards","cvv",
-            SkyflowElementType.CVV,placeholder = "cvv"
-        )
-        val collectInput1 = CollectElementInput("cards","card_number",
-            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
-        )
-        val cvv = container.create(activity,collectInput,CollectElementOptions())
-        val card_number = container.create(activity,collectInput1,CollectElementOptions())
-
-        val records = JSONObject()
-        val recordsArray = JSONArray()
-        val record = JSONObject()
-        val fields = JSONObject()
-        record.put("table", "cards")
-        fields.put("", "41111111111")
-        fields.put("expiry_date","11/22")
-        record.put("fields", fields)
-        recordsArray.put(record)
-        records.put("records", recordsArray)
-
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
-            }
-
-        },LogLevel.ERROR)
-    }
 
     @Test
     fun testEmptyFieldsInAdditionalFields()
@@ -1030,8 +991,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -1062,8 +1023,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -1093,8 +1054,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -1132,8 +1093,8 @@ class CollectTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput1.table,collectInput1.column))
-                TestCase.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -1148,7 +1109,7 @@ class CollectTest {
         val collectInput = CollectElementInput("cards","expire date",
             SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
         )
-        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "mm/yy"))
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(format = "mm/yy"))
         activity.addContentView(expireDate,layoutParams)
         expireDate.inputField.setText("12/39")
         expireDate.state = StateforText(expireDate)
@@ -1167,7 +1128,7 @@ class CollectTest {
         val collectInput = CollectElementInput("cards","expire date",
             SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
         )
-        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "mm/yyyy"))
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(format = "mm/yyyy"))
         activity.addContentView(expireDate,layoutParams)
         expireDate.inputField.setText("12/2039")
         expireDate.state = StateforText(expireDate)
@@ -1185,7 +1146,7 @@ class CollectTest {
         val collectInput = CollectElementInput("cards","expire date",
             SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
         )
-        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yy/mm"))
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(format = "yy/mm"))
         activity.addContentView(expireDate,layoutParams)
         expireDate.inputField.setText("39/12")
         expireDate.state = StateforText(expireDate)
@@ -1204,7 +1165,7 @@ class CollectTest {
         val collectInput = CollectElementInput("cards","expire date",
             SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
         )
-        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yyyy/mm"))
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(format = "yyyy/mm"))
         activity.addContentView(expireDate,layoutParams)
         expireDate.inputField.setText("2039/12")
         expireDate.state = StateforText(expireDate)
@@ -1223,7 +1184,7 @@ class CollectTest {
         val collectInput = CollectElementInput("cards","expire date",
             SkyflowElementType.EXPIRATION_DATE,placeholder = "expire date"
         )
-        val expireDate = container.create(activity,collectInput,CollectElementOptions(expiryDateFormat = "yyyy/mm"))
+        val expireDate = container.create(activity,collectInput,CollectElementOptions(format = "yyyy/mm"))
         activity.addContentView(expireDate,layoutParams)
         expireDate.inputField.setText("209/12")
         expireDate.state = StateforText(expireDate)
@@ -1236,37 +1197,7 @@ class CollectTest {
 
     }
 
-    @Test
-    fun testElementMatchRuleWithDuplicateTableAndColumn() //invalid
-    {
-        val container = skyflow.container(ContainerType.COLLECT)
-        val collectInput = CollectElementInput("cards","pin",
-            SkyflowElementType.EXPIRATION_DATE,placeholder = "enter pin"
-        )
-        val pin = container.create(activity,collectInput)
-        val validationSet = ValidationSet()
-        val collectInput1 = CollectElementInput("cards","pin",
-            SkyflowElementType.EXPIRATION_DATE,placeholder = "confirm pin", validations = validationSet
-        )
-        val confirmPin = container.create(activity,collectInput1)
 
-        activity.addContentView(pin,layoutParams)
-        activity.addContentView(confirmPin,layoutParams)
-
-        container.collect(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                assertEquals("Duplicate element with cards and pin found in container",(exception as Exception).message.toString())
-            }
-
-        })
-
-
-    }
 
 
     @Test
