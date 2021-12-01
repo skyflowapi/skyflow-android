@@ -360,9 +360,7 @@ Skyflow.CollectElementOptions(
   - yy/mm
   - yyyy/mm
 
-it defaults to `mm/yy` format if value is not provided.
-
-`NOTE`: If invalid value is passed to the `format` for `EXPIRATION_DATE` element, then it defaults to `mm/yy` format.
+`NOTE`: If not specified or invalid value is passed to the `format` for `EXPIRATION_DATE` element, then it defaults to `mm/yy` format.
 
 Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
 the `context` param takes android `Context` object as described below:
