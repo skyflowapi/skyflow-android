@@ -346,11 +346,11 @@ Along with `CollectElementInput` we can define other options which are optional 
 Skyflow.CollectElementOptions(
   required: Boolean, //indicates whether the field is marked as required. Defaults to 'false'
   enableCardIcon: Boolean, //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
-  format: String //Format for the element (only applicabke currentlty for "EXPIRATION_DATE")
+  format: String //Format for the element (only applicable currently for "EXPIRATION_DATE")
 )
 ```
-
-`requied` parameter indicates whether the field is marked as required or not, if not provided, it defaults to `false`
+	
+`required` parameter indicates whether the field is marked as required or not, if not provided, it defaults to `false`
 
 `enableCardIcon` paramenter indicates whether the icon is visible for the `CARD_NUMBER` element, defaults to `true`
 
@@ -668,18 +668,43 @@ cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
 
 ### UI Error for Collect Elements
 
-Helps to display custom error messages on the Skyflow Elements throug the methods `setError` and `resetError` on the elements.
+Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
 
-`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the elemenet until `resetError()` is trigerred on the same element.
+`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
 
 `resetError()` method is used to clear the custom error message that is set using `setError`.
+
+```
+//create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
+
+val skyflowClient = Skyflow.initialize(config)
+
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
+ 
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+    table = "cards",
+    column = "cardNumber",
+    type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardNumber = container.create(input = cardNumberInput)
+
+//Set custom error
+cardNumber.setError("custom error")
+
+//reset custom error
+cardNumber.resetError()
+}
+```
 
 
 ---
 # Securely revealing data client-side
 -  [**Retrieving data from the vault**](#retrieving-data-from-the-vault)
 -  [**Using Skyflow Elements to reveal data**](#using-skyflow-elements-to-reveal-data)
-- [**UI Error for Reveal Eements**](#UI-Error-for-Reveal-Elements)
+- [**UI Error for Reveal Elements**](#ui-error-for-reveal-elements)
 
 ## Retrieving data from the vault
 For non-PCI use-cases, retrieving data from the vault and revealing it in the mobile can be done either using the SkyflowID's or tokens as described below
@@ -873,9 +898,9 @@ container.reveal(callback = revealCallback)
 
 ### UI Error for Reveal Elements
 
-Helps to display custom error messages on the Skyflow Elements throug the methods `setError` and `resetError` on the elements.
+Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
 
-`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the elemenet until `resetError()` is trigerred on the same element.
+`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
 
 `resetError()` method is used to clear the custom error message that is set using `setError`.
 
@@ -921,6 +946,12 @@ val cvvInput = Skyflow.RevealElementInput(
 )
 
 val cvvElement = container.create(context = Context,input = cvvInput)
+
+//set error to the element
+cvvElement.setError("custom error")
+
+//reset error to the element
+cvvElement.resetError()
 
 //Can interact with these objects as a normal UIView Object and add to View
 
