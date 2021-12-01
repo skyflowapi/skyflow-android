@@ -672,7 +672,7 @@ Helps to display custom error messages on the Skyflow Elements through the metho
 
 `resetError()` method is used to clear the custom error message that is set using `setError`.
 
-#### Sample code for setError and resetError
+##### Sample code snippet for setError and resetError
 
 ```kt
 //create skyflow client with loglevel:"DEBUG"
