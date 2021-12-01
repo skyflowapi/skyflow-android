@@ -42,7 +42,6 @@ class CollectRequestBody {
                         continue;
                     }
                     tableWithColumn.add(element.tableName+element.columnName)
-                    Log.d(tag, "createRequestBody: ${element.getValue()}")
                     val obj = CollectRequestRecord(element.columnName,element.getValue())
                     tableMap[(element.tableName)]!!.add(obj)
                 }

@@ -168,22 +168,10 @@ class Client internal constructor(
     }
 
     fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback) {
-//        if (configuration.vaultURL.isEmpty() || configuration.vaultURL.equals("/v1/vaults/")) {
-//            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL,tag, configuration.options.logLevel)
-//            callback.onFailure(Utils.constructError(error))
-//        } else if (configuration.vaultID.isEmpty()) {
-//            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,tag, configuration.options.logLevel)
-//            callback.onFailure(Utils.constructError(error))
-//        } else {
+
         Logger.info(tag,
             Messages.INVOKE_CONNECTION_CALLED.getMessage(),
             configuration.options.logLevel)
-//            if(!Utils.checkUrl(apiClient.vaultURL))
-//            {
-//                val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,tag, configuration.options.logLevel,
-//                    arrayOf(apiClient.vaultURL))
-//                callback.onFailure(Utils.constructError(error))
-//            }
         val checkUrl = Utils.checkUrl(connectionConfig.connectionURL)
         if(connectionConfig.connectionURL.isEmpty())
         {
@@ -219,7 +207,6 @@ class Client internal constructor(
         }
 
         override fun onFailure(exception: Any) {
-//            Logger.error(tag, failureMessage, configuration.options.logLevel)
             clientCallback.onFailure(exception)
         }
 

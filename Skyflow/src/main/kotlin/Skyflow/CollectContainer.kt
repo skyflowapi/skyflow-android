@@ -66,9 +66,6 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
                         else -> {
                             val state = element.getState()
                             val error = state["validationError"]
-//                            if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
-//                                errors += element.columnName + " is empty" + "\n"
-//                            }
                             if (!(state["isValid"] as Boolean)) {
                                 element.invalidTextField()
                                 errors += "for " + element.columnName + " " + (error as String) + "\n"

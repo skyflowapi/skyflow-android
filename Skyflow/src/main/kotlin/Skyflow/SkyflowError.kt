@@ -17,8 +17,6 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
         this.internalMessage = logMessage
         this.message = "Interface : $tag - $logMessage"
     }
-
-
     fun setErrorCode(code:Int)
     {
         this.code = code
@@ -27,25 +25,12 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
     {
         return this.code
     }
-
-//    fun setErrorMessage(message:String)
-//    {
-//        this.message = message
-//    }
-
     fun getErrorMessage() :String
     {
         return this.message
     }
-
     internal fun getInternalErrorMessage():String{
         return this.internalMessage
     }
-
-//    fun setErrorResponse(vararg params: String?)
-//    {
-//        if(!params.isEmpty())
-//           message =  Utils.constructMessage(this.skyflowErrorCode.message,*params)
-//    }
 }
 

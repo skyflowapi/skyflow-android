@@ -109,9 +109,6 @@ class APIClient (
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID,tag,logLevel)
             }
-//            if(records == {}){
-//                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
-//            }
             else if (!records.has("records")) {
                 throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
             }

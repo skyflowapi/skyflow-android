@@ -1,6 +1,5 @@
 package  com.Skyflow.collect.elements.validations
 
-//import  com.skyflow_android.collect.elements.utils.CardType
 import Skyflow.collect.elements.utils.CardType
 import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import java.util.regex.Pattern
