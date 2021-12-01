@@ -154,7 +154,7 @@ class TextField @JvmOverloads constructor(
         val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
         if(expireDateList.contains(options.format.toLowerCase()))
         {
-            expiryDateFormat = options.format
+            expiryDateFormat = options.format.toLowerCase()
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
 
         }
@@ -370,7 +370,7 @@ class TextField @JvmOverloads constructor(
             val filterArray = arrayOfNulls<InputFilter>(1)
             filterArray[0] = LengthFilter(cardtype.cardLength.get(cardtype.cardLength.size-1))
             inputField.setFilters(filterArray)
-            addSpaceSpanToCardNumber(s,cardtype.getSpaceIndices())
+            addSpaceSpanToCardNumber(s,cardtype.formatPattern)
         }
         else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
         {
