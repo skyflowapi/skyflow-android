@@ -5,56 +5,56 @@ import java.util.regex.Pattern
 
 internal class Card
     (var defaultName:String,var regex: String,var cardLength:IntArray,
-     var formatPattern: String,var securityCodeLength: Int,var securityCodeName: String,image:Int)
+     var formatPattern: IntArray,var securityCodeLength: Int,var securityCodeName: String,image:Int)
 {
 }
 
 enum class  CardType (var defaultName:String,var regex: String,var cardLength:IntArray,
-                      var formatPattern: String,var securityCodeLength: Int,var securityCodeName: String,var image:Int)
+                      var formatPattern: IntArray,var securityCodeLength: Int,var securityCodeName: String,var image:Int)
 {
 
     VISA(
-        "Visa" , "^4\\d*", intArrayOf(13,16), "#### #### #### #### ###",
+        "Visa" , "^4\\d*", intArrayOf(13,16), intArrayOf(4,8,12),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_visa),
     MASTERCARD(
         "MasterCard","^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
-        intArrayOf(16),"#### #### #### ####",
+        intArrayOf(16),intArrayOf(4,8,12),
         3,  SecurityCode.cvc.rawValue, R.drawable.ic_mastercard),
     DISCOVER(
         "Discover", "^(6011|65|64[4-9]|622)\\d*",
-        intArrayOf(16,17,18,19),"#### #### #### ####",
+        intArrayOf(16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cid.rawValue, R.drawable.ic_discover),
     AMEX(
         "Amex","^3[47]\\d*",
-        intArrayOf(15),"#### ###### #####",
+        intArrayOf(15),intArrayOf(4,10),
         4, SecurityCode.cid.rawValue, R.drawable.ic_amex),
     DINERS_CLUB(
         "Diners Club","^(36|38|30[0-5])\\d*",
-        intArrayOf(14,15,16,17,18,19),"#### ###### #####",
+        intArrayOf(14,15,16,17,18,19),intArrayOf(4,10),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_diners),
     JCB(
         "JCB","^35\\d*",
-        intArrayOf(16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_jcb),
     MAESTRO(
         "Maestro","^(5018|5020|5038|5043|5[6-9]|6020|6304|6703|6759|676[1-3])\\d*",
-        intArrayOf(12,13,14,15,16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvc.rawValue, R.drawable.ic_maestro),
     UNIONPAY(
         "UnionPay","^62\\d*",
-        intArrayOf(16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvn.rawValue, R.drawable.ic_unionpay),
     HIPERCARD(
         "HiperCard","^606282\\d*",
-        intArrayOf(14,15,16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvc.rawValue, R.drawable.ic_hypercard),
     UNKNOWN(
         "Unknown","\\d+",
-        intArrayOf(12,13,14,15,16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_emptycard),
     EMPTY(
         "Empty","^$",
-        intArrayOf(12,13,14,15,16,17,18,19),"#### #### #### #### ###",
+        intArrayOf(12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_emptycard);
 
 

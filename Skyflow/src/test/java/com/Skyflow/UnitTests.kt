@@ -11,7 +11,6 @@ import Skyflow.utils.Utils
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.CheckBox
-import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
@@ -100,7 +99,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -127,7 +126,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -154,7 +153,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -176,7 +175,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -198,7 +197,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -230,7 +229,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -260,7 +259,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -289,7 +288,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(skyflowConfiguration.vaultURL))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
 
@@ -314,7 +313,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID).getErrorMessage(),getErrorMessage(exception as JSONObject))
+                assertEquals(SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID).getInternalErrorMessage(),getErrorMessage(exception as JSONObject))
             }
 
         })
@@ -338,7 +337,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals(SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND).getErrorMessage(),getErrorMessage(exception as JSONObject))
+                assertEquals(SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND).getInternalErrorMessage(),getErrorMessage(exception as JSONObject))
             }
 
         })
@@ -372,8 +371,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.RECORDS_KEY_NOT_FOUND.getMessage())
+                val skyflowError= SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
+                    skyflowError.getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -398,8 +398,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals((exception as SkyflowError).message,
-                    SkyflowErrorCode.INVALID_RECORDS.getMessage())
+                val skyflowError = SkyflowError( SkyflowErrorCode.INVALID_RECORDS)
+                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage(),
+                   skyflowError.getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -424,8 +425,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.MISSING_TABLE.getMessage())
+                val skyflowError = SkyflowError( SkyflowErrorCode.MISSING_TABLE_KEY, params = arrayOf())
+                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
+                   skyflowError.getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -452,7 +454,7 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).getErrorMessage(),SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME).getErrorMessage())
+                assertEquals((exception as SkyflowError).getInternalErrorMessage(),SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME).getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -479,8 +481,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.EMPTY_TABLE_NAME.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
+                        skyflowError.getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -507,8 +510,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals((exception as SkyflowError).message.toString(),
-                    SkyflowErrorCode.EMPTY_COLUMN_NAME.getMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY)
+                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
+                    skyflowError.getInternalErrorMessage())
             }
 
         },LogLevel.ERROR)
@@ -564,13 +568,6 @@ class UnitTests {
         assertTrue(!isValid)
     }
 
-    @Test
-    fun testConstructError()
-    {
-        val error = Exception("Not found")
-        val constructedError = Utils.constructError(error,404)
-        assertEquals(error.message,getErrorMessage(constructedError))
-    }
 
 
     @Test
@@ -590,21 +587,7 @@ class UnitTests {
         })
     }
 
-    @Test
-    fun testBearerTokenFunctionFailed() // invalid token
-    {
-        val client = APIClient("1234","https://vaulturl.com",APITokenProviderForFail(),LogLevel.ERROR)
-        client.getAccessToken(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
 
-            override fun onFailure(exception: Any) {
-                assertEquals("bearer token is invalid or expired",(exception as SkyflowError).getErrorMessage())
-            }
-
-        })
-    }
 
 
 
@@ -630,8 +613,8 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         })
@@ -654,8 +637,8 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         })
@@ -677,8 +660,8 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(skyflowConfiguration.vaultURL))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         })
@@ -731,9 +714,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         }, InsertOptions())
@@ -759,9 +742,9 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         }, InsertOptions())
@@ -785,8 +768,8 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
-                    (exception as SkyflowError).getErrorMessage())
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage())
             }
 
         })
@@ -850,16 +833,16 @@ class UnitTests {
     {
         val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
         val logger = Logger()
-        Logger.debug("debug",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.error("error",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.info("info",skyflowError.getErrorMessage(),LogLevel.DEBUG)
-        Logger.warn("warn",skyflowError.getErrorMessage(),LogLevel.DEBUG)
+        Logger.debug("debug",skyflowError.getInternalErrorMessage(),LogLevel.DEBUG)
+        Logger.error("error",skyflowError.getInternalErrorMessage(),LogLevel.DEBUG)
+        Logger.info("info",skyflowError.getInternalErrorMessage(),LogLevel.DEBUG)
+        Logger.warn("warn",skyflowError.getInternalErrorMessage(),LogLevel.DEBUG)
     }
 
     @Test
     fun testCardType()
     {
-        val newCard = Card("new card","[123]", intArrayOf(12,13,14,15),"{}",3,"cvv", R.drawable.ic_emptycard)
+        val newCard = Card("new card","[123]", intArrayOf(12,13,14,15), intArrayOf(4,8,12,16),3,"cvv", R.drawable.ic_emptycard)
         val card = CardType.AMEX
         assertTrue(newCard.cardLength.contains(12))
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)
@@ -930,7 +913,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
                 Assert.assertEquals(UnitTests.getErrorMessage(exception as JSONObject),
-                    skyflowError.getErrorMessage())
+                    skyflowError.getInternalErrorMessage())
             }
 
         })
@@ -956,7 +939,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
                 Assert.assertEquals(UnitTests.getErrorMessage(exception as JSONObject),
-                    skyflowError.getErrorMessage())
+                    skyflowError.getInternalErrorMessage())
             }
 
         })
@@ -982,7 +965,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
                 Assert.assertEquals(UnitTests.getErrorMessage(exception as JSONObject),
-                    skyflowError.getErrorMessage())
+                    skyflowError.getInternalErrorMessage())
             }
 
         })
@@ -1017,7 +1000,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_IDS)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1051,7 +1034,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1087,7 +1070,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1119,7 +1102,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1152,7 +1135,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1185,8 +1168,8 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.TABLE_KEY_ERROR)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1219,7 +1202,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1256,7 +1239,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1293,7 +1276,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1328,8 +1311,8 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_NAME)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1365,7 +1348,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL,params = arrayOf(configuration.vaultURL))
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1401,7 +1384,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1437,7 +1420,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(skyflowError.getErrorMessage(),
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
@@ -1558,6 +1541,15 @@ class UnitTests {
         element.clearFocus()
     }
 
+
+
+    @Test
+    fun testConstructError()
+    {
+        val error = Exception("Not found")
+        val constructedError = Utils.constructError(error,404)
+        assertEquals(error.message,getErrorMessage(constructedError))
+    }
     @Test
     fun testCardTypeClass()
     {
@@ -1580,12 +1572,32 @@ class UnitTests {
         assertTrue(cardtype.image.equals(R.drawable.ic_emptycard))
 
     }
+    @Test
+    fun testBearerTokenFunctionFailed() // invalid token
+    {
+        val client = APIClient("1234","https://vaulturl.com",APITokenProviderForFail(),LogLevel.ERROR)
+        client.getAccessToken(object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val errorMessage = "bearer token is invalid or expired"
+                assertEquals(errorMessage,(exception as SkyflowError).getInternalErrorMessage())
+            }
+
+        })
+    }
     companion object
     {
         fun getErrorMessage(error: JSONObject): String {
             val errors = error.getJSONArray("errors")
             val skyflowError = errors.getJSONObject(0).get("error") as SkyflowError
-            return skyflowError.message
+            val message = skyflowError.getInternalErrorMessage()
+            if(message.indexOf("-") !=-1)
+                return message.substring(message.indexOf("-")+2)
+            else
+                return message
         }
     }
 }

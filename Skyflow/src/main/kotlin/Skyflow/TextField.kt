@@ -26,10 +26,12 @@ import org.json.JSONObject
 import kotlin.String
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
+import android.util.Log
+import android.util.Log.w
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
-import java.lang.annotation.ElementType
+import java.util.*
 
 
 @Suppress("DEPRECATION")
@@ -55,23 +57,30 @@ class TextField @JvmOverloads constructor(
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
     internal var expiryDateFormat = "mm/yy"
     private var userError : String = ""
+    private  val tag = TextField::class.qualifiedName
     override fun getValue() : String {
         return actualValue
     }
 
     override fun validate() : SkyflowValidationError {
-        val str = inputField.text.toString()
+        val str = getValue()
         if(userError.isNotEmpty()){
             return userError
         }
-        val builtinValidationError = SkyflowValidator.validate(str,validationRules)
-        if(builtinValidationError.equals(""))
+        var builtinValidationError = ""
+        if(isRequired && str.isEmpty()){
+            builtinValidationError = "value is empty\n"
+            setErrorText("value is required")
+            return builtinValidationError
+        }
+        builtinValidationError += SkyflowValidator.validate(str,validationRules)
+        if(builtinValidationError == "")
         {
             return if(collectInput.validations.rules.isEmpty())
                 ""
             else {
                 val customValidationError = SkyflowValidator.validate(str,collectInput.validations)
-                if(customValidationError.equals(""))
+                if(customValidationError == "")
                     ""
                 else {
                     setErrorText(customValidationError)
@@ -108,7 +117,7 @@ class TextField @JvmOverloads constructor(
         label.textSize = 16F
         label.setPadding(labelPadding.left,labelPadding.top,labelPadding.right,labelPadding.bottom)
         label.setTextColor(collectInput.labelStyles.base.textColor)
-        if(!collectInput.labelStyles.base.font.equals(Typeface.NORMAL))
+        if(collectInput.labelStyles.base.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context,collectInput.labelStyles.base.font)
         label.gravity = collectInput.labelStyles.base.textAlignment
 
@@ -144,14 +153,20 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun changeExpireDateValidations() {
+        validationRules.rules.clear()
         val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
-        if(expireDateList.contains(options.expiryDateFormat.toLowerCase()))
+        if(expireDateList.contains(options.format.toLowerCase()))
         {
-            expiryDateFormat = options.expiryDateFormat
-            validationRules.rules.clear()
+            expiryDateFormat = options.format.toLowerCase()
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
 
         }
+        else {
+            Log.w(tag,"invalid format for EXPIRATION_DATE")
+            Log.w(tag,"Using default format mm/yy for EXPIRATION_DATE")
+            validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
+        }
+
     }
 
     private fun buildError()
@@ -186,6 +201,10 @@ class TextField @JvmOverloads constructor(
         addView(label)
         addView(inputField)
         addView(error)
+//        error.visibility = INVISIBLE
+        if(userError.isNotEmpty()){
+            invalidTextField()
+        }
     }
 
     private fun setListenersForText() {
@@ -219,7 +238,7 @@ class TextField @JvmOverloads constructor(
         }.also { inputField.onFocusChangeListener = it }
 
     }
-    internal fun changeCardIcon(cardtype:CardType)
+    private fun changeCardIcon(cardtype:CardType)
     {
             inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
             inputField.compoundDrawablePadding = 8
@@ -259,7 +278,7 @@ class TextField @JvmOverloads constructor(
         label.gravity = collectInput.labelStyles.base.textAlignment
 
         val internalState = this.state.getInternalState()
-        if(internalState["isEmpty"] as Boolean) {
+        if(internalState["isEmpty"] as Boolean && !isRequired) {
             emptyTextField()
         } else if(!(internalState["isValid"] as Boolean)) {
             invalidTextField()
@@ -272,6 +291,7 @@ class TextField @JvmOverloads constructor(
 
     private fun validTextField()
     {
+        error.visibility = INVISIBLE
         val inputFieldPadding = collectInput.inputStyles.complete.padding
         inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
         inputField.setTextColor(collectInput.inputStyles.complete.textColor)
@@ -283,7 +303,7 @@ class TextField @JvmOverloads constructor(
             inputField.typeface = ResourcesCompat.getFont(context,collectInput.inputStyles.complete.font)
     }
 
-    private fun invalidTextField()
+    internal fun invalidTextField()
     {
         val inputFieldPadding = collectInput.inputStyles.invalid.padding
         inputField.setPadding(inputFieldPadding.left,inputFieldPadding.top,inputFieldPadding.right,inputFieldPadding.bottom)
@@ -353,13 +373,17 @@ class TextField @JvmOverloads constructor(
             val cardtype = CardType.forCardNumber(inputField.text.toString().replace(" ",  "").replace("-",""))
             if(options.enableCardIcon)
                 changeCardIcon(cardtype)
-            addSpaceSpanToCardNumber(s,cardtype.getSpaceIndices())
+            val filterArray = arrayOfNulls<InputFilter>(1)
+            filterArray[0] = LengthFilter(cardtype.cardLength.get(cardtype.cardLength.size-1))
+            inputField.setFilters(filterArray)
+            addSpaceSpanToCardNumber(s,cardtype.formatPattern)
         }
         else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
         {
             addSlashspanToExpiryDate(s,expiryDateFormat)
         }
     }
+
     internal fun setErrorText(error: String)
     {
         this.error.text = error
@@ -384,14 +408,7 @@ class TextField @JvmOverloads constructor(
         state = StateforText(this)
         val internalState = state.getInternalState()
         setErrorText(internalState["validationError"].toString())
-        if(internalState["isValid"] as Boolean)
-        {
-            validTextField()
-        }
-        else
-        {
-            invalidTextField()
-        }
+        validTextField()
     }
 
     internal fun getErrorText():String

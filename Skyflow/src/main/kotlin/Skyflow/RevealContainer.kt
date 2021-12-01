@@ -16,6 +16,7 @@ import java.lang.Exception
 
 class RevealContainer: ContainerProtocol
 {
+    private val tag = RevealContainer::class.qualifiedName
 }
 
 private val tag = RevealContainer::class.qualifiedName
@@ -40,7 +41,7 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
         else if(apiClient.vaultId.isEmpty())
         {
 
-            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+            val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
             throw error
         }
         else {

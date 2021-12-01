@@ -33,7 +33,7 @@ class Label @JvmOverloads constructor(
         this.revealInput = revealInput
         this.options = options
         padding = revealInput.inputStyles.base.padding
-        if(this.revealInput.token.equals("null") || this.revealInput.token.equals(null))
+        if(this.revealInput.token.equals(null))
         {
             isTokenNull = true
             this.revealInput.token = ""
