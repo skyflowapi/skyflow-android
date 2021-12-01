@@ -26,6 +26,8 @@ import org.json.JSONObject
 import kotlin.String
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
+import android.util.Log
+import android.util.Log.w
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
@@ -55,6 +57,7 @@ class TextField @JvmOverloads constructor(
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
     internal var expiryDateFormat = "mm/yy"
     private var userError : String = ""
+    private  val tag = TextField::class.qualifiedName
     override fun getValue() : String {
         return actualValue
     }
@@ -158,8 +161,11 @@ class TextField @JvmOverloads constructor(
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
 
         }
-        else
+        else {
+            Log.w(tag,"invalid format for EXPIRATION_DATE")
+            Log.w(tag,"Using default format mm/yy for EXPIRATION_DATE")
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
+        }
 
     }
 

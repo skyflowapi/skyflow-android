@@ -842,7 +842,7 @@ class UnitTests {
     @Test
     fun testCardType()
     {
-        val newCard = Card("new card","[123]", intArrayOf(12,13,14,15),"{}",3,"cvv", R.drawable.ic_emptycard)
+        val newCard = Card("new card","[123]", intArrayOf(12,13,14,15), intArrayOf(4,8,12,16),3,"cvv", R.drawable.ic_emptycard)
         val card = CardType.AMEX
         assertTrue(newCard.cardLength.contains(12))
         assertEquals(CardType.forCardNumber("4111111111111111"),CardType.VISA)

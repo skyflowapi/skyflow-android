@@ -74,11 +74,6 @@ enum class SkyflowElementType {
                     RegexMatchRule("^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
                     SkyflowValidationErrorType.pattern.rawValue)
                 )
-                rules.add(
-                    SkyflowValidateExpireDate(
-                        SkyflowValidationErrorType.expireDate.rawValue
-                    )
-                )
                 return Type(
                     "##/##", "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
                     rules, InputType.TYPE_CLASS_DATETIME
