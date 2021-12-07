@@ -8,7 +8,7 @@ import org.json.JSONObject
 
 open class Element @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
-) : BaseElement(context, attrs, defStyleAttr)   {
+) : LinearLayout(context, attrs, defStyleAttr)   {
 
     internal var isRequired: Boolean = false
     internal var columnName: String  = ""
@@ -42,15 +42,8 @@ open class Element @JvmOverloads constructor(
         return ""
     }
 
-    override fun getValue(): String {
+    internal open fun getValue() : String {
         return ""
     }
 
-    override fun setError(error: String) {
-
-    }
-
-    override fun resetError() {
-
-    }
 }

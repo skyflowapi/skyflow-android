@@ -5,7 +5,7 @@ import Skyflow.utils.Utils
 
 
 
-class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNKNOWN_ERROR, val tag : String? = "", logLevel: LogLevel = LogLevel.ERROR, params: Array<String?> = arrayOf()) : Exception(skyflowErrorCode.getMessage()) {
+class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNKNOWN_ERROR, val tag : String? = "", logLevel: LogLevel? = null, params: Array<String?> = arrayOf()) : Exception(skyflowErrorCode.getMessage()) {
 
     override var message = ""
     internal var internalMessage = ""
@@ -13,7 +13,8 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
 
     init {
         val logMessage =  Utils.constructMessage(skyflowErrorCode.getMessage(), *params)
-        Logger.error(tag, logMessage, logLevel)
+        if(logLevel != null)
+            Logger.error(tag, logMessage, logLevel)
         this.internalMessage = logMessage
         this.message = "Interface : $tag - $logMessage"
     }
