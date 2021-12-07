@@ -87,7 +87,7 @@ class ValidationTests{
     @Test
     fun testValidateExpiryDate()
     {
-        val match = SkyflowValidateExpirationDate("failed")
+        val match = SkyflowValidateExpireDate("MM/YY","failed")
         val failedInput = "1111" //not in expire date format
         val failedInputWithAlphabets = "xy/xz" //no digits
         val failedInput2 = "11/20"
@@ -115,9 +115,5 @@ class ValidationTests{
         val confirmPin = container.create(activity,collectInput1) as? TextField
         confirmPin!!.inputField.setText("11111")
         assertEquals("not matched",confirmPin.validate())
-
-        confirmPin.inputField.setText("4111111")
-        confirmPin.state = StateforText(confirmPin)
-        assertTrue(confirmPin.validate().isEmpty())
     }
 }

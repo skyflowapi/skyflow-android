@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2021-12-01
+
+## [1.8.0] - 2021-12-07
+
+### Added
+- `setError(error : String)` method to set custom UI error to be displayed on the collect and reveal Elements
+- `resetError()` method is used to clear the custom UI error message set through setError 
+- `format` parameter in collectElementOptions to support different type of date formats for EXPIRATION_DATE element
+- `setValue(value: String)` and `clearValue()` method in DEV env, to set/clear the value of a collect element.
+- `setToken(value: String)` method to set the token for a reveal element.
+- `setAltText(value: String)` and `clearAltText()` method to set/clear the altText for a reveal 
+
+### Changed
+- Changed error messages in the logs and callback errors.
+- altText support has been deprecated for collect element
+- vaultId and vaultURL are now optional parameters in Configuration constructor
+
+### Fixed
+- Updating UI error messages
+
 ## [1.7.0] - 2021-11-24
 
 ### Added

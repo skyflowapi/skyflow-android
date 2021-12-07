@@ -7,7 +7,7 @@ import java.util.*
 /**
 Validate input in scope of length.
  */
-internal class SkyflowValidateExpirationDate(override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
+internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override var error: SkyflowValidationError = "INVALID_EXPIRE_DATE") : ValidationRule,SkyflowInternalValidationProtocol {
 
 
     private var mCalendar: Calendar =  Calendar.getInstance()
@@ -22,21 +22,31 @@ internal class SkyflowValidateExpirationDate(override var error: SkyflowValidati
         }
         val monthChars : Int
         val yearChars : Int
-        if(text.length == 5){
+        if(format.contains("yyyy")){
+            monthChars = SkyflowExpireDateFormat.LONGYEAR.monthCharacters
+            yearChars = SkyflowExpireDateFormat.LONGYEAR.yearCharacters
+
+
+        }else if(format.contains("yy")){
             monthChars = SkyflowExpireDateFormat.SHORTYEAR.monthCharacters
             yearChars = SkyflowExpireDateFormat.SHORTYEAR.yearCharacters
-
-        }else if(text.length == 7){
-             monthChars = SkyflowExpireDateFormat.LONGYEAR.monthCharacters
-            yearChars = SkyflowExpireDateFormat.LONGYEAR.yearCharacters
         }else{
             return false
         }
 
         if (text.length != monthChars + yearChars + 1)  { return false }
-        val monthString = text.substring(0,monthChars)
-        val yearString = text.substring(text.length-yearChars,text.length)
 
+        var monthString = ""
+        var yearString = ""
+        if(format.toLowerCase().startsWith("m")) {
+             monthString = text.substring(0, monthChars)
+             yearString = text.substring(text.length - yearChars, text.length)
+        }
+        else
+        {
+             yearString = text.substring(0,yearChars)
+             monthString = text.substring(text.length-monthChars,text.length)
+        }
         if (TextUtils.isEmpty(monthString)) {
             return false
         }

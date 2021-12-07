@@ -23,9 +23,9 @@ class ConnectionApiCallback(
     override fun onSuccess(responseBody: Any) {
         try{
             //adding path params
-            val connectionUrl = Utils.addPathparamsToURL(connectionConfig.connectionURL,
+            val connectionUrl = Utils.addPathParamsToURL(connectionConfig.connectionURL,
                 connectionConfig.pathParams,callback, logLevel)
-            if(connectionUrl.equals(""))
+            if(connectionUrl == "")
                 return
             val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
             if(requestUrlBuilder == null){
@@ -35,8 +35,8 @@ class ConnectionApiCallback(
                 return
             }
             //creating url with query params
-            val isQueryparamsAdded = Utils.addQueryParams(requestUrlBuilder,connectionConfig,callback, logLevel)
-            if(!isQueryparamsAdded)
+            val isQueryParamAdded = Utils.addQueryParams(requestUrlBuilder,connectionConfig,callback, logLevel)
+            if(!isQueryParamAdded)
                 return
             val requestUrl = requestUrlBuilder.build()
 
