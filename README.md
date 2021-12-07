@@ -34,7 +34,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the Github package registry to your root project build.gradle file
 
   ```java
-  def githubProperties = new Properties() githubProperties.load(new FileInputStream(rootProject.file(“github.properties”)))
+  def githubProperties = new Properties() githubProperties.load(new FileInputStream(file(“github.properties”)))
   allprojects {
      repositories {
 	    ...
