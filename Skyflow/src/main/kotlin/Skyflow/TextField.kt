@@ -40,7 +40,7 @@ class TextField @JvmOverloads constructor(
     val optionsForLogging: Options,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : Skyflow.Element(context, attrs, defStyleAttr){
+) : Skyflow.Element(context, attrs, defStyleAttr),BaseElement{
 
     internal var label = TextView(context)
     internal var inputField = EditText(context)
@@ -125,12 +125,6 @@ class TextField @JvmOverloads constructor(
 
     private fun buildTextField()
     {
-        if(collectInput.altText.isNotEmpty() || collectInput.altText != "")
-        {
-            inputField.setText(collectInput.altText)
-        }
-        else
-            inputField.setText("")
         state = StateforText(this)
         border.setColor(Color.WHITE)
         border.setStroke(collectInput.inputStyles.base.borderWidth,collectInput.inputStyles.base.borderColor)
@@ -411,9 +405,39 @@ class TextField @JvmOverloads constructor(
         validTextField()
     }
 
+    internal fun setText(value:String)
+    {
+        this.inputField.setText(value)
+    }
+
     internal fun getErrorText():String
     {
         return error.text.toString()
+    }
+
+    fun setValue(value:String){
+        if(optionsForLogging.env == Env.DEV)
+        {
+            actualValue = value
+            setText(value)
+        }
+        else
+        {
+            Log.w(tag,"setValue can be called only in dev mode")
+        }
+    }
+
+    fun clearValue()
+    {
+        if(optionsForLogging.env == Env.DEV)
+        {
+            actualValue = ""
+            setText("")
+        }
+        else
+        {
+            Log.w(tag,"clearValue can be called only in dev mode")
+        }
     }
 
 }

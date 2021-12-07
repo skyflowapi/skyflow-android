@@ -14,7 +14,7 @@ import androidx.core.content.res.ResourcesCompat
 @Suppress("DEPRECATION")
 class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
-) : BaseElement(context, attrs, defStyleAttr) {
+) : LinearLayout(context, attrs, defStyleAttr),BaseElement {
 
     internal  var actualValue: String =""
     internal var label = TextView(context)
@@ -55,13 +55,7 @@ class Label @JvmOverloads constructor(
     }
 
     private fun buildPlaceholder() {
-        if(revealInput.altText.isEmpty() || revealInput.altText == "")
-        {
-            placeholder.text = revealInput.token
-        }
-        else
-            placeholder.text = revealInput.altText
-
+        setText()
         if(revealInput.inputStyles.base.font != Typeface.NORMAL)
              placeholder.typeface = ResourcesCompat.getFont(context,revealInput.inputStyles.base.font)
         placeholder.textSize = 20f
@@ -99,7 +93,7 @@ class Label @JvmOverloads constructor(
         this.error.text = error
     }
 
-    override fun getValue(): String {
+    internal fun getValue(): String {
         return actualValue
     }
     override fun setError(error: String) {
@@ -160,4 +154,34 @@ class Label @JvmOverloads constructor(
     {
         return this.error.text.toString()
     }
+
+    fun setToken(token : String)
+    {
+        this.revealInput.token = token
+        setText()
+    }
+    fun setAltText(altText:String)
+    {
+        this.revealInput.altText = altText
+        setText()
+
+    }
+
+    fun clearAltText()
+    {
+        this.revealInput.altText = ""
+        if(this.actualValue.isEmpty())
+            setText()
+    }
+
+    private fun setText()
+    {
+        if(revealInput.altText.isEmpty() || revealInput.altText == "")
+        {
+            placeholder.text = revealInput.token
+        }
+        else
+            placeholder.text = revealInput.altText
+    }
+
 }
