@@ -52,7 +52,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.7.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.8.0'
   ```
 
 ### Using maven
@@ -80,7 +80,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.7.0</version>
+   <version>1.8.0</version>
 </dependency>
 ```
 
@@ -191,6 +191,7 @@ For `env` parameter, there are 2 accepted values in Skyflow.Env
 -  [**Inserting data into the vault**](#inserting-data-into-the-vault)
 -  [**Using Skyflow Elements to collect data**](#using-skyflow-elements-to-collect-data)
 -  [**Event Listener on Collect Elements**](#event-listener-on-collect-elements)
+- [**UI Error for Collect Eements**](#ui-error-for-collect-elements)
 
 ## Inserting data into the vault
 
@@ -339,6 +340,28 @@ Finally, the `type` field takes a Skyflow ElementType. Each type applies the app
 
 The `INPUT_FIELD` type is a custom UI element without any built-in validations. See the section on [`validations`](#validations) for more information on validations.
 
+Along with `CollectElementInput` we can define other options which are optional inside the `CollectElementOptions` object which is described below.
+
+```kt
+Skyflow.CollectElementOptions(
+  required: Boolean, //indicates whether the field is marked as required. Defaults to 'false'
+  enableCardIcon: Boolean, //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
+  format: String //Format for the element (only applicable currently for "EXPIRATION_DATE")
+)
+```
+	
+`required` parameter indicates whether the field is marked as required or not, if not provided, it defaults to `false`
+
+`enableCardIcon` paramenter indicates whether the icon is visible for the `CARD_NUMBER` element, defaults to `true`
+
+`format` parameter takes string value and indicates the format pattern applicable to the element type, It's currently only applicable to `EXPIRATION_DATE` element type, the values that are accepted are
+  - mm/yy
+  - mm/yyyy
+  - yy/mm
+  - yyyy/mm
+
+`NOTE`: If not specified or invalid value is passed to the `format` for `EXPIRATION_DATE` element, then it defaults to `mm/yy` format.
+
 Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
 the `context` param takes android `Context` object as described below:
 
@@ -359,6 +382,7 @@ val collectElementInput =  Skyflow.CollectElementInput(
 val collectElementOptions = Skyflow.CollectElementOptions(
             required: false,  //indicates whether the field is marked as required. Defaults to 'false'
             enableCardIcon: true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
+            format: "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
                                       )  
 
 const element = container.create(context = Context, collectElementInput, collectElementOptions)
@@ -564,7 +588,7 @@ addView(confirmPassword)
 ### Event Listener on Collect Elements
 
 
-Helps to communicate with skyflow elements / iframes by listening to an event
+Helps to communicate with skyflow elements by listening to an event
 
 ```kt
 element.on(eventName: Skyflow.EventName) { state ->
@@ -640,10 +664,47 @@ cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
 }
 ```
 
+### UI Error for Collect Elements
+
+Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
+
+`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
+
+`resetError()` method is used to clear the custom error message that is set using `setError`.
+
+##### Sample code snippet for setError and resetError
+
+```kt
+//create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
+
+val skyflowClient = Skyflow.initialize(config)
+
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
+ 
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+    table = "cards",
+    column = "cardNumber",
+    type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardNumber = container.create(input = cardNumberInput)
+
+//Set custom error
+cardNumber.setError("custom error")
+
+//reset custom error
+cardNumber.resetError()
+}
+```
+
+
 ---
 # Securely revealing data client-side
 -  [**Retrieving data from the vault**](#retrieving-data-from-the-vault)
 -  [**Using Skyflow Elements to reveal data**](#using-skyflow-elements-to-reveal-data)
+- [**UI Error for Reveal Elements**](#ui-error-for-reveal-elements)
 
 ## Retrieving data from the vault
 For non-PCI use-cases, retrieving data from the vault and revealing it in the mobile can be done either using the SkyflowID's or tokens as described below
@@ -835,6 +896,14 @@ val revealCallback = RevealCallback()  //Custom callback - implementation of Sky
 container.reveal(callback = revealCallback)
 ```
 
+### UI Error for Reveal Elements
+
+Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
+
+`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
+
+`resetError()` method is used to clear the custom error message that is set using `setError`.
+
 ### End to end example of revealing data with Skyflow Elements
 #### Sample Code:
 ```kt
@@ -877,6 +946,12 @@ val cvvInput = Skyflow.RevealElementInput(
 )
 
 val cvvElement = container.create(context = Context,input = cvvInput)
+
+//set error to the element
+cvvElement.setError("custom error")
+
+//reset error to the element
+cvvElement.resetError()
 
 //Can interact with these objects as a normal UIView Object and add to View
 
