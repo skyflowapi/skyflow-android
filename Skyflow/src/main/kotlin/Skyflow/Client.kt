@@ -199,6 +199,9 @@ class Client internal constructor(
         {
             callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,tag,configuration.options.logLevel, params = arrayOf(soapConnectionConfig.connectionURL)))
         }
+        else if(soapConnectionConfig.requestXML.isEmpty()){
+            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_REQUEST_XML,tag,configuration.options.logLevel))
+        }
         else if(soapConnectionConfig.requestXML.isNotEmpty() && !Utils.isValidXML(soapConnectionConfig.requestXML))
         {
             callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML,tag,configuration.options.logLevel))

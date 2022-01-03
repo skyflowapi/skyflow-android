@@ -72,7 +72,8 @@ enum class SkyflowErrorCode(val code:Int, var message:String)
     EMPTY_ID_IN_REQUEST_XML(400,Messages.EMPTY_ID_IN_REQUEST_XML.message),
     INVALID_ID_IN_RESPONSE_XML(400,Messages.INVALID_ID_IN_RESPONSE_XML.message),
     EMPTY_ID_IN_RESPONSE_XML(400,Messages.EMPTY_ID_IN_RESPONSE_XML.message),
-    DUPLICATE_ID_IN_RESPONSE_XML(400,Messages.DUPLICATE_ID_IN_RESPONSE_XML.message);
+    DUPLICATE_ID_IN_RESPONSE_XML(400,Messages.DUPLICATE_ID_IN_RESPONSE_XML.message),
+    EMPTY_REQUEST_XML(400,Messages.EMPTY_REQUEST_XML.message);
 
 
     @JvmName("getCode1")

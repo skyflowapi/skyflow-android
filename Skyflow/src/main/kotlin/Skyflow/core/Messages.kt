@@ -106,6 +106,7 @@ enum class Messages(val message: String) {
     MISSING_COLUMN("element with type %s - Column key cannot be empty."),
     EMPTY_FIELDS("fields key cannot be empty"),
     SERVER_ERROR("Server error %s"),
+    EMPTY_REQUEST_XML("RequestXML is empty"),
     INVALID_REQUEST_XML("Invalid RequestXML in SoapConnection"),
     INVALID_RESPONSE_XML("Invalid ResponseXML in SoapConnection"),
     INVALID_ID_IN_REQUEST_XML("Invalid elementId %s present in RequestXML"),
