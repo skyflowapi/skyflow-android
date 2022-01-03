@@ -7,8 +7,10 @@ import Skyflow.reveal.GetByIdRecord
 import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealByIdCallback
 import Skyflow.reveal.RevealRequestRecord
+import Skyflow.soap.SoapApiCallback
+import Skyflow.soap.SoapConnectionConfig
+import Skyflow.soap.SoapValueCallback
 import Skyflow.utils.Utils
-import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -180,5 +182,16 @@ class APIClient (
         }
         else
             return
+    }
+
+    fun invokeSoapConnection(
+        soapConnectionConfig: SoapConnectionConfig,
+        client: Client,
+        callback: Callback
+    )
+    {
+        val soapValueCallback = SoapValueCallback(client,soapConnectionConfig,callback,logLevel)
+        val connection = SoapApiCallback(soapConnectionConfig,soapValueCallback, logLevel,client)
+        this.getAccessToken(connection)
     }
 }

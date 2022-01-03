@@ -26,7 +26,11 @@ class Label @JvmOverloads constructor(
     internal var border = GradientDrawable()
     internal var isTokenNull = false
     internal var isError = false
+    internal var uuid = ""
 
+    fun getID(): String{
+        return uuid
+    }
     @SuppressLint("NewApi", "WrongConstant")
     internal fun setupField(revealInput: RevealElementInput, options: RevealElementOptions)
     {
@@ -182,6 +186,11 @@ class Label @JvmOverloads constructor(
         }
         else
             placeholder.text = revealInput.altText
+    }
+
+    internal fun setText(t:String)
+    {
+        this.placeholder.text = t
     }
 
 }

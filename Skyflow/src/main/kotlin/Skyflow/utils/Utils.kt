@@ -7,6 +7,11 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import org.xml.sax.InputSource
+import java.io.StringReader
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 
 class Utils {
@@ -316,7 +321,7 @@ class Utils {
             url: String,
             params: JSONObject,
             callback: Callback,
-            logLevel: LogLevel
+            logLevel: LogLevel,
         ) : String
         {
             try {
@@ -389,7 +394,7 @@ class Utils {
             requestUrlBuilder: HttpUrl.Builder,
             connectionConfig: ConnectionConfig,
             callback: Callback,
-            logLevel: LogLevel
+            logLevel: LogLevel,
         ): Boolean {
             val queryParams = (connectionConfig.queryParams).names()
             if(queryParams != null) {
@@ -423,7 +428,7 @@ class Utils {
             requestUrlBuilder: HttpUrl.Builder,
             key: String,
             callback: Callback,
-            logLevel: LogLevel
+            logLevel: LogLevel,
         ): Boolean
         {
 
@@ -478,8 +483,9 @@ class Utils {
 
 
         //adding requestHeader for connection url
-        fun addRequestHeader(request: Request.Builder, connectionConfig: ConnectionConfig,
-                             callback: Callback, logLevel: LogLevel
+        fun addRequestHeader(
+            request: Request.Builder, connectionConfig: ConnectionConfig,
+            callback: Callback, logLevel: LogLevel,
         ): Boolean {
             val headers = (connectionConfig.requestHeader as JSONObject).names()
             if (headers != null) {
@@ -508,7 +514,7 @@ class Utils {
             records: JSONObject,
             options: InsertOptions,
             callback: Callback,
-            logLevel: LogLevel
+            logLevel: LogLevel,
         ) : JSONObject{
             val postPayload:MutableList<Any> = mutableListOf()
             val insertTokenPayload:MutableList<Any> = mutableListOf()
@@ -678,7 +684,7 @@ class Utils {
         // checking duplicate fields present in responseBody of connectionConfig
         fun  checkDuplicateInResponseBody(
             responseBody: JSONObject,
-            callback: Callback, elementList: HashSet<String>, logLevel: LogLevel
+            callback: Callback, elementList: HashSet<String>, logLevel: LogLevel,
         ) : Boolean
         {
             val keys = responseBody.names()
@@ -773,7 +779,29 @@ class Utils {
             errors.put(error)
             finalError.put("errors",errors)
             return finalError
-        } }
+        }
+        fun isValidXML(s:String) : Boolean
+        {
+            try {
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(
+                    StringReader(s)));
+            } catch (e:Exception) {
+                return false
+            }
+            return true
+        }
+
+        fun findMatches(regex:String,text:String) : MutableList<String> {
+            val allMatches: MutableList<String> = ArrayList()
+            val m: Matcher = Pattern.compile(regex)
+                .matcher(text)
+            while (m.find()) {
+                allMatches.add(m.group())
+            }
+            return allMatches
+        }
+    }
+
 
 
 }

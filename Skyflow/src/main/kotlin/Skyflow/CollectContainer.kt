@@ -8,6 +8,7 @@ import Skyflow.utils.Utils
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
+import java.util.*
 
 
 open class CollectContainer : ContainerProtocol {
@@ -23,24 +24,27 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
     val collectElement = TextField(context, configuration.options)
     collectElement.setupField(input,options)
     elements.add(collectElement)
+    val uuid = UUID.randomUUID().toString()
+    client.elementMap.put(uuid,collectElement)
+    collectElement.uuid = uuid
     return collectElement
 }
 
 fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
     
-    if(apiClient.vaultURL.isEmpty() || apiClient.vaultURL == "/v1/vaults/")
+    if(client.apiClient.vaultURL.isEmpty() || client.apiClient.vaultURL == "/v1/vaults/")
     {
         val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
         callback.onFailure(error)
     }
-    else if(apiClient.vaultId.isEmpty())
+    else if(client.apiClient.vaultId.isEmpty())
     {
         val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
         callback.onFailure(error)
     }
     else {
 
-        val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+        val isUrlValid = Utils.checkUrl(client.apiClient.vaultURL)
         if (isUrlValid) {
             var errors = ""
             Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
@@ -89,10 +93,10 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
                 callback, configuration.options.logLevel)
             if (records.isNotEmpty() || records != "") {
                 val insertOptions = InsertOptions(options.token)
-                this.apiClient.post(JSONObject(records), callback, insertOptions)
+                this.client.apiClient.post(JSONObject(records), callback, insertOptions)
             }
         } else {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(apiClient.vaultURL))
+            val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(client.apiClient.vaultURL))
             callback.onFailure(error)
         }
     }

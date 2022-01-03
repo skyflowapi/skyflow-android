@@ -13,6 +13,7 @@ import Skyflow.utils.Utils.Companion.checkIfElementsMounted
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
+import java.util.*
 
 class RevealContainer: ContainerProtocol
 {
@@ -27,18 +28,21 @@ fun Container<RevealContainer>.create(context: Context, input : RevealElementInp
     val revealElement = Label(context)
     revealElement.setupField(input,options)
     revealElements.add(revealElement)
+    val uuid = UUID.randomUUID().toString()
+    client.elementMap.put(uuid,revealElement)
+    revealElement.uuid = uuid
     return revealElement
 }
 
 fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions? = RevealOptions())
 {
     try {
-        if(apiClient.vaultURL.isEmpty() || apiClient.vaultURL == "/v1/vaults/")
+        if(client.apiClient.vaultURL.isEmpty() || client.apiClient.vaultURL == "/v1/vaults/")
         {
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
             throw error
         }
-        else if(apiClient.vaultId.isEmpty())
+        else if(client.apiClient.vaultId.isEmpty())
         {
 
             val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
@@ -64,16 +68,16 @@ fun Container<RevealContainer>.reveal(callback: Callback, options: RevealOptions
                 }
 
             }
-            val isUrlValid = Utils.checkUrl(apiClient.vaultURL)
+            val isUrlValid = Utils.checkUrl(client.apiClient.vaultURL)
             if (isUrlValid) {
                     Logger.info(tag, Messages.VALIDATE_REVEAL_RECORDS.getMessage(), configuration.options.logLevel)
                     val revealValueCallback = RevealValueCallback(callback, this.revealElements)
                     val records =
                         JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
-                    this.apiClient.get(records, revealValueCallback)
+                    this.client.apiClient.get(records, revealValueCallback)
 
             } else {
-                val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(apiClient.vaultURL))
+                val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(client.apiClient.vaultURL))
                 throw error
             }
         }
