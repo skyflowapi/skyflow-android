@@ -27,11 +27,16 @@ class SoapValueCallback(
 ) : Callback {
 	private val tag = SoapValueCallback::class.qualifiedName
 	override fun onSuccess(responseBody: Any) {
-		val document = doResponse(responseBody.toString())
-		if(document == null){
-			return
+		try {
+			val document = doResponse(responseBody.toString())
+			if (document == null) {
+				return
+			}
+			callback.onSuccess(getXmlFromDocument(document))
 		}
-		callback.onSuccess(getXmlFromDocument(document))
+		catch (e:Exception){
+			callback.onFailure(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString())))
+		}
 	}
 
 	override fun onFailure(exception: Any) {
@@ -56,20 +61,6 @@ class SoapValueCallback(
 		constructLookup(userXmlDocument.documentElement,"")
 		lookup.forEach{
 			parseActualResponse(actualXmlDocument.documentElement,it.key,it.key)
-		}
-		lookup.forEach {
-			val eachElement = it.value as MutableList<Any>
-			for (i in 0 until eachElement.size)
-			{
-				val singleElement = eachElement.get(i) as HashMap<String,Any>
-				val isFound = singleElement["isFound"] as Boolean
-				if(!isFound) {
-					val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
-						tag, logLevel, arrayOf("element "))
-					callback.onFailure(error)
-					return null
-				}
-			}
 		}
 		actualValues.forEach {
 			val element = client.elementMap[it.key.trim()]
@@ -342,15 +333,8 @@ class SoapValueCallback(
 				valuesMap = detailsMap["values"] as HashMap<String, String>
 			}
 			if(identifierMap.isEmpty() || comparisonHelper(element, identifierMap)) {
-				if((detailsMap["isFound"] is Boolean) && (detailsMap["isFound"] as Boolean))
+				if(!((detailsMap["isFound"] is Boolean) && (detailsMap["isFound"] as Boolean)))
 				{
-					//throw error
-//					checkforDuplicates = true
-//					val error = SkyflowError(SkyflowErrorCode.DUPLICATE_ID_IN_RESPONSE_XML,
-//						tag, logLevel, arrayOf(""))
-//					callback.onFailure(error)
-				}
-				else {
 					detailsMap["isFound"] = true
 					if(lookup[completePath] is MutableList<*>)
 					{
