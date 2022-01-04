@@ -10,7 +10,7 @@ import java.io.IOException
 
 
 
-class SoapApiCallback(
+internal class SoapApiCallback(
     var soapConnectionConfig: SoapConnectionConfig,
     var callback: Callback,
     var logLevel: LogLevel,
@@ -69,6 +69,7 @@ class SoapApiCallback(
 
     fun getRequestBody() : String? {
         val matches = Utils.findMatches("<skyflow>([\\s\\S]*?)<\\/skyflow>",soapConnectionConfig.requestXML)
+        matches.addAll(Utils.findMatches("<Skyflow>([\\s\\S]*?)<\\/Skyflow>",soapConnectionConfig.requestXML))
         var tempXML = soapConnectionConfig.requestXML
         matches.map {
             var temp = it

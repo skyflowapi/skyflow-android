@@ -9,7 +9,7 @@ import org.json.JSONObject
 import java.lang.Exception
 
 @Suppress("DEPRECATION")
-class RevealValueCallback(var callback: Callback, var revealElements: MutableList<Label>) :
+internal class RevealValueCallback(var callback: Callback, var revealElements: MutableList<Label>) :
     Callback {
     override fun onSuccess(responseBody: Any) {
         val elementsMap = HashMap<String, Label>()

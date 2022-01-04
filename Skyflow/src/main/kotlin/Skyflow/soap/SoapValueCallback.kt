@@ -19,7 +19,7 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import android.os.Looper
-class SoapValueCallback(
+internal class SoapValueCallback(
 	var client: Client,
 	var soapConnectionConfig: SoapConnectionConfig,
 	var callback: Callback,
@@ -118,7 +118,7 @@ class SoapValueCallback(
 			val rootList: NodeList = element.getChildNodes()
 			for (i in 0 until rootList.length) {
 				val child = element.childNodes.item(i)
-				if (child.nodeName.trim().equals("skyflow")) {
+				if (child.nodeName.trim().equals("skyflow") || child.nodeName.trim().equals("Skyflow")) {
 					addLookupEntry(element, path, "")
 					if (lookup[path] is MutableList<*>) {
 						val entryArr = (lookup[path] as MutableList<Any>)
@@ -164,7 +164,7 @@ class SoapValueCallback(
 	{
 		for (i in 0 until element.childNodes.length) {
 			val child = element.childNodes.item(i)
-			if (child.nodeName.trim().equals("skyflow")) {
+			if (child.nodeName.trim().equals("skyflow") || child.nodeName.trim().equals("Skyflow")) {
 				if (lookupEntry["values"] != null) {
 					val valuesMap = lookupEntry["values"] as HashMap<String, Any>
 					val pathFromParentArr = pathFromParent.split(".").toMutableList()//to
