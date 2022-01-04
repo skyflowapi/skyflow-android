@@ -110,10 +110,10 @@ enum class Messages(val message: String) {
     INVALID_REQUEST_XML("Invalid RequestXML in SoapConnection"),
     INVALID_RESPONSE_XML("Invalid ResponseXML in SoapConnection"),
     INVALID_ID_IN_REQUEST_XML("Invalid elementId %s present in RequestXML"),
-    EMPTY_ID_IN_REQUEST_XML("empty element id present in RequestXml"),
+    EMPTY_ID_IN_REQUEST_XML("empty elementId present in RequestXml"),
     INVALID_ID_IN_RESPONSE_XML("Invalid elementId %s present in ResponseXML"),
-    EMPTY_ID_IN_RESPONSE_XML("empty element id present in ResponseXML"),
-    DUPLICATE_ID_IN_RESPONSE_XML("duplicate id  %s present in ResponseXML");
+    EMPTY_ID_IN_RESPONSE_XML("empty elementId present in ResponseXML"),
+    DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML");
 }
 
 fun Messages.getMessage(vararg values: String?): String{

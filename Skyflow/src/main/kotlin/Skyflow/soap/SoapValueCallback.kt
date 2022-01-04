@@ -57,6 +57,43 @@ class SoapValueCallback(
 		lookup.forEach{
 			parseActualResponse(actualXmlDocument.documentElement,it.key,it.key)
 		}
+		lookup.forEach {
+			val eachElement = it.value as MutableList<Any>
+			for (i in 0 until eachElement.size)
+			{
+				val singleElement = eachElement.get(i) as HashMap<String,Any>
+				val isFound = singleElement["isFound"] as Boolean
+				if(!isFound) {
+					val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
+						tag, logLevel, arrayOf("element "))
+					callback.onFailure(error)
+					return null
+				}
+			}
+		}
+		actualValues.forEach {
+			val element = client.elementMap[it.key.trim()]
+			if (element == null) {
+				val error = SkyflowError(SkyflowErrorCode.INVALID_ID_IN_RESPONSE_XML,
+					tag, logLevel, arrayOf(it.key.trim()))
+				callback.onFailure(error)
+				return null
+			} else if (element is TextField) {
+				if (!Utils.checkIfElementsMounted(element)) {
+					val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+						tag, logLevel, arrayOf(element.label.text.toString()))
+					callback.onFailure(error)
+					return null
+				}
+			} else if (element is Label) {
+				if (!Utils.checkIfElementsMounted(element)) {
+					val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+						tag, logLevel, arrayOf(element.label.text.toString()))
+					callback.onFailure(error)
+					return null
+				}
+			}
+		}
 		Handler(Looper.getMainLooper()).post(Runnable {
 			actualValues.forEach{
 				val element = client.elementMap[it.key.trim()]
@@ -75,7 +112,7 @@ class SoapValueCallback(
 	var actualValues = HashMap<String,String>()
 	var lookup = HashMap<String,Any>()
 	var lookupEntry = HashMap<String,Any>()
-
+	//var checkforDuplicates = false
 
 
 	fun constructLookup(element: Element, path: String) {
@@ -199,7 +236,9 @@ class SoapValueCallback(
 	}
 
 	fun checkIfMapIsSubset(subMap:HashMap<String,String>,map:HashMap<String,String>) : Boolean{
+
 		subMap.forEach{
+			if(map[it.key] == null) return false
 			if(subMap[it.key] != map[it.key])
 			{
 				return false
@@ -302,11 +341,14 @@ class SoapValueCallback(
 			{
 				valuesMap = detailsMap["values"] as HashMap<String, String>
 			}
-
 			if(identifierMap.isEmpty() || comparisonHelper(element, identifierMap)) {
 				if((detailsMap["isFound"] is Boolean) && (detailsMap["isFound"] as Boolean))
 				{
 					//throw error
+//					checkforDuplicates = true
+//					val error = SkyflowError(SkyflowErrorCode.DUPLICATE_ID_IN_RESPONSE_XML,
+//						tag, logLevel, arrayOf(""))
+//					callback.onFailure(error)
 				}
 				else {
 					detailsMap["isFound"] = true
