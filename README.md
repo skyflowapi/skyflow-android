@@ -8,7 +8,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - [**Securely collecting data client-side**](#securely-collecting-data-client-side)
 - [**Securely revealing data client-side**](#securely-revealing-data-client-side)
 - [**Securely invoking connection client-side**](#Securely-invoking-connection-client-side)
-
+- [**Securely invoking Connections client-side using SOAP**](#Securely-invoking-Connections-client-side-using-soap)
 
 # Installing skyflow-android
 ---
@@ -1234,34 +1234,42 @@ val expiryDateID = expiryDateElement.getID()
 val cvvElementID = cvvElement.getID()
 
 // step 5
-val requestXML = `<soapenv:Envelope>
+val requestXML = """<soapenv:Envelope>
     <soapenv:Header>
-        <ClientID>1234</ClientID>
+        <ClientID>
+            1234
+        </ClientID>
     </soapenv:Header>
     <soapenv:Body>
     	<GenerateCVV>
                <CardNumber>
-                  <skyflow>${cardNumberID}</skyflow>
+                  <skyflow>
+                    ${cardNumberID}
+                  </skyflow>
                </CardNumber>
                <ExpiryDate>
-                  <skyflow>${expiryDateID}</skyflow>
+                  <skyflow>
+                    ${expiryDateID}
+                  </skyflow>
                </ExpiryDate>
         </GenerateCVV>
     </soapenv:Body>
-</soapenv:Envelope>`
+</soapenv:Envelope>"""
 
-val httpHeaders = HashMap<String, String>()
-    httpHeaders.put("SOAPAction", "")
+val httpHeaders = HashMap<String, String>() //optional parameter
+    httpHeaders.put("SOAPAction", "<soap_action>")
 
-val responseXML = `<soapenv:Envelope>
+val responseXML = """<soapenv:Envelope>
     <soapenv:Body>
 	    <GenerateCVV>
             	<CVV>
-    		    <skyflow>${cvvElementID}</skyflow>
-    		 </CVV>
+    		          <skyflow>
+                    ${cvvElementID}
+                  </skyflow>
+    		      </CVV>
         </GenerateCVV>
     </soapenv:Body>
-</soapenv:Envelope>`
+</soapenv:Envelope>"""
 
 val soapConnectionConfig =  SoapConnectionConfig(connectionUrl, httpHeaders, requestXML, responseXML)
 
@@ -1296,15 +1304,12 @@ Sample Response on success:
 </soapenv:Envelope>
 ```
 
-Sample Response on failure:
 
-```kt
-{
-  code: '<error_code>',
-  description: '<error_description>',
-  xml: '<xml_received_from_server>'
-}
-```
+`Note`: In responseXML we provide the tags that needs to be rendered in UI and stripped out from the actual response. 
+1. For uniquely identifiable tag, we can give the elementID within a skyflow tag directly corresponding to the actual value.
+Please refer to the CVV tag in the above example. Here, we wish to strip the actual value present within the CVV tag.
+2. For arrays, since we have multiple tags with the same name, we will need to provide identifiers to uniquely identify the required tag.
+Please refer to HeaderItem tag. Here, we have provided NodeId within the Name tag which acts as an identifier and we wish to strip the actual value present in the Value tag.
 
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.

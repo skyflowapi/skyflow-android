@@ -28,11 +28,14 @@ internal class SoapValueCallback(
 	private val tag = SoapValueCallback::class.qualifiedName
 	override fun onSuccess(responseBody: Any) {
 		try {
-			val document = doResponse(responseBody.toString())
-			if (document == null) {
-				return
+			if(soapConnectionConfig.responseXML.trim().isEmpty()) callback.onSuccess(responseBody)
+			else {
+				val document = doResponse(responseBody.toString())
+				if (document == null) {
+					return
+				}
+				callback.onSuccess(getXmlFromDocument(document))
 			}
-			callback.onSuccess(getXmlFromDocument(document))
 		}
 		catch (e:Exception){
 			callback.onFailure(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString())))
