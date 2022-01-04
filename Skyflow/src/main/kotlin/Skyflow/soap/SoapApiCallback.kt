@@ -44,7 +44,8 @@ class SoapApiCallback(
                         if (!response.isSuccessful)
                         {
                             val res = response.body!!.string()
-                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel)
+                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
+                                arrayOf(res))
                             skyflowError.setXml(res)
                             callback.onFailure(skyflowError)
                         }

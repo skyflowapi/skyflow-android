@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_soap.*
+import java.lang.annotation.ElementType
 
 class SoapActivity : AppCompatActivity() {
 
@@ -15,107 +16,77 @@ class SoapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_soap)
 
-        val skyflowConfiguration = Skyflow.Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
-            CollectActivity.DemoTokenProvider(),
-            Options(LogLevel.ERROR, Env.PROD)
-        )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
-        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
+
+        val config = Configuration(tokenProvider = CollectActivity.DemoTokenProvider())
+        val skyflowClient = Skyflow.init(config)
         val revealContainer = skyflowClient.container(ContainerType.REVEAL)
-        val collectInput1 = Skyflow.CollectElementInput(
-             null, null, Skyflow.SkyflowElementType.INPUT_FIELD, label = "input-1", placeholder = "enter"
-        )
-        val collectInput2 = Skyflow.CollectElementInput(
-            null, null, SkyflowElementType.INPUT_FIELD,
-            label = "input-2", placeholder = "enter"
-        )
-        val revealInput1 = CollectElementInput(
-            null, null,SkyflowElementType.INPUT_FIELD,
-            label = "output"
-        )
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
 
-        val revealInput2 = RevealElementInput(
-            null, null,
-            label = "output"
-        )
-        val input1 = collectContainer.create(this, collectInput1, CollectElementOptions(enableCardIcon = false))
-        val input2 = collectContainer.create(this, collectInput2)
-        val output1 = collectContainer.create(this,revealInput1)
-        val output2 = revealContainer.create(this,revealInput2)
-        val parent = findViewById<LinearLayout>(R.id.parent)
-        val lp = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        lp.setMargins(20, -20, 20, 0)
-        input1.layoutParams = lp
-        input2.layoutParams = lp
-        output1.layoutParams = lp
-        output2.layoutParams = lp
-        parent.addView(input1)
-        parent.addView(input2)
-        parent.addView(output1)
-        parent.addView(output2)
-        submit.setOnClickListener {
-            val connectionUrl = "https://url.com"
-            val httpHeaders = HashMap<String, String>()
-            httpHeaders.put("SOAPAction", "")
-            val requestBody = """
-                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        val cardNumberInput = CollectElementInput(type =  SkyflowElementType.CARD_NUMBER)
+        val cardNumberElement = collectContainer.create(this,cardNumberInput)
+
+        val expiryDateInput = CollectElementInput(type =  SkyflowElementType.EXPIRATION_DATE)
+        val expiryDateElement = collectContainer.create(this,expiryDateInput)
+
+        val cvvInput = RevealElementInput()
+        val cvvElement = revealContainer.create(this,cvvInput)
+
+
+        val cardNumberID = cardNumberElement.getID()  // to get element ID
+        val expiryDateID = expiryDateElement.getID()
+        val cvvElementID = cvvElement.getID()
+
+        val requestXML = """
+                        <soapenv:Envelope>
                     <soapenv:Header>
-                       <skyflow>
-                           ${input1.getID()}
-                        </skyflow>
-                        </soapenv:Header>
+                    <ClientID>1234</ClientID>
+                    </soapenv:Header>
                     <soapenv:Body>
-                       <value>
-                       <skyflow>
-                          ${input2.getID()}
-                          </skyflow>
-                       </value>
+                    <GenerateCVV>
+                    <CardNumber>
+                    <Skyflow>${cardNumberID}</Skyflow>
+                    </CardNumber>
+                    <ExpiryDate>
+                    <Skyflow>${expiryDateID}</Skyflow>
+                    </ExpiryDate>
+                    </GenerateCVV>
                     </soapenv:Body>
-                </soapenv:Envelope>
+                    </soapenv:Envelope>
+        """.trimIndent()
 
-            """.trimIndent()
-            val responseBody = """
-                 <s:Envelope>
-                <s:Header>
-                     <Value>
-                           <skyflow>
-                                  ${output2.getID()}
-                           </skyflow>
-                      </Value>
-                </s:Header>
-                <s:Body>
-                   <skyflow>
-                       ${output1.getID()}
-                  </skyflow>
-                </s:Body>
-            </s:Envelope>
-            """.trimIndent()
-            val soapConnectionConfig =
-                SoapConnectionConfig(connectionUrl, httpHeaders, requestBody, responseBody)
-            skyflowClient.invokeSoapConnection(soapConnectionConfig, object : Callback {
-                override fun onSuccess(responseBody: Any) {
-                    Log.d("result:", responseBody.toString())
+        val httpHeaders = HashMap<String, String>()
+        httpHeaders.put("SOAPAction", "")
+
+        val responseXML = """
+                        <soapenv:Envelope>
+                    <soapenv:Body>
+                    <GenerateCVV>
+                    <CVV>
+                    <Skyflow>${cvvElementID}</Skyflow>
+                    </CVV>
+                    </GenerateCVV>
+                    </soapenv:Body>
+                    </soapenv:Envelope>
+        """.trimIndent()
+
+        val connectionUrl = "https://www.url.com"
+        val soapConnectionConfig =  SoapConnectionConfig(connectionUrl, httpHeaders, requestXML, responseXML)
+
+        skyflowClient.invokeSoapConnection(soapConnectionConfig, object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                Log.d("result:", responseBody.toString())
+            }
+
+            override fun onFailure(exception: Any) {
+                Log.d("exception:", exception.toString())
+                val error = exception as SkyflowError
+                val xml = error.getXml()
+                if(xml.isNotEmpty()){
+                    Log.d("error from server",xml)
                 }
+            }
 
-                override fun onFailure(exception: Any) {
-                    Log.d("exception:", exception.toString())
-                    var error = exception as SkyflowError
-                    var xml = error.getXml()
-                    if(xml.isNotEmpty()){
-                        Log.d("error from server",xml)
-                    }
-                }
+        })
 
-            })
-
-        }
     }
-
-
-
 }
