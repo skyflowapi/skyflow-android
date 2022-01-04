@@ -57,5 +57,14 @@
         android:id="@+id/validation_demo"/>
 
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="10dp"
+        android:background="#403E6B"
+        android:text="SOAP API DEMO"
+        android:id="@+id/soap_demo"/>
 
 </LinearLayout>

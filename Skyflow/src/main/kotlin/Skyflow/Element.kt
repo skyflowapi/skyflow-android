@@ -16,7 +16,7 @@ open class Element @JvmOverloads constructor(
     internal lateinit var collectInput : CollectElementInput
     internal lateinit var options : Skyflow.CollectElementOptions
     internal lateinit var fieldType: SkyflowElementType
-
+    internal open var uuid = ""
     /// Describes `SkyflowElement` input   State`
     internal open var state: State = State(columnName,isRequired)
 
@@ -44,6 +44,10 @@ open class Element @JvmOverloads constructor(
 
     internal open fun getValue() : String {
         return ""
+    }
+
+    fun getID() : String {
+        return uuid
     }
 
 }

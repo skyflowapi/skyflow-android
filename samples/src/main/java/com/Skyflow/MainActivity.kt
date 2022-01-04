@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, CustomValidationsActivity::class.java)
             startActivity(intent)
         }
+        soap_demo.setOnClickListener {
+            val intent = Intent(this, SoapActivity::class.java)
+            startActivity(intent)
+        }
         }
 }
 

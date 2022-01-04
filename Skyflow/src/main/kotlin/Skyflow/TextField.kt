@@ -58,6 +58,7 @@ class TextField @JvmOverloads constructor(
     internal var expiryDateFormat = "mm/yy"
     private var userError : String = ""
     private  val tag = TextField::class.qualifiedName
+    override var uuid = ""
     override fun getValue() : String {
         return actualValue
     }

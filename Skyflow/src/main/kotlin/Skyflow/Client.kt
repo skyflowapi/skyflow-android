@@ -3,6 +3,7 @@ package Skyflow
 import Skyflow.core.*
 import Skyflow.core.Logger
 import Skyflow.reveal.GetByIdRecord
+import Skyflow.soap.SoapConnectionConfig
 import Skyflow.utils.Utils
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONArray
@@ -11,13 +12,14 @@ import kotlin.Exception
 import kotlin.reflect.KClass
 
 class Client internal constructor(
-    val configuration: Configuration
+    val configuration: Configuration,
 ){
     internal val tag = Client::class.qualifiedName
 
-    private val apiClient = APIClient(configuration.vaultID, configuration.vaultURL,
+    internal val apiClient = APIClient(configuration.vaultID, configuration.vaultURL,
         configuration.tokenProvider,configuration.options.logLevel)
 
+    internal val elementMap = HashMap<String,Any>()
     fun insert(records:  JSONObject, options: InsertOptions? = InsertOptions(), callback: Callback){
 
         if(configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/")
@@ -187,6 +189,32 @@ class Client internal constructor(
         }
     }
 
+    fun invokeSoapConnection(soapConnectionConfig: SoapConnectionConfig,callback: Callback)
+    {
+        if(soapConnectionConfig.connectionURL.isEmpty())
+        {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL,tag,configuration.options.logLevel))
+        }
+        else if(!Utils.checkUrl(soapConnectionConfig.connectionURL))
+        {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,tag,configuration.options.logLevel, params = arrayOf(soapConnectionConfig.connectionURL)))
+        }
+        else if(soapConnectionConfig.requestXML.trim().isEmpty()){
+            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_REQUEST_XML,tag,configuration.options.logLevel))
+        }
+        else if(soapConnectionConfig.requestXML.trim().isNotEmpty() && !Utils.isValidXML(soapConnectionConfig.requestXML))
+        {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML,tag,configuration.options.logLevel))
+        }
+        else if(soapConnectionConfig.responseXML.trim().isNotEmpty() && !Utils.isValidXML(soapConnectionConfig.responseXML))
+        {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_RESPONSE_XML,tag,configuration.options.logLevel))
+        }
+        else {
+            this.apiClient.invokeSoapConnection(soapConnectionConfig, this, callback)
+        }
+    }
+
     fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T>{
         if(type == ContainerType.COLLECT){
             Logger.info(tag, Messages.COLLECT_CONTAINER_CREATED.getMessage(), configuration.options.logLevel)
@@ -194,12 +222,12 @@ class Client internal constructor(
         else if(type == ContainerType.REVEAL){
             Logger.info(tag, Messages.REVEAL_CONTAINER_CREATED.getMessage(), configuration.options.logLevel)
         }
-        return Container<T>(apiClient, configuration)
+        return Container<T>(configuration,this)
     }
 
     inner class loggingCallback(
         private val clientCallback: Callback,
-        private val successMessage: String
+        private val successMessage: String,
     ) : Callback {
         override fun onSuccess(responseBody: Any) {
             Logger.info(tag, successMessage, configuration.options.logLevel)

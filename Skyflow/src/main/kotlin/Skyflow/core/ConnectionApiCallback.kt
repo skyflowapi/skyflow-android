@@ -10,7 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 
-class ConnectionApiCallback(
+internal class ConnectionApiCallback(
     val connectionConfig : ConnectionConfig,
     val callback: Callback,
     val logLevel: LogLevel = LogLevel.ERROR,
