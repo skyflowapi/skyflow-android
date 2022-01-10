@@ -109,6 +109,8 @@ enum class Messages(val message: String) {
     EMPTY_REQUEST_XML("RequestXML is empty"),
     INVALID_REQUEST_XML("Invalid RequestXML in SoapConnection"),
     INVALID_RESPONSE_XML("Invalid ResponseXML in SoapConnection"),
+    NOT_FOUND_IN_RESPONSE_XML("Invalid path in responseXML. Element present under %s path is not found in response"),
+    AMBIGUOUS_ELEMENT_FOUND_IN_RESPONSE_XML("Ambiguous Element found in responseXML"),
     INVALID_ID_IN_REQUEST_XML("Invalid elementId %s present in RequestXML"),
     EMPTY_ID_IN_REQUEST_XML("empty elementId present in RequestXml"),
     INVALID_ID_IN_RESPONSE_XML("Invalid elementId %s present in ResponseXML"),

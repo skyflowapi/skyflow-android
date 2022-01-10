@@ -121,8 +121,5 @@ internal class SoapApiCallback(
         }
         return tempXML
     }
-
-
-
 }
 
