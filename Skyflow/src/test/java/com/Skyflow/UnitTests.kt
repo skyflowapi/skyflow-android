@@ -1588,6 +1588,14 @@ class UnitTests {
 
         })
     }
+
+    @Test
+    fun testXMLfunctionInSkyflowError()
+    {
+        val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params = arrayOf("cvv"))
+        skyflowError.setXml("xml")
+        assertEquals("xml", skyflowError.getXml())
+    }
     companion object
     {
         fun getErrorMessage(error: JSONObject): String {

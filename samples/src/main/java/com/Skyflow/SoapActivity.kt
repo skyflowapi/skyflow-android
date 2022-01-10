@@ -5,9 +5,7 @@ import Skyflow.soap.SoapConnectionConfig
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_soap.*
-import java.lang.annotation.ElementType
+
 
 class SoapActivity : AppCompatActivity() {
 
@@ -76,7 +74,6 @@ class SoapActivity : AppCompatActivity() {
             override fun onSuccess(responseBody: Any) {
                 Log.d("result:", responseBody.toString())
             }
-
             override fun onFailure(exception: Any) {
                 Log.d("exception:", exception.toString())
                 val error = exception as SkyflowError
