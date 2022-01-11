@@ -354,7 +354,7 @@ class SoapConnectionTest {
         submap.put("x","123")
         val map = HashMap<String,String>()
         map["y"] = "123"
-        assertFalse(callback.checkIfMapIsSubset(submap,map))
+        assertFalse(callback.checkIfMapIsSubset(submap,map,true))
     }
 
     @Test
@@ -366,7 +366,7 @@ class SoapConnectionTest {
         submap.put("x","123")
         val map = HashMap<String,String>()
         map["x"] = "123"
-        assertTrue(callback.checkIfMapIsSubset(submap,map))
+        assertTrue(callback.checkIfMapIsSubset(submap,map,true))
     }
 
     @Test
