@@ -57,7 +57,7 @@ class SoapConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML)
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML, params = arrayOf("Content is not allowed in prolog."))
                 assertEquals(skyflowError.getInternalErrorMessage(),(exception as SkyflowError).getInternalErrorMessage())
             }
 
@@ -93,8 +93,8 @@ class SoapConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RESPONSE_XML)
-                assertEquals(skyflowError.getInternalErrorMessage(),(exception as SkyflowError).getInternalErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RESPONSE_XML, params = arrayOf("Content is not allowed in prolog."))
+                assertEquals(skyflowError.getInternalErrorMessage().trim(),(exception as SkyflowError).getInternalErrorMessage().trim())
             }
 
         })
@@ -354,7 +354,7 @@ class SoapConnectionTest {
         submap.put("x","123")
         val map = HashMap<String,String>()
         map["y"] = "123"
-        assertFalse(callback.checkIfMapIsSubset(submap,map))
+        assertFalse(callback.checkIfMapIsSubset(submap,map,true))
     }
 
     @Test
@@ -366,7 +366,7 @@ class SoapConnectionTest {
         submap.put("x","123")
         val map = HashMap<String,String>()
         map["x"] = "123"
-        assertTrue(callback.checkIfMapIsSubset(submap,map))
+        assertTrue(callback.checkIfMapIsSubset(submap,map,true))
     }
 
     @Test
