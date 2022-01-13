@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -780,16 +781,7 @@ class Utils {
             finalError.put("errors",errors)
             return finalError
         }
-        fun isValidXML(s:String) : Boolean
-        {
-            try {
-                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(
-                    StringReader(s)));
-            } catch (e:Exception) {
-                return false
-            }
-            return true
-        }
+
 
         fun findMatches(regex:String,text:String) : MutableList<String> {
             val allMatches: MutableList<String> = ArrayList()
