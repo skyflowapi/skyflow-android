@@ -30,9 +30,12 @@ internal class SoapApiCallback(
                 .method("POST", body)
                 .addHeader("X-Skyflow-Authorization", responseBody.toString().split("Bearer ")[1])
                 .url(url)
-            soapConnectionConfig.httpHeaders.forEach { (key, value) -> request.addHeader(key,value) } //adding headers
+            soapConnectionConfig.httpHeaders.forEach { (key, value) ->
+                    if(key.equals("X-Skyflow-Authorization"))
+                        request.removeHeader("X-Skyflow-Authorization")
+                    request.addHeader(key,value)
+            } //adding headers
             val requestBuild = request.build()
-
             okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
                 override fun onFailure(call: Call, e: IOException) {
                     val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))

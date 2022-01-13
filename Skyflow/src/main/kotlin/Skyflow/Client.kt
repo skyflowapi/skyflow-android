@@ -8,6 +8,9 @@ import Skyflow.utils.Utils
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONArray
 import org.json.JSONObject
+import org.xml.sax.InputSource
+import java.io.StringReader
+import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 import kotlin.reflect.KClass
 
@@ -191,28 +194,46 @@ class Client internal constructor(
 
     fun invokeSoapConnection(soapConnectionConfig: SoapConnectionConfig,callback: Callback)
     {
-        if(soapConnectionConfig.connectionURL.isEmpty())
-        {
-            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL,tag,configuration.options.logLevel))
+        var isValid = true
+        if (soapConnectionConfig.connectionURL.isEmpty()) {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_CONNECTION_URL,
+                tag,
+                configuration.options.logLevel))
+            isValid = false
+        } else if (!Utils.checkUrl(soapConnectionConfig.connectionURL)) {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,
+                tag,
+                configuration.options.logLevel,
+                params = arrayOf(soapConnectionConfig.connectionURL)))
+            isValid = false
+        } else if (soapConnectionConfig.requestXML.trim().isEmpty()) {
+            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_REQUEST_XML,
+                tag,
+                configuration.options.logLevel))
+            isValid = false
         }
-        else if(!Utils.checkUrl(soapConnectionConfig.connectionURL))
-        {
-            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,tag,configuration.options.logLevel, params = arrayOf(soapConnectionConfig.connectionURL)))
+        if (soapConnectionConfig.requestXML.trim().isNotEmpty()) {
+            try {
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(
+                    StringReader(soapConnectionConfig.requestXML)));
+            }
+            catch (e:Exception) {
+                isValid = false
+                callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML,tag,configuration.options.logLevel, params = arrayOf(e.message.toString())))
+            }
         }
-        else if(soapConnectionConfig.requestXML.trim().isEmpty()){
-            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_REQUEST_XML,tag,configuration.options.logLevel))
+        if (soapConnectionConfig.responseXML.trim().isNotEmpty()) {
+            try {
+                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(
+                    StringReader(soapConnectionConfig.responseXML)));
+            }
+            catch (e:Exception) {
+                isValid = false
+                callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_RESPONSE_XML,tag,configuration.options.logLevel, params = arrayOf(e.message.toString())))
+            }
         }
-        else if(soapConnectionConfig.requestXML.trim().isNotEmpty() && !Utils.isValidXML(soapConnectionConfig.requestXML))
-        {
-            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_REQUEST_XML,tag,configuration.options.logLevel))
-        }
-        else if(soapConnectionConfig.responseXML.trim().isNotEmpty() && !Utils.isValidXML(soapConnectionConfig.responseXML))
-        {
-            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_RESPONSE_XML,tag,configuration.options.logLevel))
-        }
-        else {
+        if(isValid)
             this.apiClient.invokeSoapConnection(soapConnectionConfig, this, callback)
-        }
     }
 
     fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T>{
