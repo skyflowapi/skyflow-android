@@ -16,7 +16,7 @@ class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : LinearLayout(context, attrs, defStyleAttr),BaseElement {
 
-    internal  var actualValue: String =""
+    internal  var actualValue: String? =null
     internal var label = TextView(context)
     internal var placeholder = TextView(context)
     internal var error = TextView(context)
@@ -98,7 +98,9 @@ class Label @JvmOverloads constructor(
     }
 
     internal fun getValue(): String {
-        return actualValue
+        if(actualValue != null)
+            return actualValue!!
+        return ""
     }
     override fun setError(error: String) {
         isError = true
@@ -174,8 +176,10 @@ class Label @JvmOverloads constructor(
     fun clearAltText()
     {
         this.revealInput.altText = ""
-        if(this.actualValue.isEmpty())
-            setText()
+        if(this.actualValue != null)
+            placeholder.text = actualValue
+        else
+            placeholder.text = getToken()
     }
 
     private fun setText()
@@ -191,6 +195,17 @@ class Label @JvmOverloads constructor(
     internal fun setText(t:String)
     {
         this.placeholder.text = t
+    }
+
+    fun getToken() : String {
+         if(revealInput.token != null)
+             return revealInput.token!!
+        return ""
+    }
+
+    internal fun getValueForConnections(): String {
+        if(actualValue != null) return actualValue!!
+        return getToken()
     }
 
 }

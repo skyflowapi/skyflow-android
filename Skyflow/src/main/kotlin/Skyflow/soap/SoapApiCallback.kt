@@ -105,7 +105,7 @@ internal class SoapApiCallback(
                     }
                 } else if (value is Label) {
                     if (Utils.checkIfElementsMounted(value)) {
-                        tempXML = tempXML.replace(it,value.getValue())
+                        tempXML = tempXML.replace(it,value.getValueForConnections())
                     } else {
                         //element not mounted
                         val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
