@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.HttpUrl
 import okhttp3.Request
@@ -151,7 +152,7 @@ class Utils {
                             callback.onFailure(constructError(error))
                             return false
                         }
-                        value = (records.get(keys.getString(j)) as Label).revealInput.token!!
+                        value = (records.get(keys.getString(j)) as Label).getValueForConnections()
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
                             constructJsonKeyForConnectionRequest(records.get(keys.getString(j)) as JSONObject,
@@ -201,7 +202,7 @@ class Utils {
                                     callback.onFailure(constructError(error))
                                     return false
                                 }
-                                value = (arrayValue.get(k)  as Label).revealInput.token!!
+                                value = (arrayValue.get(k)  as Label).getValueForConnections()
                             }
                             else if(arrayValue.get(k) is JSONObject)
                             {
@@ -272,7 +273,7 @@ class Utils {
                                     return false
                                 }
                                 else
-                                    value = (arrayValue[k] as Label).revealInput.token!!
+                                    value = (arrayValue[k] as Label).getValueForConnections()
                             }
                             else if(arrayValue[k] is JSONObject)
                             {
@@ -371,7 +372,7 @@ class Utils {
                                 return ""
                             }
                             else
-                                value = value.revealInput.token!!
+                                value = value.getValueForConnections()
                             newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                         } else if (value is String || value is Number || value is Boolean) {
                             value = value.toString()
@@ -467,7 +468,7 @@ class Utils {
                     callback.onFailure(constructError(error))
                     return false
                 }
-                requestUrlBuilder.addQueryParameter(key, value.revealInput.token!!)
+                requestUrlBuilder.addQueryParameter(key, value.getValueForConnections())
             }
             else if (value is Number || value is String || value is Boolean || value is JSONObject)
                 requestUrlBuilder.addQueryParameter(key,value.toString())
@@ -491,11 +492,14 @@ class Utils {
             if (headers != null) {
                 for(i in 0 until headers.length())
                 {
+
                     if(headers.getString(i).isEmpty())
                     {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS)) //empty key
                         return false
                     }
+                    if(headers.getString(i).equals("X-Skyflow-Authorization"))
+                        request.removeHeader("X-Skyflow-Authorization")
                     if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
                         || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
                         request.addHeader(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
@@ -780,16 +784,7 @@ class Utils {
             finalError.put("errors",errors)
             return finalError
         }
-        fun isValidXML(s:String) : Boolean
-        {
-            try {
-                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(InputSource(
-                    StringReader(s)));
-            } catch (e:Exception) {
-                return false
-            }
-            return true
-        }
+
 
         fun findMatches(regex:String,text:String) : MutableList<String> {
             val allMatches: MutableList<String> = ArrayList()
