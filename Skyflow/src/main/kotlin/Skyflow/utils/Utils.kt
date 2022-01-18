@@ -152,7 +152,7 @@ class Utils {
                             callback.onFailure(constructError(error))
                             return false
                         }
-                        value = (records.get(keys.getString(j)) as Label).revealInput.token!!
+                        value = (records.get(keys.getString(j)) as Label).getValueForConnections()
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
                             constructJsonKeyForConnectionRequest(records.get(keys.getString(j)) as JSONObject,
@@ -202,7 +202,7 @@ class Utils {
                                     callback.onFailure(constructError(error))
                                     return false
                                 }
-                                value = (arrayValue.get(k)  as Label).revealInput.token!!
+                                value = (arrayValue.get(k)  as Label).getValueForConnections()
                             }
                             else if(arrayValue.get(k) is JSONObject)
                             {
@@ -273,7 +273,7 @@ class Utils {
                                     return false
                                 }
                                 else
-                                    value = (arrayValue[k] as Label).revealInput.token!!
+                                    value = (arrayValue[k] as Label).getValueForConnections()
                             }
                             else if(arrayValue[k] is JSONObject)
                             {
@@ -372,7 +372,7 @@ class Utils {
                                 return ""
                             }
                             else
-                                value = value.revealInput.token!!
+                                value = value.getValueForConnections()
                             newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                         } else if (value is String || value is Number || value is Boolean) {
                             value = value.toString()
@@ -468,7 +468,7 @@ class Utils {
                     callback.onFailure(constructError(error))
                     return false
                 }
-                requestUrlBuilder.addQueryParameter(key, value.revealInput.token!!)
+                requestUrlBuilder.addQueryParameter(key, value.getValueForConnections())
             }
             else if (value is Number || value is String || value is Boolean || value is JSONObject)
                 requestUrlBuilder.addQueryParameter(key,value.toString())
