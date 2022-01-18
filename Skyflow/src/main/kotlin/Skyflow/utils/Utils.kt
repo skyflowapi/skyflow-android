@@ -492,11 +492,14 @@ class Utils {
             if (headers != null) {
                 for(i in 0 until headers.length())
                 {
+
                     if(headers.getString(i).isEmpty())
                     {
                         callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS)) //empty key
                         return false
                     }
+                    if(headers.getString(i).equals("X-Skyflow-Authorization"))
+                        request.removeHeader("X-Skyflow-Authorization")
                     if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
                         || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
                         request.addHeader(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))

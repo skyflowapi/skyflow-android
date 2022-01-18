@@ -52,7 +52,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.9.1'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.9.2'
   ```
 
 ### Using maven
@@ -80,7 +80,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.9.1</version>
+   <version>1.9.2</version>
 </dependency>
 ```
 
@@ -1193,6 +1193,8 @@ skyflowClient.invokeSoapConnection(connectionConfig,callback);
 ```
 
 **httpHeaders** is the HashMap containing key-value pairs that are sent as request headers.
+
+`Note:` "X-Skyflow-Authorization" key is added in headers by SDK internally. If user specifies it again,it overrides.
 
 **requestXML** accepts the entire XML request as a string.
 
