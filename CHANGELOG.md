@@ -2,12 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.9.1] - 2022-01-11
+## [1.9.2] - 2022-18-01
+
+### Fixed
+- Fixes in invokeSoapConnection method.
+
+## [1.9.1] - 2022-11-01
 
 ### Fixed
 - Fixed issues in responseXML for invokeSoapConnection method.
 
-## [1.9.0] - 2022-01-04
+## [1.9.0] - 2022-04-01
 
 ### Added
 - `Soap protocol` support for connections
