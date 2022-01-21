@@ -27,12 +27,20 @@ internal class ConnectionApiCallback(
     private var requestBody = ""
     internal var headerMap = HashMap<String,String>()
     internal var queryMap = HashMap<String,String>()
+    internal var tokenIdMap = HashMap<String,String>() //key token,value is label id
+    internal var tokenValueMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
+    internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
     override fun onSuccess(responseBody: Any) {
         try{
             val token = responseBody.toString()
-            if(!convertElements()) return
+            checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
+            convertElements()
             requestBody = connectionConfig.requestBody.toString()
-            if(Utils.tokenValueMap.isEmpty()){
+            if(tokenValueMap.isEmpty()){
+                Log.d("header",headerMap.toString())
+                Log.d("query",queryMap.toString())
+                Log.d("request",requestBody.toString())
+                Log.d("connectionUrl",connectionUrl)
                 val requestBuild = getRequestBuild(token)
                 if(requestBuild == null ) return
                 doRequest(requestBuild)
@@ -40,28 +48,36 @@ internal class ConnectionApiCallback(
             else {
                 val records = JSONObject()
                 val array = JSONArray()
-                Utils.tokenValueMap.forEach {
+                tokenValueMap.forEach {
                     val recordObj = JSONObject()
                     recordObj.put("token",it.key)
                     array.put(recordObj)
                 }
                 records.put("records",array)
+                Log.d("before - tokenLabelMap",tokenLabelMap.toString())
+                Log.d("before - regexMap",tokenValueMap.toString())
                 client.detokenize(records,object : Callback {
                     override fun onSuccess(responseBody: Any) {
+                        Log.d("response for tokens",responseBody.toString())
                         doTokenMap(responseBody)
+                        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
+                        Log.d("after - regexMap",tokenValueMap.toString())
                         doformatRegexForMap()
                         var requestBody = connectionConfig.requestBody.toString()
                         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
-                        Utils.tokenValueMap.forEach {
-                            queryString = queryString.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!)
-                            connectionUrl = connectionUrl.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!)
-                            requestBody = requestBody.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!.trim())
+                        tokenValueMap.forEach {
+                            queryString = queryString.replace(tokenIdMap.get(it.key)!!,it.value!!)
+                            connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
+                            requestBody = requestBody.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
                         }
                         val queryMapWithDetokenizeValues = queryString.split(",").associate {
                             val (left, right) = it.split("=")
                             left to right
                         }
                         queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
+                        Log.d("query",queryMap.toString())
+                        Log.d("request",requestBody)
+                        Log.d("connectionUrl",connectionUrl)
                         val requestBuild = getRequestBuild(token)
                         if(requestBuild == null ) return
                         doRequest(requestBuild)
@@ -80,12 +96,12 @@ internal class ConnectionApiCallback(
     }
 
     private fun doformatRegexForMap() { // do regex on value after detokenize and put it in labelWithRegexMap
-        Utils.tokenValueMap.forEach {
-            val formatRegex = Utils.tokenLabelMap.get(it.key)!!.options.formatRegex
+        tokenValueMap.forEach {
+            val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
             val regex = Regex(formatRegex)
             val matches =  regex.find(it.value!!)
             val value = if(matches != null) matches.value else ""
-            Utils.tokenValueMap.put(it.key,value)
+            tokenValueMap.put(it.key,value)
 
         }
     }
@@ -96,7 +112,7 @@ internal class ConnectionApiCallback(
                 val record = records[i] as JSONObject
                 val token = record.getString("token")
                 val value = record.getString("value")
-                Utils.tokenValueMap.put(token,value)
+                tokenValueMap.put(token,value)
             }
     }
 
@@ -109,20 +125,16 @@ internal class ConnectionApiCallback(
             callback.onFailure(exception)
     }
 
-    fun convertElements() : Boolean {  //convert skyflow elements,arrays into values
-        connectionUrl = Utils.addPathParamsToURL(connectionConfig.connectionURL,
-            connectionConfig.pathParams,callback, logLevel)
-        if(connectionUrl == "")
-            return false
-        val isQueryParamAdded = Utils.addQueryParams(queryMap,connectionConfig,callback, logLevel)
-        if(!isQueryParamAdded)
-            return false
-        val isHeaderAdded = Utils.addRequestHeader(headerMap,connectionConfig,callback, logLevel)
-        if(!isHeaderAdded)
-            return false
-        return true
+    fun convertElements()  {  //convert skyflow elements,arrays into values
+        val requestBody = JSONObject()
+        Utils.copyJSON(connectionConfig.requestBody,requestBody)
+        constructRequestBodyForConnection(requestBody)
+        connectionConfig.requestBody = JSONObject()
+        constructRequestBodyForConnection(connectionConfig.requestBody)
+        connectionUrl = addPathParamsToURL()
+        addQueryParams()
+        addRequestHeader()
     }
-
 
     fun getRequestBuild(responseBody: Any): Request? { //create requestBuild
         val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
@@ -168,7 +180,6 @@ internal class ConnectionApiCallback(
                         callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
                             response.code
                         ))
-
                     }
                     else
                     {
@@ -180,5 +191,361 @@ internal class ConnectionApiCallback(
                 }
             }
         })
+    }
+
+
+   
+    var arrayInRequestBody : JSONArray = JSONArray()
+    //changing pci elements to actual values in it for request to connection
+    internal fun constructRequestBodyForConnection(records: JSONObject) {
+        val keys = records.names()
+        if(keys !=null) {
+            for (j in 0 until keys.length()) {
+                if(keys.getString(j).isEmpty())
+                {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_BODY,
+                        tag, logLevel)
+                }
+                var value: Any
+                if (records.get(keys.getString(j)) is Element) {
+                    val element = (records.get(keys.getString(j)) as Element)
+                    if(!Utils.checkIfElementsMounted(element))
+                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                    checkForValidElement(element)
+                    value = (records.get(keys.getString(j)) as Element).getValue()
+                } else if (records.get(keys.getString(j)) is Label) {
+                    if(!Utils.checkIfElementsMounted(records.get(keys.getString(j)) as Label))
+                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                    else if ((records.get(keys.getString(j)) as Label).isTokenNull) 
+                       throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN_IN_CONNECTION_REQUEST, tag, logLevel, arrayOf(keys.getString(j)))
+                     else if ((records.get(keys.getString(j)) as Label).revealInput.token!!.isEmpty()) 
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                    value = getValueForLabel(records.get(keys.getString(j)) as Label)
+                } else if (records.get(keys.getString(j)) is JSONObject) {
+                    constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject, )
+                    value = JSONObject(records.get(keys.getString(j)).toString())
+                }
+                else if(records.get(keys.getString(j)) is JSONArray)
+                {
+                    val arrayValue = (records.get(keys.getString(j)) as JSONArray)
+                    for(k in 0 until arrayValue.length())
+                    {
+                        if(arrayValue.get(k) is Element)
+                        {
+                            val element = (arrayValue.get(k) as Element)
+                            if(!Utils.checkIfElementsMounted(element))
+                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            checkForValidElement(element)
+                            value = (arrayValue.get(k)  as Element).getValue()
+                        }
+                        else if(arrayValue.get(k) is Label)
+                        {
+                            if(!Utils.checkIfElementsMounted(arrayValue.get(k) as Label))
+                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            else if ((arrayValue.get(k) as Label).isTokenNull) 
+                                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                                else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) 
+                                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                            value = getValueForLabel(arrayValue.get(k) as Label)
+                        }
+                        else if(arrayValue.get(k) is JSONObject)
+                        {
+                            constructRequestBodyForConnection(arrayValue.get(k)  as JSONObject)
+                            value = JSONObject(arrayValue.get(k) .toString())
+                        }
+                        else if(arrayValue.get(k) is String || arrayValue.get(k) is Number || arrayValue.get(k) is Boolean)
+                            value = arrayValue.get(k) .toString()
+                        else
+                            throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
+                        arrayValue.put(k,value)
+                    }
+                    value = arrayValue
+                }
+                else if(records.get(keys.getString(j)) is Array<*>)
+                {
+                    val arrayValue =(records.get(keys.getString(j)) as Array<*>)
+                    for(k in arrayValue.indices)
+                    {
+                        if(arrayValue[k] is Element)
+                        {
+                            val element = (arrayValue[k] as Element)
+                            if(!Utils.checkIfElementsMounted(element))
+                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            checkForValidElement(element)
+                            value = (arrayValue[k] as Element).getValue()
+                        }
+                        else if(arrayValue[k] is Label)
+                        {
+                            if(!Utils.checkIfElementsMounted(arrayValue[k] as Label))
+                            
+                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            else if ((arrayValue[k] as Label).isTokenNull) 
+                                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                              else if ((arrayValue[k] as Label).revealInput.token!!.isEmpty()) 
+                                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                            else
+                                value = getValueForLabel(arrayValue[k] as Label)
+                        }
+                        else if(arrayValue[k] is JSONObject)
+                        {
+                            constructRequestBodyForConnection(arrayValue[k] as JSONObject)
+                            value = JSONObject(arrayValue[k].toString())
+                        }
+                        else if(arrayValue[k] is String || arrayValue[k] is Number || arrayValue[k] is Boolean)
+                        {
+                            value = arrayValue[k].toString()
+                        }
+                        else
+                        {
+                            throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY,
+                                tag, logLevel, arrayOf(keys.getString(j)))
+                        }
+                        arrayInRequestBody.put(k,value)
+                    }
+                    value = arrayInRequestBody
+                    arrayInRequestBody = JSONArray()
+                }
+                else if (records.get(keys.getString(j)) is String || records.get(keys.getString(
+                        j)) is Number || records.get(keys.getString(j)) is Boolean
+                )
+                    value = records.get(keys.getString(j)).toString()
+                else {
+                    throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY,
+                        tag,
+                        logLevel, arrayOf(keys.getString(j)))
+                }
+                records.put(keys.getString(j), value)
+            } }
+    }
+
+    //adding requestHeader for connection url
+    private fun addRequestHeader() {
+        val headers = (connectionConfig.requestHeader as JSONObject).names()
+        if (headers != null) {
+            for(i in 0 until headers.length())
+            {
+
+                if(headers.getString(i).isEmpty())
+                {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS) //empty key
+                }
+                if(headers.getString(i).equals("X-Skyflow-Authorization"))
+                    headerMap.remove("X-Skyflow-Authorization")
+                if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
+                    || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
+                    headerMap.put(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
+                else
+                {
+                    //callback.onFailure(Exception("invalid field \"${headers.getString(i)}\" present in requestHeader"))
+                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS,
+                        tag, logLevel, arrayOf(headers.getString(i)))
+                    throw skyflowError
+                }
+            }
+        }
+    }
+
+
+    //adding query params for connection url
+    private fun addQueryParams() {
+        val queryParams = (connectionConfig.queryParams).names()
+        if(queryParams != null) {
+            for (i in 0 until queryParams.length()) {
+                if(queryParams.getString(i).isEmpty())
+                {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_QUERY_PARAMS)//empty key
+                }
+                val value = connectionConfig.queryParams.get(queryParams.getString(i))
+                if(value is Array<*>)
+                {
+                    for(j in 0 until value.size)
+                    {
+                       helperForQueryParams(value[j], queryParams.getString(i))
+                    } }
+                else {
+                    helperForQueryParams(value, queryParams.getString(i))
+                }
+            }
+        }
+    }
+
+    private fun helperForQueryParams(
+        value: Any?, key: String
+    )
+    {
+
+        if (value is Element)
+        {
+            if(!Utils.checkIfElementsMounted(value))
+            {
+                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag,
+                    logLevel, arrayOf(key))
+            }
+            checkForValidElement(value)
+            queryMap.put(key, value.getValue())
+        }
+        else if (value is Label)
+        {
+            if(!Utils.checkIfElementsMounted(value))
+            {
+                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag,
+                    logLevel, arrayOf(key))
+            }
+            else if (value.isTokenNull) {
+                val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                    tag, logLevel)
+               throw  error
+            }  else if (value.revealInput.token!!.isEmpty()) {
+                val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                    tag, logLevel)
+                throw error
+            }
+            queryMap.put(key, getValueForLabel(value))
+        }
+        else if (value is Number || value is String || value is Boolean || value is JSONObject)
+            queryMap.put(key,value.toString())
+        else {
+            //callback.onFailure(Exception("invalid field \"${key}\" present in queryParams"))
+            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS,
+                tag, logLevel, arrayOf(key))
+            throw skyflowError
+        }
+    }
+
+
+    //adding path params to connection url
+    fun addPathParamsToURL() :String
+    {
+            var newURL = connectionConfig.connectionURL
+            val params = connectionConfig.pathParams
+            val keys =(connectionConfig.pathParams).names()
+            if(keys !=null) {
+                for (j in 0 until keys.length()) {
+                    if(keys.getString(j).isEmpty())
+                    {
+                       throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_PATH_PARAMS,
+                            tag, logLevel) //empty key
+                    }
+                    var value = params.get(keys.getString(j))
+                    if (value is Element) {
+                        val element = value
+                        if(!Utils.checkIfElementsMounted(element))
+                        {
+                            val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                                tag, logLevel, arrayOf(keys.getString(j)))
+                            throw error
+                        }
+                        checkForValidElement(element)
+                        newURL = newURL.replace("{" + keys.getString(j) + "}", element.getValue())
+                    } else if (value is Label) {
+                        if(!Utils.checkIfElementsMounted(value))
+                        {
+                            val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                                tag, logLevel, arrayOf(keys.getString(j)))
+                            throw error
+                        }
+                        else if (value.isTokenNull) {
+                            val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN,
+                                tag, logLevel)
+                            throw error
+                        }  else if (value.revealInput.token!!.isEmpty()) {
+                            val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,
+                                tag, logLevel)
+                            throw error
+                        }
+                        else
+                            value = getValueForLabel(value)
+                        newURL = newURL.replace("{" + keys.getString(j) + "}", value)
+                    } else if (value is String || value is Number || value is Boolean) {
+                        value = value.toString()
+                        newURL = newURL.replace("{" + keys.getString(j) + "}", value)
+                    } else {
+                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_PATH_PARAMS,
+                            tag, logLevel, arrayOf(keys.getString(j)))
+                        throw skyflowError
+                    }
+                }
+            }
+        return newURL
+
+    }
+
+
+    fun checkForValidElement(element: Element)
+    {
+        val state = element.getState()
+        var errors = ""
+        var labelName = element.columnName
+        if(labelName == ""){
+            labelName = element.collectInput.label
+        }
+        if ((state["isRequired"] as Boolean) && (state["isEmpty"] as Boolean)) {
+            errors = "$labelName is empty\n"
+        }
+        if (!(state["isValid"] as Boolean)) {
+            errors = "for " + labelName + " " + (state["validationError"] as String) + "\n"
+        }
+        if (errors != "") {
+            val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
+            throw error
+        }
+    }
+
+    fun getValueForLabel(label : Label) : String {
+        val formatRegex = label.options.formatRegex
+        val value : String? = label.actualValue
+        if(formatRegex.isNotEmpty() && value == null){
+            tokenValueMap.put(label.getToken(),null)
+            tokenIdMap.put(label.getToken(),label.getID())
+            tokenLabelMap.put(label.getToken(),label)
+            return label.getID()
+        }
+        else if(value!= null && formatRegex.isNotEmpty()) {
+            val regex = Regex(formatRegex)
+            val matches =  regex.find(value)
+            return if(matches != null) matches.value else ""
+        }
+        return label.getValueForConnections()
+    }
+
+    // checking duplicate fields present in responseBody of connectionConfig
+    fun  checkDuplicateInResponseBody(
+        responseBody: JSONObject,
+        elementList: HashSet<String>
+    )
+    {
+        val keys = responseBody.names()
+        if(keys != null) {
+            for (j in 0 until keys.length()) {
+
+                if(responseBody.get(keys.getString(j)) is Element)
+                {
+                    val element = (responseBody.get(keys.getString(j))) as Element
+                    if(!Utils.checkIfElementsMounted(element))
+                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                            Utils.tag, logLevel, arrayOf(keys.getString(j)))
+
+                }
+                else if(responseBody.get(keys.getString(j)) is Label)
+                {
+                    val element = (responseBody.get(keys.getString(j))) as Label
+                    if(!Utils.checkIfElementsMounted(element))
+                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                            Utils.tag, logLevel, arrayOf(keys.getString(j)))
+                }
+                else if (responseBody.get(keys.getString(j)) is JSONObject) {
+                    checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
+                } else if (responseBody.get(keys.getString(j)) !is Element && !(responseBody.get(
+                        keys.getString(j)) is Label))
+                    throw Exception("invalid field " + keys.getString(j) + " present in response body")
+                if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(j)) is Label) {
+                    if (elementList.contains(responseBody.get(keys.getString(j)).hashCode().toString()))
+                        throw SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND,
+                            Utils.tag,logLevel)
+                    else
+                        elementList.add(responseBody.get(keys.getString(j)).hashCode().toString())
+                }
+            }
+        }
     }
 }

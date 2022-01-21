@@ -169,20 +169,8 @@ class APIClient (
         callback: Callback,
         client: Client
     ) {
-        val isValidResponseBody = Utils.checkDuplicateInResponseBody(connectionConfig.responseBody,callback,HashSet(),logLevel)
-        if(!isValidResponseBody) return
-        val requestBody = JSONObject()
-        Utils.copyJSON(connectionConfig.requestBody,requestBody)
-        val isBodyConstructed = Utils.constructRequestBodyForConnection(requestBody,callback, logLevel)
-        connectionConfig.requestBody = JSONObject()
-        if(isBodyConstructed)
-        {
-            val newConnection = connectionConfig.copy(requestBody = requestBody)
-            val connection = ConnectionApiCallback(newConnection,callback, logLevel,client)
-            this.getAccessToken(connection)
-        }
-        else
-            return
+        val connection = ConnectionApiCallback(connectionConfig,callback, logLevel,client)
+        this.getAccessToken(connection)
     }
 
     fun invokeSoapConnection(
