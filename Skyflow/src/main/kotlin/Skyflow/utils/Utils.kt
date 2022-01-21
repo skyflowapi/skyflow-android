@@ -2,17 +2,12 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
-import android.util.Log
 import android.webkit.URLUtil
-import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
-import org.xml.sax.InputSource
-import java.io.StringReader
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 
 class Utils {
@@ -45,6 +40,15 @@ class Utils {
             } catch (e:Exception) {
                 JSONObject()
             }
+        }
+
+        fun convertValues(responseBody: JSONObject,
+                             responseFromConnection: JSONObject,
+                             callback: Callback,
+                             logLevel: LogLevel) {
+
+
+
         }
 
 
@@ -152,7 +156,7 @@ class Utils {
                             callback.onFailure(constructError(error))
                             return false
                         }
-                        value = (records.get(keys.getString(j)) as Label).getValueForConnections()
+                        value =getValueForLabel(records.get(keys.getString(j)) as Label)
                     } else if (records.get(keys.getString(j)) is JSONObject) {
                         val isValid =
                             constructJsonKeyForConnectionRequest(records.get(keys.getString(j)) as JSONObject,
@@ -202,7 +206,7 @@ class Utils {
                                     callback.onFailure(constructError(error))
                                     return false
                                 }
-                                value = (arrayValue.get(k)  as Label).getValueForConnections()
+                                value = getValueForLabel(arrayValue.get(k)  as Label)
                             }
                             else if(arrayValue.get(k) is JSONObject)
                             {
@@ -273,7 +277,7 @@ class Utils {
                                     return false
                                 }
                                 else
-                                    value = (arrayValue[k] as Label).getValueForConnections()
+                                    value = getValueForLabel(arrayValue[k] as Label)
                             }
                             else if(arrayValue[k] is JSONObject)
                             {
@@ -372,7 +376,7 @@ class Utils {
                                 return ""
                             }
                             else
-                                value = value.getValueForConnections()
+                                value = getValueForLabel(value)
                             newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                         } else if (value is String || value is Number || value is Boolean) {
                             value = value.toString()
@@ -392,7 +396,7 @@ class Utils {
 
         //adding query params for connection url
         fun addQueryParams(
-            requestUrlBuilder: HttpUrl.Builder,
+            queryMap: HashMap<String,String>,
             connectionConfig: ConnectionConfig,
             callback: Callback,
             logLevel: LogLevel,
@@ -410,13 +414,13 @@ class Utils {
                     {
                         for(j in 0 until value.size)
                         {
-                            val isValid = helperForQueryParams(value[j],requestUrlBuilder,
+                            val isValid = helperForQueryParams(value[j],queryMap,
                                 queryParams.getString(i),callback, logLevel)
                             if(!isValid)
                                 return false
                         } }
                     else {
-                        val isValid = helperForQueryParams(value,requestUrlBuilder,
+                        val isValid = helperForQueryParams(value,queryMap,
                             queryParams.getString(i),callback, logLevel)
                         if(!isValid)
                             return false
@@ -426,7 +430,7 @@ class Utils {
 
         private fun helperForQueryParams(
             value: Any?,
-            requestUrlBuilder: HttpUrl.Builder,
+            queryMap: HashMap<String,String>,
             key: String,
             callback: Callback,
             logLevel: LogLevel,
@@ -444,7 +448,7 @@ class Utils {
                 }
                 val isValid = checkElement(value, callback, logLevel)
                 if (isValid)
-                    requestUrlBuilder.addQueryParameter(key, value.getValue())
+                    queryMap.put(key, value.getValue())
                 else
                     return false
             }
@@ -468,10 +472,10 @@ class Utils {
                     callback.onFailure(constructError(error))
                     return false
                 }
-                requestUrlBuilder.addQueryParameter(key, value.getValueForConnections())
+                queryMap.put(key, getValueForLabel(value))
             }
             else if (value is Number || value is String || value is Boolean || value is JSONObject)
-                requestUrlBuilder.addQueryParameter(key,value.toString())
+                queryMap.put(key,value.toString())
             else {
                 //callback.onFailure(Exception("invalid field \"${key}\" present in queryParams"))
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS,
@@ -485,7 +489,7 @@ class Utils {
 
         //adding requestHeader for connection url
         fun addRequestHeader(
-            request: Request.Builder, connectionConfig: ConnectionConfig,
+            headerMap: HashMap<String,String>, connectionConfig: ConnectionConfig,
             callback: Callback, logLevel: LogLevel,
         ): Boolean {
             val headers = (connectionConfig.requestHeader as JSONObject).names()
@@ -499,10 +503,10 @@ class Utils {
                         return false
                     }
                     if(headers.getString(i).equals("X-Skyflow-Authorization"))
-                        request.removeHeader("X-Skyflow-Authorization")
+                        headerMap.remove("X-Skyflow-Authorization")
                     if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
                         || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
-                        request.addHeader(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
+                        headerMap.put(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
                     else
                     {
                         //callback.onFailure(Exception("invalid field \"${headers.getString(i)}\" present in requestHeader"))
@@ -794,6 +798,23 @@ class Utils {
                 allMatches.add(m.group())
             }
             return allMatches
+        }
+        internal var labelWithRegexMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
+        internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
+        fun getValueForLabel(label : Label) : String {
+            val formatRegex = label.options.formatRegex
+            val value : String? = label.actualValue
+            if(formatRegex.isNotEmpty() && value == null){
+                labelWithRegexMap.put(label.getToken(),null)
+                tokenLabelMap.put(label.getToken(),label)
+                return label.getToken()
+            }
+            else if(value!= null && formatRegex.isNotEmpty()) {
+                val regex = Regex(formatRegex)
+                val matches =  regex.find(value)
+                return if(matches != null) matches.value else ""
+            }
+            return label.getValueForConnections()
         }
     }
 

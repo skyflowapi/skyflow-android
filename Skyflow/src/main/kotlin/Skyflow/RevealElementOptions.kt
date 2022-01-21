@@ -1,4 +1,3 @@
 package Skyflow
 
-class RevealElementOptions {
-}
+class RevealElementOptions(var formatRegex : String = "") {}

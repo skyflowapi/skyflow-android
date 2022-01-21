@@ -1253,7 +1253,7 @@ class InvokeConnectionTest {
         val pathParams = JSONObject()
         pathParams.put("cvv",JSONObject())
         val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
-        ConnectionApiCallback(connectionConfiguration,object : Callback
+        ConnectionApiCallback(connectionConfiguration, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1265,7 +1265,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
     @Test
@@ -1278,7 +1278,7 @@ class InvokeConnectionTest {
         val pathParams = JSONObject()
         pathParams.put("cvv","123")
         val connectionConfiguration = ConnectionConfig("https://www.google.com/{cvv}",RequestMethod.POST,queryParams = queryParams,pathParams = pathParams)
-        ConnectionApiCallback(connectionConfiguration,object : Callback
+        ConnectionApiCallback(connectionConfiguration, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1290,7 +1290,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
     @Test
@@ -1301,7 +1301,7 @@ class InvokeConnectionTest {
         requestHeader.put("cvv",CheckBox(activity))
 
         val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST,requestHeader = requestHeader)
-        ConnectionApiCallback(connectionConfiguration,object : Callback
+        ConnectionApiCallback(connectionConfiguration, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1313,7 +1313,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("Bearer token")
+        }, LogLevel.ERROR, client).onSuccess("Bearer token")
     }
 
 
@@ -1321,7 +1321,7 @@ class InvokeConnectionTest {
     fun testValidConnectionApiCallback()
     {
         val connectionConfiguration = ConnectionConfig("https://www.google.com/",RequestMethod.POST)
-        val connection =   ConnectionApiCallback(connectionConfiguration,object : Callback
+        val connection =   ConnectionApiCallback(connectionConfiguration, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -1330,7 +1330,7 @@ class InvokeConnectionTest {
                 TestCase.assertEquals("failed 12",exception.toString())
             }
 
-        },LogLevel.ERROR)
+        }, LogLevel.ERROR, client)
 
         connection.onSuccess("Bearer token")
 //        connection.onFailure("failed")
@@ -1340,7 +1340,7 @@ class InvokeConnectionTest {
     fun testConnectionApiCallbackInvalidUrl()
     {
         val connectionConfiguration = ConnectionConfig("httpsm/",RequestMethod.POST)
-        ConnectionApiCallback(connectionConfiguration,object : Callback
+        ConnectionApiCallback(connectionConfiguration, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
             }
@@ -1349,7 +1349,7 @@ class InvokeConnectionTest {
                     .getInternalErrorMessage(), UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("Bearer token")
+        }, LogLevel.ERROR, client).onSuccess("Bearer token")
 
     }
 
@@ -1552,7 +1552,7 @@ class InvokeConnectionTest {
         pathParams.put("cvv1", getEmptyTokenCvv())
         val url = "https://www.google.com/{cvv1}" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1564,7 +1564,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
     @Test
@@ -1574,7 +1574,7 @@ class InvokeConnectionTest {
         pathParams.put("cvv",getNullCvv())
         val url = "https://www.google.com/{cvv}" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),pathParams = pathParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1586,7 +1586,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
 
@@ -1597,7 +1597,7 @@ class InvokeConnectionTest {
         queryParams.put("cvv1", getEmptyTokenCvv())
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1609,7 +1609,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
     @Test
@@ -1619,7 +1619,7 @@ class InvokeConnectionTest {
         queryParams.put("cvv",getNullCvv())
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1631,7 +1631,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
 
@@ -1642,7 +1642,7 @@ class InvokeConnectionTest {
         queryParams.put("cvv1", arrayOf(getEmptyTokenCvv(),2,3))
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1654,7 +1654,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
     @Test
@@ -1664,7 +1664,7 @@ class InvokeConnectionTest {
         queryParams.put("cvv", arrayOf(getNullCvv(),2,3))
         val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(),queryParams = queryParams,methodName = RequestMethod.POST)
-        ConnectionApiCallback(connectionRequestBody,object : Callback
+        ConnectionApiCallback(connectionRequestBody, object : Callback
         {
             override fun onSuccess(responseBody: Any) {
 
@@ -1676,7 +1676,7 @@ class InvokeConnectionTest {
                     UnitTests.getErrorMessage(exception as JSONObject))
             }
 
-        },LogLevel.ERROR).onSuccess("token")
+        }, LogLevel.ERROR, client).onSuccess("token")
     }
 
 

@@ -184,7 +184,7 @@ class Client internal constructor(
             callback.onFailure(Utils.constructError(error))
         }
         else if (checkUrl)
-            this.apiClient.invokeConnection(connectionConfig, callback)
+            this.apiClient.invokeConnection(connectionConfig, callback,this)
         else {
             val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,tag, configuration.options.logLevel,
                 arrayOf(connectionConfig.connectionURL))
