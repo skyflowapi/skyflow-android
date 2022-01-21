@@ -128,9 +128,7 @@ class Label @JvmOverloads constructor(
 
     private fun setInvalidStyles(){
         if(this.revealInput.inputStyles.invalid.font != Typeface.NORMAL)
-            this.placeholder.typeface =
-                ResourcesCompat.getFont(this.context,
-                    this.revealInput.inputStyles.invalid.font)
+            this.placeholder.typeface = ResourcesCompat.getFont(this.context,this.revealInput.inputStyles.invalid.font)
         this.placeholder.gravity =
             this.revealInput.inputStyles.invalid.textAlignment
         val padding = this.revealInput.inputStyles.invalid.padding

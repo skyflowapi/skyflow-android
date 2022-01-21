@@ -772,7 +772,7 @@ class UnitTests {
                     (exception as SkyflowError).getInternalErrorMessage())
             }
 
-        }, this)
+        }, skyflow)
 
     }
 
@@ -795,7 +795,7 @@ class UnitTests {
                     // valid
             }
 
-        }, this)
+        }, skyflow)
 
     }
     //end api client

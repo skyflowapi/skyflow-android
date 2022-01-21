@@ -781,6 +781,88 @@ class RevealTest {
 
 
     }
+
+    @Test
+    fun testSetToken() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setToken("token")
+        assertEquals("token",expireDate.getToken())
+    }
+    @Test
+    fun testGetToken() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.revealInput.token = null
+        assertEquals("",expireDate.getToken())
+    }
+    @Test
+    fun testGetValueForConnections() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setToken("token")
+        assertEquals("token",expireDate.getValueForConnections())
+    }
+    @Test
+    fun testGetValueForConnectionsIfActualValue() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setToken("token")
+        expireDate.actualValue = "1234"
+        assertEquals("1234",expireDate.getValueForConnections())
+    }
+    @Test
+    fun testSetAltText() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setAltText("altText")
+        assertEquals("altText",expireDate.revealInput.altText)
+    }
+    @Test
+    fun testClearAltText() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setAltText("altText")
+        expireDate.clearAltText()
+        assertEquals("",expireDate.revealInput.altText)
+    }
+    @Test
+    fun testClearAltTextIfActualValuePresent() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setAltText("altText")
+        expireDate.actualValue = "1234"
+        expireDate.clearAltText()
+        assertEquals("1234",expireDate.placeholder.text.toString())
+    }
+
+    @Test
+    fun testSetText() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null )
+        val expireDate = container.create(activity,revealInput)
+        expireDate.setText("1234")
+        assertEquals("1234",expireDate.placeholder.text.toString())
+        assertEquals("",expireDate.getValue())
+    }
+
+    @Test
+    fun testSetTextIfActualValue() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput("1234",null, )
+        val expireDate = container.create(activity,revealInput, RevealElementOptions("..$"))
+        expireDate.setText("1234")
+        expireDate.actualValue = "12345"
+        assertEquals("12345",expireDate.getValue())
+        assertEquals("34",expireDate.placeholder.text.toString())
+    }
     //end RevealValueCallback
 
 }
