@@ -43,7 +43,7 @@ internal class ConnectionApiCallback(
                 Log.d("connectionUrl",connectionUrl)
                 val requestBuild = getRequestBuild(token)
                 if(requestBuild == null ) return
-                doRequest(requestBuild)
+                sendRequest(requestBuild)
             }
             else {
                 val records = JSONObject()
@@ -59,10 +59,10 @@ internal class ConnectionApiCallback(
                 client.detokenize(records,object : Callback {
                     override fun onSuccess(responseBody: Any) {
                         Log.d("response for tokens",responseBody.toString())
-                        doTokenMap(responseBody)
+                        Utils.doTokenMap(responseBody,tokenValueMap)
                         Log.d("after - tokenLabelMap",tokenLabelMap.toString())
                         Log.d("after - regexMap",tokenValueMap.toString())
-                        doformatRegexForMap()
+                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap)
                         var requestBody = connectionConfig.requestBody.toString()
                         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
                         tokenValueMap.forEach {
@@ -80,7 +80,7 @@ internal class ConnectionApiCallback(
                         Log.d("connectionUrl",connectionUrl)
                         val requestBuild = getRequestBuild(token)
                         if(requestBuild == null ) return
-                        doRequest(requestBuild)
+                        sendRequest(requestBuild)
                     }
                     override fun onFailure(exception: Any) {
                         val result = exception as JSONObject
@@ -95,26 +95,9 @@ internal class ConnectionApiCallback(
         }
     }
 
-    private fun doformatRegexForMap() { // do regex on value after detokenize and put it in labelWithRegexMap
-        tokenValueMap.forEach {
-            val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
-            val regex = Regex(formatRegex)
-            val matches =  regex.find(it.value!!)
-            val value = if(matches != null) matches.value else ""
-            tokenValueMap.put(it.key,value)
 
-        }
-    }
 
-    private fun doTokenMap(responseBody: Any) { // fill labelWithRegexMap with actual values from api
-            val records = (responseBody as JSONObject).getJSONArray("records")
-            for(i in 0  until records.length()) {
-                val record = records[i] as JSONObject
-                val token = record.getString("token")
-                val value = record.getString("value")
-                tokenValueMap.put(token,value)
-            }
-    }
+
 
     override fun onFailure(exception: Any) {
         if(exception is Exception)
@@ -167,7 +150,7 @@ internal class ConnectionApiCallback(
         return requestBuild
     }
 
-    fun doRequest(requestBuild: Request) { //send request to Connection
+    fun sendRequest(requestBuild: Request) { //send request to Connection
         okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
             override fun onFailure(call: Call, e: IOException) {
                 callback.onFailure(Utils.constructError(e))
@@ -184,8 +167,7 @@ internal class ConnectionApiCallback(
                     else
                     {
                         val responseFromConnection =JSONObject(response.body!!.string())
-                        val finaleResponse = Utils.constructResponseBodyFromConnection(connectionConfig.responseBody,
-                            responseFromConnection,callback,logLevel)
+                        val finaleResponse = constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
                         callback.onSuccess(finaleResponse)
                     }
                 }
@@ -195,7 +177,7 @@ internal class ConnectionApiCallback(
 
 
    
-    var arrayInRequestBody : JSONArray = JSONArray()
+    private var arrayInRequestBody : JSONArray = JSONArray()
     //changing pci elements to actual values in it for request to connection
     internal fun constructRequestBodyForConnection(records: JSONObject) {
         val keys = records.names()
@@ -220,7 +202,7 @@ internal class ConnectionApiCallback(
                        throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN_IN_CONNECTION_REQUEST, tag, logLevel, arrayOf(keys.getString(j)))
                      else if ((records.get(keys.getString(j)) as Label).revealInput.token!!.isEmpty()) 
                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
-                    value = getValueForLabel(records.get(keys.getString(j)) as Label)
+                    value = Utils.getValueForLabel(records.get(keys.getString(j)) as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
                 } else if (records.get(keys.getString(j)) is JSONObject) {
                     constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject, )
                     value = JSONObject(records.get(keys.getString(j)).toString())
@@ -246,7 +228,7 @@ internal class ConnectionApiCallback(
                                 throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                                 else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) 
                                 throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
-                            value = getValueForLabel(arrayValue.get(k) as Label)
+                            value = Utils.getValueForLabel(arrayValue.get(k) as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
                         }
                         else if(arrayValue.get(k) is JSONObject)
                         {
@@ -284,7 +266,7 @@ internal class ConnectionApiCallback(
                               else if ((arrayValue[k] as Label).revealInput.token!!.isEmpty()) 
                                 throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                             else
-                                value = getValueForLabel(arrayValue[k] as Label)
+                                value = Utils.getValueForLabel(arrayValue[k] as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
                         }
                         else if(arrayValue[k] is JSONObject)
                         {
@@ -400,7 +382,7 @@ internal class ConnectionApiCallback(
                     tag, logLevel)
                 throw error
             }
-            queryMap.put(key, getValueForLabel(value))
+            queryMap.put(key, Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
         }
         else if (value is Number || value is String || value is Boolean || value is JSONObject)
             queryMap.put(key,value.toString())
@@ -454,7 +436,7 @@ internal class ConnectionApiCallback(
                             throw error
                         }
                         else
-                            value = getValueForLabel(value)
+                            value = Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap)
                         newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                     } else if (value is String || value is Number || value is Boolean) {
                         value = value.toString()
@@ -491,22 +473,7 @@ internal class ConnectionApiCallback(
         }
     }
 
-    fun getValueForLabel(label : Label) : String {
-        val formatRegex = label.options.formatRegex
-        val value : String? = label.actualValue
-        if(formatRegex.isNotEmpty() && value == null){
-            tokenValueMap.put(label.getToken(),null)
-            tokenIdMap.put(label.getToken(),label.getID())
-            tokenLabelMap.put(label.getToken(),label)
-            return label.getID()
-        }
-        else if(value!= null && formatRegex.isNotEmpty()) {
-            val regex = Regex(formatRegex)
-            val matches =  regex.find(value)
-            return if(matches != null) matches.value else ""
-        }
-        return label.getValueForConnections()
-    }
+
 
     // checking duplicate fields present in responseBody of connectionConfig
     fun  checkDuplicateInResponseBody(
@@ -547,5 +514,64 @@ internal class ConnectionApiCallback(
                 }
             }
         }
+    }
+
+    //response for invokeConnection
+    fun constructResponseBodyFromConnection(
+        responseBody: JSONObject,
+        responseFromConnection: JSONObject,
+    )
+    {
+            Utils.checkInvalidFields(responseBody, responseFromConnection)
+            constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
+            Utils.removeEmptyAndNullFields(responseFromConnection)
+    }
+
+    //displaying data to pci elements and removing pci element values from response
+    private var errors = JSONArray()
+    private var connectionResponse = JSONObject()
+    fun constructJsonKeyForConnectionResponse(
+        responseBody: JSONObject,
+        responseFromConnection: JSONObject
+    ) : JSONObject
+    {
+        val keys = responseBody.names()
+        if(keys != null) {
+            for (j in 0 until keys.length()) {
+                try {
+
+
+                    if (responseBody.get(keys.getString(j)) is Element) {
+                        val ans = responseFromConnection.getString(keys.getString(j))
+                        (responseBody.get(keys.getString(j)) as TextField).inputField.setText(
+                            ans)
+                        responseFromConnection.remove(keys.getString(j))
+                    } else if (responseBody.get(keys.getString(j)) is Label) {
+                        val ans = responseFromConnection.getString(keys.getString(j))
+                        (responseBody.get(keys.getString(j)) as Label).placeholder.setText(
+                            ans)
+                        (responseBody.get(keys.getString(j)) as Label).actualValue = ans
+                        responseFromConnection.remove(keys.getString(j))
+                    } else if (responseBody.get(keys.getString(j)) is JSONObject) {
+                        constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
+                            responseFromConnection.getJSONObject(keys.getString(j)))
+                    }
+
+                }
+                catch (e:Exception)
+                {
+
+                    val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
+                        Utils.tag, logLevel, arrayOf(keys.getString(j)))
+                    val finalError = JSONObject()
+                    finalError.put("error",error)
+                    if(!connectionResponse.has("errors"))
+                        connectionResponse.put("errors",JSONArray())
+                    connectionResponse.getJSONArray("errors").put(finalError)
+                    responseFromConnection.remove(keys.getString(j))
+                }
+            } }
+        connectionResponse.put("success",responseFromConnection)
+        return connectionResponse
     }
 }

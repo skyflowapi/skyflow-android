@@ -3,9 +3,12 @@ package Skyflow.soap
 import Skyflow.*
 import Skyflow.Callback
 import Skyflow.utils.Utils
+import android.util.Log
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.IOException
 
 
@@ -19,47 +22,54 @@ internal class SoapApiCallback(
     private val okHttpClient = OkHttpClient()
     private val tag = SoapApiCallback::class.qualifiedName
 
+    internal var tokenIdMap = HashMap<String,String>() //key token,value is label id
+    internal var tokenValueMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
+    internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
     override fun onSuccess(responseBody: Any) {
         try{
-            val url = soapConnectionConfig.connectionURL
-            val requestBody = getRequestBody()
+            var requestBody = getRequestBody()
             if(requestBody == null) return
-            val body: RequestBody = requestBody.toRequestBody("application/xml".toMediaTypeOrNull()) //adding body
-            val request = Request
-                .Builder()
-                .method("POST", body)
-                .addHeader("X-Skyflow-Authorization", responseBody.toString().split("Bearer ")[1])
-                .url(url)
-            soapConnectionConfig.httpHeaders.forEach { (key, value) ->
-                    if(key.equals("X-Skyflow-Authorization"))
-                        request.removeHeader("X-Skyflow-Authorization")
-                    request.addHeader(key,value)
-            } //adding headers
-            val requestBuild = request.build()
-            okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
-                override fun onFailure(call: Call, e: IOException) {
-                    val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
-                    (this@SoapApiCallback).onFailure(skyflowError)
+            val token = responseBody.toString()
+            if(tokenValueMap.isEmpty()){
+                val requestBuild = getRequestBuild(token,requestBody)
+                sendRequest(requestBuild)
+            }
+            else {
+                val records = JSONObject()
+                val array = JSONArray()
+                tokenValueMap.forEach {
+                    val recordObj = JSONObject()
+                    recordObj.put("token", it.key)
+                    array.put(recordObj)
                 }
-
-                override fun onResponse(call: Call, response: Response) {
-                    response.use {
-                        if (!response.isSuccessful)
-                        {
-                            val res = response.body!!.string()
-                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
-                                arrayOf(res))
-                            skyflowError.setXml(res)
-                            callback.onFailure(skyflowError)
+                records.put("records", array)
+                Log.d("before - tokenLabelMap",tokenLabelMap.toString())
+                Log.d("before - regexMap",tokenValueMap.toString())
+                client.detokenize(records,object : Callback {
+                    override fun onSuccess(responseBody: Any) {
+                        Log.d("response for tokens",responseBody.toString())
+                        Utils.doTokenMap(responseBody,tokenValueMap)
+                        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
+                        Log.d("after - regexMap",tokenValueMap.toString())
+                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap)
+                        tokenValueMap.forEach {
+                            requestBody = requestBody!!.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
                         }
-                        else
-                        {
-                            val res = response.body!!.string()
-                            callback.onSuccess(res)
-                        }
+                        Log.d("request",requestBody!!)
+                        val requestBuild = getRequestBuild(token,requestBody!!)
+                        sendRequest(requestBuild)
                     }
-                }
-            })}catch (e: Exception){
+                    override fun onFailure(exception: Any) {
+                        val result = exception as JSONObject
+                        result.remove("records")
+                        callback.onFailure(result)
+                    }
+
+                })
+            }
+
+
+        }catch (e: Exception){
             val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString()))
             skyflowError.setErrorCode(400)
             callback.onFailure(skyflowError)
@@ -68,6 +78,51 @@ internal class SoapApiCallback(
 
     override fun onFailure(exception: Any) {
         callback.onFailure(exception)
+    }
+
+
+    fun getRequestBuild(token:String,requestBody:String): Request {
+        val url = soapConnectionConfig.connectionURL
+        val body: RequestBody = requestBody.toRequestBody("application/xml".toMediaTypeOrNull()) //adding body
+        val request = Request
+            .Builder()
+            .method("POST", body)
+            .addHeader("X-Skyflow-Authorization", token.split("Bearer ")[1])
+            .url(url)
+        soapConnectionConfig.httpHeaders.forEach { (key, value) ->
+            if(key.equals("X-Skyflow-Authorization"))
+                request.removeHeader("X-Skyflow-Authorization")
+            request.addHeader(key,value)
+        } //adding headers
+        val requestBuild = request.build()
+        return requestBuild
+    }
+
+    fun sendRequest(requestBuild: Request) {
+        okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
+            override fun onFailure(call: Call, e: IOException) {
+                val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                (this@SoapApiCallback).onFailure(skyflowError)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful)
+                    {
+                        val res = response.body!!.string()
+                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
+                            arrayOf(res))
+                        skyflowError.setXml(res)
+                        callback.onFailure(skyflowError)
+                    }
+                    else
+                    {
+                        val res = response.body!!.string()
+                        callback.onSuccess(res)
+                    }
+                }
+            }
+        })
     }
 
     fun getRequestBody() : String? {
@@ -105,7 +160,7 @@ internal class SoapApiCallback(
                     }
                 } else if (value is Label) {
                     if (Utils.checkIfElementsMounted(value)) {
-                        tempXML = tempXML.replace(it,value.getValueForConnections())
+                        tempXML = tempXML.replace(it,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
                     } else {
                         //element not mounted
                         val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,

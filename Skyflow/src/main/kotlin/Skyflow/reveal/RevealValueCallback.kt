@@ -2,9 +2,6 @@ package Skyflow.reveal
 
 import Skyflow.Callback
 import Skyflow.Label
-import Skyflow.utils.Utils
-import android.graphics.Typeface
-import androidx.core.content.res.ResourcesCompat
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -46,9 +43,17 @@ internal class RevealValueCallback(var callback: Callback, var revealElements: M
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
-//            val fieldsObj = recordObj.getJSONObject("value")
+                val element = elementsMap[tokenId]!!
+                val formatRegex = element.options.formatRegex
                 val value = recordObj.getString("value")
-                elementsMap[tokenId]!!.placeholder.text = value
+                if(formatRegex.isNotEmpty()) {
+                    val regex = Regex(formatRegex)
+                    val matches = regex.find(value)
+                    elementsMap[tokenId]!!.placeholder.text =
+                        if (matches != null) matches.value else value
+                }
+                else
+                    elementsMap[tokenId]!!.placeholder.text = value
                 elementsMap[tokenId]!!.actualValue = value
                 recordObj.remove("value")
             }

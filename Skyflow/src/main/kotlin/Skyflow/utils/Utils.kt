@@ -19,78 +19,6 @@ class Utils {
             }
             return true
         }
-
-        //response for invokeConnection
-        fun constructResponseBodyFromConnection(
-            responseBody: JSONObject,
-            responseFromConnection: JSONObject,
-            callback: Callback,
-            logLevel: LogLevel
-        ) : JSONObject
-        {
-            return try {
-                val isValid = checkInvalidFields(responseBody,responseFromConnection,callback)
-                if(isValid) {
-                    constructJsonKeyForConnectionResponse(responseBody,responseFromConnection,callback, logLevel)
-                    removeEmptyAndNullFields(responseFromConnection)
-                    responseFromConnection
-                } else
-                    JSONObject()
-            } catch (e:Exception) {
-                JSONObject()
-            }
-        }
-
-        //displaying data to pci elements and removing pci element values from response
-        var errors = JSONArray()
-        var connectionResponse = JSONObject()
-        fun constructJsonKeyForConnectionResponse(
-            responseBody: JSONObject,
-            responseFromConnection: JSONObject,
-            callback: Callback,
-            logLevel: LogLevel
-        ) : JSONObject
-        {
-            val keys = responseBody.names()
-            if(keys != null) {
-                for (j in 0 until keys.length()) {
-                    try {
-
-
-                        if (responseBody.get(keys.getString(j)) is Element) {
-                            val ans = responseFromConnection.getString(keys.getString(j))
-                            (responseBody.get(keys.getString(j)) as TextField).inputField.setText(
-                                ans)
-                            responseFromConnection.remove(keys.getString(j))
-                        } else if (responseBody.get(keys.getString(j)) is Label) {
-                            val ans = responseFromConnection.getString(keys.getString(j))
-                            (responseBody.get(keys.getString(j)) as Label).placeholder.setText(
-                                ans)
-                            (responseBody.get(keys.getString(j)) as Label).actualValue = ans
-                            responseFromConnection.remove(keys.getString(j))
-                        } else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                            constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
-                                responseFromConnection.getJSONObject(keys.getString(j)),
-                                callback,logLevel)
-
-                        }
-
-                    }
-                    catch (e:Exception)
-                    {
-
-                        val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE, tag, logLevel, arrayOf(keys.getString(j)))
-                        val finalError = JSONObject()
-                        finalError.put("error",error)
-                        if(!connectionResponse.has("errors"))
-                            connectionResponse.put("errors",JSONArray())
-                        connectionResponse.getJSONArray("errors").put(finalError)
-                        responseFromConnection.remove(keys.getString(j))
-                    }
-                } }
-            connectionResponse.put("success",responseFromConnection)
-            return connectionResponse
-        }
         //for collect element
         fun constructBatchRequestBody(
             records: JSONObject,
@@ -203,20 +131,14 @@ class Utils {
         //checking invalid fields in response body of connectionConfig
         fun checkInvalidFields(
             responseBody: JSONObject,
-            responseFromConnection: JSONObject,
-            callback: Callback,
-        ): Boolean {
-            try {
+            responseFromConnection: JSONObject
+        ) {
                 val keys = responseBody.names()
                 if(keys !=null) {
                     for (j in 0 until keys.length()) {
                         if (responseBody.get(keys.getString(j)) is JSONObject) {
-                            val check =
                                 checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
-                                    responseFromConnection.getJSONObject(keys.getString(j)),
-                                    callback)
-                            if (!check)
-                                return false
+                                    responseFromConnection.getJSONObject(keys.getString(j)))
                         } else if (responseBody.get(keys.getString(j)) !is Element && responseBody.get(
                                 keys.getString(j)) !is Label
                         )
@@ -236,12 +158,10 @@ class Utils {
                             {
                                 val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(keys.getString(j)))
                                 throw error
-                            } } } } }
-            catch (e: Exception) {
-                callback.onFailure(constructError(e))
-                return false
-            }
-            return true
+                            }
+                        }
+                    }
+                }
         }
 
         //removing empty json objects
@@ -310,6 +230,44 @@ class Utils {
                 allMatches.add(m.group())
             }
             return allMatches
+        }
+
+        fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>) : String {
+            val formatRegex = label.options.formatRegex
+            val value : String? = label.actualValue
+            if(formatRegex.isNotEmpty() && value == null){
+                tokenValueMap.put(label.getToken(),null)
+                tokenIdMap.put(label.getToken(),label.getID())
+                tokenLabelMap.put(label.getToken(),label)
+                return label.getID()
+            }
+            else if(value!= null && formatRegex.isNotEmpty()) {
+                val regex = Regex(formatRegex)
+                val matches =  regex.find(value)
+                return if(matches != null) matches.value else ""
+            }
+            return label.getValueForConnections()
+        }
+
+        fun doTokenMap(responseBody: Any,tokenValueMap:HashMap<String,String?>) { // fill labelWithRegexMap with actual values from api
+            val records = (responseBody as JSONObject).getJSONArray("records")
+            for(i in 0  until records.length()) {
+                val record = records[i] as JSONObject
+                val token = record.getString("token")
+                val value = record.getString("value")
+                tokenValueMap.put(token,value)
+            }
+        }
+
+        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>) { // do regex on value after detokenize and put it in labelWithRegexMap
+            tokenValueMap.forEach {
+                val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
+                val regex = Regex(formatRegex)
+                val matches =  regex.find(it.value!!)
+                val value = if(matches != null) matches.value else ""
+                tokenValueMap.put(it.key,value)
+
+            }
         }
     }
 
