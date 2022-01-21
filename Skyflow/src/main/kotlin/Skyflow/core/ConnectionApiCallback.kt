@@ -167,8 +167,8 @@ internal class ConnectionApiCallback(
                     else
                     {
                         val responseFromConnection =JSONObject(response.body!!.string())
-                        val finaleResponse = constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
-                        callback.onSuccess(finaleResponse)
+                        constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
+                        callback.onSuccess(responseFromConnection)
                     }
                 }
             }
@@ -520,11 +520,11 @@ internal class ConnectionApiCallback(
     fun constructResponseBodyFromConnection(
         responseBody: JSONObject,
         responseFromConnection: JSONObject,
-    )
-    {
+    ): JSONObject {
             Utils.checkInvalidFields(responseBody, responseFromConnection)
-            constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
+            val finalResponse = constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
             Utils.removeEmptyAndNullFields(responseFromConnection)
+            return finalResponse
     }
 
     //displaying data to pci elements and removing pci element values from response
@@ -548,8 +548,7 @@ internal class ConnectionApiCallback(
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        (responseBody.get(keys.getString(j)) as Label).placeholder.setText(
-                            ans)
+                        (responseBody.get(keys.getString(j)) as Label).setText(ans)
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {

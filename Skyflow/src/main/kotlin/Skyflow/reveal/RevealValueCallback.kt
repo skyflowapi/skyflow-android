@@ -44,16 +44,8 @@ internal class RevealValueCallback(var callback: Callback, var revealElements: M
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
                 val element = elementsMap[tokenId]!!
-                val formatRegex = element.options.formatRegex
                 val value = recordObj.getString("value")
-                if(formatRegex.isNotEmpty()) {
-                    val regex = Regex(formatRegex)
-                    val matches = regex.find(value)
-                    elementsMap[tokenId]!!.placeholder.text =
-                        if (matches != null) matches.value else value
-                }
-                else
-                    elementsMap[tokenId]!!.placeholder.text = value
+                elementsMap[tokenId]!!.setText(value)
                 elementsMap[tokenId]!!.actualValue = value
                 recordObj.remove("value")
             }
