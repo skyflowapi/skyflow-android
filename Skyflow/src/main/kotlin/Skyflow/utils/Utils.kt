@@ -3,7 +3,6 @@ package Skyflow.utils
 import Skyflow.*
 import Skyflow.LogLevel
 import android.webkit.URLUtil
-import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Matcher
@@ -799,15 +798,17 @@ class Utils {
             }
             return allMatches
         }
-        internal var labelWithRegexMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
+        internal var tokenIdMap = HashMap<String,String>()
+        internal var tokenValueMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
         internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
         fun getValueForLabel(label : Label) : String {
             val formatRegex = label.options.formatRegex
             val value : String? = label.actualValue
             if(formatRegex.isNotEmpty() && value == null){
-                labelWithRegexMap.put(label.getToken(),null)
+                tokenValueMap.put(label.getToken(),null)
+                tokenIdMap.put(label.getToken(),label.getID())
                 tokenLabelMap.put(label.getToken(),label)
-                return label.getToken()
+                return label.getID()
             }
             else if(value!= null && formatRegex.isNotEmpty()) {
                 val regex = Regex(formatRegex)

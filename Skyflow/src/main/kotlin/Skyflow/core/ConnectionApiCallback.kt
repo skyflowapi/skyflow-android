@@ -32,11 +32,7 @@ internal class ConnectionApiCallback(
             val token = responseBody.toString()
             if(!convertElements()) return
             requestBody = connectionConfig.requestBody.toString()
-            if(Utils.labelWithRegexMap.isEmpty()){
-                Log.d("header",headerMap.toString())
-                Log.d("query",queryMap.toString())
-                Log.d("request",requestBody.toString())
-                Log.d("connectionUrl",connectionUrl)
+            if(Utils.tokenValueMap.isEmpty()){
                 val requestBuild = getRequestBuild(token)
                 if(requestBuild == null ) return
                 doRequest(requestBuild)
@@ -44,36 +40,28 @@ internal class ConnectionApiCallback(
             else {
                 val records = JSONObject()
                 val array = JSONArray()
-                Utils.labelWithRegexMap.forEach {
+                Utils.tokenValueMap.forEach {
                     val recordObj = JSONObject()
                     recordObj.put("token",it.key)
                     array.put(recordObj)
                 }
                 records.put("records",array)
-                Log.d("before - tokenLabelMap",Utils.tokenLabelMap.toString())
-                Log.d("before - regexMap",Utils.labelWithRegexMap.toString())
                 client.detokenize(records,object : Callback {
                     override fun onSuccess(responseBody: Any) {
-                        Log.d("response for tokens",responseBody.toString())
                         doTokenMap(responseBody)
-                        Log.d("after - tokenLabelMap",Utils.tokenLabelMap.toString())
-                        Log.d("after - regexMap",Utils.labelWithRegexMap.toString())
                         doformatRegexForMap()
                         var requestBody = connectionConfig.requestBody.toString()
                         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
-                        Utils.labelWithRegexMap.forEach {
-                            queryString = queryString.replace(it.key,it.value!!)
-                            connectionUrl = connectionUrl.replace(it.key,it.value!!)
-                            requestBody = requestBody.replace(it.key.trim(),it.value!!.trim())
+                        Utils.tokenValueMap.forEach {
+                            queryString = queryString.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!)
+                            connectionUrl = connectionUrl.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!)
+                            requestBody = requestBody.replace(Utils.tokenIdMap.get(it.key)!!,it.value!!.trim())
                         }
                         val queryMapWithDetokenizeValues = queryString.split(",").associate {
                             val (left, right) = it.split("=")
                             left to right
                         }
                         queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
-                        Log.d("query",queryMap.toString())
-                        Log.d("request",requestBody)
-                        Log.d("connectionUrl",connectionUrl)
                         val requestBuild = getRequestBuild(token)
                         if(requestBuild == null ) return
                         doRequest(requestBuild)
@@ -92,12 +80,12 @@ internal class ConnectionApiCallback(
     }
 
     private fun doformatRegexForMap() { // do regex on value after detokenize and put it in labelWithRegexMap
-        Utils.labelWithRegexMap.forEach {
+        Utils.tokenValueMap.forEach {
             val formatRegex = Utils.tokenLabelMap.get(it.key)!!.options.formatRegex
             val regex = Regex(formatRegex)
             val matches =  regex.find(it.value!!)
             val value = if(matches != null) matches.value else ""
-            Utils.labelWithRegexMap.put(it.key,value)
+            Utils.tokenValueMap.put(it.key,value)
 
         }
     }
@@ -108,7 +96,7 @@ internal class ConnectionApiCallback(
                 val record = records[i] as JSONObject
                 val token = record.getString("token")
                 val value = record.getString("value")
-                Utils.labelWithRegexMap.put(token,value)
+                Utils.tokenValueMap.put(token,value)
             }
     }
 
