@@ -24,7 +24,7 @@ internal class ConnectionApiCallback(
     private val tag = ConnectionApiCallback::class.qualifiedName
 
     private var connectionUrl = ""
-    private var requestBody = ""
+    private var requestBody = JSONObject()
     internal var headerMap = HashMap<String,String>()
     internal var queryMap = HashMap<String,String>()
     internal var tokenIdMap = HashMap<String,String>() //key token,value is label id
@@ -35,13 +35,12 @@ internal class ConnectionApiCallback(
             val token = responseBody.toString()
             checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
             convertElements()
-            requestBody = connectionConfig.requestBody.toString()
             if(tokenValueMap.isEmpty()){
                 Log.d("header",headerMap.toString())
                 Log.d("query",queryMap.toString())
                 Log.d("request",requestBody.toString())
                 Log.d("connectionUrl",connectionUrl)
-                val requestBuild = getRequestBuild(token)
+                val requestBuild = getRequestBuild(token, requestBody.toString())
                 if(requestBuild == null ) return
                 sendRequest(requestBuild)
             }
@@ -63,22 +62,21 @@ internal class ConnectionApiCallback(
                         Log.d("after - tokenLabelMap",tokenLabelMap.toString())
                         Log.d("after - regexMap",tokenValueMap.toString())
                         Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap)
-                        var requestBody = connectionConfig.requestBody.toString()
+                        var requestBodyString = requestBody.toString()
                         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
                         tokenValueMap.forEach {
                             queryString = queryString.replace(tokenIdMap.get(it.key)!!,it.value!!)
                             connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
-                            requestBody = requestBody.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
+                            requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
                         }
                         val queryMapWithDetokenizeValues = queryString.split(",").associate {
                             val (left, right) = it.split("=")
                             left to right
                         }
                         queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
+                        val requestBuild = getRequestBuild(token,requestBodyString)
                         Log.d("query",queryMap.toString())
-                        Log.d("request",requestBody)
-                        Log.d("connectionUrl",connectionUrl)
-                        val requestBuild = getRequestBuild(token)
+                        Log.d("request",requestBodyString)
                         if(requestBuild == null ) return
                         sendRequest(requestBuild)
                     }
@@ -109,7 +107,6 @@ internal class ConnectionApiCallback(
     }
 
     fun convertElements()  {  //convert skyflow elements,arrays into values
-        val requestBody = JSONObject()
         Utils.copyJSON(connectionConfig.requestBody,requestBody)
         constructRequestBodyForConnection(requestBody)
         connectionConfig.requestBody = JSONObject()
@@ -119,7 +116,7 @@ internal class ConnectionApiCallback(
         addRequestHeader()
     }
 
-    fun getRequestBuild(responseBody: Any): Request? { //create requestBuild
+    fun getRequestBuild(responseBody: Any, requestBodyString: String): Request? { //create requestBuild
         val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
         if(requestUrlBuilder == null){
             val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,
@@ -129,12 +126,15 @@ internal class ConnectionApiCallback(
         }
         //creating url with query params
         queryMap.forEach{
-            requestUrlBuilder.addQueryParameter(it.key,it.value)
+           val values = it.value.split("&&#$")
+            for(value in values){
+                requestUrlBuilder.addQueryParameter(it.key,value)
+            }
         }
         val requestUrl = requestUrlBuilder.build()
-
+        Log.d("url",requestUrl.toString())
         //body for API
-        val body: RequestBody = requestBody
+        val body: RequestBody = requestBodyString
             .toRequestBody("application/json".toByteArray().toString().toMediaTypeOrNull())
         val request = Request
             .Builder()
@@ -144,6 +144,8 @@ internal class ConnectionApiCallback(
             .url(requestUrl)
         //adding header
         headerMap.forEach {
+            if(it.key.equals("X-Skyflow-Authorization"))
+                request.removeHeader(it.key)
             request.addHeader(it.key,it.value)
         }
         val  requestBuild = request.build()
@@ -364,7 +366,10 @@ internal class ConnectionApiCallback(
                     logLevel, arrayOf(key))
             }
             checkForValidElement(value)
-            queryMap.put(key, value.getValue())
+            if(queryMap.get(key) != null)
+                queryMap.put(key, queryMap.get(key)+"&&#$"+value.getValue())
+            else
+                queryMap.put(key, value.getValue())
         }
         else if (value is Label)
         {
@@ -382,10 +387,18 @@ internal class ConnectionApiCallback(
                     tag, logLevel)
                 throw error
             }
-            queryMap.put(key, Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
+            if(queryMap.get(key) != null)
+                queryMap.put(key, queryMap.get(key)+"&&#$"+Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
+            else
+                queryMap.put(key,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
         }
         else if (value is Number || value is String || value is Boolean || value is JSONObject)
-            queryMap.put(key,value.toString())
+        {
+            if(queryMap.get(key) != null)
+                queryMap.put(key, queryMap.get(key)+"&&#$"+value.toString())
+            else
+                queryMap.put(key, value.toString())
+        }
         else {
             //callback.onFailure(Exception("invalid field \"${key}\" present in queryParams"))
             val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS,
