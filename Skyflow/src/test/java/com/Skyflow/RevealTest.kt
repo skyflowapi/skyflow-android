@@ -680,7 +680,7 @@ class RevealTest {
             override fun onFailure(exception: Any) {
             }
 
-        }, list, configuration.options.logLevel).onSuccess(JSONObject(response))
+        }, list, skyflow.configuration.options.logLevel).onSuccess(JSONObject(response))
 
 
 
@@ -723,7 +723,7 @@ class RevealTest {
 
             }
 
-        }, list, configuration.options.logLevel).onFailure(JSONObject(response))
+        }, list, skyflow.configuration.options.logLevel).onFailure(JSONObject(response))
 
     }
 
@@ -760,7 +760,7 @@ class RevealTest {
                 TestCase.assertEquals(response,exception.toString())
             }
 
-        }, list, configuration.options.logLevel).onFailure(response)
+        }, list, skyflow.configuration.options.logLevel).onFailure(response)
 
     }
 
