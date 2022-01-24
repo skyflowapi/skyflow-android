@@ -9,7 +9,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
 
-class Utils {
+internal class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName

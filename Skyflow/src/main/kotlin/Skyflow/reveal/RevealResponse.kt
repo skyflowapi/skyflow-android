@@ -9,7 +9,7 @@ import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR){
+internal class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR){
 
     var responseBody = JSONObject().put("records", JSONArray())
         .put("errors", JSONArray())
