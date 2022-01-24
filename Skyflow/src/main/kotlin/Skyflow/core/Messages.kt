@@ -115,7 +115,8 @@ enum class Messages(val message: String) {
     EMPTY_ID_IN_REQUEST_XML("empty elementId present in RequestXml"),
     INVALID_ID_IN_RESPONSE_XML("Invalid elementId %s present in ResponseXML"),
     EMPTY_ID_IN_RESPONSE_XML("empty elementId present in ResponseXML"),
-    DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML");
+    DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML"),
+    INVALID_FORMAT_REGEX("Invalid formatRegex - Nothing matched with the given regex %s");
 }
 
 fun Messages.getMessage(vararg values: String?): String{

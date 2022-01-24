@@ -51,7 +51,7 @@ internal class SoapApiCallback(
                         Utils.doTokenMap(responseBody,tokenValueMap)
                         Log.d("after - tokenLabelMap",tokenLabelMap.toString())
                         Log.d("after - regexMap",tokenValueMap.toString())
-                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap)
+                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
                         tokenValueMap.forEach {
                             requestBody = requestBody!!.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
                         }
@@ -160,7 +160,7 @@ internal class SoapApiCallback(
                     }
                 } else if (value is Label) {
                     if (Utils.checkIfElementsMounted(value)) {
-                        tempXML = tempXML.replace(it,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
+                        tempXML = tempXML.replace(it,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
                     } else {
                         //element not mounted
                         val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,

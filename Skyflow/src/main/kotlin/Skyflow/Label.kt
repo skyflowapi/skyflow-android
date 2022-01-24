@@ -192,14 +192,7 @@ class Label @JvmOverloads constructor(
 
     internal fun setText(t:String)
     {
-        val formatRegex = options.formatRegex
-        if(formatRegex.isNotEmpty()) {
-            val regex = Regex(formatRegex)
-            val matches = regex.find(t)
-            this.placeholder.text = if (matches != null) matches.value else t
-        }
-        else
-            this.placeholder.text = t
+        this.placeholder.text = t
     }
 
     fun getToken() : String {

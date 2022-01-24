@@ -5,6 +5,7 @@ import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
 import Skyflow.LogLevel
 import Skyflow.utils.Utils
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -52,6 +53,7 @@ class RevealResponse(var size: Int, var callback: Callback, val logLevel: LogLev
                 else if(successResponses == 0)
                 {
                     responseBody.remove("records")
+                    Log.d("res",responseBody.toString())
                     callback.onFailure(responseBody)
                 }
                 else

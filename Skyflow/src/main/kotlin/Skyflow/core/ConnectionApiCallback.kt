@@ -61,7 +61,7 @@ internal class ConnectionApiCallback(
                         Utils.doTokenMap(responseBody,tokenValueMap)
                         Log.d("after - tokenLabelMap",tokenLabelMap.toString())
                         Log.d("after - regexMap",tokenValueMap.toString())
-                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap)
+                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
                         var requestBodyString = requestBody.toString()
                         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
                         tokenValueMap.forEach {
@@ -126,10 +126,7 @@ internal class ConnectionApiCallback(
         }
         //creating url with query params
         queryMap.forEach{
-           val values = it.value.split("&&#$")
-            for(value in values){
-                requestUrlBuilder.addQueryParameter(it.key,value)
-            }
+            requestUrlBuilder.addQueryParameter(it.key,it.value)
         }
         val requestUrl = requestUrlBuilder.build()
         Log.d("url",requestUrl.toString())
@@ -204,7 +201,7 @@ internal class ConnectionApiCallback(
                        throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN_IN_CONNECTION_REQUEST, tag, logLevel, arrayOf(keys.getString(j)))
                      else if ((records.get(keys.getString(j)) as Label).revealInput.token!!.isEmpty()) 
                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
-                    value = Utils.getValueForLabel(records.get(keys.getString(j)) as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
+                    value = Utils.getValueForLabel(records.get(keys.getString(j)) as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                 } else if (records.get(keys.getString(j)) is JSONObject) {
                     constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject, )
                     value = JSONObject(records.get(keys.getString(j)).toString())
@@ -230,7 +227,7 @@ internal class ConnectionApiCallback(
                                 throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                                 else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) 
                                 throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
-                            value = Utils.getValueForLabel(arrayValue.get(k) as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
+                            value = Utils.getValueForLabel(arrayValue.get(k) as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                         }
                         else if(arrayValue.get(k) is JSONObject)
                         {
@@ -268,7 +265,7 @@ internal class ConnectionApiCallback(
                               else if ((arrayValue[k] as Label).revealInput.token!!.isEmpty()) 
                                 throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                             else
-                                value = Utils.getValueForLabel(arrayValue[k] as Label,tokenValueMap,tokenIdMap,tokenLabelMap)
+                                value = Utils.getValueForLabel(arrayValue[k] as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                         }
                         else if(arrayValue[k] is JSONObject)
                         {
@@ -366,10 +363,7 @@ internal class ConnectionApiCallback(
                     logLevel, arrayOf(key))
             }
             checkForValidElement(value)
-            if(queryMap.get(key) != null)
-                queryMap.put(key, queryMap.get(key)+"&&#$"+value.getValue())
-            else
-                queryMap.put(key, value.getValue())
+            queryMap.put(key, value.getValue())
         }
         else if (value is Label)
         {
@@ -387,17 +381,11 @@ internal class ConnectionApiCallback(
                     tag, logLevel)
                 throw error
             }
-            if(queryMap.get(key) != null)
-                queryMap.put(key, queryMap.get(key)+"&&#$"+Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
-            else
-                queryMap.put(key,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap))
+            queryMap.put(key,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
         }
         else if (value is Number || value is String || value is Boolean || value is JSONObject)
         {
-            if(queryMap.get(key) != null)
-                queryMap.put(key, queryMap.get(key)+"&&#$"+value.toString())
-            else
-                queryMap.put(key, value.toString())
+            queryMap.put(key, value.toString())
         }
         else {
             //callback.onFailure(Exception("invalid field \"${key}\" present in queryParams"))
@@ -449,7 +437,7 @@ internal class ConnectionApiCallback(
                             throw error
                         }
                         else
-                            value = Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap)
+                            value = Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                         newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                     } else if (value is String || value is Number || value is Boolean) {
                         value = value.toString()
@@ -561,7 +549,7 @@ internal class ConnectionApiCallback(
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        (responseBody.get(keys.getString(j)) as Label).setText(ans)
+                        Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {

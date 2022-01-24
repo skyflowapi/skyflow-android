@@ -232,7 +232,7 @@ class Utils {
             return allMatches
         }
 
-        fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>) : String {
+        fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) : String {
             val formatRegex = label.options.formatRegex
             val value : String? = label.actualValue
             if(formatRegex.isNotEmpty() && value == null){
@@ -244,9 +244,24 @@ class Utils {
             else if(value!= null && formatRegex.isNotEmpty()) {
                 val regex = Regex(formatRegex)
                 val matches =  regex.find(value)
-                return if(matches != null) matches.value else ""
+                if(matches != null)
+                    return matches.value
+                throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
             }
             return label.getValueForConnections()
+        }
+        fun getValueForLabel(label: Label,value:String,tag:String?="",logLevel: LogLevel) {
+            val formatRegex = label.options.formatRegex
+            if(formatRegex.isNotEmpty()) {
+                val regex = Regex(formatRegex)
+                val matches = regex.find(value)
+                if (matches != null)
+                    label.placeholder.text = matches.value
+                else
+                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+            }
+            else
+                label.placeholder.text = value
         }
 
         fun doTokenMap(responseBody: Any,tokenValueMap:HashMap<String,String?>) { // fill labelWithRegexMap with actual values from api
@@ -259,13 +274,15 @@ class Utils {
             }
         }
 
-        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>) { // do regex on value after detokenize and put it in labelWithRegexMap
+        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) { // do regex on value after detokenize and put it in labelWithRegexMap
             tokenValueMap.forEach {
                 val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
                 val regex = Regex(formatRegex)
                 val matches =  regex.find(it.value!!)
-                val value = if(matches != null) matches.value else ""
-                tokenValueMap.put(it.key,value)
+                if(matches != null)
+                    tokenValueMap.put(it.key,matches.value)
+                else
+                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
 
             }
         }

@@ -133,7 +133,7 @@ internal class SoapValueCallback(
 					element.setText(it.value.trim())
 				}
 				else if(element is Label){
-					element.setText(it.value.trim())
+					Utils.getValueForLabel(element,it.value.trim(),tag,logLevel)
 				}
 			}
 		})
