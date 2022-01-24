@@ -44,8 +44,6 @@ internal class RevealValueCallback(
         {
             callback.onFailure(Utils.constructError(e))
         }
-
-
     }
 
     fun constructElementMap(){

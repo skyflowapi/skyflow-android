@@ -142,7 +142,7 @@ class Utils {
                         } else if (responseBody.get(keys.getString(j)) !is Element && responseBody.get(
                                 keys.getString(j)) !is Label
                         )
-                            throw Exception("invalid field " + keys.getString(j) + " present in response body")
+                            throw SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR,params = arrayOf(("invalid field " + keys.getString(j) + " present in response body")))
                         else if(responseBody.get(keys.getString(j)) is Element)
                         {
                             val element = (responseBody.get(keys.getString(j))) as Element

@@ -38,7 +38,7 @@ internal class SoapValueCallback(
 		}
 		catch (e:Exception){
 			if(e is SkyflowError)
-				callback.onSuccess(e)
+				callback.onFailure(e)
 			else
 			callback.onFailure(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString())))
 		}

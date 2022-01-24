@@ -34,7 +34,7 @@ internal class ConnectionApiCallback(
         try{
             val token = responseBody.toString()
             checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
-            convertElements()
+            convertElementsHelper()
             if(tokenValueMap.isEmpty()){
                 Log.d("header",headerMap.toString())
                 Log.d("query",queryMap.toString())
@@ -131,7 +131,7 @@ internal class ConnectionApiCallback(
         return requestBuild
     }
 
-    fun convertElements()  {  //convert skyflow elements,arrays into values
+    fun convertElementsHelper()  {  //convert skyflow elements,arrays into values
         Utils.copyJSON(connectionConfig.requestBody,requestBody)
         constructRequestBodyForConnection(requestBody)
         connectionConfig.requestBody = JSONObject()
@@ -190,9 +190,15 @@ internal class ConnectionApiCallback(
                     }
                     else
                     {
-                        val responseFromConnection =JSONObject(response.body!!.string())
-                        constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
-                        callback.onSuccess(responseFromConnection)
+                        try {
+                            val responseFromConnection =JSONObject(response.body!!.string())
+                            constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
+                            callback.onSuccess(responseFromConnection)
+                        }
+                        catch (e:Exception){
+                            callback.onFailure(Utils.constructError(e))
+                        }
+
                     }
                 }
             }
@@ -574,7 +580,17 @@ internal class ConnectionApiCallback(
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                        try {
+                            Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                        }
+                        catch (e:Exception){
+                            val finalError = JSONObject()
+                            finalError.put("error",e)
+                            if(!connectionResponse.has("errors"))
+                                connectionResponse.put("errors",JSONArray())
+                            connectionResponse.getJSONArray("errors").put(finalError)
+                            responseFromConnection.remove(keys.getString(j))
+                        }
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {
