@@ -27,7 +27,7 @@ internal class SoapApiCallback(
     internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
     override fun onSuccess(responseBody: Any) {
         try{
-            var requestBody = getRequestBody()
+            val requestBody = getRequestBody()
             if(requestBody == null) return
             val token = responseBody.toString()
             if(tokenValueMap.isEmpty()){
@@ -35,37 +35,7 @@ internal class SoapApiCallback(
                 sendRequest(requestBuild)
             }
             else {
-                val records = JSONObject()
-                val array = JSONArray()
-                tokenValueMap.forEach {
-                    val recordObj = JSONObject()
-                    recordObj.put("token", it.key)
-                    array.put(recordObj)
-                }
-                records.put("records", array)
-                Log.d("before - tokenLabelMap",tokenLabelMap.toString())
-                Log.d("before - regexMap",tokenValueMap.toString())
-                client.detokenize(records,object : Callback {
-                    override fun onSuccess(responseBody: Any) {
-                        Log.d("response for tokens",responseBody.toString())
-                        Utils.doTokenMap(responseBody,tokenValueMap)
-                        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
-                        Log.d("after - regexMap",tokenValueMap.toString())
-                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
-                        tokenValueMap.forEach {
-                            requestBody = requestBody!!.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
-                        }
-                        Log.d("request",requestBody!!)
-                        val requestBuild = getRequestBuild(token,requestBody!!)
-                        sendRequest(requestBuild)
-                    }
-                    override fun onFailure(exception: Any) {
-                        val result = exception as JSONObject
-                        result.remove("records")
-                        callback.onFailure(result)
-                    }
-
-                })
+                sendDetokenizeRequest(token,requestBody)
             }
 
 
@@ -80,7 +50,73 @@ internal class SoapApiCallback(
         callback.onFailure(exception)
     }
 
+    fun createRequestBodyForDetokenize(): JSONObject {
+        val records = JSONObject()
+        val array = JSONArray()
+        tokenValueMap.forEach {
+            val recordObj = JSONObject()
+            recordObj.put("token",it.key)
+            array.put(recordObj)
+        }
+        records.put("records",array)
+        return records
+    }
 
+    fun sendDetokenizeRequest(token: String, requestBody: String) {
+        val records = createRequestBodyForDetokenize()
+        Log.d("before - tokenLabelMap",tokenLabelMap.toString())
+        Log.d("before - regexMap",tokenValueMap.toString())
+        client.detokenize(records,object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                try {
+                    val requestBuild = createRequestForConnections(responseBody,token,requestBody)
+                    sendRequest(requestBuild)
+                }
+                catch (e:Exception){
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                }
+            }
+            override fun onFailure(exception: Any) {
+                try {
+                    val result = exception as JSONObject
+                    val errors = result.getJSONArray("errors")
+                    var tokens = ""
+                    for(i in 0 until errors.length()){
+                        val error = errors.getJSONObject(i)
+                        if(tokens.isNotEmpty())
+                            tokens = tokens+", "+error.getString("token")
+                        else
+                            tokens = error.getString("token")
+                    }
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens))))
+                }
+                catch (e:Exception){
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                }
+            }
+
+        })
+
+    }
+
+    fun createRequestForConnections(
+        responseBody: Any,
+        token: String,
+        requestBody: String
+    ):Request{
+        var requestBodyForConnections = requestBody
+        Log.d("response for tokens",responseBody.toString())
+        Utils.doTokenMap(responseBody,tokenValueMap)
+        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
+        Log.d("after - regexMap",tokenValueMap.toString())
+        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
+        tokenValueMap.forEach {
+            requestBodyForConnections = requestBodyForConnections.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
+        }
+        Log.d("request",requestBodyForConnections)
+        val requestBuild = getRequestBuild(token,requestBodyForConnections)
+        return requestBuild
+    }
     fun getRequestBuild(token:String,requestBody:String): Request {
         val url = soapConnectionConfig.connectionURL
         val body: RequestBody = requestBody.toRequestBody("application/xml".toMediaTypeOrNull()) //adding body

@@ -2,7 +2,6 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.core.APIClient
-import Skyflow.core.elements.state.StateforText
 import Skyflow.reveal.*
 import Skyflow.utils.Utils
 import android.app.Activity
@@ -681,7 +680,7 @@ class RevealTest {
             override fun onFailure(exception: Any) {
             }
 
-        },list).onSuccess(JSONObject(response))
+        }, list, configuration.options.logLevel).onSuccess(JSONObject(response))
 
 
 
@@ -724,7 +723,7 @@ class RevealTest {
 
             }
 
-        },list).onFailure(JSONObject(response))
+        }, list, configuration.options.logLevel).onFailure(JSONObject(response))
 
     }
 
@@ -761,7 +760,7 @@ class RevealTest {
                 TestCase.assertEquals(response,exception.toString())
             }
 
-        },list).onFailure(response)
+        }, list, configuration.options.logLevel).onFailure(response)
 
     }
 

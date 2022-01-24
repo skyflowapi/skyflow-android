@@ -45,58 +45,12 @@ internal class ConnectionApiCallback(
                 sendRequest(requestBuild)
             }
             else {
-                val records = JSONObject()
-                val array = JSONArray()
-                tokenValueMap.forEach {
-                    val recordObj = JSONObject()
-                    recordObj.put("token",it.key)
-                    array.put(recordObj)
-                }
-                records.put("records",array)
-                Log.d("before - tokenLabelMap",tokenLabelMap.toString())
-                Log.d("before - regexMap",tokenValueMap.toString())
-                client.detokenize(records,object : Callback {
-                    override fun onSuccess(responseBody: Any) {
-                        Log.d("response for tokens",responseBody.toString())
-                        Utils.doTokenMap(responseBody,tokenValueMap)
-                        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
-                        Log.d("after - regexMap",tokenValueMap.toString())
-                        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
-                        var requestBodyString = requestBody.toString()
-                        var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
-                        tokenValueMap.forEach {
-                            queryString = queryString.replace(tokenIdMap.get(it.key)!!,it.value!!)
-                            connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
-                            requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
-                        }
-                        val queryMapWithDetokenizeValues = queryString.split(",").associate {
-                            val (left, right) = it.split("=")
-                            left to right
-                        }
-                        queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
-                        val requestBuild = getRequestBuild(token,requestBodyString)
-                        Log.d("query",queryMap.toString())
-                        Log.d("request",requestBodyString)
-                        if(requestBuild == null ) return
-                        sendRequest(requestBuild)
-                    }
-                    override fun onFailure(exception: Any) {
-                        val result = exception as JSONObject
-                        result.remove("records")
-                        callback.onFailure(result)
-                    }
-
-                })
+               sendDetokenizeRequest(token)
             }
         }catch (e: Exception){
             callback.onFailure(Utils.constructError(e))
         }
     }
-
-
-
-
-
     override fun onFailure(exception: Any) {
         if(exception is Exception)
         {
@@ -104,6 +58,77 @@ internal class ConnectionApiCallback(
         }
         else
             callback.onFailure(exception)
+    }
+
+    fun sendDetokenizeRequest(token: String) {
+        Log.d("before - tokenLabelMap",tokenLabelMap.toString())
+        Log.d("before - regexMap",tokenValueMap.toString())
+        client.detokenize(createRequestBodyForDetokenize(),object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                try {
+                    val requestBuild = createRequestForConnections(responseBody,token)
+                    if(requestBuild == null ) return
+                    sendRequest(requestBuild)
+                }
+                catch (e:Exception){
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                }
+            }
+            override fun onFailure(exception: Any) {
+                try {
+                    val result = exception as JSONObject
+                    val errors = result.getJSONArray("errors")
+                    var tokens = ""
+                    for(i in 0 until errors.length()){
+                        val error = errors.getJSONObject(i)
+                        if(tokens.isNotEmpty())
+                            tokens = tokens+", "+error.getString("token")
+                        else
+                            tokens = error.getString("token")
+                    }
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens))))
+                }
+                catch (e:Exception){
+                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                }
+            }
+        })
+    }
+
+    fun createRequestBodyForDetokenize(): JSONObject {
+        val records = JSONObject()
+        val array = JSONArray()
+        tokenValueMap.forEach {
+            val recordObj = JSONObject()
+            recordObj.put("token",it.key)
+            array.put(recordObj)
+        }
+        records.put("records",array)
+        return records
+    }
+
+    fun createRequestForConnections(responseBody: Any, token: String): Request? {
+        Log.d("response for tokens",responseBody.toString())
+        Utils.doTokenMap(responseBody,tokenValueMap)
+        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
+        Log.d("after - regexMap",tokenValueMap.toString())
+        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
+        var requestBodyString = requestBody.toString()
+        var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
+        tokenValueMap.forEach {
+            queryString = queryString.replace(tokenIdMap.get(it.key)!!,it.value!!)
+            connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
+            requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
+        }
+        val queryMapWithDetokenizeValues = queryString.split(",").associate {
+            val (left, right) = it.split("=")
+            left to right
+        }
+        queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
+        val requestBuild = getRequestBuild(token,requestBodyString)
+        Log.d("query",queryMap.toString())
+        Log.d("request",requestBodyString)
+        return requestBuild
     }
 
     fun convertElements()  {  //convert skyflow elements,arrays into values
