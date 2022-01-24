@@ -57,7 +57,6 @@ internal class RevealValueCallback(
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
-                val element = elementsMap[tokenId]!!
                 val value = recordObj.getString("value")
                 Utils.getValueForLabel(elementsMap[tokenId]!!,value,tag,logLevel)
                 elementsMap[tokenId]!!.actualValue = value

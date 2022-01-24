@@ -560,7 +560,6 @@ internal class ConnectionApiCallback(
     }
 
     //displaying data to pci elements and removing pci element values from response
-    private var errors = JSONArray()
     private var connectionResponse = JSONObject()
     fun constructJsonKeyForConnectionResponse(
         responseBody: JSONObject,
@@ -580,17 +579,7 @@ internal class ConnectionApiCallback(
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        try {
-                            Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
-                        }
-                        catch (e:Exception){
-                            val finalError = JSONObject()
-                            finalError.put("error",e)
-                            if(!connectionResponse.has("errors"))
-                                connectionResponse.put("errors",JSONArray())
-                            connectionResponse.getJSONArray("errors").put(finalError)
-                            responseFromConnection.remove(keys.getString(j))
-                        }
+                        Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {
@@ -601,15 +590,11 @@ internal class ConnectionApiCallback(
                 }
                 catch (e:Exception)
                 {
-
-                    val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
+                    if(e is SkyflowError)
+                        throw e
+                    else
+                    throw SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
                         Utils.tag, logLevel, arrayOf(keys.getString(j)))
-                    val finalError = JSONObject()
-                    finalError.put("error",error)
-                    if(!connectionResponse.has("errors"))
-                        connectionResponse.put("errors",JSONArray())
-                    connectionResponse.getJSONArray("errors").put(finalError)
-                    responseFromConnection.remove(keys.getString(j))
                 }
             } }
         connectionResponse.put("success",responseFromConnection)
