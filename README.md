@@ -1087,9 +1087,9 @@ Merchant acceptance - customers should be able to complete payment checkout with
 ```kt
 // step 1
 val config = Skyflow.Configuration(
-    vaultID = <VAULT_ID>,
-    vaultURL = <VAULT_URL>,
-    tokenProvider = demoTokenProvider
+    vaultID = <VAULT_ID>, // optional, required only when a revealElement is present with formatRegex option
+    vaultURL = <VAULT_URL>, // optional, required only when a revealElement is present with formatRegex option
+   tokenProvider = demoTokenProvider
 )
 
 val skyflowClient = Skyflow.init(config)
