@@ -116,7 +116,7 @@ enum class Messages(val message: String) {
     INVALID_ID_IN_RESPONSE_XML("Invalid elementId %s present in ResponseXML"),
     EMPTY_ID_IN_RESPONSE_XML("empty elementId present in ResponseXML"),
     DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML"),
-    INVALID_FORMAT_REGEX("Invalid formatRegex - Nothing matched with the given regex %s"),
+    INVALID_FORMAT_REGEX("Invalid formatRegex - no match found for regex: %s"),
     NOT_VALID_TOKENS("following tokens are not valid - %s");
 }
 
