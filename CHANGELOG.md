@@ -7,17 +7,17 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `formatRegex` option for `RevealElement`
 
-## [1.9.2] - 2022-18-01
+## [1.9.2] - 2022-01-18
 
 ### Fixed
 - Fixes in invokeSoapConnection method.
 
-## [1.9.1] - 2022-11-01
+## [1.9.1] - 2022-01-11
 
 ### Fixed
 - Fixed issues in responseXML for invokeSoapConnection method.
 
-## [1.9.0] - 2022-04-01
+## [1.9.0] - 2022-01-04
 
 ### Added
 - `Soap protocol` support for connections
