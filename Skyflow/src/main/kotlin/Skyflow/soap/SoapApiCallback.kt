@@ -90,7 +90,7 @@ internal class SoapApiCallback(
                     callback.onFailure(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens)))
                 }
                 catch (e:Exception){
-                    callback.onFailure(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message)))
+                    callback.onFailure(exception)
                 }
             }
 

@@ -83,7 +83,7 @@ internal class ConnectionApiCallback(
                     callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens))))
                 }
                 catch (e:Exception){
-                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                    callback.onFailure(exception)
                 }
             }
         })
