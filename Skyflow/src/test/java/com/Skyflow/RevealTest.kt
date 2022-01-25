@@ -757,7 +757,7 @@ class RevealTest {
             }
 
             override fun onFailure(exception: Any) {
-                TestCase.assertEquals(response,exception.toString())
+                TestCase.assertEquals("{\"errors\":[{\"error\":\"Skyflow.SkyflowError: Interface :  - Value string of type java.lang.String cannot be converted to JSONObject\"}]}",exception.toString())
             }
 
         }, list, skyflow.configuration.options.logLevel).onFailure(response)
@@ -860,7 +860,7 @@ class RevealTest {
         expireDate.setText("1234")
         expireDate.actualValue = "12345"
         assertEquals("12345",expireDate.getValue())
-        assertEquals("34",expireDate.placeholder.text.toString())
+        assertEquals("1234",expireDate.placeholder.text.toString())
     }
     //end RevealValueCallback
 

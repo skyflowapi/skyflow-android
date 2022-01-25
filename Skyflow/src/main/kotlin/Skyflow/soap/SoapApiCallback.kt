@@ -42,7 +42,7 @@ internal class SoapApiCallback(
             else {
                 val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString()))
                 skyflowError.setErrorCode(400)
-                callback.onFailure(e)
+                callback.onFailure(skyflowError)
             }
         }
     }
