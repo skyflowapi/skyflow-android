@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0] - 2022-01-25
+
+### Added
+- `formatRegex` option for `RevealElement`
+
 ## [1.9.2] - 2022-18-01
 
 ### Fixed

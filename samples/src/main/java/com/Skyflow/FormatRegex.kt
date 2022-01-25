@@ -31,7 +31,7 @@ class FormatRegex : AppCompatActivity() {
 
 
         val cvvInput = RevealElementInput()
-        val cvvElement = revealContainer.create(this,cvvInput)
+        val cvvElement = revealContainer.create(this,cvvInput,RevealElementOptions(formatRegex = "...$"))
 
 
         val cardNumberID = cardNumberElement.getID()  // to get element ID
