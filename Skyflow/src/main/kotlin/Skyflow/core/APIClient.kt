@@ -45,7 +45,7 @@ object JWTUtils {
     }
 }
 
-class APIClient (
+internal class APIClient (
     val vaultId: String,
     val vaultURL: String,
     private val tokenProvider: TokenProvider,

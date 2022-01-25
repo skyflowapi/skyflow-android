@@ -36,10 +36,6 @@ internal class ConnectionApiCallback(
             checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
             convertElementsHelper()
             if(tokenValueMap.isEmpty()){
-                Log.d("header",headerMap.toString())
-                Log.d("query",queryMap.toString())
-                Log.d("request",requestBody.toString())
-                Log.d("connectionUrl",connectionUrl)
                 val requestBuild = getRequestBuild(token, requestBody.toString())
                 if(requestBuild == null ) return
                 sendRequest(requestBuild)
@@ -61,8 +57,6 @@ internal class ConnectionApiCallback(
     }
 
     fun sendDetokenizeRequest(token: String) {
-        Log.d("before - tokenLabelMap",tokenLabelMap.toString())
-        Log.d("before - regexMap",tokenValueMap.toString())
         client.detokenize(createRequestBodyForDetokenize(),object : Callback {
             override fun onSuccess(responseBody: Any) {
                 try {
@@ -108,10 +102,7 @@ internal class ConnectionApiCallback(
     }
 
     fun createRequestForConnections(responseBody: Any, token: String): Request? {
-        Log.d("response for tokens",responseBody.toString())
         Utils.doTokenMap(responseBody,tokenValueMap)
-        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
-        Log.d("after - regexMap",tokenValueMap.toString())
         Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
         var requestBodyString = requestBody.toString()
         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
@@ -126,8 +117,6 @@ internal class ConnectionApiCallback(
         }
         queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
         val requestBuild = getRequestBuild(token,requestBodyString)
-        Log.d("query",queryMap.toString())
-        Log.d("request",requestBodyString)
         return requestBuild
     }
 
@@ -154,7 +143,6 @@ internal class ConnectionApiCallback(
             requestUrlBuilder.addQueryParameter(it.key,it.value)
         }
         val requestUrl = requestUrlBuilder.build()
-        Log.d("url",requestUrl.toString())
         //body for API
         val body: RequestBody = requestBodyString
             .toRequestBody("application/json".toByteArray().toString().toMediaTypeOrNull())
@@ -296,7 +284,7 @@ internal class ConnectionApiCallback(
                         }
                         else if(arrayValue[k] is JSONObject)
                         {
-                            constructRequestBodyForConnection(arrayValue[k] as JSONObject)
+                            constructRequestBodyForConnection(JSONObject(arrayValue[k].toString()))
                             value = JSONObject(arrayValue[k].toString())
                         }
                         else if(arrayValue[k] is String || arrayValue[k] is Number || arrayValue[k] is Boolean)

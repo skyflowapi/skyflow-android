@@ -72,7 +72,6 @@ internal class RevealValueCallback(
                 val recordObj = errorArray[i] as JSONObject
                 val tokenId = recordObj.get("token").toString()
                 elementsMap[tokenId]!!.setErrorText("invalid token")
-                Log.d("token",tokenId)
                 elementsMap[tokenId]!!.showError()
                 i++
             }

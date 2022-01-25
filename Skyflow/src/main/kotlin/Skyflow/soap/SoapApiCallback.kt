@@ -65,8 +65,6 @@ internal class SoapApiCallback(
 
     fun sendDetokenizeRequest(token: String, requestBody: String) {
         val records = createRequestBodyForDetokenize()
-        Log.d("before - tokenLabelMap",tokenLabelMap.toString())
-        Log.d("before - regexMap",tokenValueMap.toString())
         client.detokenize(records,object : Callback {
             override fun onSuccess(responseBody: Any) {
                 try {
@@ -106,15 +104,11 @@ internal class SoapApiCallback(
         requestBody: String
     ):Request{
         var requestBodyForConnections = requestBody
-        Log.d("response for tokens",responseBody.toString())
         Utils.doTokenMap(responseBody,tokenValueMap)
-        Log.d("after - tokenLabelMap",tokenLabelMap.toString())
-        Log.d("after - regexMap",tokenValueMap.toString())
         Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
         tokenValueMap.forEach {
             requestBodyForConnections = requestBodyForConnections.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
         }
-        Log.d("request",requestBodyForConnections)
         val requestBuild = getRequestBuild(token,requestBodyForConnections)
         return requestBuild
     }

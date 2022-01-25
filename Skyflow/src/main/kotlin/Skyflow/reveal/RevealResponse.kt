@@ -53,7 +53,6 @@ internal class RevealResponse(var size: Int, var callback: Callback, val logLeve
                 else if(successResponses == 0)
                 {
                     responseBody.remove("records")
-                    Log.d("res",responseBody.toString())
                     callback.onFailure(responseBody)
                 }
                 else
