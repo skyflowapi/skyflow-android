@@ -1,4 +1,4 @@
 package Skyflow.collect.client
 
-data class CollectRequestRecord(val columnName:String,val value:Any) {
+internal data class CollectRequestRecord(val columnName:String,val value:Any) {
 }

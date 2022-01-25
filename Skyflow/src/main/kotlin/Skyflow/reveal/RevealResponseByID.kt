@@ -8,7 +8,7 @@ import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR) {
+internal class RevealResponseByID(var size: Int, var callback: Callback, val logLevel: LogLevel = LogLevel.ERROR) {
     var responseBody = JSONObject().put("success", JSONArray())
         .put("errors", JSONArray())
 

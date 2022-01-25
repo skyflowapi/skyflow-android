@@ -45,7 +45,7 @@ object JWTUtils {
     }
 }
 
-class APIClient (
+internal class APIClient (
     val vaultId: String,
     val vaultURL: String,
     private val tokenProvider: TokenProvider,
@@ -166,22 +166,11 @@ class APIClient (
 
     fun invokeConnection(
         connectionConfig: ConnectionConfig,
-        callback: Callback
+        callback: Callback,
+        client: Client
     ) {
-        val isValidResponseBody = Utils.checkDuplicateInResponseBody(connectionConfig.responseBody,callback,HashSet(),logLevel)
-        if(!isValidResponseBody) return
-        val requestBody = JSONObject()
-        Utils.copyJSON(connectionConfig.requestBody,requestBody)
-        val isBodyConstructed = Utils.constructRequestBodyForConnection(requestBody,callback, logLevel)
-        connectionConfig.requestBody = JSONObject()
-        if(isBodyConstructed)
-        {
-            val newConnection = connectionConfig.copy(requestBody = requestBody)
-            val connection = ConnectionApiCallback(newConnection,callback, logLevel)
-            this.getAccessToken(connection)
-        }
-        else
-            return
+        val connection = ConnectionApiCallback(connectionConfig,callback, logLevel,client)
+        this.getAccessToken(connection)
     }
 
     fun invokeSoapConnection(

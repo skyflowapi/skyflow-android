@@ -52,7 +52,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.9.2'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.10.0'
   ```
 
 ### Using maven
@@ -80,7 +80,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.9.2</version>
+   <version>1.10.0</version>
 </dependency>
 ```
 
@@ -886,7 +886,15 @@ val revealElementInput = Skyflow.RevealElementInput(
         label = "cardNumber"            //optional, label for the element,
         altText = "XXXX XXXX XXXX XXXX" //optional, string that is shown before reveal, will show token if altText is not provided
     )
+val revealElementOptions = RevealElementOptions(
+                            formatRegex = "regex" //optional, regex to specify the format on the value that has been revealed
+                          )   
 ```
+
+`Note`: 
+- `token` is optional only if it is being used in invokeConnection()
+- If there are multiple matches found with the given formatRegex option, then always the first match is applied to the revealed value
+
 The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
 
 The `labelStyles` and `errorTextStyles` fields accept the above mentioned `Skyflow.Styles` object as described in the [previous section](#step-2-create-a-collect-element), the only state available for a reveal element is the base state.
@@ -917,7 +925,7 @@ var labelStyles = Skyflow.Styles(base =
 Once you've defined a `Skyflow.RevealElementInput` object, you can use the `create()` method of the container to create the Element as shown below:
 
 ```kt
-val element = container.create(context = Context, input = revealElementInput)
+val element = container.create(context = Context, input = revealElementInput,RevealElementOptions(formateRegex="..$"))
 ```
 
 ### Step 3: Mount Elements to the Screen
@@ -1079,9 +1087,9 @@ Merchant acceptance - customers should be able to complete payment checkout with
 ```kt
 // step 1
 val config = Skyflow.Configuration(
-    vaultID = <VAULT_ID>,
-    vaultURL = <VAULT_URL>,
-    tokenProvider = demoTokenProvider
+    vaultID = <VAULT_ID>, // optional, required only when a revealElement is present with formatRegex option
+    vaultURL = <VAULT_URL>, // optional, required only when a revealElement is present with formatRegex option
+   tokenProvider = demoTokenProvider
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -1207,8 +1215,8 @@ The values in the **requestXML** can contain collect element IDs or reveal eleme
 ```kt
 
 val config = Skyflow.Configuration(
-    vaultID = <VAULT_ID>,
-    vaultURL = <VAULT_URL>,
+    vaultID = <VAULT_ID>, // optional, required only when a revealElement is present with formatRegex option
+    vaultURL = <VAULT_URL>, // optional, required only when a revealElement is present with formatRegex option
     tokenProvider = demoTokenProvider
 )
 
@@ -1221,18 +1229,22 @@ val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
 
 // step 3
 val cardNumberInput = Skyflow.CollectElementInput(type =  SkyflowElementType.CARD_NUMBER)
-val expireInput = Skyflow.CollectElementInput(type = Skyflow.SkyflowElementType.EXPIRATION_DATE,label = "Expire Date")
+val expireMonthInput = Skyflow.RevealElementInput(token = "<token>",altText = "Expire Month")
+val expireYearInput = Skyflow.RevealElementInput(token = "<token>",altText = "Expire Year")
 val cvvInput = Skyflow.RevealElementInput(label = "cvv",altText = "cvv not generated") 
 
 val cardNumberElement = collectContainer.create(context = Context, input = cardNumberInput)
-val expiryDateElement = collectContainer.create(context = Context, input = expireInput)
+val expiryMonthElement = revealContainer.create(context = Context,input = expireMonthInput)
+val expiryYearElement =  revealContainer.create(context = Context,input = expireInput,RevealElementOptions(formatRegex="/^..$/")) 
+//  only last 2 characters are sent for invoking connection
 val cvvElement = revealContainer.create(context = Context, input = cvvInput)
 
 add elements to layout
 
 //step 4
 val cardNumberID = cardNumberElement.getID()  // to get element ID
-val expiryDateID = expiryDateElement.getID()
+val expiryMonthID = expiryMonthElement.getID()
+val expiryYearID = expiryYearElement.getID()
 val cvvElementID = cvvElement.getID()
 
 // step 5
@@ -1249,11 +1261,16 @@ val requestXML = """<soapenv:Envelope>
                     ${cardNumberID}
                   </skyflow>
                </CardNumber>
-               <ExpiryDate>
+               <ExpirMonth>
                   <skyflow>
-                    ${expiryDateID}
+                    ${expiryMonthID}
                   </skyflow>
-               </ExpiryDate>
+               </ExpiryMonth>
+                 <ExpirYear>
+                  <skyflow>
+                    ${expiryYearID}
+                  </skyflow>
+               </ExpiryYear>
         </GenerateCVV>
     </soapenv:Body>
 </soapenv:Envelope>"""
@@ -1307,12 +1324,14 @@ Sample Response on success:
 ```
 
 
-`Note`: In responseXML we provide the tags that needs to be rendered in UI and stripped out from the actual response. 
-1. For uniquely identifiable tag, we can give the elementID within a skyflow tag directly corresponding to the actual value.
-Please refer to the CVV tag in the above example. Here, we wish to strip the actual value present within the CVV tag.
-2. For arrays, since we have multiple tags with the same name, we will need to provide identifiers to uniquely identify the required tag.
-Please refer to HeaderItem tag. Here, we have provided NodeId within the Name tag which acts as an identifier and we wish to strip the actual value present in the Value tag.
 
+`Note`: 
+- In responseXML we provide the tags that needs to be rendered in UI and stripped out from the actual response. 
+    1. For uniquely identifiable tag, we can give the elementID within a skyflow tag directly corresponding to the actual value.
+    Please refer to the CVV tag in the above example. Here, we wish to strip the actual value present within the CVV tag.
+    2. For arrays, since we have multiple tags with the same name, we will need to provide identifiers to uniquely identify the required tag.
+    Please refer to HeaderItem tag. Here, we have provided NodeId within the Name tag which acts as an identifier and we wish to strip the actual value present in the Value tag.
+- In responseXML, if revealElement with formatRegex option is present, then value is revealed in the UI according to the match found with respect to the given formatRegex
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
 

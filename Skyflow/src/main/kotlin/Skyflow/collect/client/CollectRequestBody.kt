@@ -8,7 +8,7 @@ import android.util.Log
 import com.google.gson.JsonObject
 import kotlin.Exception
 
-class CollectRequestBody {
+internal class CollectRequestBody {
     companion object {
         private val tag = CollectRequestBody::class.qualifiedName
         internal fun createRequestBody(

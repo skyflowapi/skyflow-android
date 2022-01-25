@@ -4,7 +4,7 @@ import Skyflow.Label
 import org.json.JSONArray
 import org.json.JSONObject
 
-class RevealRequestBody {
+internal class RevealRequestBody {
 
     companion object {
         internal  fun createRequestBody(elements: MutableList<Label>) : String
