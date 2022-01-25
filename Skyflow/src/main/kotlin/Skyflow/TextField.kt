@@ -390,6 +390,7 @@ class TextField @JvmOverloads constructor(
         buildLabel()
         error.visibility = View.INVISIBLE
         actualValue = ""
+        setText("")
     }
 
     override fun setError(error: String) {

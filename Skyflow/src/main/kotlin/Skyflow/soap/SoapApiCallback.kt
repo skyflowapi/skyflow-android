@@ -72,7 +72,11 @@ internal class SoapApiCallback(
                     sendRequest(requestBuild)
                 }
                 catch (e:Exception){
-                    callback.onFailure((SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                    if(e is SkyflowError)
+                        callback.onFailure(e)
+                    else {
+                        callback.onFailure((SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                    }
                 }
             }
             override fun onFailure(exception: Any) {
@@ -90,6 +94,9 @@ internal class SoapApiCallback(
                     callback.onFailure(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens)))
                 }
                 catch (e:Exception){
+                    if(e is SkyflowError)
+                        callback.onFailure(e)
+                    else
                     callback.onFailure(exception)
                 }
             }
