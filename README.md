@@ -1235,8 +1235,8 @@ val cvvInput = Skyflow.RevealElementInput(label = "cvv",altText = "cvv not gener
 
 val cardNumberElement = collectContainer.create(context = Context, input = cardNumberInput)
 val expiryMonthElement = revealContainer.create(context = Context,input = expireMonthInput)
-val expiryYearElement =  revealContainer.create(context = Context,input = expireInput,RevealElementOptions(formatRegex="/^..$/" 
-//  only last 2 characters are sent for invoking connection))
+val expiryYearElement =  revealContainer.create(context = Context,input = expireInput,RevealElementOptions(formatRegex="/^..$/")) 
+//  only last 2 characters are sent for invoking connection
 val cvvElement = revealContainer.create(context = Context, input = cvvInput)
 
 add elements to layout
