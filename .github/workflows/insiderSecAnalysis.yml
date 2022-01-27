@@ -16,7 +16,7 @@ jobs:
       - name: Run Insider
         uses: insidersec/insider-action@v0
         with:
-            technology: kotlin
+            technology: android
             # Relative path under $GITHUB_WORKSPACE to use as a target
             # In this example, will use $GITHUB_WORKSPACE/src as a target
             target: Skyflow
