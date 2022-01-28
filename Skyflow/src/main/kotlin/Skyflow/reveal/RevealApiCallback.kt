@@ -5,9 +5,7 @@ import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
-import android.util.Log
 import okhttp3.*
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray

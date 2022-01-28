@@ -27,46 +27,46 @@ class RevealActivity : AppCompatActivity() {
             LinearLayout.LayoutParams.WRAP_CONTENT)
         lp.setMargins(10, 10, 10, 10)
 
-        val padding = Skyflow.Padding(10, 10, 10, 10)
-        val bstyle = Skyflow.Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
-        val istyle = Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
-        val styles = Skyflow.Styles(bstyle,invalid = istyle)
+        val padding = Padding(10, 10, 10, 10)
+        val bstyle = Style(Color.parseColor("#403E6B"), 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.parseColor("#403E6B"))
+        val istyle = Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val styles = Styles(bstyle,invalid = istyle)
         val labelStyles = Styles(bstyle)
-        val base_error_style = Skyflow.Style(Color.RED, 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val base_error_style = Style(Color.RED, 10f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
         val error_styles = Styles(base_error_style)
-        val cardNumberInput = Skyflow.RevealElementInput(
+        val cardNumberInput = RevealElementInput(
            card_number.toString(),
             inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
             label = "card number",altText =  "41111"
         )
 
-        val expiryDateInput = Skyflow.RevealElementInput(
+        val expiryDateInput = RevealElementInput(
             expiry_date.toString(),
             label =  "expire date",altText = "mm/yyyy"
         )
 
-        val fullNameInput = Skyflow.RevealElementInput(
+        val fullNameInput = RevealElementInput(
             name.toString(),
             inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
             label = "name",altText =  "name"
         )
 
 
-        val cvvElement = Skyflow.RevealElementInput(
+        val cvvElement = RevealElementInput(
             cvv_token.toString(),
             inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
             label = "CVV",altText =  "***"
         )
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             "VAULT_ID",
             "VAULT_URL",
             tokenProvider
         )
 
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
-        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+        val skyflowClient = init(skyflowConfiguration)
+        val revealContainer = skyflowClient.container(ContainerType.REVEAL)
 
         val cardnumber = revealContainer.create(this, cardNumberInput)
         val expiry = revealContainer.create(this, expiryDateInput)
@@ -90,7 +90,7 @@ class RevealActivity : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            revealContainer.reveal(object: Skyflow.Callback {
+            revealContainer.reveal(object: Callback {
                 override fun onSuccess(responseBody: Any) {
                     dialog.dismiss()
                     Log.d(TAG, "reveal success: ${responseBody}")
@@ -106,12 +106,12 @@ class RevealActivity : AppCompatActivity() {
     fun getByIds()
     {
 
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             "VAULT_ID",
             "VAULT_URL",
             CollectActivity.DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","persons")
@@ -140,7 +140,7 @@ class RevealActivity : AppCompatActivity() {
 
     //pure reveal
     fun detokenize(){
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             "VAULT_ID",
             "VAULT_URL",
             CollectActivity.DemoTokenProvider()
@@ -154,7 +154,7 @@ class RevealActivity : AppCompatActivity() {
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)
         revealRecords.put("records", revealRecordsArray)
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         skyflowClient.detokenize(records = revealRecords, object : Callback {
             override fun onSuccess(responseBody: Any) {
                 Log.d("detokenize", "onSuccess: $responseBody")

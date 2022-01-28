@@ -111,11 +111,13 @@ internal class ConnectionApiCallback(
             connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
             requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
         }
-        val queryMapWithDetokenizeValues = queryString.split(",").associate {
-            val (left, right) = it.split("=")
-            left to right
+        if(queryString.isNotEmpty()) {
+            val queryMapWithDetokenizeValues = queryString.split(",").associate {
+                val (left, right) = it.split("=")
+                left to right
+            }
+            queryMap = queryMapWithDetokenizeValues as HashMap<String, String>
         }
-        queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
         val requestBuild = getRequestBuild(token,requestBodyString)
         return requestBuild
     }
@@ -155,6 +157,8 @@ internal class ConnectionApiCallback(
         //adding header
         headerMap.forEach {
             if(it.key.equals("X-Skyflow-Authorization"))
+                request.removeHeader(it.key)
+            else if(it.key.equals("Content-Type"))
                 request.removeHeader(it.key)
             request.addHeader(it.key,it.value)
         }

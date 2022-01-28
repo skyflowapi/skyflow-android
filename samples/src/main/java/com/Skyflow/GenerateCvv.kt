@@ -1,38 +1,36 @@
 package com.Skyflow
 
-import Skyflow.Callback
-import Skyflow.ConnectionConfig
-import Skyflow.RequestMethod
-import Skyflow.create
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_generate_cvv.*
 import org.json.JSONObject
+import Skyflow.*
 
 class GenerateCvv : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_generate_cvv)
 
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             "VAULT_ID",
             "VAULT_URL",
             PullFunds.DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
 
-        val cardNumberInput = Skyflow.RevealElementInput(
+        val cardNumberInput = RevealElementInput(
             "CARD_NUMBER_TOKEN",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,
+            redaction = RedactionType.PLAIN_TEXT,
             label =  "card number",
         )
-        val cvvInput = Skyflow.RevealElementInput(
+        val cvvInput = RevealElementInput(
             label =  "cvv",altText = "Cvv not generated",token = "1234"
         )
 
-        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+        val revealContainer = skyflowClient.container(ContainerType.REVEAL)
         val cardNumber = revealContainer.create(this, cardNumberInput)
         val cvv = revealContainer.create(this,cvvInput)
         val parent = findViewById<LinearLayout>(R.id.parent1)
