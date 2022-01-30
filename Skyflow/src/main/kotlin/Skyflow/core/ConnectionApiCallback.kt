@@ -24,7 +24,7 @@ internal class ConnectionApiCallback(
 
     private val tag = ConnectionApiCallback::class.qualifiedName
 
-    private var connectionUrl = ""
+    internal var connectionUrl = ""
     private var requestBody = JSONObject()
     internal var headerMap = HashMap<String,String>()
     internal var queryMap = HashMap<String,String>()

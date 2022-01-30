@@ -93,7 +93,7 @@ enum class Messages(val message: String) {
     MISSING_REDACTION("redaction is missing"),
     EMPTY_KEY_IN_REQUEST_BODY("empty key present in request body"),
     EMPTY_KEY_IN_QUERY_PARAMS("empty key present in query parameters"),
-    EMPTY_KEY_IN_PATH_PARAMS("empty key present in path parameter"),
+    EMPTY_KEY_IN_PATH_PARAMS("empty key present in path parameters"),
     EMPTY_KEY_IN_REQUEST_HEADER_PARAMS("empty key present in request header"),
     INVALID_FIELD_IN_PATH_PARAMS("invalid data type %s present in path parameters"),
     INVALID_FIELD_IN_QUERY_PARAMS("invalid data type %s present in query parameters"),
