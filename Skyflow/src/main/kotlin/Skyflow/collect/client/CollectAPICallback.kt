@@ -49,16 +49,28 @@ internal class CollectAPICallback(
 
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
-                        if (!response.isSuccessful)
-                        {
-                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(response.body?.string()))
-                            skyflowError.setErrorCode(response.code)
-                            callback.onFailure(skyflowError)
+                        try {
+                            if (!response.isSuccessful && response.body != null)
+                            {
+                                val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(response.body?.string()))
+                                skyflowError.setErrorCode(response.code)
+                                callback.onFailure(skyflowError)
+                            }
+                            else if(response.isSuccessful && response.body !=null)
+                            {
+                                val responsebody = response.body!!.string()
+                                callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
+                            }
+                            else{
+                                val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag= tag, logLevel = apiClient.logLevel)
+                                skyflowError.setErrorCode(response.code)
+                                callback.onFailure(skyflowError)
+                            }
                         }
-                        else
+                        catch (e:Exception)
                         {
-                            val responsebody = response.body!!.string()
-                            callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
+                            val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(e.message.toString()))
+                            callback.onFailure(skyflowError)
                         }
                     }
                 }

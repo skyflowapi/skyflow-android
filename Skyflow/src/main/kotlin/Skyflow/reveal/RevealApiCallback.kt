@@ -49,7 +49,7 @@ internal class RevealApiCallback(
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             try {
-                                if (!response.isSuccessful) {
+                                if (!response.isSuccessful && response.body != null) {
                                     val responsebody = response.body!!.string()
                                     try {
                                         val resObj = JSONObject()
@@ -63,10 +63,15 @@ internal class RevealApiCallback(
                                     }
                                     catch (e:Exception)
                                     {
-                                        throw Exception(responsebody)
+                                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf(responsebody))
+                                        skyflowError.setErrorCode(response.code)
+                                        val resObj = JSONObject()
+                                        resObj.put("error", skyflowError)
+                                        resObj.put("token", record.token)
+                                        revealResponse.insertResponse(resObj, false)
                                     }
                                 }
-                                else if (response.body != null) {
+                                else if (response.isSuccessful && response.body != null) {
                                     val responseString = response.body!!.string()
                                     revealResponse.insertResponse(JSONObject(responseString), true)
                                 } else {

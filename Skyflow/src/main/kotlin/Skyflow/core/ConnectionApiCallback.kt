@@ -173,24 +173,38 @@ internal class ConnectionApiCallback(
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    if (!response.isSuccessful)
-                    {
-                        callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
-                            response.code
-                        ))
-                    }
-                    else
-                    {
-                        try {
-                            val responseFromConnection =JSONObject(response.body!!.string())
-                            constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
-                            callback.onSuccess(responseFromConnection)
+                    try {
+                        if (!response.isSuccessful && response.body != null)
+                        {
+                            callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
+                                response.code
+                            ))
                         }
-                        catch (e:Exception){
-                            callback.onFailure(Utils.constructError(e))
-                        }
+                        else if(response.isSuccessful && response.body != null)
+                        {
+                            try {
+                                val responseFromConnection =JSONObject(response.body!!.string())
+                                constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
+                                callback.onSuccess(responseFromConnection)
+                            }
+                            catch (e:Exception){
+                                callback.onFailure(Utils.constructError(e))
+                            }
 
+                        }
+                        else
+                        {
+                            val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                            callback.onFailure(Utils.constructError(skyflowError, response.code))
+                        }
                     }
+                    catch (e:Exception)
+                    {
+                        val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
+                        skyflowError.setErrorCode(400)
+                        callback.onFailure(Utils.constructError(skyflowError, response.code))
+                    }
+
                 }
             }
         })

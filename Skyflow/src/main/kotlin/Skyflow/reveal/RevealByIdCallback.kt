@@ -56,14 +56,26 @@ internal class RevealByIdCallback(
                             try {
                                 if (!response.isSuccessful && response.body != null) {
                                     val responsebody = response.body!!.string()
-                                    val resObj = JSONObject()
-                                    val responseErrorBody = JSONObject(responsebody)
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR ,tag=tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
-                                    skyflowError.setErrorCode(response.code)
-                                    resObj.put("error", skyflowError)
-                                    resObj.put("ids", record.skyflow_ids)
-                                    revealResponse.insertResponse(JSONArray().put(resObj), false)
-                                } else if (response.body != null) {
+                                    try {
+                                        val resObj = JSONObject()
+                                        val responseErrorBody = JSONObject(responsebody)
+                                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR ,tag=tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
+                                        skyflowError.setErrorCode(response.code)
+                                        resObj.put("error", skyflowError)
+                                        resObj.put("ids", record.skyflow_ids)
+                                        revealResponse.insertResponse(JSONArray().put(resObj), false)
+                                    }
+                                    catch (e:Exception)
+                                    {
+                                        val resObj = JSONObject()
+                                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR ,tag=tag, logLevel = apiClient.logLevel, params = arrayOf(responsebody))
+                                        skyflowError.setErrorCode(response.code)
+                                        resObj.put("error", skyflowError)
+                                        resObj.put("ids", record.skyflow_ids)
+                                        revealResponse.insertResponse(JSONArray().put(resObj), false)
+                                    }
+
+                                } else if (response.isSuccessful && response.body != null) {
                                     val fields =JSONObject(response.body!!.string().replace("\"skyflow_id\":", "\"id\":")).getJSONArray("records")
                                     var i = 0
                                     val newJsonArray = JSONArray()
@@ -87,7 +99,12 @@ internal class RevealByIdCallback(
                                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                                 }
                             }catch (e: Exception){
-                                callback.onFailure(Utils.constructError(e))
+                                val resObj = JSONObject()
+                                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR ,tag=tag, logLevel = apiClient.logLevel, params = arrayOf(e.message.toString()))
+                                skyflowError.setErrorCode(response.code)
+                                resObj.put("error", skyflowError)
+                                resObj.put("ids", record.skyflow_ids)
+                                revealResponse.insertResponse(JSONArray().put(resObj), false)
                             }
                         }
                     }

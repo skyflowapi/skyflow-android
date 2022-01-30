@@ -145,18 +145,30 @@ internal class SoapApiCallback(
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    if (!response.isSuccessful)
-                    {
-                        val res = response.body!!.string()
-                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
-                            arrayOf(res))
-                        skyflowError.setXml(res)
-                        callback.onFailure(skyflowError)
+                    try {
+                        if (!response.isSuccessful && response.body != null)
+                        {
+                            val res = response.body!!.string()
+                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
+                                arrayOf(res))
+                            skyflowError.setXml(res)
+                            callback.onFailure(skyflowError)
+                        }
+                        else if(response.isSuccessful && response.body != null)
+                        {
+                            val res = response.body!!.string()
+                            callback.onSuccess(res)
+                        }
+                        else {
+                            val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                            callback.onFailure(skyflowError)
+                        }
                     }
-                    else
+                    catch (e:Exception)
                     {
-                        val res = response.body!!.string()
-                        callback.onSuccess(res)
+                        val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel,
+                            arrayOf(e.message.toString()))
+                        callback.onFailure(skyflowError)
                     }
                 }
             }
