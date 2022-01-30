@@ -127,7 +127,7 @@ internal class SoapValueCallback(
 				val formatRegex = element.options.formatRegex
 				if(formatRegex.isNotEmpty()) {
 					val regex = Regex(formatRegex)
-					val matches = regex.find(it.value.trim())
+					val matches = regex.find(it.value)
 					if (matches == null)
 						throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
 				}

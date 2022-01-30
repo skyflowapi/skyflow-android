@@ -24,7 +24,6 @@ internal class RevealApiCallback(
             val okHttpClient = OkHttpClient()
 
             val revealResponse = RevealResponse(records.size, callback, apiClient.logLevel)
-
             for (record in records) {
                 val url = apiClient.vaultURL + apiClient.vaultId + "/detokenize"
                 val body = JSONObject()
@@ -50,21 +49,26 @@ internal class RevealApiCallback(
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             try {
-                                if (!response.isSuccessful && response.body != null) {
-                                    val resObj = JSONObject()
-                                    val responseErrorBody = JSONObject(response.body!!.string())
-                                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR ,tag= tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
-                                    skyflowError.setErrorCode(response.code)
-                                    resObj.put("error", skyflowError)
-                                    resObj.put("token", record.token)
-                                    revealResponse.insertResponse(resObj, false)
-                                } else if (response.body != null) {
+                                if (!response.isSuccessful) {
+                                    val responsebody = response.body!!.string()
+                                    try {
+                                        val resObj = JSONObject()
+                                        val responseErrorBody = JSONObject(responsebody)
+                                        val skyflowError =
+                                            SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
+                                        skyflowError.setErrorCode(response.code)
+                                        resObj.put("error", skyflowError)
+                                        resObj.put("token", record.token)
+                                        revealResponse.insertResponse(resObj, false)
+                                    }
+                                    catch (e:Exception)
+                                    {
+                                        throw Exception(responsebody)
+                                    }
+                                }
+                                else if (response.body != null) {
                                     val responseString = response.body!!.string()
-                                    revealResponse.insertResponse(
-                                        JSONObject(
-                                            responseString)
-                                        , true
-                                    )
+                                    revealResponse.insertResponse(JSONObject(responseString), true)
                                 } else {
                                     val resObj = JSONObject()
                                     val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
@@ -75,7 +79,10 @@ internal class RevealApiCallback(
                             }catch (e: Exception){
                                 val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf(e.message.toString()))
                                 skyflowError.setErrorCode(400)
-                                callback.onFailure(Utils.constructError(e))
+                                val resObj = JSONObject()
+                                resObj.put("error", skyflowError)
+                                resObj.put("token", record.token)
+                                revealResponse.insertResponse(resObj, false)
                             }
                         }
                     }

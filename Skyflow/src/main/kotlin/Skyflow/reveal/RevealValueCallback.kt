@@ -1,10 +1,10 @@
 package Skyflow.reveal
 
-import Skyflow.Callback
-import Skyflow.Label
-import Skyflow.LogLevel
+import Skyflow.*
 import Skyflow.utils.Utils
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -54,11 +54,14 @@ internal class RevealValueCallback(
     fun revealSuccessRecords(responseJSON: JSONObject, elementsMap: HashMap<String, Label>)
     {
             val recordsArray = responseJSON.getJSONArray("records")
+            validateWithFormatRegex(recordsArray)
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
                 val value = recordObj.getString("value")
-                Utils.getValueForLabel(elementsMap[tokenId]!!,value,tag,logLevel)
+                Handler(Looper.getMainLooper()).post(Runnable {
+                    Utils.getValueForLabel(elementsMap[tokenId]!!, value, tag, logLevel)
+                })
                 elementsMap[tokenId]!!.actualValue = value
                 recordObj.remove("value")
             }
@@ -75,6 +78,21 @@ internal class RevealValueCallback(
                 elementsMap[tokenId]!!.showError()
                 i++
             }
+    }
+
+    fun validateWithFormatRegex(recordsArray: JSONArray)
+    {
+        for (i in 0 until  recordsArray.length()) {
+            val recordObj = recordsArray[i] as JSONObject
+            val tokenId = recordObj.get("token")
+            val value = recordObj.getString("value")
+            val element = elementsMap[tokenId]!!
+            val formatRegex = element.options.formatRegex
+            val regex = Regex(formatRegex)
+            val matches = regex.find(value)
+            if(matches == null)
+                throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+        }
     }
 }
 
