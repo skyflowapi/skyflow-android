@@ -3,6 +3,8 @@ package Skyflow.core
 import Skyflow.*
 import Skyflow.Callback
 import Skyflow.utils.Utils
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -541,11 +543,15 @@ internal class ConnectionApiCallback(
 
                     if (responseBody.get(keys.getString(j)) is Element) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        (responseBody.get(keys.getString(j)) as TextField).inputField.setText(ans)
+                        Handler(Looper.getMainLooper()).post(Runnable {
+                            (responseBody.get(keys.getString(j)) as TextField).inputField.setText(ans)
+                        })
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                        Handler(Looper.getMainLooper()).post(Runnable {
+                            Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                        })
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {
