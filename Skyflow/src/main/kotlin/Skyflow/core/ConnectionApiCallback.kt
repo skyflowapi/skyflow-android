@@ -5,7 +5,6 @@ import Skyflow.Callback
 import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -174,42 +173,45 @@ internal class ConnectionApiCallback(
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use {
+                verifyResponse(response)
+            }
+        })
+    }
+    internal fun verifyResponse(response: Response)
+    {
+        response.use {
+            try {
+                if (!response.isSuccessful && response.body != null)
+                {
+                    callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
+                        response.code
+                    ))
+                }
+                else if(response.isSuccessful && response.body != null)
+                {
                     try {
-                        if (!response.isSuccessful && response.body != null)
-                        {
-                            callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
-                                response.code
-                            ))
-                        }
-                        else if(response.isSuccessful && response.body != null)
-                        {
-                            try {
-                                val responseFromConnection =JSONObject(response.body!!.string())
-                                constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
-                                callback.onSuccess(responseFromConnection)
-                            }
-                            catch (e:Exception){
-                                callback.onFailure(Utils.constructError(e))
-                            }
-
-                        }
-                        else
-                        {
-                            val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
-                            callback.onFailure(Utils.constructError(skyflowError, response.code))
-                        }
+                        val responseFromConnection =JSONObject(response.body!!.string())
+                        constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
+                        callback.onSuccess(responseFromConnection)
                     }
-                    catch (e:Exception)
-                    {
-                        val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
-                        skyflowError.setErrorCode(400)
-                        callback.onFailure(Utils.constructError(skyflowError, response.code))
+                    catch (e:Exception){
+                        callback.onFailure(Utils.constructError(e))
                     }
 
                 }
+                else
+                {
+                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                    callback.onFailure(Utils.constructError(skyflowError, response.code))
+                }
             }
-        })
+            catch (e:Exception)
+            {
+                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
+                skyflowError.setErrorCode(400)
+                callback.onFailure(Utils.constructError(skyflowError, response.code))
+            }
+        }
     }
     private var arrayInRequestBody : JSONArray = JSONArray()
     //changing pci elements to actual values in it for request to connection
@@ -558,7 +560,6 @@ internal class ConnectionApiCallback(
                         constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
                             responseFromConnection.getJSONObject(keys.getString(j)))
                     }
-
                 }
                 catch (e:Exception)
                 {

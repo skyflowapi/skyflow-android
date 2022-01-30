@@ -11,14 +11,10 @@ internal class RevealRequestBody {
         {
             val payload = JSONArray()
             for (element in elements) {
-
                     val entry = JSONObject()
                     entry.put("token", element.revealInput.token)
-                    entry.put("redaction", element.revealInput.redaction.toString() )
                     payload.put(entry)
-
             }
-
             val result = JSONObject()
             result.put("records", payload)
             return result.toString()

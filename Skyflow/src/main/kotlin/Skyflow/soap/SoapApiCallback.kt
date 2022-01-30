@@ -3,7 +3,6 @@ package Skyflow.soap
 import Skyflow.*
 import Skyflow.Callback
 import Skyflow.utils.Utils
-import android.util.Log
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -144,37 +143,41 @@ internal class SoapApiCallback(
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    try {
-                        if (!response.isSuccessful && response.body != null)
-                        {
-                            val res = response.body!!.string()
-                            val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
-                                arrayOf(res))
-                            skyflowError.setXml(res)
-                            callback.onFailure(skyflowError)
-                        }
-                        else if(response.isSuccessful && response.body != null)
-                        {
-                            val res = response.body!!.string()
-                            callback.onSuccess(res)
-                        }
-                        else {
-                            val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
-                            callback.onFailure(skyflowError)
-                        }
-                    }
-                    catch (e:Exception)
-                    {
-                        val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel,
-                            arrayOf(e.message.toString()))
-                        callback.onFailure(skyflowError)
-                    }
-                }
+                verifyResponse(response)
             }
         })
     }
 
+    fun verifyResponse(response: Response)
+    {
+        response.use {
+            try {
+                if (!response.isSuccessful && response.body != null)
+                {
+                    val res = response.body!!.string()
+                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
+                        arrayOf(res))
+                    skyflowError.setXml(res)
+                    callback.onFailure(skyflowError)
+                }
+                else if(response.isSuccessful && response.body != null)
+                {
+                    val res = response.body!!.string()
+                    callback.onSuccess(res)
+                }
+                else {
+                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                    callback.onFailure(skyflowError)
+                }
+            }
+            catch (e:Exception)
+            {
+                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel,
+                    arrayOf(e.message.toString()))
+                callback.onFailure(skyflowError)
+            }
+        }
+    }
     fun getRequestBody() :String{
         val matches = Utils.findMatches("<skyflow>([\\s\\S]*?)<\\/skyflow>",soapConnectionConfig.requestXML)
         matches.addAll(Utils.findMatches("<Skyflow>([\\s\\S]*?)<\\/Skyflow>",soapConnectionConfig.requestXML))
