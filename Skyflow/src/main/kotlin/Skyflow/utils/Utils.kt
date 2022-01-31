@@ -120,42 +120,6 @@ internal class Utils {
             return true
         }
 
-        //checking invalid fields in response body of connectionConfig
-        fun checkInvalidFields(
-            responseBody: JSONObject,
-            responseFromConnection: JSONObject
-        ) {
-                val keys = responseBody.names()
-                if(keys !=null) {
-                    for (j in 0 until keys.length()) {
-                        if (responseBody.get(keys.getString(j)) is JSONObject) {
-                                checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
-                                    responseFromConnection.getJSONObject(keys.getString(j)))
-                        } else if (responseBody.get(keys.getString(j)) !is Element && responseBody.get(
-                                keys.getString(j)) !is Label
-                        )
-                            throw SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR,params = arrayOf(("invalid field " + keys.getString(j) + " present in response body")))
-                        else if(responseBody.get(keys.getString(j)) is Element)
-                        {
-                            val element = (responseBody.get(keys.getString(j))) as Element
-                            if(!checkIfElementsMounted(element))
-                            {
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(keys.getString(j)))
-                            }
-                        }
-                        else if(responseBody.get(keys.getString(j)) is Label)
-                        {
-                            val element = (responseBody.get(keys.getString(j))) as Label
-                            if(!checkIfElementsMounted(element))
-                            {
-                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(keys.getString(j)))
-                                throw error
-                            }
-                        }
-                    }
-                }
-        }
-
         //removing empty json objects
         fun removeEmptyAndNullFields(response: JSONObject) {
             val keys = response.names()

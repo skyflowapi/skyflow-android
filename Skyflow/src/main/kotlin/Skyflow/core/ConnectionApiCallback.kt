@@ -524,7 +524,6 @@ internal class ConnectionApiCallback(
         responseBody: JSONObject,
         responseFromConnection: JSONObject,
     ): JSONObject {
-            Utils.checkInvalidFields(responseBody, responseFromConnection)
             val finalResponse = constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
             Utils.removeEmptyAndNullFields(responseFromConnection)
             return finalResponse
