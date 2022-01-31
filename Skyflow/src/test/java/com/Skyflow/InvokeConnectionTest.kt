@@ -9,8 +9,6 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import junit.framework.Assert.assertEquals
 import junit.framework.TestCase
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -733,7 +731,7 @@ class InvokeConnectionTest {
         val connectionConfiguration = ConnectionConfig(url,RequestMethod.POST,responseBody = responseBody)
         val callback = ConnectionApiCallback(connectionConfiguration,ApiCallback(), logLevel = logLevel,skyflow)
         try {
-            callback.checkDuplicateInResponseBody(responseBody, HashSet())
+            callback.validateResponseBody(responseBody, HashSet())
         }
         catch (e:Exception)
         {
@@ -761,7 +759,7 @@ class InvokeConnectionTest {
         val connectionConfiguration = ConnectionConfig(url,RequestMethod.POST,responseBody = responseBody)
         val callback = ConnectionApiCallback(connectionConfiguration,ApiCallback(), logLevel = logLevel,skyflow)
         try {
-            callback.checkDuplicateInResponseBody(responseBody, HashSet())
+            callback.validateResponseBody(responseBody, HashSet())
         }
         catch (e:Exception)
         {

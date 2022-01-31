@@ -34,7 +34,7 @@ internal class ConnectionApiCallback(
     override fun onSuccess(responseBody: Any) {
         try{
             val token = responseBody.toString()
-            checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
+            validateResponseBody(connectionConfig.responseBody,HashSet())
             convertElementsHelper()
             if(tokenValueMap.isEmpty()){
                 val requestBuild = getRequestBuild(token, requestBody.toString())
@@ -191,7 +191,7 @@ internal class ConnectionApiCallback(
                 {
                     try {
                         val responseFromConnection =JSONObject(response.body!!.string())
-                        constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
+                        parseResponse(connectionConfig.responseBody,responseFromConnection)
                         callback.onSuccess(responseFromConnection)
                     }
                     catch (e:Exception){
@@ -485,7 +485,7 @@ internal class ConnectionApiCallback(
         }
     }
     // checking duplicate fields present in responseBody of connectionConfig
-    fun  checkDuplicateInResponseBody(
+    fun  validateResponseBody(
         responseBody: JSONObject,
         elementList: HashSet<String>
     )
@@ -507,7 +507,7 @@ internal class ConnectionApiCallback(
                         throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
                 else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                    checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
+                    validateResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
                 } else if (responseBody.get(keys.getString(j)) !is Element && !(responseBody.get(keys.getString(j)) is Label))
                     throw Exception("invalid field " + keys.getString(j) + " present in response body")
                 if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(j)) is Label) {
@@ -520,18 +520,18 @@ internal class ConnectionApiCallback(
         }
     }
     //response for invokeConnection
-    fun constructResponseBodyFromConnection(
+    fun parseResponse(
         responseBody: JSONObject,
         responseFromConnection: JSONObject,
     ): JSONObject {
-            val finalResponse = constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
+            val finalResponse = helperForParseResponse(responseBody,responseFromConnection)
             Utils.removeEmptyAndNullFields(responseFromConnection)
             return finalResponse
     }
 
     //displaying data to pci elements and removing pci element values from response
     private var connectionResponse = JSONObject()
-    fun constructJsonKeyForConnectionResponse(
+    fun helperForParseResponse(
         responseBody: JSONObject,
         responseFromConnection: JSONObject
     ) : JSONObject
@@ -556,7 +556,7 @@ internal class ConnectionApiCallback(
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                        constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
+                        helperForParseResponse(responseBody.get(keys.getString(j)) as JSONObject,
                             responseFromConnection.getJSONObject(keys.getString(j)))
                     }
                 }
