@@ -1587,6 +1587,33 @@ class UnitTests {
                 return message
         }
     }
+
+    @Test
+    fun testGetValueForLabel()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "..$"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.getValueForLabel(cvv,"1234", logLevel = LogLevel.ERROR)
+        assertEquals(cvv.placeholder.text.toString(),"34")
+    }
+
+    @Test
+    fun testGetValueForLabelFailed()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "knkn..$"))
+        activity.addContentView(cvv,layoutParams)
+        try {
+            Utils.getValueForLabel(cvv,"1234", logLevel = LogLevel.ERROR)
+        }
+        catch (e:Exception)
+        {
+            assertEquals(e.message.toString(),"Interface :  - Invalid formatRegex - no match found for regex: knkn..\$")
+        }
+    }
 }
 
 class APITokenProviderForSuccess : TokenProvider {

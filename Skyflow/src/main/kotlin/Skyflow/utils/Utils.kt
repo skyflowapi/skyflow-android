@@ -212,12 +212,12 @@ internal class Utils {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
                 if (matches != null)
-                    label.placeholder.text = matches.value
+                    label.setText(matches.value)
                 else
                     throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
             }
             else
-                label.placeholder.text = value
+                label.setText(value)
         }
 
         fun doTokenMap(responseBody: Any,tokenValueMap:HashMap<String,String?>) { // fill labelWithRegexMap with actual values from api
@@ -257,6 +257,7 @@ internal class Utils {
             if(!checkUrl(configuration.vaultURL))
                throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(configuration.vaultURL))
         }
+
     }
 
 

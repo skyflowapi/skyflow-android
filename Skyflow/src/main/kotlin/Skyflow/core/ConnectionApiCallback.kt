@@ -545,7 +545,7 @@ internal class ConnectionApiCallback(
                     if (responseBody.get(keys.getString(j)) is Element) {
                         val ans = responseFromConnection.getString(keys.getString(j))
                         Handler(Looper.getMainLooper()).post(Runnable {
-                            (responseBody.get(keys.getString(j)) as TextField).inputField.setText(ans)
+                            (responseBody.get(keys.getString(j)) as TextField).setText(ans)
                         })
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {

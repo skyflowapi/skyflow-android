@@ -62,7 +62,6 @@ internal class RevealValueCallback(
                 Handler(Looper.getMainLooper()).post(Runnable {
                     Utils.getValueForLabel(elementsMap[tokenId]!!, value, tag, logLevel)
                 })
-                elementsMap[tokenId]!!.actualValue = value
                 recordObj.remove("value")
             }
     }

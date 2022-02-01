@@ -1189,10 +1189,21 @@ class CollectTest {
             }
 
         })
-
-
     }
 
+    @Test
+    fun testClearValue()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "enter pin"
+        )
+        val pin = container.create(activity,collectInput)
+        pin.setText("1234")
+
+        assertEquals(pin.actualValue,"1234")
+        pin.clearValue()
+    }
 
 
 

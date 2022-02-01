@@ -1112,6 +1112,15 @@ class InvokeConnectionTest {
         activity.addContentView(cvv,layoutParams)
         return cvv
     }
+    fun getCvvWithFormatRegex() : Label
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "..$"))
+
+        activity.addContentView(cvv,layoutParams)
+        return cvv
+    }
     @Test
     fun tokenNullInRequestBody()
     {
@@ -1331,7 +1340,11 @@ class InvokeConnectionTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
                 TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject))
-            }
+            }val configuration = Configuration(
+            "b359c43f1b844ff4bea0f098d2c09",
+            "https://vaulturl.com",
+            AccessTokenProvider()
+        )
 
         }, LogLevel.ERROR, skyflow).onSuccess("token")
     }
@@ -1397,6 +1410,90 @@ class InvokeConnectionTest {
             }
 
         }, LogLevel.ERROR, skyflow).onSuccess("token")
+    }
+
+    @Test
+    fun testEmptyVaultId() //when formatRegex given
+    {
+        val configuration = Configuration(
+            "",
+            "https://vaulturl.com",
+            AccessTokenProvider()
+        )
+        val skyflowClient = Client(configuration)
+        val requestBody = JSONObject()
+        requestBody.put("cvv", arrayOf(getCvvWithFormatRegex(),2,3))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(), requestBody = requestBody,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        }, LogLevel.ERROR, skyflowClient).onSuccess("token")
+    }
+
+    @Test
+    fun testEmptyVaultURL()
+    {
+        val configuration = Configuration(
+            "123",
+            "",
+            AccessTokenProvider()
+        )
+        val skyflowClient = Client(configuration)
+        val requestBody = JSONObject()
+        requestBody.put("cvv", arrayOf(getCvvWithFormatRegex(),2,3))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(), requestBody = requestBody,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        }, LogLevel.ERROR, skyflowClient).onSuccess("token")
+    }
+
+    @Test
+    fun testInvalidVaultURL()
+    {
+        val configuration = Configuration(
+            "1243",
+            "http://vaulturl.com",
+            AccessTokenProvider()
+        )
+        val skyflowClient = Client(configuration)
+        val requestBody = JSONObject()
+        requestBody.put("cvv", arrayOf(getCvvWithFormatRegex(),2,3))
+        val url = "https://www.google.com" // eg:  url.../{cardNumber}/...
+        val connectionRequestBody = ConnectionConfig(connectionURL = url,requestHeader = JSONObject(), requestBody = requestBody,methodName = RequestMethod.POST)
+        ConnectionApiCallback(connectionRequestBody, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, params = arrayOf(configuration.vaultURL))
+                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                    UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        }, LogLevel.ERROR, skyflowClient).onSuccess("token")
     }
 }
 class ApiCallback : Callback
