@@ -551,7 +551,7 @@ internal class ConnectionApiCallback(
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
                         Handler(Looper.getMainLooper()).post(Runnable {
-                            Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                            Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans)
                         })
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))

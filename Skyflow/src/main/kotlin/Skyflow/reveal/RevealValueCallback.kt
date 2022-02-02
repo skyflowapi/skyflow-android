@@ -4,6 +4,7 @@ import Skyflow.*
 import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
@@ -60,7 +61,7 @@ internal class RevealValueCallback(
                 val tokenId = recordObj.get("token")
                 val value = recordObj.getString("value")
                 Handler(Looper.getMainLooper()).post(Runnable {
-                    Utils.getValueForLabel(elementsMap[tokenId]!!, value, tag, logLevel)
+                    Utils.getValueForLabel(elementsMap[tokenId]!!, value)
                 })
                 recordObj.remove("value")
             }
@@ -90,7 +91,9 @@ internal class RevealValueCallback(
             val regex = Regex(formatRegex)
             val matches = regex.find(value)
             if(matches == null)
-                throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+            {
+                Log.w(tag,"no match found for regex - $formatRegex")
+            }
         }
     }
 }

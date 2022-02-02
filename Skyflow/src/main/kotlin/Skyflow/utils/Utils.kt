@@ -2,15 +2,12 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
-import Skyflow.soap.SoapConnectionConfig
+import android.util.Log
 import android.webkit.URLUtil
 import org.json.JSONArray
 import org.json.JSONObject
-import org.xml.sax.InputSource
-import java.io.StringReader
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 
 internal class Utils {
@@ -202,19 +199,39 @@ internal class Utils {
                 val matches =  regex.find(value)
                 if(matches != null)
                     return matches.value
-                throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+                else
+                {
+                    Log.w(tag,"no match found for regex - $formatRegex")
+                }
             }
             return label.getValueForConnections()
         }
-        fun getValueForLabel(label: Label,value:String,tag:String?="",logLevel: LogLevel) {
+        fun getValueForLabel(label: Label, value:String) {
             val formatRegex = label.options.formatRegex
-            if(formatRegex.isNotEmpty()) {
+            val replaceText = label.options.replaceText
+            if(formatRegex.isNotEmpty() && replaceText.isEmpty()) {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
                 if (matches != null)
+                {
                     label.setText(matches.value)
-                else
-                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+                }
+                else {
+                    Log.w(tag,"no match is found for regex - $formatRegex")
+                    label.setText(value)
+                }
+            }
+            else if(formatRegex.isNotEmpty() && replaceText.isNotEmpty())
+            {
+                try {
+                    val replacedValue = value.replace(Regex(formatRegex),replaceText)
+                    label.setText(replacedValue)
+                }
+                catch (e:Exception)
+                {
+                    Log.w(tag,"invalid replaceText - $replaceText")
+                    label.setText(value)
+                }
             }
             else
                 label.setText(value)
@@ -238,8 +255,9 @@ internal class Utils {
                 if(matches != null)
                     tokenValueMap.put(it.key,matches.value)
                 else
-                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
-
+                {
+                    Log.w(tag,"no match found for regex - $formatRegex" )
+                }
             }
         }
 

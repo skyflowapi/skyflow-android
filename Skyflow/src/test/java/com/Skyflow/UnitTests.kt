@@ -1,7 +1,6 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.collect.client.CollectRequestBody
 import Skyflow.collect.elements.utils.*
 import Skyflow.core.APIClient
 import Skyflow.core.JWTUtils
@@ -15,7 +14,6 @@ import android.widget.CheckBox
 import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
-import junit.framework.TestCase
 import junit.framework.TestCase.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -1595,7 +1593,7 @@ class UnitTests {
         val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
             RevealElementOptions(formatRegex = "..$"))
         activity.addContentView(cvv,layoutParams)
-        Utils.getValueForLabel(cvv,"1234", logLevel = LogLevel.ERROR)
+        Utils.getValueForLabel(cvv,"1234")
         assertEquals(cvv.placeholder.text.toString(),"34")
     }
 
@@ -1607,7 +1605,7 @@ class UnitTests {
             RevealElementOptions(formatRegex = "knkn..$"))
         activity.addContentView(cvv,layoutParams)
         try {
-            Utils.getValueForLabel(cvv,"1234", logLevel = LogLevel.ERROR)
+            Utils.getValueForLabel(cvv,"1234")
         }
         catch (e:Exception)
         {
