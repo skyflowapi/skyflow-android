@@ -886,14 +886,11 @@ val revealElementInput = Skyflow.RevealElementInput(
         label = "cardNumber"            //optional, label for the element,
         altText = "XXXX XXXX XXXX XXXX" //optional, string that is shown before reveal, will show token if altText is not provided
     )
-val revealElementOptions = RevealElementOptions(
-                            formatRegex = "regex" //optional, regex to specify the format on the value that has been revealed
-                          )   
+
 ```
 
 `Note`: 
 - `token` is optional only if it is being used in invokeConnection()
-- If there are multiple matches found with the given formatRegex option, then always the first match is applied to the revealed value
 
 The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
 
@@ -1087,8 +1084,8 @@ Merchant acceptance - customers should be able to complete payment checkout with
 ```kt
 // step 1
 val config = Skyflow.Configuration(
-    vaultID = <VAULT_ID>, // optional, required only when a revealElement is present with formatRegex option
-    vaultURL = <VAULT_URL>, // optional, required only when a revealElement is present with formatRegex option
+    vaultID = <VAULT_ID>, 
+    vaultURL = <VAULT_URL>
    tokenProvider = demoTokenProvider
 )
 
@@ -1215,8 +1212,8 @@ The values in the **requestXML** can contain collect element IDs or reveal eleme
 ```kt
 
 val config = Skyflow.Configuration(
-    vaultID = <VAULT_ID>, // optional, required only when a revealElement is present with formatRegex option
-    vaultURL = <VAULT_URL>, // optional, required only when a revealElement is present with formatRegex option
+    vaultID = <VAULT_ID>
+    vaultURL = <VAULT_URL>
     tokenProvider = demoTokenProvider
 )
 
@@ -1235,8 +1232,7 @@ val cvvInput = Skyflow.RevealElementInput(label = "cvv",altText = "cvv not gener
 
 val cardNumberElement = collectContainer.create(context = Context, input = cardNumberInput)
 val expiryMonthElement = revealContainer.create(context = Context,input = expireMonthInput)
-val expiryYearElement =  revealContainer.create(context = Context,input = expireInput,RevealElementOptions(formatRegex="/^..$/")) 
-//  only last 2 characters are sent for invoking connection
+val expiryYearElement =  revealContainer.create(context = Context,input = expireInput) 
 val cvvElement = revealContainer.create(context = Context, input = cvvInput)
 
 add elements to layout
@@ -1331,7 +1327,7 @@ Sample Response on success:
     Please refer to the CVV tag in the above example. Here, we wish to strip the actual value present within the CVV tag.
     2. For arrays, since we have multiple tags with the same name, we will need to provide identifiers to uniquely identify the required tag.
     Please refer to HeaderItem tag. Here, we have provided NodeId within the Name tag which acts as an identifier and we wish to strip the actual value present in the Value tag.
-- In responseXML, if revealElement with formatRegex option is present, then value is revealed in the UI according to the match found with respect to the given formatRegex
+
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
 
