@@ -187,6 +187,7 @@ internal class Utils {
 
         fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) : String {
             val formatRegex = label.options.formatRegex
+            val replaceText = label.options.replaceText
             val value : String? = label.actualValue
             if(formatRegex.isNotEmpty() && value == null){
                 tokenValueMap.put(label.getToken(),null)
@@ -194,7 +195,7 @@ internal class Utils {
                 tokenLabelMap.put(label.getToken(),label)
                 return label.getID()
             }
-            else if(value!= null && formatRegex.isNotEmpty()) {
+            else if(value!= null && formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches =  regex.find(value)
                 if(matches != null)
@@ -204,12 +205,23 @@ internal class Utils {
                     Log.w(tag,"no match found for regex - $formatRegex")
                 }
             }
+            else if(value!= null && formatRegex.isNotEmpty() && replaceText !=null)
+            {
+                try {
+                    val replacedValue = value.replace(Regex(formatRegex),replaceText)
+                    return replacedValue
+                }
+                catch (e:Exception)
+                {
+                    Log.w(tag,"invalid replaceText - $replaceText")
+                }
+            }
             return label.getValueForConnections()
         }
         fun getValueForLabel(label: Label, value:String) {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
-            if(formatRegex.isNotEmpty() && replaceText.isEmpty()) {
+            if(formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
                 if (matches != null)
@@ -221,7 +233,7 @@ internal class Utils {
                     label.setText(value)
                 }
             }
-            else if(formatRegex.isNotEmpty() && replaceText.isNotEmpty())
+            else if(formatRegex.isNotEmpty() && replaceText != null)
             {
                 try {
                     val replacedValue = value.replace(Regex(formatRegex),replaceText)
