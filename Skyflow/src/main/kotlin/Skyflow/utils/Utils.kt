@@ -269,6 +269,7 @@ internal class Utils {
                 else
                 {
                     Log.w(tag,"no match found for regex - $formatRegex" )
+                    tokenValueMap.put(it.key,it.value)
                 }
             }
         }
