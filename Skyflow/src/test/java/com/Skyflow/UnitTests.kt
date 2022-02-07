@@ -1593,7 +1593,7 @@ class UnitTests {
         val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
             RevealElementOptions(formatRegex = "..$"))
         activity.addContentView(cvv,layoutParams)
-        Utils.getValueForLabel(cvv,"1234")
+        Utils.setValueForLabel(cvv,"1234")
         assertEquals(cvv.placeholder.text.toString(),"34")
     }
 
@@ -1605,7 +1605,7 @@ class UnitTests {
             RevealElementOptions(formatRegex = "knkn..$"))
         activity.addContentView(cvv,layoutParams)
         try {
-            Utils.getValueForLabel(cvv,"1234")
+            Utils.setValueForLabel(cvv,"1234")
         }
         catch (e:Exception)
         {

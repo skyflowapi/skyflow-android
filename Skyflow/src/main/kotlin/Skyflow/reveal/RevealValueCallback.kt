@@ -4,8 +4,6 @@ import Skyflow.*
 import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -55,13 +53,12 @@ internal class RevealValueCallback(
     fun revealSuccessRecords(responseJSON: JSONObject, elementsMap: HashMap<String, Label>)
     {
             val recordsArray = responseJSON.getJSONArray("records")
-            validateWithFormatRegex(recordsArray)
             for (i in 0 until  recordsArray.length()) {
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
                 val value = recordObj.getString("value")
                 Handler(Looper.getMainLooper()).post(Runnable {
-                    Utils.getValueForLabel(elementsMap[tokenId]!!, value)
+                    Utils.setValueForLabel(elementsMap[tokenId]!!, value)
                 })
                 recordObj.remove("value")
             }
@@ -78,23 +75,6 @@ internal class RevealValueCallback(
                 elementsMap[tokenId]!!.showError()
                 i++
             }
-    }
-
-    fun validateWithFormatRegex(recordsArray: JSONArray)
-    {
-        for (i in 0 until  recordsArray.length()) {
-            val recordObj = recordsArray[i] as JSONObject
-            val tokenId = recordObj.get("token")
-            val value = recordObj.getString("value")
-            val element = elementsMap[tokenId]!!
-            val formatRegex = element.options.formatRegex
-            val regex = Regex(formatRegex)
-            val matches = regex.find(value)
-            if(matches == null)
-            {
-                Log.w(tag,"no match found for regex - $formatRegex")
-            }
-        }
     }
 }
 

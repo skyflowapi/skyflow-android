@@ -111,7 +111,7 @@ internal class SoapApiCallback(
     ):Request{
         var requestBodyForConnections = requestBody
         Utils.doTokenMap(responseBody,tokenValueMap)
-        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
+        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag)
         tokenValueMap.forEach {
             requestBodyForConnections = requestBodyForConnections.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
         }
@@ -206,7 +206,7 @@ internal class SoapApiCallback(
                     }
                 } else if (value is Label) {
                     if (Utils.checkIfElementsMounted(value)) {
-                        tempXML = tempXML.replace(it,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
+                        tempXML = tempXML.replace(it,Utils.setValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
                     } else {
                         //element not mounted
                         throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(value.label.text.toString()))

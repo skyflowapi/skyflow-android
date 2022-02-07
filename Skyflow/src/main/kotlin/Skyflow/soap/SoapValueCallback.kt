@@ -142,7 +142,7 @@ internal class SoapValueCallback(
 				}
 				else if(element is Label){
 					try {
-						Utils.getValueForLabel(element,it.value.trim())
+						Utils.setValueForLabel(element,it.value.trim())
 					}
 					catch (e:Exception){
 						callback.onFailure(e)

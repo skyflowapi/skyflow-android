@@ -10,7 +10,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
 
-internal class Utils {
+ class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName
@@ -185,7 +185,7 @@ internal class Utils {
             return allMatches
         }
 
-        fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) : String {
+        fun setValueForLabel(label : Label, tokenValueMap:HashMap<String,String?>, tokenIdMap:HashMap<String,String>, tokenLabelMap:HashMap<String,Label>, tag:String?="", logLevel: LogLevel) : String {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
             val value : String? = label.actualValue
@@ -218,7 +218,7 @@ internal class Utils {
             }
             return label.getValueForConnections()
         }
-        fun getValueForLabel(label: Label, value:String) {
+        fun setValueForLabel(label: Label, value:String) {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
             if(formatRegex.isNotEmpty() && replaceText == null) {
@@ -259,18 +259,37 @@ internal class Utils {
             }
         }
 
-        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) { // do regex on value after detokenize and put it in labelWithRegexMap
+        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>,tag:String?="") { // do regex on value after detokenize and put it in labelWithRegexMap
             tokenValueMap.forEach {
                 val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
-                val regex = Regex(formatRegex)
-                val matches =  regex.find(it.value!!)
-                if(matches != null)
-                    tokenValueMap.put(it.key,matches.value)
-                else
-                {
-                    Log.w(tag,"no match found for regex - $formatRegex" )
-                    tokenValueMap.put(it.key,it.value)
+                val replaceText = tokenLabelMap.get(it.key)!!.options.replaceText
+                if(formatRegex.isNotEmpty() && replaceText == null) {
+                    val regex = Regex(formatRegex)
+                    val matches =  regex.find(it.value!!)
+                    if(matches != null)
+                        tokenValueMap.put(it.key,matches.value)
+                    else
+                    {
+                        Log.w(tag,"no match found for regex - $formatRegex" )
+                        tokenValueMap.put(it.key,it.value)
+                    }
                 }
+                else if(formatRegex.isNotEmpty() && replaceText != null)
+                {
+                    try {
+                        val replacedValue = it.value!!.replace(Regex(formatRegex),replaceText)
+                        tokenValueMap.put(it.key,replacedValue)
+                    }
+                    catch (e:Exception)
+                    {
+                        Log.w(Companion.tag,"invalid replaceText - $replaceText")
+                        tokenValueMap.put(it.key,it.value)
+                    }
+                }
+                else
+                    tokenValueMap.put(it.key,it.value)
+
+
             }
         }
 
