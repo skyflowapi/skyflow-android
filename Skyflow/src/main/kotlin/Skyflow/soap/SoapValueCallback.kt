@@ -123,15 +123,6 @@ internal class SoapValueCallback(
 						tag, logLevel, arrayOf(element.label.text.toString()))
 					throw error
 				}
-				val formatRegex = element.options.formatRegex
-				if(formatRegex.isNotEmpty()) {
-					val regex = Regex(formatRegex)
-					val matches = regex.find(it.value)
-					if (matches == null)
-					{
-						Log.w(tag,"no match found for regex - $formatRegex")
-					}
-				}
 			}
 		}
 		Handler(Looper.getMainLooper()).post(Runnable {
