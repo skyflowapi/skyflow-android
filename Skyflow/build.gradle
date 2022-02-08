@@ -10,7 +10,7 @@ ext {
     mGroupId = "com.skyflowapi.android"
     mArtifactId = "skyflow-android-sdk"
     mVersionCode = 1
-    mVersionName = "1.10.0-dev.39a43e1"
+    mVersionName = "1.11.0"
 
     mLibraryName = "skyflow-android"
     mLibraryDescription = "Skyflow’s android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data."
