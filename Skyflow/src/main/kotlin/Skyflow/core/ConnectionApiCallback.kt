@@ -3,7 +3,8 @@ package Skyflow.core
 import Skyflow.*
 import Skyflow.Callback
 import Skyflow.utils.Utils
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -23,7 +24,7 @@ internal class ConnectionApiCallback(
 
     private val tag = ConnectionApiCallback::class.qualifiedName
 
-    private var connectionUrl = ""
+    internal var connectionUrl = ""
     private var requestBody = JSONObject()
     internal var headerMap = HashMap<String,String>()
     internal var queryMap = HashMap<String,String>()
@@ -33,7 +34,7 @@ internal class ConnectionApiCallback(
     override fun onSuccess(responseBody: Any) {
         try{
             val token = responseBody.toString()
-            checkDuplicateInResponseBody(connectionConfig.responseBody,HashSet())
+            validateResponseBody(connectionConfig.responseBody,HashSet())
             convertElementsHelper()
             if(tokenValueMap.isEmpty()){
                 val requestBuild = getRequestBuild(token, requestBody.toString())
@@ -103,7 +104,7 @@ internal class ConnectionApiCallback(
 
     fun createRequestForConnections(responseBody: Any, token: String): Request? {
         Utils.doTokenMap(responseBody,tokenValueMap)
-        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag,logLevel)
+        Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag)
         var requestBodyString = requestBody.toString()
         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
         tokenValueMap.forEach {
@@ -111,11 +112,13 @@ internal class ConnectionApiCallback(
             connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
             requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
         }
-        val queryMapWithDetokenizeValues = queryString.split(",").associate {
-            val (left, right) = it.split("=")
-            left to right
+        if(queryString.isNotEmpty()) {
+            val queryMapWithDetokenizeValues = queryString.split(",").associate {
+                val (left, right) = it.split("=")
+                left to right
+            }
+            queryMap = queryMapWithDetokenizeValues as HashMap<String, String>
         }
-        queryMap  = queryMapWithDetokenizeValues as HashMap<String, String>
         val requestBuild = getRequestBuild(token,requestBodyString)
         return requestBuild
     }
@@ -156,6 +159,8 @@ internal class ConnectionApiCallback(
         headerMap.forEach {
             if(it.key.equals("X-Skyflow-Authorization"))
                 request.removeHeader(it.key)
+            else if(it.key.equals("Content-Type"))
+                request.removeHeader(it.key)
             request.addHeader(it.key,it.value)
         }
         val  requestBuild = request.build()
@@ -168,28 +173,45 @@ internal class ConnectionApiCallback(
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful)
-                    {
-                        callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
-                            response.code
-                        ))
-                    }
-                    else
-                    {
-                        try {
-                            val responseFromConnection =JSONObject(response.body!!.string())
-                            constructResponseBodyFromConnection(connectionConfig.responseBody,responseFromConnection)
-                            callback.onSuccess(responseFromConnection)
-                        }
-                        catch (e:Exception){
-                            callback.onFailure(Utils.constructError(e))
-                        }
-
-                    }
-                }
+                verifyResponse(response)
             }
         })
+    }
+    internal fun verifyResponse(response: Response)
+    {
+        response.use {
+            try {
+                if (!response.isSuccessful && response.body != null)
+                {
+                    callback.onFailure(Utils.constructError(Exception(" ${response.body?.string()}"),
+                        response.code
+                    ))
+                }
+                else if(response.isSuccessful && response.body != null)
+                {
+                    try {
+                        val responseFromConnection =JSONObject(response.body!!.string())
+                        parseResponse(connectionConfig.responseBody,responseFromConnection)
+                        callback.onSuccess(responseFromConnection)
+                    }
+                    catch (e:Exception){
+                        callback.onFailure(Utils.constructError(e))
+                    }
+
+                }
+                else
+                {
+                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                    callback.onFailure(Utils.constructError(skyflowError, response.code))
+                }
+            }
+            catch (e:Exception)
+            {
+                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
+                skyflowError.setErrorCode(400)
+                callback.onFailure(Utils.constructError(skyflowError, response.code))
+            }
+        }
     }
     private var arrayInRequestBody : JSONArray = JSONArray()
     //changing pci elements to actual values in it for request to connection
@@ -463,7 +485,7 @@ internal class ConnectionApiCallback(
         }
     }
     // checking duplicate fields present in responseBody of connectionConfig
-    fun  checkDuplicateInResponseBody(
+    fun  validateResponseBody(
         responseBody: JSONObject,
         elementList: HashSet<String>
     )
@@ -485,7 +507,7 @@ internal class ConnectionApiCallback(
                         throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
                 else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                    checkDuplicateInResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
+                    validateResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
                 } else if (responseBody.get(keys.getString(j)) !is Element && !(responseBody.get(keys.getString(j)) is Label))
                     throw Exception("invalid field " + keys.getString(j) + " present in response body")
                 if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(j)) is Label) {
@@ -498,19 +520,18 @@ internal class ConnectionApiCallback(
         }
     }
     //response for invokeConnection
-    fun constructResponseBodyFromConnection(
+    fun parseResponse(
         responseBody: JSONObject,
         responseFromConnection: JSONObject,
     ): JSONObject {
-            Utils.checkInvalidFields(responseBody, responseFromConnection)
-            val finalResponse = constructJsonKeyForConnectionResponse(responseBody,responseFromConnection)
+            val finalResponse = helperForParseResponse(responseBody,responseFromConnection)
             Utils.removeEmptyAndNullFields(responseFromConnection)
             return finalResponse
     }
 
     //displaying data to pci elements and removing pci element values from response
     private var connectionResponse = JSONObject()
-    fun constructJsonKeyForConnectionResponse(
+    fun helperForParseResponse(
         responseBody: JSONObject,
         responseFromConnection: JSONObject
     ) : JSONObject
@@ -523,18 +544,21 @@ internal class ConnectionApiCallback(
 
                     if (responseBody.get(keys.getString(j)) is Element) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        (responseBody.get(keys.getString(j)) as TextField).inputField.setText(ans)
+                        Handler(Looper.getMainLooper()).post(Runnable {
+                            (responseBody.get(keys.getString(j)) as TextField).setText(ans)
+                        })
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is Label) {
                         val ans = responseFromConnection.getString(keys.getString(j))
-                        Utils.getValueForLabel(responseBody.get(keys.getString(j)) as Label,ans,tag,logLevel)
+                        Handler(Looper.getMainLooper()).post(Runnable {
+                            Utils.setValueForLabel(responseBody.get(keys.getString(j)) as Label,ans)
+                        })
                         (responseBody.get(keys.getString(j)) as Label).actualValue = ans
                         responseFromConnection.remove(keys.getString(j))
                     } else if (responseBody.get(keys.getString(j)) is JSONObject) {
-                        constructJsonKeyForConnectionResponse(responseBody.get(keys.getString(j)) as JSONObject,
+                        helperForParseResponse(responseBody.get(keys.getString(j)) as JSONObject,
                             responseFromConnection.getJSONObject(keys.getString(j)))
                     }
-
                 }
                 catch (e:Exception)
                 {

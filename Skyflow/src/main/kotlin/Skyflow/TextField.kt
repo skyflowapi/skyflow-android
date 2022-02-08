@@ -410,6 +410,7 @@ class TextField @JvmOverloads constructor(
     internal fun setText(value:String)
     {
         this.inputField.setText(value)
+        actualValue=value
     }
 
     internal fun getErrorText():String

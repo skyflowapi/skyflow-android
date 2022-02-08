@@ -19,7 +19,6 @@ import javax.xml.transform.stream.StreamResult
 import android.os.Looper
 import android.util.Log
 import java.io.BufferedReader
-import kotlin.math.sin
 
 internal class SoapValueCallback(
 	var client: Client,
@@ -124,13 +123,6 @@ internal class SoapValueCallback(
 						tag, logLevel, arrayOf(element.label.text.toString()))
 					throw error
 				}
-				val formatRegex = element.options.formatRegex
-				if(formatRegex.isNotEmpty()) {
-					val regex = Regex(formatRegex)
-					val matches = regex.find(it.value.trim())
-					if (matches == null)
-						throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
-				}
 			}
 		}
 		Handler(Looper.getMainLooper()).post(Runnable {
@@ -141,7 +133,7 @@ internal class SoapValueCallback(
 				}
 				else if(element is Label){
 					try {
-						Utils.getValueForLabel(element,it.value.trim(),tag,logLevel)
+						Utils.setValueForLabel(element,it.value.trim())
 					}
 					catch (e:Exception){
 						callback.onFailure(e)

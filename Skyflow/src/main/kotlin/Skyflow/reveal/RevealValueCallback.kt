@@ -1,10 +1,9 @@
 package Skyflow.reveal
 
-import Skyflow.Callback
-import Skyflow.Label
-import Skyflow.LogLevel
+import Skyflow.*
 import Skyflow.utils.Utils
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -58,8 +57,9 @@ internal class RevealValueCallback(
                 val recordObj = recordsArray[i] as JSONObject
                 val tokenId = recordObj.get("token")
                 val value = recordObj.getString("value")
-                Utils.getValueForLabel(elementsMap[tokenId]!!,value,tag,logLevel)
-                elementsMap[tokenId]!!.actualValue = value
+                Handler(Looper.getMainLooper()).post(Runnable {
+                    Utils.setValueForLabel(elementsMap[tokenId]!!, value)
+                })
                 recordObj.remove("value")
             }
     }

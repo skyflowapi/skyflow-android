@@ -365,18 +365,16 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
        // records.put("records", recordsArray)
-        Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+
+        try {
+            Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError= SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
-                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
-                    skyflowError.getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -392,18 +390,15 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", JSONObject())
-        Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+        try {
+            Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError( SkyflowErrorCode.INVALID_RECORDS)
-                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage(),
-                   skyflowError.getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -419,20 +414,18 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-       val x = Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+
+        try {
+           val x = Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+            assertEquals(x.toString().trim(),JSONObject().toString().trim())
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
+            val skyflowError = SkyflowError( SkyflowErrorCode.MISSING_TABLE_KEY, params = arrayOf())
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
 
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError( SkyflowErrorCode.MISSING_TABLE_KEY, params = arrayOf())
-                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
-                   skyflowError.getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
-
-        assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
 
     @Test
@@ -448,18 +441,17 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        val x = Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+        try {
+            val x = Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+            assertEquals(x.toString().trim(),JSONObject().toString().trim())
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
+            val skyflowError = SkyflowError( SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf())
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
 
-            override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).getInternalErrorMessage(),SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
-
-        assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
 
     @Test
@@ -475,20 +467,17 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        val x = Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+        try {
+            val x = Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+            assertEquals(x.toString().trim(),JSONObject().toString().trim())
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
+            val skyflowError = SkyflowError( SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf())
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
 
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
-                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
-                        skyflowError.getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
-
-        assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
 
     @Test
@@ -504,20 +493,17 @@ class UnitTests {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        val x = Utils.constructBatchRequestBody(records, InsertOptions(),object : Callback
+        try {
+            val x = Utils.constructBatchRequestBody(records, InsertOptions(),LogLevel.ERROR)
+            assertEquals(x.toString().trim(),JSONObject().toString().trim())
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-            }
+            val skyflowError = SkyflowError( SkyflowErrorCode.EMPTY_COLUMN_KEY, params = arrayOf())
+            assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
 
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY)
-                Assert.assertEquals((exception as SkyflowError).getInternalErrorMessage().toString(),
-                    skyflowError.getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
-
-        assertEquals(x.toString().trim(),JSONObject().toString().trim())
     }
     //end insert
 
@@ -586,15 +572,6 @@ class UnitTests {
 
         })
     }
-
-
-
-
-
-
-
-
-
     //client
 
     @Test
@@ -1608,6 +1585,63 @@ class UnitTests {
                 return message
         }
     }
+
+    @Test
+    fun testGetValueForLabel()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "..$"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.setValueForLabel(cvv,"1234")
+        assertEquals(cvv.placeholder.text.toString(),"34")
+    }
+
+
+
+    @Test
+    fun testSetValueForLabel()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.setValueForLabel(cvv,"1")
+        assertEquals("01",cvv.actualValue)
+    }
+
+    @Test
+    fun testSetValueForLabel1()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.setValueForLabel(cvv,"11")
+        assertEquals("11",cvv.actualValue)
+    }
+    @Test
+    fun testSetValueForLabelFailed()
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.setValueForLabel(cvv,"2211")
+        assertEquals("2211",cvv.actualValue)
+    }
+
+    @Test
+    fun testSetValueForLabelFailed1() // no format regex
+    {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val cvv = revealContainer.create(activity,RevealElementInput(label = "cvv",token = "1234"),
+            RevealElementOptions( replaceText = "0$1"))
+        activity.addContentView(cvv,layoutParams)
+        Utils.setValueForLabel(cvv,"2211")
+        assertEquals("2211",cvv.actualValue)
+    }
+
 }
 
 class APITokenProviderForSuccess : TokenProvider {

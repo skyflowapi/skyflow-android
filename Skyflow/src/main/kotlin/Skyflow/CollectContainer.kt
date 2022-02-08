@@ -23,7 +23,7 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
     Logger.info(tag, Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label), configuration.options.logLevel)
     val collectElement = TextField(context, configuration.options)
     collectElement.setupField(input,options)
-    elements.add(collectElement)
+    collectElements.add(collectElement)
     val uuid = UUID.randomUUID().toString()
     client.elementMap.put(uuid,collectElement)
     collectElement.uuid = uuid
@@ -31,73 +31,76 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
 }
 
 fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
-    
-    if(client.apiClient.vaultURL.isEmpty() || client.apiClient.vaultURL == "/v1/vaults/")
-    {
-        val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
-        callback.onFailure(error)
+    try {
+        Utils.checkVaultDetails(client.configuration)
+        Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
+        validateElements()
+        post(callback,options)
     }
-    else if(client.apiClient.vaultId.isEmpty())
+    catch (e:Exception)
     {
-        val error = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
-        callback.onFailure(error)
-    }
-    else {
-
-        val isUrlValid = Utils.checkUrl(client.apiClient.vaultURL)
-        if (isUrlValid) {
-            var errors = ""
-            Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
-            for (element in this.elements) {
-                if (element.isAttachedToWindow()) {
-                    when {
-                        element.collectInput.table.equals(null) -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
-                            return
-                        }
-                        element.collectInput.column.equals(null) -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_COLUMN, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
-                            return
-                        }
-                        element.collectInput.table!!.isEmpty() -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
-                            return
-                        }
-                        element.collectInput.column!!.isEmpty() -> {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString())))
-                            return
-                        }
-                        else -> {
-                            val state = element.getState()
-                            val error = state["validationError"]
-                            if (!(state["isValid"] as Boolean)) {
-                                element.invalidTextField()
-                                errors += "for " + element.columnName + " " + (error as String) + "\n"
-                            }
-                        }
-                    }
-                } else {
-                    //callback.onFailure(Exception("Element with label ${element.collectInput.label} is not attached to window"))
-                    val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.columnName))
-                    callback.onFailure(error)
-                    return
-                }
-            }
-            if (errors != "") {
-                val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, configuration.options.logLevel, arrayOf(errors))
-                callback.onFailure(error)
-                return
-            }
-            val records = CollectRequestBody.createRequestBody(this.elements,
-                options!!.additionalFields,
-                callback, configuration.options.logLevel)
-            if (records.isNotEmpty() || records != "") {
-                val insertOptions = InsertOptions(options.token)
-                this.client.apiClient.post(JSONObject(records), callback, insertOptions)
-            }
-        } else {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(client.apiClient.vaultURL))
-            callback.onFailure(error)
-        }
+        callback.onFailure(e)
     }
 }
+internal fun Container<CollectContainer>.validateElements() {
+    var errors = ""
+    for (element in this.collectElements) {
+        errors = validateElement(element,errors)
+    }
+    if (errors != "") {
+        throw SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, configuration.options.logLevel, arrayOf(errors))
+    }
+}
+
+internal fun Container<CollectContainer>.validateElement(element: TextField,err:String) : String
+{
+    var errorOnElement = err
+    if (!element.isAttachedToWindow()) {
+        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+            tag,
+            configuration.options.logLevel,
+            arrayOf(element.columnName))
+    }
+    when {
+        element.collectInput.table.equals(null) -> {
+            throw SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.column.equals(null) -> {
+            throw SkyflowError(SkyflowErrorCode.MISSING_COLUMN,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.table!!.isEmpty() -> {
+            throw SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.column!!.isEmpty() -> {
+            throw SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        else -> {
+            val state = element.getState()
+            val error = state["validationError"]
+            if (!(state["isValid"] as Boolean)) {
+                element.invalidTextField()
+                errorOnElement += "for " + element.columnName + " " + (error as String) + "\n"
+            }
+        }
+    }
+    return errorOnElement
+}
+internal fun Container<CollectContainer>.post(callback:Callback,options: CollectOptions?)
+{
+    val records = CollectRequestBody.createRequestBody(this.collectElements, options!!.additionalFields, configuration.options.logLevel)
+    val insertOptions = InsertOptions(options.token)
+    this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+}
+

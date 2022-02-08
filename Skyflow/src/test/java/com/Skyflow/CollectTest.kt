@@ -144,8 +144,8 @@ class CollectTest {
             SkyflowElementType.CARD_NUMBER,label = "card number"
         )
         val card_number = container.create(activity,collectInput, options) as? TextField
-        assertEquals(container.elements.count(),1)
-        Assert.assertTrue(container.elements[0].fieldType == SkyflowElementType.CARD_NUMBER)
+        assertEquals(container.collectElements.count(),1)
+        Assert.assertTrue(container.collectElements[0].fieldType == SkyflowElementType.CARD_NUMBER)
     }
 
     @Test
@@ -596,8 +596,8 @@ class CollectTest {
             SkyflowElementType.EXPIRATION_DATE,label = "expiry date"
         )
         val date = container.create(activity,collectInput, options) as? TextField
-        Assert.assertEquals(container.elements.count(), 1)
-        Assert.assertTrue(container.elements[0].fieldType == SkyflowElementType.EXPIRATION_DATE)
+        Assert.assertEquals(container.collectElements.count(), 1)
+        Assert.assertTrue(container.collectElements[0].fieldType == SkyflowElementType.EXPIRATION_DATE)
     }
 
     @Test
@@ -626,9 +626,6 @@ class CollectTest {
         TestCase.assertEquals(true, Utils.checkIfElementsMounted(cardNumber))
     }
 
-
-
-
     //collectapicallback
 
     @Test
@@ -654,7 +651,6 @@ class CollectTest {
             override fun onFailure(exception: Any) {
                 //valid request
             }
-
         }, InsertOptions(),LogLevel.ERROR)
 
         collectAPICallback.onSuccess("token")
@@ -788,19 +784,16 @@ class CollectTest {
         val cvv1 = container.create(activity,collectInput,CollectElementOptions())
         val card_number = container.create(activity,collectInput1,CollectElementOptions())
 
-        CollectRequestBody.createRequestBody(container.elements, JSONObject(),object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, JSONObject(),LogLevel.ERROR)
+        }
+        catch (e:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
+            val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput.table,collectInput.column))
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (e as SkyflowError).getInternalErrorMessage())
+        }
 
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput.table,collectInput.column))
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
     }
 
     @Test
@@ -827,19 +820,15 @@ class CollectTest {
         recordsArray.put(record)
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -866,19 +855,15 @@ class CollectTest {
         recordsArray.put(record)
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
 
@@ -906,19 +891,15 @@ class CollectTest {
         recordsArray.put(record)
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -945,19 +926,15 @@ class CollectTest {
         recordsArray.put(record)
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
 
@@ -983,19 +960,15 @@ class CollectTest {
         recordsArray.put(record)
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -1015,19 +988,15 @@ class CollectTest {
         val recordsArray = JSONArray()
         records.put("records", recordsArray)
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     @Test
@@ -1046,19 +1015,15 @@ class CollectTest {
         val records = JSONObject()
         records.put("records", JSONObject())
 
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
 
@@ -1084,20 +1049,15 @@ class CollectTest {
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-
-        CollectRequestBody.createRequestBody(container.elements, records,object : Callback
+        try {
+            CollectRequestBody.createRequestBody(container.collectElements, records,LogLevel.ERROR)
+        }
+        catch (exception:Exception)
         {
-            override fun onSuccess(responseBody: Any) {
-
-            }
-
-            override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput1.table,collectInput1.column))
-                TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage())
-            }
-
-        },LogLevel.ERROR)
+            val skyflowError = SkyflowError(SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,params = arrayOf(collectInput1.table,collectInput1.column))
+            TestCase.assertEquals(skyflowError.getInternalErrorMessage(),
+                (exception as SkyflowError).getInternalErrorMessage())
+        }
     }
 
     //end collect
@@ -1229,10 +1189,21 @@ class CollectTest {
             }
 
         })
-
-
     }
 
+    @Test
+    fun testClearValue()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","pin",
+            SkyflowElementType.EXPIRATION_DATE,placeholder = "enter pin"
+        )
+        val pin = container.create(activity,collectInput)
+        pin.setText("1234")
+
+        assertEquals(pin.actualValue,"1234")
+        pin.clearValue()
+    }
 
 
 

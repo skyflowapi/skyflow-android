@@ -849,7 +849,7 @@ class RevealTest {
         val expireDate = container.create(activity,revealInput)
         expireDate.setText("1234")
         assertEquals("1234",expireDate.placeholder.text.toString())
-        assertEquals("",expireDate.getValue())
+        assertEquals("1234",expireDate.getValue())
     }
 
     @Test

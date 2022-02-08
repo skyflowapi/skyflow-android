@@ -17,31 +17,31 @@ class PullFunds : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_generate_cvv)
 
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             "VAULT_ID",
             "VAULT_URL",
             DemoTokenProvider()
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
 
-        val cardNumberInput = Skyflow.CollectElementInput(
+        val cardNumberInput = CollectElementInput(
             table = "",column = "", SkyflowElementType.CARD_NUMBER, label="Card Number", placeholder = "Please enter card number"
         )
 
-        val cvvElementInput = Skyflow.CollectElementInput(table="", column = "", SkyflowElementType.CVV, label = "cvv", placeholder = "please enter cvv")
+        val cvvElementInput = CollectElementInput(table="", column = "", SkyflowElementType.CVV, label = "cvv", placeholder = "please enter cvv")
 
-        val expiryDateInput = Skyflow.RevealElementInput(token="EXPIRATION_DATE_TOKEN", label = "Expiration Date")
+        val expiryDateInput = RevealElementInput(token="EXPIRATION_DATE_TOKEN", label = "Expiration Date")
 
 
-        val collectContainer = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+        val collectContainer = skyflowClient.container(ContainerType.COLLECT)
         val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(true))
         val cvv = collectContainer.create(this, cvvElementInput)
 
-        val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+        val revealContainer = skyflowClient.container(ContainerType.REVEAL)
         val expiryDate = revealContainer.create(this, expiryDateInput)
-        val approvalCodeElement = Skyflow.RevealElementInput(
+        val approvalCodeElement = RevealElementInput(
             "1234",
-            redaction = Skyflow.RedactionType.PLAIN_TEXT,
+            redaction = RedactionType.PLAIN_TEXT,
             label =  "approval code",altText = "Approval Code"
         )
         val approvalCode = revealContainer.create(this, approvalCodeElement)
@@ -50,7 +50,6 @@ class PullFunds : AppCompatActivity() {
         amountField.hint = "Amount"
         submit.text = "Complete Payment"
 
-//        val cvv = revealContainer.create(this,cvvInput)
 
         val parent = findViewById<LinearLayout>(R.id.parent1)
         val lp = LinearLayout.LayoutParams(
@@ -69,7 +68,6 @@ class PullFunds : AppCompatActivity() {
         parent.addView(cardNumber)
         parent.addView(cvv)
         parent.addView(expiryDate)
-//        parent.addView(approvalCode)
 
         val requestBodyString = "{\n" +
                 "  \"surcharge\": \"11.99\",\n" +
@@ -152,8 +150,8 @@ class PullFunds : AppCompatActivity() {
         }
     }
 
-    class DemoTokenProvider : Skyflow.TokenProvider {
-        override fun getBearerToken(callback: Skyflow.Callback) {
+    class DemoTokenProvider : TokenProvider {
+        override fun getBearerToken(callback: Callback) {
             val url = "TOKEN_LOCAL_URL"
             val request = okhttp3.Request.Builder().url(url).build()
             val okHttpClient = OkHttpClient()
@@ -166,7 +164,6 @@ class PullFunds : AppCompatActivity() {
                             val accessTokenObject =
                                 JSONObject(response.body!!.string())
                             val accessToken = accessTokenObject["accessToken"]
-//                        val accessToken = ""
                             callback.onSuccess("$accessToken")
                         }
                     }

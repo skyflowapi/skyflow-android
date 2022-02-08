@@ -193,6 +193,7 @@ class Label @JvmOverloads constructor(
     internal fun setText(t:String)
     {
         this.placeholder.text = t
+        actualValue = t
     }
 
     fun getToken() : String {

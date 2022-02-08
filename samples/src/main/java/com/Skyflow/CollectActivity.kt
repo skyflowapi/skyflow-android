@@ -30,16 +30,16 @@ class CollectActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect)
         val tokenProvider = DemoTokenProvider()
-        val skyflowConfiguration = Skyflow.Configuration(
+        val skyflowConfiguration = Configuration(
             BuildConfig.VAULT_ID,
             BuildConfig.VAULT_URL,
             tokenProvider,
-            Options(Skyflow.LogLevel.ERROR, Env.PROD)
+            Options(LogLevel.ERROR, Env.PROD)
         )
-        val skyflowClient = Skyflow.init(skyflowConfiguration)
+        val skyflowClient = init(skyflowConfiguration)
         val collectContainer = skyflowClient.container(ContainerType.COLLECT)
-        val padding = Skyflow.Padding(8, 8, 8, 8)
-        val bstyle = Skyflow.Style(
+        val padding = Padding(8, 8, 8, 8)
+        val bstyle = Style(
             Color.parseColor("#403E6B"),
             10f,
             padding,
@@ -48,7 +48,7 @@ class CollectActivity : AppCompatActivity() {
             Gravity.START,
             Color.parseColor("#403E6B")
         )
-        val cstyle = Skyflow.Style(
+        val cstyle = Style(
             Color.GREEN,
             10f,
             padding,
@@ -57,7 +57,7 @@ class CollectActivity : AppCompatActivity() {
             Gravity.END,
             Color.GREEN
         )
-        val fstyle = Skyflow.Style(
+        val fstyle = Style(
             Color.parseColor("#403E6B"),
             10f,
             padding,
@@ -66,7 +66,7 @@ class CollectActivity : AppCompatActivity() {
             Gravity.START,
             Color.GREEN
         )
-        val estyle = Skyflow.Style(
+        val estyle = Style(
             Color.YELLOW,
             10f,
             padding,
@@ -76,28 +76,28 @@ class CollectActivity : AppCompatActivity() {
             Color.YELLOW
         )
         val istyle =
-            Skyflow.Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
-        val styles = Skyflow.Styles(bstyle, null, estyle, fstyle, istyle)
+            Style(Color.RED, 15f, padding, 6, R.font.roboto_light, Gravity.START, Color.RED)
+        val styles = Styles(bstyle, null, estyle, fstyle, istyle)
 
 
-        var labelStyles = Styles(bstyle, null, estyle, fstyle, istyle)
-        var baseErrorStyles =
+        val labelStyles = Styles(bstyle, null, estyle, fstyle, istyle)
+        val baseErrorStyles =
             Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
         val errorStyles = Styles(baseErrorStyles)
-        var validationSet = ValidationSet()
+        val validationSet = ValidationSet()
         validationSet.add(LengthMatchRule(2,20,"not valid"))
-        val cardNumberInput = Skyflow.CollectElementInput(
-            "cards", "card_number", Skyflow.SkyflowElementType.CARD_NUMBER, styles, labelStyles,
+        val cardNumberInput = CollectElementInput(
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, styles, labelStyles,
             errorStyles, "Card Number", "CardNumber"
         )
-        val expiryDateInput = Skyflow.CollectElementInput(
+        val expiryDateInput = CollectElementInput(
             "cards", "expiry_date", SkyflowElementType.EXPIRATION_DATE,
             styles, labelStyles, errorStyles, label = "expiry date", placeholder = "expiry date"
         )
-        val nameInput = Skyflow.CollectElementInput(
+        val nameInput = CollectElementInput(
             "cards",
             "fullname",
-            Skyflow.SkyflowElementType.CARDHOLDER_NAME,
+            SkyflowElementType.CARDHOLDER_NAME,
             styles,
             labelStyles,
             errorStyles,
@@ -105,7 +105,7 @@ class CollectActivity : AppCompatActivity() {
             "Full Name",
             validations = validationSet
         )
-        val cvvInput = Skyflow.CollectElementInput(
+        val cvvInput =CollectElementInput(
             table = "cards",
             column = "cvv",
             type = SkyflowElementType.CVV,
@@ -166,7 +166,7 @@ class CollectActivity : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            collectContainer.collect(object : Skyflow.Callback {
+            collectContainer.collect(object : Callback {
                 override fun onSuccess(responseBody: Any) {
                     dialog.dismiss()
                     Log.d(TAG, "collect success: $responseBody")
@@ -198,13 +198,13 @@ class CollectActivity : AppCompatActivity() {
 
 private fun pureInsert(){
     val tokenProvider = DemoTokenProvider()
-    val skyflowConfiguration = Skyflow.Configuration(
+    val skyflowConfiguration = Configuration(
         BuildConfig.VAULT_ID,
         BuildConfig.VAULT_URL,
         tokenProvider,
         Options(LogLevel.ERROR)
     )
-    val skyflow = Skyflow.init(skyflowConfiguration)
+    val skyflow = init(skyflowConfiguration)
 
     try{
         val records = JSONObject()
@@ -218,7 +218,7 @@ private fun pureInsert(){
 //        recordsArray.put(record)
         records.put("records", recordsArray)
 
-        skyflow.insert(records, Skyflow.InsertOptions(true), object : Callback {
+        skyflow.insert(records, InsertOptions(true), object : Callback {
             override fun onSuccess(responseBody: Any) {
                 Log.d("insert", "success: $responseBody")
             }
@@ -244,9 +244,9 @@ private fun pureInsert(){
 
 
 
-class DemoTokenProvider : Skyflow.TokenProvider {
-    override fun getBearerToken(callback: Skyflow.Callback) {
-        val url = BuildConfig.TOKEN_URL
+class DemoTokenProvider : TokenProvider {
+    override fun getBearerToken(callback: Callback) {
+        val url = "TOKEN_URL"
         val request = okhttp3.Request.Builder().url(url).build()
         val okHttpClient = OkHttpClient()
         try {
@@ -258,7 +258,6 @@ class DemoTokenProvider : Skyflow.TokenProvider {
                         val accessTokenObject =
                             JSONObject(response.body!!.string().toString())
                         val accessToken = accessTokenObject["accessToken"]
-//                        val accessToken = ""
                         callback.onSuccess("$accessToken")
                     }
                 }

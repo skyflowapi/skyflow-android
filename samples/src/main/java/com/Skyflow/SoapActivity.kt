@@ -17,7 +17,7 @@ class SoapActivity : AppCompatActivity() {
 
 
         val config = Configuration(tokenProvider = CollectActivity.DemoTokenProvider())
-        val skyflowClient = Skyflow.init(config)
+        val skyflowClient = init(config)
         val revealContainer = skyflowClient.container(ContainerType.REVEAL)
         val collectContainer = skyflowClient.container(ContainerType.COLLECT)
 

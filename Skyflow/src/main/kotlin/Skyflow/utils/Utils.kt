@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import android.util.Log
 import android.webkit.URLUtil
 import org.json.JSONArray
 import org.json.JSONObject
@@ -9,7 +10,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
 
-internal class Utils {
+ class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName
@@ -20,27 +21,22 @@ internal class Utils {
             return true
         }
         //for collect element
-        fun constructBatchRequestBody(
-            records: JSONObject,
-            options: InsertOptions,
-            callback: Callback,
-            logLevel: LogLevel,
-        ) : JSONObject{
+        fun constructBatchRequestBody(records: JSONObject, options: InsertOptions,logLevel: LogLevel) : JSONObject{
             val postPayload:MutableList<Any> = mutableListOf()
             val insertTokenPayload:MutableList<Any> = mutableListOf()
             if(records == {}){
-                callback.onFailure(SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel))
+                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
             }
             else if (!records.has("records")) {
-                callback.onFailure(SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel))
+                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
             }
             else if(records.get("records").toString().isEmpty())
             {
-                callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel))
+                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
             }
             else if(records.get("records") !is JSONArray)
             {
-                callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel))
+                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
             }
             else {
                 val obj1 = records.getJSONArray("records")
@@ -49,27 +45,22 @@ internal class Utils {
                     val jsonObj = obj1.getJSONObject(i)
                     if(!jsonObj.has("table"))
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY, tag, logLevel))
-                        return JSONObject()
+                        throw SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY, tag, logLevel)
                     }
                     else if(jsonObj.get("table") !is String)
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, tag, logLevel))
-                        return JSONObject()
+                        throw SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, tag, logLevel)
                     }
                     else if (jsonObj.get("table").toString().isEmpty()) {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, tag, logLevel))
-                        return JSONObject()
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, tag, logLevel)
                     }
                     else if(!jsonObj.has("fields"))
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR, tag, logLevel))
-                        return JSONObject()
+                        throw SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR, tag, logLevel)
                     }
                     else if(jsonObj.getJSONObject("fields").toString().equals("{}"))
                     {
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_FIELDS, tag, logLevel))
-                        return JSONObject()
+                        throw SkyflowError(SkyflowErrorCode.EMPTY_FIELDS, tag, logLevel)
                     }
 
                     val map = HashMap<String, Any>()
@@ -83,8 +74,7 @@ internal class Utils {
                     while (keys.hasNext()) {
                         val key = keys.next()
                         if (key.isEmpty()) {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY, tag, logLevel))
-                            return JSONObject()
+                            throw SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY, tag, logLevel)
                         }
                     }
                     postPayload.add(map)
@@ -102,7 +92,6 @@ internal class Utils {
                 body["records"] = postPayload + insertTokenPayload
                 return JSONObject(body as Map<*, *>)
             }
-            return JSONObject()
         }
 
         //check whether pci element is valid or not inside requestbody of connectionConfig
@@ -126,42 +115,6 @@ internal class Utils {
                 return false
             }
             return true
-        }
-
-        //checking invalid fields in response body of connectionConfig
-        fun checkInvalidFields(
-            responseBody: JSONObject,
-            responseFromConnection: JSONObject
-        ) {
-                val keys = responseBody.names()
-                if(keys !=null) {
-                    for (j in 0 until keys.length()) {
-                        if (responseBody.get(keys.getString(j)) is JSONObject) {
-                                checkInvalidFields(responseBody.get(keys.getString(j)) as JSONObject,
-                                    responseFromConnection.getJSONObject(keys.getString(j)))
-                        } else if (responseBody.get(keys.getString(j)) !is Element && responseBody.get(
-                                keys.getString(j)) !is Label
-                        )
-                            throw SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR,params = arrayOf(("invalid field " + keys.getString(j) + " present in response body")))
-                        else if(responseBody.get(keys.getString(j)) is Element)
-                        {
-                            val element = (responseBody.get(keys.getString(j))) as Element
-                            if(!checkIfElementsMounted(element))
-                            {
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(keys.getString(j)))
-                            }
-                        }
-                        else if(responseBody.get(keys.getString(j)) is Label)
-                        {
-                            val element = (responseBody.get(keys.getString(j))) as Label
-                            if(!checkIfElementsMounted(element))
-                            {
-                                val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,params = arrayOf(keys.getString(j)))
-                                throw error
-                            }
-                        }
-                    }
-                }
         }
 
         //removing empty json objects
@@ -232,8 +185,9 @@ internal class Utils {
             return allMatches
         }
 
-        fun getValueForLabel(label : Label,tokenValueMap:HashMap<String,String?>,tokenIdMap:HashMap<String,String>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) : String {
+        fun getValueForLabel(label : Label, tokenValueMap:HashMap<String,String?>, tokenIdMap:HashMap<String,String>, tokenLabelMap:HashMap<String,Label>, tag:String?="", logLevel: LogLevel) : String {
             val formatRegex = label.options.formatRegex
+            val replaceText = label.options.replaceText
             val value : String? = label.actualValue
             if(formatRegex.isNotEmpty() && value == null){
                 tokenValueMap.put(label.getToken(),null)
@@ -241,27 +195,58 @@ internal class Utils {
                 tokenLabelMap.put(label.getToken(),label)
                 return label.getID()
             }
-            else if(value!= null && formatRegex.isNotEmpty()) {
+            else if(value!= null && formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches =  regex.find(value)
                 if(matches != null)
                     return matches.value
-                throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+                else
+                {
+                    Log.w(tag,"no match found for regex - $formatRegex")
+                }
+            }
+            else if(value!= null && formatRegex.isNotEmpty() && replaceText !=null)
+            {
+                try {
+                    val replacedValue = value.replace(Regex(formatRegex),replaceText)
+                    return replacedValue
+                }
+                catch (e:Exception)
+                {
+                    Log.w(tag,"invalid replaceText - $replaceText")
+                }
             }
             return label.getValueForConnections()
         }
-        fun getValueForLabel(label: Label,value:String,tag:String?="",logLevel: LogLevel) {
+        fun setValueForLabel(label: Label, value:String) {
             val formatRegex = label.options.formatRegex
-            if(formatRegex.isNotEmpty()) {
+            val replaceText = label.options.replaceText
+            if(formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
                 if (matches != null)
-                    label.placeholder.text = matches.value
-                else
-                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+                {
+                    label.setText(matches.value)
+                }
+                else {
+                    Log.w(tag,"no match is found for regex - $formatRegex")
+                    label.setText(value)
+                }
+            }
+            else if(formatRegex.isNotEmpty() && replaceText != null)
+            {
+                try {
+                    val replacedValue = value.replace(Regex(formatRegex),replaceText)
+                    label.setText(replacedValue)
+                }
+                catch (e:Exception)
+                {
+                    Log.w(tag,"invalid replaceText - $replaceText")
+                    label.setText(value)
+                }
             }
             else
-                label.placeholder.text = value
+                label.setText(value)
         }
 
         fun doTokenMap(responseBody: Any,tokenValueMap:HashMap<String,String?>) { // fill labelWithRegexMap with actual values from api
@@ -274,18 +259,55 @@ internal class Utils {
             }
         }
 
-        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>,tag:String?="",logLevel: LogLevel) { // do regex on value after detokenize and put it in labelWithRegexMap
+        fun doformatRegexForMap(tokenValueMap:HashMap<String,String?>,tokenLabelMap:HashMap<String,Label>,tag:String?="") { // do regex on value after detokenize and put it in labelWithRegexMap
             tokenValueMap.forEach {
                 val formatRegex = tokenLabelMap.get(it.key)!!.options.formatRegex
-                val regex = Regex(formatRegex)
-                val matches =  regex.find(it.value!!)
-                if(matches != null)
-                    tokenValueMap.put(it.key,matches.value)
+                val replaceText = tokenLabelMap.get(it.key)!!.options.replaceText
+                if(formatRegex.isNotEmpty() && replaceText == null) {
+                    val regex = Regex(formatRegex)
+                    val matches =  regex.find(it.value!!)
+                    if(matches != null)
+                        tokenValueMap.put(it.key,matches.value)
+                    else
+                    {
+                        Log.w(tag,"no match found for regex - $formatRegex" )
+                        tokenValueMap.put(it.key,it.value)
+                    }
+                }
+                else if(formatRegex.isNotEmpty() && replaceText != null)
+                {
+                    try {
+                        val replacedValue = it.value!!.replace(Regex(formatRegex),replaceText)
+                        tokenValueMap.put(it.key,replacedValue)
+                    }
+                    catch (e:Exception)
+                    {
+                        Log.w(Companion.tag,"invalid replaceText - $replaceText")
+                        tokenValueMap.put(it.key,it.value)
+                    }
+                }
                 else
-                    throw SkyflowError(SkyflowErrorCode.INVALID_FORMAT_REGEX,tag,logLevel, params = arrayOf(formatRegex))
+                    tokenValueMap.put(it.key,it.value)
+
 
             }
         }
+
+        internal fun checkVaultDetails(configuration: Configuration)
+        {
+            if(configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/")
+            {
+               throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
+
+            }
+            if(configuration.vaultID.isEmpty())
+            {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
+            }
+            if(!checkUrl(configuration.vaultURL))
+               throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(configuration.vaultURL))
+        }
+
     }
 
 
