@@ -185,7 +185,7 @@ import kotlin.Exception
             return allMatches
         }
 
-        fun setValueForLabel(label : Label, tokenValueMap:HashMap<String,String?>, tokenIdMap:HashMap<String,String>, tokenLabelMap:HashMap<String,Label>, tag:String?="", logLevel: LogLevel) : String {
+        fun getValueForLabel(label : Label, tokenValueMap:HashMap<String,String?>, tokenIdMap:HashMap<String,String>, tokenLabelMap:HashMap<String,Label>, tag:String?="", logLevel: LogLevel) : String {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
             val value : String? = label.actualValue
