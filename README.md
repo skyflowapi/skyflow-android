@@ -182,7 +182,7 @@ For `env` parameter, there are 2 accepted values in Skyflow.Env
 
 `Note`:
   - since `env` is optional, by default the env will be  `PROD`.
-  - Use `env` option with caution, make sure the env is set to `PROD` when using `skyflow-js` in production. 
+  - Use `env` option with caution, make sure the env is set to `PROD` when using `skyflow-android` in production. 
 
 
 
@@ -224,7 +224,7 @@ val recordsArray = JSONArray()
 val record = JSONObject()
 record.put("table", "cards")
 val fields = JSONObject()
-fields.put("cvv", "123")
+fields.put("expiry_date", "12/2028")
 fields.put("cardNumber", "41111111111")
 record.put("fields", fields)
 recordsArray.put(record)
@@ -240,7 +240,7 @@ skyflowClient.insert(records = records, options = insertOptions, callback = inse
      "table": "cards",
      "fields":{
         "cardNumber": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
-        "cvv": "1989cb56-63da-4482-a2df-1f74cd0dd1a5"
+        "expiry_date": "1989cb56-63da-4482-a2df-1f74cd0dd1a5"
       }
     }
   ]
@@ -382,10 +382,10 @@ val collectElementInput =  Skyflow.CollectElementInput(
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
-            required: false,  //indicates whether the field is marked as required. Defaults to 'false'
-            enableCardIcon: true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
-            format: "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
-                                      )  
+            required = false,  //indicates whether the field is marked as required. Defaults to 'false'
+            enableCardIcon = true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
+            format = "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
+            )  
 
 const element = container.create(context = Context, collectElementInput, collectElementOptions)
 ```
@@ -564,22 +564,22 @@ The Sample code below illustrates the usage of custom validations:
 */
 
 var myRuleset = ValidationSet()
-val strongPasswordRule = RegexMatchRule(regex= "^^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]*$", error= "At least one letter and one number") // This rule enforces a strong password
-val lengthRule = LengthMatchRule(minLength= 8, maxLength= 16, error= "Must be between 8 and 16 digits") // this rule allows input length between 8 and 16 characters
+val strongPasswordRule = RegexMatchRule(regex= "^^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]*$", error = "At least one letter and one number") // This rule enforces a strong password
+val lengthRule = LengthMatchRule(minLength = 8, maxLength = 16, error = "Must be between 8 and 16 digits") // this rule allows input length between 8 and 16 characters
 
 // for the Password element
-myRuleset.add(rule= strongPasswordRule)
-myRuleset.add(rule= lengthRule)
+myRuleset.add(rule = strongPasswordRule)
+myRuleset.add(rule = lengthRule)
 
-val passwordInput = CollectElementInput(inputStyles= styles, label= "Password", placeholder= "****", type= ElementType.INPUT_FIELD, validations= myRuleset)
+val passwordInput = CollectElementInput(inputStyles = styles, label = "Password", placeholder = "****", type = ElementType.INPUT_FIELD, validations = myRuleset)
 
 val Password = container.create(passwordInput)
 
 // For confirm Password element - shows error when the PINs don't match
-val elementMatchRule = ElementMatchRule(element= Password, error= "PINs don't match")
+val elementMatchRule = ElementMatchRule(element = Password, error = "PINs don't match")
 
-val confirmPasswordinput = CollectElementInput(inputStyles= styles, label= "Confirm Password", placeholder= "****", type: ElementType.INPUT_FIELD, validations= ValidationSet(rules= mutableListOf(strongPasswordRule, lengthRule, elementMatchRule)))
-val confirmPassword = container.create(input= confirmPasswordinput)
+val confirmPasswordinput = CollectElementInput(inputStyles = styles, label = "Confirm Password", placeholder = "****", type = ElementType.INPUT_FIELD, validations = ValidationSet(rules = mutableListOf(strongPasswordRule, lengthRule, elementMatchRule)))
+val confirmPassword = container.create(input = confirmPasswordinput)
 
 //mount elements to the screen
 addView(Password)
@@ -714,17 +714,17 @@ cardNumber.resetError()
 
 ```kt
 //create skyflow client with env DEV 
-val config = Skyflow.Configuration(vaultID= VAULT_ID, vaultURL= VAULT_URL, tokenProvider= demoTokenProvider, options= Skyflow.Options(env= Skyflow.Env.DEV))
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(env = Skyflow.Env.DEV))
 val skyflowClient = Skyflow.initialize(config)
-val container = skyflowClient.container(type= Skyflow.ContainerType.COLLECT)
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-    table= "cards",
-    column= "cardNumber",
-    type= Skyflow.ElementType.CARD_NUMBER,
+    table = "cards",
+    column = "cardNumber",
+    type = Skyflow.ElementType.CARD_NUMBER,
 )
-val cardNumber = container.create(input= cardNumberInput)
+val cardNumber = container.create(input = cardNumberInput)
 //Set a value programatically
 cardNumber.setValue("4111111111111111")
 //Clear the value
@@ -830,7 +830,6 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
         {
             "fields": {
                 "card_number": "4111111111111111",
-                "cvv": "127",
                 "expiry_date": "11/35",
                 "fullname": "myname",
                 "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
@@ -840,7 +839,6 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
         {
             "fields": {
                 "card_number": "4111111111111111",
-                "cvv": "317",
                 "expiry_date": "10/23",
                 "fullname": "sam",
                 "id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
@@ -984,22 +982,22 @@ val cardNumberInput = Skyflow.RevealElementInput(
 
 val cardNumberElement = container.create(context = Context, input = cardNumberInput)
 
-val cvvInput = Skyflow.RevealElementInput(
+val nameInput = Skyflow.RevealElementInput(
         token = "89024714-6a26-4256-b9d4-55ad69aa4047",
         inputStyles = inputStyles,
         labelStyles = labelStyles,
         errorTextStyles = errorTextStyles,
-        label = "cvv",
+        label = "fullname",
         altText = "XXX"
 )
 
-val cvvElement = container.create(context = Context,input = cvvInput)
+val nameElement = container.create(context = Context,input = nameInput)
 
 //set error to the element
-cvvElement.setError("custom error")
+nameElement.setError("custom error")
 
 //reset error to the element
-cvvElement.resetError()
+nameElement.resetError()
 
 //Can interact with these objects as a normal UIView Object and add to View
 
@@ -1244,47 +1242,51 @@ val expiryYearID = expiryYearElement.getID()
 val cvvElementID = cvvElement.getID()
 
 // step 5
-val requestXML = """<soapenv:Envelope>
-    <soapenv:Header>
-        <ClientID>
-            1234
-        </ClientID>
-    </soapenv:Header>
-    <soapenv:Body>
-    	<GenerateCVV>
-               <CardNumber>
-                  <skyflow>
-                    ${cardNumberID}
-                  </skyflow>
-               </CardNumber>
-               <ExpirMonth>
-                  <skyflow>
-                    ${expiryMonthID}
-                  </skyflow>
-               </ExpiryMonth>
-                 <ExpirYear>
-                  <skyflow>
-                    ${expiryYearID}
-                  </skyflow>
-               </ExpiryYear>
-        </GenerateCVV>
-    </soapenv:Body>
-</soapenv:Envelope>"""
+val requestXML = """
+                  <soapenv:Envelope>
+                    <soapenv:Header>
+                      <ClientID>
+                              1234
+                          </ClientID>
+                    </soapenv:Header>
+                    <soapenv:Body>
+                      <GenerateCVV>
+                        <CardNumber>
+                          <skyflow>
+                              ${cardNumberID}
+                          </skyflow>
+                        </CardNumber>
+                        <ExpirMonth>
+                          <skyflow>
+                              ${expiryMonthID}
+                          </skyflow>
+                        </ExpiryMonth>
+                        <ExpirYear>
+                          <skyflow>
+                              ${expiryYearID}
+                          </skyflow>
+                        </ExpiryYear>
+                      </GenerateCVV>
+                    </soapenv:Body>
+                  </soapenv:Envelope>
+                      """
 
 val httpHeaders = HashMap<String, String>() //optional parameter
     httpHeaders.put("SOAPAction", "<soap_action>")
 
-val responseXML = """<soapenv:Envelope>
-    <soapenv:Body>
-	    <GenerateCVV>
-            	<CVV>
-    		          <skyflow>
-                    ${cvvElementID}
-                  </skyflow>
-    		      </CVV>
-        </GenerateCVV>
-    </soapenv:Body>
-</soapenv:Envelope>"""
+val responseXML = """
+                <soapenv:Envelope>
+                  <soapenv:Body>
+                    <GenerateCVV>
+                      <CVV>
+                        <skyflow>
+                            ${cvvElementID}
+                        </skyflow>
+                      </CVV>
+                    </GenerateCVV>
+                  </soapenv:Body>
+                </soapenv:Envelope>
+                """
 
 val soapConnectionConfig =  SoapConnectionConfig(connectionUrl, httpHeaders, requestXML, responseXML)
 
@@ -1310,12 +1312,12 @@ Sample Response on success:
 
 ```xml
 <soapenv:Envelope>
-    <soapenv:Header/>
-    <soapenv:Body>
-	<GenerateCVV>
-		<ReceivedTimestamp>2019-05-29 21:49:56.625</ReceivedTimestamp>
-      	</GenerateCVV>
-    </soapenv:Body>
+	<soapenv:Header/>
+	<soapenv:Body>
+		<GenerateCVV>
+			<ReceivedTimestamp>2019-05-29 21:49:56.625</ReceivedTimestamp>
+		</GenerateCVV>
+	</soapenv:Body>
 </soapenv:Envelope>
 ```
 
