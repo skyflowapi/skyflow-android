@@ -1246,8 +1246,8 @@ val requestXML = """
                   <soapenv:Envelope>
                     <soapenv:Header>
                       <ClientID>
-                              1234
-                          </ClientID>
+                           1234
+                      </ClientID>
                     </soapenv:Header>
                     <soapenv:Body>
                       <GenerateCVV>
