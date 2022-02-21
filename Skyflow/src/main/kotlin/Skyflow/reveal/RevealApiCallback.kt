@@ -74,7 +74,8 @@ internal class RevealApiCallback(
                     try {
                         val resObj = JSONObject()
                         val responseErrorBody = JSONObject(responsebody)
-                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf((responseErrorBody.get("error") as JSONObject).get("message").toString()))
+                        val requestId = response.headers.get("x-request-id").toString()
+                        val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = apiClient.logLevel, arrayOf(Utils.getErrorMessageWithRequestId((responseErrorBody.get("error") as JSONObject).get("message").toString(),requestId)))
                         skyflowError.setErrorCode(response.code)
                         resObj.put("error", skyflowError)
                         resObj.put("token", record.token)
