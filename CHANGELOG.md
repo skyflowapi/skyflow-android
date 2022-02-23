@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.11.1] - 2022-02-23
+## [1.12.0] - 2022-02-23
 
 ### Added
 - `requestId` in error logs and error response for API errors
