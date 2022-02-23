@@ -110,7 +110,7 @@ internal class CollectAPICallback(
                 {
                     val body = response.body!!.string()
                     val requestId = response.headers.get("x-request-id").toString()
-                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(Utils.getErrorMessageWithRequestId(body,requestId)))
+                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(Utils.appendRequestId(body,requestId)))
                     skyflowError.setErrorCode(response.code)
                     callback.onFailure(skyflowError)
                 }

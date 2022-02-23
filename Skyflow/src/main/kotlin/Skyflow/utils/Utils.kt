@@ -308,13 +308,11 @@ import kotlin.Exception
                throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(configuration.vaultURL))
         }
 
-        fun getErrorMessageWithRequestId(body:String,requestId:String): String {
-            var message = ""
+        fun appendRequestId(message:String, requestId:String): String {
             if(requestId.isEmpty() || requestId.equals("null"))
-                message = body
-            else
-                message = body + " - requestId : " + requestId
-            return message
+                return message
+
+                return message + " - requestId : " + requestId
         }
 
     }
