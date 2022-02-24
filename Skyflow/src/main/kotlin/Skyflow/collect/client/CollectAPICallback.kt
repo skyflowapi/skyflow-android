@@ -11,6 +11,7 @@ import Skyflow.utils.Utils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import java.util.*
 
 
 internal class CollectAPICallback(
@@ -107,7 +108,9 @@ internal class CollectAPICallback(
             try {
                 if (!response.isSuccessful && response.body != null)
                 {
-                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(response.body?.string()))
+                    val body = response.body!!.string()
+                    val requestId = response.headers.get("x-request-id").toString()
+                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag= tag, logLevel = apiClient.logLevel, arrayOf(Utils.appendRequestId(body,requestId)))
                     skyflowError.setErrorCode(response.code)
                     callback.onFailure(skyflowError)
                 }
@@ -129,4 +132,6 @@ internal class CollectAPICallback(
             }
         }
     }
+
+
 }
