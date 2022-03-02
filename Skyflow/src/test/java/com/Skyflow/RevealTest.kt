@@ -389,6 +389,17 @@ class RevealTest {
         failedResponse.put("error","unknown error")
         failedResponse.put("token","1234")
         revealResponse.insertResponse(failedResponse,false)
+
+        RevealResponse(1,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Failed to reveal")).getInternalErrorMessage()
+                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject))
+            }
+        },LogLevel.ERROR).insertResponse(null,false)
+
     }
 
     @Test
@@ -513,6 +524,17 @@ class RevealTest {
         resObj.put("ids", "[\"123\",\"456\"]")
         failedResponse.put(resObj)
         revealResponseByID.insertResponse(failedResponse,false)
+
+        RevealResponseByID(1,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Failed to reveal")).getInternalErrorMessage()
+                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject))
+            }
+
+        },LogLevel.ERROR).insertResponse(null,false)
     }
     //end RevealResponseById
 
@@ -682,6 +704,17 @@ class RevealTest {
 
         }, list, skyflow.configuration.options.logLevel).onSuccess(JSONObject(response))
 
+        RevealValueCallback(object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+
+            override fun onFailure(exception: Any) {
+                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Value not of type java.lang.String cannot be converted to JSONObject")).getInternalErrorMessage()
+                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject))
+            }
+        }, list, skyflow.configuration.options.logLevel).onSuccess("not json")
+
 
 
     }
@@ -709,7 +742,7 @@ class RevealTest {
         list.add(cvv)
 
         val response = """
-            {"errors":[{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"12/22"},{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"123"}],"records":[{"error":"Skyflow.SkyflowError: Server error Token not found for name.toString()","token":"name.toString()"}]}
+            {"errors":[{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"12/22"},{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"123"}],"records":[]}
         """.trimIndent()
         RevealValueCallback(object : Callback
         {

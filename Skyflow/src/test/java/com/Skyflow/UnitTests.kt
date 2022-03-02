@@ -105,6 +105,35 @@ class UnitTests {
 
         })
 
+        revealRecords.put("records","")
+        apiClient.get(revealRecords, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+        revealRecords.put("records","{}")
+        apiClient.get(revealRecords, object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                Assert.assertEquals(skyflowError.getInternalErrorMessage(),
+                    getErrorMessage(exception as JSONObject))
+            }
+
+        })
+
     }
 
     @Test
@@ -554,6 +583,28 @@ class UnitTests {
         assertTrue(!isValid)
     }
 
+    @Test
+    fun testCheckElementRequiredForInvalid() //invalid
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(true)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val card_number = container.create(activity,collectInput, options) as? TextField
+        activity.addContentView(card_number,layoutParams)
+        card_number!!.inputField.setText("")
+        val isValid = Utils.checkElement(card_number,object : Callback
+        {
+            override fun onSuccess(responseBody: Any) {
+            }
+            override fun onFailure(exception: Any) {
+            }
+
+        },LogLevel.ERROR)
+
+        assertTrue(!isValid)
+    }
 
 
     @Test

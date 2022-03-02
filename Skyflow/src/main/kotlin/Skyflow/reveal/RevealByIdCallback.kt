@@ -26,8 +26,7 @@ internal class RevealByIdCallback(
 
             for (record in records) {
                val request = buildRequest(responseBody,record)
-                if(request == null) return
-                sendRequest(request,record)
+               sendRequest(request,record)
             }
         }catch (e: Exception){
             callback.onFailure(Utils.constructError(e))
@@ -50,13 +49,11 @@ internal class RevealByIdCallback(
         })
     }
 
-    internal fun buildRequest(responseBody: Any, record: GetByIdRecord): Request? {
+    internal fun buildRequest(responseBody: Any, record: GetByIdRecord): Request {
         val url = apiClient.vaultURL + apiClient.vaultId + "/"+record.table
         val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
         if(requestUrlBuilder == null){
-            val error = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
-            callback.onFailure(Utils.constructError(error))
-            return null
+            throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel, arrayOf(apiClient.vaultURL))
         }
         for( id in record.skyflow_ids)
             requestUrlBuilder.addQueryParameter("skyflow_ids", id)

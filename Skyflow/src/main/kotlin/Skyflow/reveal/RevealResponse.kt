@@ -13,15 +13,10 @@ internal class RevealResponse(var size: Int, var callback: Callback, val logLeve
 
     var responseBody = JSONObject().put("records", JSONArray())
         .put("errors", JSONArray())
-
     var successResponses = 0
-
     var failureResponses = 0
-
     var emptyResponses = 0
-
     private val tag = RevealResponse::class.qualifiedName
-
 
     @Synchronized fun insertResponse(responseObject :JSONObject? = null, isSuccess:Boolean = false){
         if(responseObject != null && isSuccess) {

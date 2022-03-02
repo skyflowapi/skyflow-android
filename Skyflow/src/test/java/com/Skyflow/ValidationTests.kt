@@ -2,11 +2,9 @@ package com.Skyflow
 
 import Skyflow.*
 import Skyflow.collect.elements.validations.ElementValueMatchRule
-import Skyflow.core.elements.state.StateforText
 import android.app.Activity
 import com.Skyflow.collect.elements.validations.*
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,22 +96,21 @@ class ValidationTests{
     }
 
     @Test
-    fun testElementMatchRule()
-    {
+    fun testElementMatchRule() {
         val container = skyflow.container(ContainerType.COLLECT)
-        val collectInput = CollectElementInput("cards","PIN",
-            SkyflowElementType.PIN,placeholder = "enter pin"
+        val collectInput = CollectElementInput("cards", "PIN",
+            SkyflowElementType.PIN, placeholder = "enter pin"
         )
-        val pin = container.create(activity,collectInput) as? TextField
+        val pin = container.create(activity, collectInput) as? TextField
         pin!!.inputField.setText("4111111")
         pin.actualValue = "4111111"
         val validationSet = ValidationSet()
-        validationSet.add(ElementValueMatchRule(pin,"not matched"))
-        val collectInput1 = CollectElementInput("cards","PIN",
-            SkyflowElementType.PIN,placeholder = "confirm pin",validations = validationSet
+        validationSet.add(ElementValueMatchRule(pin, "not matched"))
+        val collectInput1 = CollectElementInput("cards", "PIN",
+            SkyflowElementType.PIN, placeholder = "confirm pin", validations = validationSet
         )
-        val confirmPin = container.create(activity,collectInput1) as? TextField
+        val confirmPin = container.create(activity, collectInput1) as? TextField
         confirmPin!!.inputField.setText("11111")
-        assertEquals("not matched",confirmPin.validate())
+        assertEquals("not matched", confirmPin.validate())
     }
 }
