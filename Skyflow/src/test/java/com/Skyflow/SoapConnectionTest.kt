@@ -119,6 +119,25 @@ class SoapConnectionTest {
     }
 
     @Test
+    fun testValidConnectionUrl()
+    {
+        val connectionUrl = "https://www.skyflow.com"
+        requestBody = "<body></body>"
+        val soapConfiguration = SoapConnectionConfig(connectionUrl,httpHeaders,requestBody,responseBody)
+        skyflow.invokeSoapConnection(soapConfiguration,object : Callback{
+            override fun onSuccess(responseBody: Any) {
+
+            }
+
+            override fun onFailure(exception: Any) {
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL, params = arrayOf(connectionUrl))
+                assertEquals(skyflowError.getInternalErrorMessage(),(exception as SkyflowError).getInternalErrorMessage())
+            }
+
+        })
+    }
+
+    @Test
     fun emptyConnectionUrl()
     {
         val connectionUrl = ""

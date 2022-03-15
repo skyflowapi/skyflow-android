@@ -13,9 +13,8 @@ internal class RevealResponseByID(var size: Int, var callback: Callback, val log
         .put("errors", JSONArray())
 
     var successResponses = 0
-
     var failureResponses = 0
-
+    var emptyResponses = 0
     private val tag = RevealResponseByID::class.qualifiedName
 
 
@@ -35,10 +34,10 @@ internal class RevealResponseByID(var size: Int, var callback: Callback, val log
             failureResponses +=1
             (responseBody.get("errors") as JSONArray).put(responseObject.getJSONObject(0))
         }else{
-            failureResponses += 1
+            emptyResponses += 1
         }
 
-        if(successResponses + failureResponses == size) {
+        if(successResponses + failureResponses  + emptyResponses == size) {
             if (successResponses + failureResponses == 0) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))

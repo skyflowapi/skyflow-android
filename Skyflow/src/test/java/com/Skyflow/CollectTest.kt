@@ -196,6 +196,7 @@ class CollectTest {
             activity.addContentView(card_number,layoutParams)
             activity.addContentView(cvv,layoutParams)
             card_number.state = StateforText(card_number)
+            card_number.state.show()
             cvv.state = StateforText(cvv)
 
             container.collect(object : Callback
@@ -1204,6 +1205,8 @@ class CollectTest {
         assertEquals(pin.actualValue,"1234")
         pin.clearValue()
     }
+
+
 
 
 
