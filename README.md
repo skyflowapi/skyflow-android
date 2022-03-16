@@ -3,23 +3,27 @@
 Skyflow’s android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data.
 
 # Table of Contents
-- [**Installing Skyflow-android**](#installing-skyflow-android)
-- [**Initializing Skyflow-android**](#initializing-skyflow-android)
-- [**Securely collecting data client-side**](#securely-collecting-data-client-side)
-- [**Securely revealing data client-side**](#securely-revealing-data-client-side)
-- [**Securely invoking connection client-side**](#Securely-invoking-connection-client-side)
-- [**Securely invoking Connections client-side using SOAP**](#Securely-invoking-Connections-client-side-using-soap)
+* [Installation](#installation)
+  * [Requirements](#requirements)
+  * [Configuration](#configuration)
+* [Initializing Skyflow-android](#initializing-skyflow-android)
+* [Securely collecting data client-side](#securely-collecting-data-client-side)
+* [Securely revealing data client-side](#securely-revealing-data-client-side)
+* [Securely invoking connection client-side](#Securely-invoking-connection-client-side)
+* [Securely invoking Connections client-side using SOAP](#Securely-invoking-Connections-client-side-using-soap)
 
-# Installing skyflow-android
----
+# Installation
 
-## Step 1: Generate a Personal Access Token for GitHub
+## Requirements
+- Android Gradle plugin 4.2.0 and above
+## Configuration
+### Step 1: Generate a Personal Access Token for GitHub
 - Inside you GitHub account:
 - Settings -> Developer Settings -> Personal Access Tokens -> Generate new token
 - Make sure you select the following scopes (“read:packages”) and Generate a token
 - After Generating make sure to copy your new personal access token. You cannot see it again! The only option is to generate a new key.
 
-## Step 2: Store your GitHub — Personal Access Token details
+### Step 2: Store your GitHub — Personal Access Token details
 - Create a github.properties file within your root Android project
 - In case of a public repository make sure you add this file to .gitignore for keep the token private
 - Add properties gpr.usr=GITHUB_USER_NAME and gpr.key=PERSONAL_ACCESS_TOKEN
@@ -27,9 +31,9 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 
 Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your environment variables on you local machine or build server to avoid creating a github properties file
 
-## Step 3: Adding the dependency to the project
+### Step 3: Adding the dependency to the project
 
-### Using gradle
+#### Using gradle
 
 - Add the Github package registry to your root project build.gradle file
 
@@ -55,7 +59,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
   implementation 'com.skyflowapi.android:skyflow-android-sdk:1.12.0'
   ```
 
-### Using maven
+#### Using maven
 - Add the Github package registry in the repositories tag and the GITHUB_USER_NAME, PERSONAL_ACCESS_TOKEN collected from  [Step1](#step-1-generate-a-personal-access-token-for-github) in the server tag to your project's settings.xml file. Make sure that the id's for both these tags are the same.
 
 ```xml
