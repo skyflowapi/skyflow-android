@@ -4,6 +4,8 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'kotlin-android'
+apply plugin: "com.dicedmelon.gradle.jacoco-android"
+
 //group='com.github.skyflowapi'
 //version = rootProject.ext.versionName
 ext {
@@ -41,7 +43,13 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            testCoverageEnabled true
+        }
 
+    }
+    buildFeatures {
+        dataBinding = true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
