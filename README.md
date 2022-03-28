@@ -451,7 +451,7 @@ container.collect(options, insertCallback)
 ```
 ### End to end example of collecting data with Skyflow Elements
 
-#### Sample Code:
+#### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/CollectActivity.kt):
 ```kt
 //Initialize skyflow configuration
 val config = Skyflow.Configuration(vaultId = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider)
@@ -959,7 +959,7 @@ The `setAltText(value: String)` method can be used to set the altText of the Rev
 
 
 ### End to end example of revealing data with Skyflow Elements
-#### Sample Code:
+#### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/RevealActivity.kt):
 ```kt
 //Initialize skyflow configuration
 val config = Skyflow.Configuration(vaultId = <VAULT_ID>, vaultURL = <VAULT_URL>, tokenProvider = demoTokenProvider)
@@ -1083,7 +1083,7 @@ It is a JSON object that specifies where to render the response in the UI. The v
 
 Sample use-cases on using invokeConnection():
 
-###  Sample use-case 1:
+###  [Sample use-case 1](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/PullFunds.kt):
 
 Merchant acceptance - customers should be able to complete payment checkout without cvv touching their application. This means that the merchant should be able to receive a CVV and process a payment without exposing their front-end to any PCI data
 
@@ -1134,7 +1134,7 @@ In the above example,  CVV is being collected from the user input at the time of
 - card_number can be either container element or plain text value (tokens or actual value)
 - `table` and `column` names are not required for creating collect element, if it is used for invokeConnection method, since they will not be stored in the vault
 
- ### Sample use-case 2:
+ ### [Sample use-case 2](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/GenerateCvv.kt):
  
  Card issuance -  customers want to issue cards from card issuer service and should generate the CVV dynamically without increasing their PCI scope.
 ```kt
@@ -1214,6 +1214,8 @@ The values in the **requestXML** can contain collect element IDs or reveal eleme
 **responseXML** accepts the entire XML request as a string. It specifies where to render the response in the UI. The values in the responseXML can contain collect element IDs or reveal element IDs.
 
 `Note:` If the user needs to use Skyflow Elements in place of values in the requestXML or responseXML, they will pass in an additional tag **Skyflow** containing the ID of the particular element.
+
+### [Sample code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/SoapActivity.kt):
 
 ```kt
 

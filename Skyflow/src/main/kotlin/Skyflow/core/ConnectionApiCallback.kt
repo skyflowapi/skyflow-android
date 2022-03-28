@@ -12,6 +12,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 internal class ConnectionApiCallback(
     val connectionConfig: ConnectionConfig,
@@ -152,16 +155,17 @@ internal class ConnectionApiCallback(
         val request = Request
             .Builder()
             .method(connectionConfig.methodName.toString(), body)
-            .addHeader("X-Skyflow-Authorization",responseBody.toString().split("Bearer ")[1])
-            .addHeader("Content-Type","application/json")
+            .addHeader("x-skyflow-authorization",responseBody.toString().split("Bearer ")[1])
+            .addHeader("content-type","application/json")
             .url(requestUrl)
         //adding header
         headerMap.forEach {
-            if(it.key.equals("X-Skyflow-Authorization"))
-                request.removeHeader(it.key)
-            else if(it.key.equals("Content-Type"))
-                request.removeHeader(it.key)
-            request.addHeader(it.key,it.value)
+            val key = it.key.lowercase(Locale.getDefault())
+            if(key.equals("x-skyflow-authorization"))
+                request.removeHeader(key)
+            else if(key.equals("content-type"))
+                request.removeHeader(key)
+            request.addHeader(key,it.value)
         }
         val  requestBuild = request.build()
         return requestBuild
