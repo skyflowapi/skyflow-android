@@ -9,7 +9,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
-
+import java.util.*
+import kotlin.collections.HashMap
 
 
 internal class SoapApiCallback(
@@ -124,11 +125,11 @@ internal class SoapApiCallback(
         val request = Request
             .Builder()
             .method("POST", body)
-            .addHeader("X-Skyflow-Authorization", token.split("Bearer ")[1])
+            .addHeader("x-skyflow-authorization", token.split("Bearer ")[1])
             .url(url)
         soapConnectionConfig.httpHeaders.forEach { (key, value) ->
-            if(key.equals("X-Skyflow-Authorization"))
-                request.removeHeader("X-Skyflow-Authorization")
+            if(key.lowercase(Locale.getDefault()).equals("x-skyflow-authorization"))
+                request.removeHeader("x-skyflow-authorization")
             request.addHeader(key,value)
         } //adding headers
         val requestBuild = request.build()

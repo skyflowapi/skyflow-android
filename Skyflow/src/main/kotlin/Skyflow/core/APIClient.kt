@@ -65,12 +65,18 @@ internal class APIClient (
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
-                        token = "Bearer $responseBody"
-                        callback.onSuccess(token)
+                        if(!isValidToken(responseBody.toString())) {
+                            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
+                            callback.onFailure(error)
+                        }
+                        else {
+                            token = "Bearer $responseBody"
+                            callback.onSuccess(token)
+                        }
                     }
                     override fun onFailure(exception: Any) {
                         Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
-                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN)
+                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
                         callback.onFailure(error)
                     }
                 })
