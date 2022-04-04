@@ -379,7 +379,6 @@ import kotlin.Exception
             val map = r_urlencode(mutableListOf(),HashMap(),json)
             var queryString = ""
             map.forEach { (key, value) -> queryString = queryString + encode(key)+"=" + encode(value) + "&" }
-            Log.d("que",queryString.substring(0,queryString.length-1))
             return queryString.substring(0,queryString.length-1)
         }
     }
