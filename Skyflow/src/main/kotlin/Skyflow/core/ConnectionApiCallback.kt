@@ -7,14 +7,13 @@ import android.os.Handler
 import android.os.Looper
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+
 
 internal class ConnectionApiCallback(
     val connectionConfig: ConnectionConfig,
@@ -24,9 +23,7 @@ internal class ConnectionApiCallback(
 ) : Callback{
 
     private val okHttpClient = OkHttpClient()
-
     private val tag = ConnectionApiCallback::class.qualifiedName
-
     internal var connectionUrl = ""
     private var requestBody = JSONObject()
     internal var headerMap = HashMap<String,String>()
@@ -34,13 +31,14 @@ internal class ConnectionApiCallback(
     internal var tokenIdMap = HashMap<String,String>() //key token,value is label id
     internal var tokenValueMap = HashMap<String,String?>() //key token, value is null before detokenize,value is value from api after detokenize
     internal var tokenLabelMap = HashMap<String,Label>() // key is token,value is label
+    internal var contentType = ContentType.APPLICATIONORJSON.type
     override fun onSuccess(responseBody: Any) {
         try{
             val token = responseBody.toString()
             validateResponseBody(connectionConfig.responseBody,HashSet())
             convertElementsHelper()
             if(tokenValueMap.isEmpty()){
-                val requestBuild = getRequestBuild(token, requestBody.toString())
+                val requestBuild = getRequestBuild(token, requestBody)
                 if(requestBuild == null ) return
                 sendRequest(requestBuild)
             }
@@ -59,7 +57,13 @@ internal class ConnectionApiCallback(
         else
             callback.onFailure(exception)
     }
+    fun setContentType(type:String) {
+        this.contentType = type
+    }
 
+    fun getContentType() : String {
+       return this.contentType
+    }
     fun sendDetokenizeRequest(token: String) {
         client.detokenize(createRequestBodyForDetokenize(),object : Callback {
             override fun onSuccess(responseBody: Any) {
@@ -92,7 +96,6 @@ internal class ConnectionApiCallback(
             }
         })
     }
-
     fun createRequestBodyForDetokenize(): JSONObject {
         val records = JSONObject()
         val array = JSONArray()
@@ -104,16 +107,15 @@ internal class ConnectionApiCallback(
         records.put("records",array)
         return records
     }
-
     fun createRequestForConnections(responseBody: Any, token: String): Request? {
         Utils.doTokenMap(responseBody,tokenValueMap)
         Utils.doformatRegexForMap(tokenValueMap,tokenLabelMap,tag)
-        var requestBodyString = requestBody.toString()
+        var requestBody = requestBody.toString()
         var queryString = queryMap.toString().substring(1,queryMap.toString().length-1)
         tokenValueMap.forEach {
             queryString = queryString.replace(tokenIdMap.get(it.key)!!,it.value!!)
             connectionUrl = connectionUrl.replace(tokenIdMap.get(it.key)!!,it.value!!)
-            requestBodyString = requestBodyString.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
+            requestBody = requestBody.replace(tokenIdMap.get(it.key)!!,it.value!!.trim())
         }
         if(queryString.isNotEmpty()) {
             val queryMapWithDetokenizeValues = queryString.split(",").associate {
@@ -122,10 +124,9 @@ internal class ConnectionApiCallback(
             }
             queryMap = queryMapWithDetokenizeValues as HashMap<String, String>
         }
-        val requestBuild = getRequestBuild(token,requestBodyString)
+        val requestBuild = getRequestBuild(token,JSONObject(requestBody))
         return requestBuild
     }
-
     fun convertElementsHelper()  {  //convert skyflow elements,arrays into values
         Utils.copyJSON(connectionConfig.requestBody,requestBody)
         constructRequestBodyForConnection(requestBody)
@@ -135,8 +136,7 @@ internal class ConnectionApiCallback(
         addQueryParams()
         addRequestHeader()
     }
-
-    fun getRequestBuild(responseBody: Any, requestBodyString: String): Request? { //create requestBuild
+    fun getRequestBuild(responseBody: Any, requestBody: JSONObject): Request? { //create requestBuild
         val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
         if(requestUrlBuilder == null){
             val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,
@@ -149,12 +149,8 @@ internal class ConnectionApiCallback(
             requestUrlBuilder.addQueryParameter(it.key,it.value)
         }
         val requestUrl = requestUrlBuilder.build()
-        //body for API
-        val body: RequestBody = requestBodyString
-            .toRequestBody("application/json".toByteArray().toString().toMediaTypeOrNull())
         val request = Request
             .Builder()
-            .method(connectionConfig.methodName.toString(), body)
             .addHeader("x-skyflow-authorization",responseBody.toString().split("Bearer ")[1])
             .addHeader("content-type","application/json")
             .url(requestUrl)
@@ -163,11 +159,13 @@ internal class ConnectionApiCallback(
             val key = it.key.lowercase(Locale.getDefault())
             if(key.equals("x-skyflow-authorization"))
                 request.removeHeader(key)
-            else if(key.equals("content-type"))
+            else if(key.equals("content-type")) {
                 request.removeHeader(key)
-            request.addHeader(key,it.value)
+            }
+            if(!(key.equals("content-type") && it.value.equals(ContentType.FORMDATA.type)))
+                request.addHeader(key,it.value)
         }
-        val  requestBuild = request.build()
+        val  requestBuild = request.post(Utils.getRequestbodyForConnection(requestBody,getContentType())).build()
         return requestBuild
     }
     fun sendRequest(requestBuild: Request) { //send request to Connection
@@ -244,7 +242,11 @@ internal class ConnectionApiCallback(
                         throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                     value = Utils.getValueForLabel(records.get(keys.getString(j)) as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                 } else if (records.get(keys.getString(j)) is JSONObject) {
-                    constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject, )
+                    constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject)
+                    value = JSONObject(records.get(keys.getString(j)).toString())
+                }
+                else if (records.get(keys.getString(j)) is HashMap<*,*>) {
+                    constructRequestBodyForConnection(JSONObject(records.get(keys.getString(j)) as HashMap<*, *>))
                     value = JSONObject(records.get(keys.getString(j)).toString())
                 }
                 else if(records.get(keys.getString(j)) is JSONArray)
@@ -342,9 +344,15 @@ internal class ConnectionApiCallback(
                 {
                     throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS) //empty key
                 }
-                if(headers.getString(i).equals("X-Skyflow-Authorization"))
-                    headerMap.remove("X-Skyflow-Authorization")
-                if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
+                if(headers.getString(i).lowercase(Locale.getDefault()).equals("content-type")) {
+                    if(connectionConfig.requestHeader.get(headers.getString(i)) is ContentType) {
+                        setContentType((connectionConfig.requestHeader.get(headers.getString(i)) as ContentType).type)
+                    }
+                    else
+                    setContentType(connectionConfig.requestHeader.getString(headers.getString(i)))
+                    headerMap.put(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
+                }
+                else if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
                     || connectionConfig.requestHeader.get(headers.getString(i)) is Boolean)
                     headerMap.put(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
                 else
@@ -380,8 +388,8 @@ internal class ConnectionApiCallback(
     }
 
      fun helperForQueryParams(
-        value: Any?, key: String
-    )
+         value: Any?, key: String,
+     )
     {
 
         if (value is Element)
@@ -491,7 +499,7 @@ internal class ConnectionApiCallback(
     // checking duplicate fields present in responseBody of connectionConfig
     fun  validateResponseBody(
         responseBody: JSONObject,
-        elementList: HashSet<String>
+        elementList: HashSet<String>,
     )
     {
         val keys = responseBody.names()
@@ -537,7 +545,7 @@ internal class ConnectionApiCallback(
     private var connectionResponse = JSONObject()
     fun helperForParseResponse(
         responseBody: JSONObject,
-        responseFromConnection: JSONObject
+        responseFromConnection: JSONObject,
     ) : JSONObject
     {
         val keys = responseBody.names()

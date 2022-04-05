@@ -4,13 +4,20 @@ import Skyflow.*
 import Skyflow.LogLevel
 import android.util.Log
 import android.webkit.URLUtil
+import okhttp3.Headers
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
 
- class Utils {
+ public class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName
@@ -134,8 +141,9 @@ import kotlin.Exception
                         }
                     } catch (e: Exception) {
                     }
-                } } }
-
+                }
+            }
+        }
         fun checkIfElementsMounted(element:Label):Boolean{
             if (!element.isAttachedToWindow())
                 return false
@@ -266,8 +274,9 @@ import kotlin.Exception
                 if(formatRegex.isNotEmpty() && replaceText == null) {
                     val regex = Regex(formatRegex)
                     val matches =  regex.find(it.value!!)
-                    if(matches != null)
-                        tokenValueMap.put(it.key,matches.value)
+                    if(matches != null) {
+                        tokenValueMap.put(it.key, matches.value)
+                    }
                     else
                     {
                         Log.w(tag,"no match found for regex - $formatRegex" )
@@ -286,10 +295,9 @@ import kotlin.Exception
                         tokenValueMap.put(it.key,it.value)
                     }
                 }
-                else
+                else {
                     tokenValueMap.put(it.key,it.value)
-
-
+                }
             }
         }
 
@@ -298,22 +306,102 @@ import kotlin.Exception
             if(configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/")
             {
                throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
-
             }
             if(configuration.vaultID.isEmpty())
             {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
             }
-            if(!checkUrl(configuration.vaultURL))
-               throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(configuration.vaultURL))
+            if(!checkUrl(configuration.vaultURL)) {
+                throw SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel, arrayOf(configuration.vaultURL))
+            }
         }
 
         fun appendRequestId(message:String, requestId:String): String {
             if(requestId.isEmpty() || requestId.equals("null"))
                 return message
-
-                return message + " - requestId : " + requestId
+            return message + " - requestId : " + requestId
         }
 
+        fun r_urlencode(parents:MutableList<Any>,pairs:HashMap<String,String>,data:Any) : HashMap<String,String> {
+            if(data is JSONArray) { //  || data is Array<*>
+                for(i in 0..data.length()-1)
+                {
+                    parents.add(i)
+                    r_urlencode(parents,pairs,data[i])
+                    parents.removeAt(parents.size-1)
+                }
+            }
+            else if(data is Array<*>) {
+                for(i in 0..data.size-1)
+                {
+                    parents.add(i)
+                    r_urlencode(parents,pairs,data.get(i)!!)
+                    parents.removeAt(parents.size-1)
+                }
+            }
+            else if(data is JSONObject) { //|| data is HashMap<*,*>
+                val keys = data.names()
+                if(keys !=null) {
+                    for (j in 0 until keys.length()) {
+                        val key = keys.getString(j)
+                        parents.add(key)
+                        r_urlencode(parents,pairs,data.get(key))
+                        parents.removeAt(parents.size-1)
+                    }
+                }
+            }
+            else if(data is HashMap<*,*>) {
+                data.forEach { (key, value) ->
+                    parents.add(key)
+                    r_urlencode(parents,pairs,value)
+                    parents.removeAt(parents.size-1)
+                }
+            }
+            else {
+                pairs[renderKey(parents)] = data.toString()
+            }
+            return pairs
+        }
+        fun renderKey(parents: MutableList<Any>) : String {
+            var depth = 0
+            var outputString = ""
+            for(parent in parents) {
+                if(depth>0 || (parent is Int)) {
+                    outputString = outputString + "[$parent]"
+                }
+                else {
+                    outputString = outputString + parent
+                }
+                depth = depth + 1
+            }
+            return outputString
+        }
+        fun encode(str:String) : String {
+            return  URLEncoder.encode(str, StandardCharsets.UTF_8.toString());
+        }
+        fun convertJSONToQueryString(body: JSONObject) : String{
+            val map = r_urlencode(mutableListOf(),HashMap(),body)
+            var queryString = ""
+            map.forEach { (key, value) -> queryString = queryString + encode(key)+"=" + encode(value) + "&" }
+            return queryString.substring(0,queryString.length-1)
+        }
+        fun getRequestbodyForConnection(requestBody: JSONObject, contentType: String): RequestBody {
+            val mediaType = contentType.toMediaTypeOrNull()
+            if(contentType.equals(ContentType.FORMURLENCODED.type)) {
+                return convertJSONToQueryString(requestBody).toRequestBody(mediaType)
+            }
+            else if(contentType.equals(ContentType.FORMDATA.type)) {
+                val map = r_urlencode(mutableListOf(), HashMap(), requestBody)
+                val mutlipartBody = MultipartBody.Builder().setType(MultipartBody.FORM)
+                map.forEach { (key, value) -> mutlipartBody.addPart(
+                    Headers.headersOf("Content-Disposition", "form-data; name=\"$key\""),
+                    "$value".toRequestBody(null))
+                }
+                return mutlipartBody.build()
+            }
+            else {
+                return requestBody.toString().toRequestBody(mediaType)
+            }
+        }
     }
 }

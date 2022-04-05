@@ -1693,6 +1693,51 @@ class UnitTests {
         assertEquals("2211",cvv.actualValue)
     }
 
+    @Test
+    fun testRenderKey()
+    {
+        val list = mutableListOf<Any>()
+        list.add("card")
+        list.add("key")
+        list.add("number")
+        assertEquals(Utils.renderKey(list),"card[key][number]")
+    }
+    @Test
+    fun testConverQueryString()
+    {
+        val json = JSONObject()
+        json.put("type","card")
+        val card= HashMap<String,String>()
+        val card1 = JSONObject()
+        card.put("number","4242")
+        card.put("exp_month","1")
+        card1.put("exp_year","2024")
+        card1.put("cvc","314")
+        json.put("card",card)
+        json.put("card1",card1)
+        assertEquals(Utils.convertJSONToQueryString(json),"card%5Bexp_month%5D=1&card1%5Bexp_year%5D=2024&type=card&card%5Bnumber%5D=4242&card1%5Bcvc%5D=314")
+    }
+    @Test
+    fun testConverQueryStringWithArray()
+    {
+        val json = JSONObject()
+        val card= JSONObject()
+        card.put("number",JSONArray().put("123"))
+        json.put("card",card)
+        assertEquals(Utils.convertJSONToQueryString(json),"card%5Bnumber%5D%5B0%5D=123")
+    }
+
+    @Test
+    fun testGetBody()
+    {
+        val json = JSONObject()
+        val card= JSONObject()
+        card.put("number",JSONArray().put("123"))
+        json.put("card",card)
+        assertTrue(Utils.getRequestbodyForConnection(json,ContentType.FORMURLENCODED.type).contentType().toString().contains(ContentType.FORMURLENCODED.type))
+        assertTrue(Utils.getRequestbodyForConnection(json,ContentType.FORMDATA.type).contentType().toString().contains(ContentType.FORMDATA.type))
+        assertTrue(Utils.getRequestbodyForConnection(json,ContentType.APPLICATIONORJSON.type).contentType().toString().contains(ContentType.APPLICATIONORJSON.type))
+    }
 }
 
 class APITokenProviderForSuccess : TokenProvider {
