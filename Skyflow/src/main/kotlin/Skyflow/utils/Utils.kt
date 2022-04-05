@@ -17,7 +17,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
 
- class Utils {
+ public class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName
@@ -364,41 +364,40 @@ import kotlin.Exception
         }
         fun renderKey(parents: MutableList<Any>) : String {
             var depth = 0
-            var outStr = ""
-            for(x in parents) {
-                val s = ""
-                if(depth>0 || (x is Int)) {
-                    outStr = outStr + "[$x]"
+            var outputString = ""
+            for(parent in parents) {
+                if(depth>0 || (parent is Int)) {
+                    outputString = outputString + "[$parent]"
                 }
                 else {
-                    outStr = outStr + x
+                    outputString = outputString + parent
                 }
                 depth = depth + 1
             }
-            return outStr
+            return outputString
         }
-        fun encode(s:String) : String {
-            return  URLEncoder.encode(s, StandardCharsets.UTF_8.toString());
+        fun encode(str:String) : String {
+            return  URLEncoder.encode(str, StandardCharsets.UTF_8.toString());
         }
-        fun convertJSONToQueryString(json: JSONObject) : String{
-            val map = r_urlencode(mutableListOf(),HashMap(),json)
+        fun convertJSONToQueryString(body: JSONObject) : String{
+            val map = r_urlencode(mutableListOf(),HashMap(),body)
             var queryString = ""
             map.forEach { (key, value) -> queryString = queryString + encode(key)+"=" + encode(value) + "&" }
             return queryString.substring(0,queryString.length-1)
         }
-        fun getBody(requestBody: JSONObject, contentType: String): RequestBody {
+        fun getRequestbodyForConnection(requestBody: JSONObject, contentType: String): RequestBody {
             val mediaType = contentType.toMediaTypeOrNull()
             if(contentType.equals(ContentType.FORMURLENCODED.type)) {
                 return convertJSONToQueryString(requestBody).toRequestBody(mediaType)
             }
             else if(contentType.equals(ContentType.FORMDATA.type)) {
                 val map = r_urlencode(mutableListOf(), HashMap(), requestBody)
-                val x = MultipartBody.Builder().setType(MultipartBody.FORM)
-                map.forEach { (key, value) -> x.addPart(
+                val mutlipartBody = MultipartBody.Builder().setType(MultipartBody.FORM)
+                map.forEach { (key, value) -> mutlipartBody.addPart(
                     Headers.headersOf("Content-Disposition", "form-data; name=\"$key\""),
                     "$value".toRequestBody(null))
                 }
-                return x.build()
+                return mutlipartBody.build()
             }
             else {
                 return requestBody.toString().toRequestBody(mediaType)

@@ -151,7 +151,6 @@ internal class ConnectionApiCallback(
         val requestUrl = requestUrlBuilder.build()
         val request = Request
             .Builder()
-            //.method(connectionConfig.methodName.toString(), body)
             .addHeader("x-skyflow-authorization",responseBody.toString().split("Bearer ")[1])
             .addHeader("content-type","application/json")
             .url(requestUrl)
@@ -162,12 +161,11 @@ internal class ConnectionApiCallback(
                 request.removeHeader(key)
             else if(key.equals("content-type")) {
                 request.removeHeader(key)
-                //setContentType(it.value)
             }
             if(!(key.equals("content-type") && it.value.equals(ContentType.FORMDATA.type)))
                 request.addHeader(key,it.value)
         }
-        val  requestBuild = request.post(Utils.getBody(requestBody,getContentType())).build()
+        val  requestBuild = request.post(Utils.getRequestbodyForConnection(requestBody,getContentType())).build()
         return requestBuild
     }
     fun sendRequest(requestBuild: Request) { //send request to Connection
