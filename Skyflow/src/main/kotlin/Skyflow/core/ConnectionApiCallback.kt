@@ -164,7 +164,8 @@ internal class ConnectionApiCallback(
                 request.removeHeader(key)
                 //setContentType(it.value)
             }
-            request.addHeader(key,it.value)
+            if(!(key.equals("content-type") && it.value.equals(ContentType.FORMDATA.type)))
+                request.addHeader(key,it.value)
         }
         val  requestBuild = request.post(Utils.getBody(requestBody,getContentType())).build()
         return requestBuild
