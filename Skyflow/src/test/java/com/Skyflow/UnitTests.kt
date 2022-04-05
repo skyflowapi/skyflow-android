@@ -15,6 +15,7 @@ import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 import junit.framework.Assert
 import junit.framework.TestCase.*
+import okhttp3.RequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Before
@@ -1727,7 +1728,17 @@ class UnitTests {
         assertEquals(Utils.convertJSONToQueryString(json),"card%5Bnumber%5D%5B0%5D=123")
     }
 
-
+    @Test
+    fun testGetBody()
+    {
+        val json = JSONObject()
+        val card= JSONObject()
+        card.put("number",JSONArray().put("123"))
+        json.put("card",card)
+        assertTrue(Utils.getBody(json,ContentType.FORMURLENCODED.type).contentType().toString().contains(ContentType.FORMURLENCODED.type))
+        assertTrue(Utils.getBody(json,ContentType.FORMDATA.type).contentType().toString().contains(ContentType.FORMDATA.type))
+        assertTrue(Utils.getBody(json,ContentType.APPLICATIONORJSON.type).contentType().toString().contains(ContentType.APPLICATIONORJSON.type))
+    }
 }
 
 class APITokenProviderForSuccess : TokenProvider {

@@ -4,6 +4,11 @@ import Skyflow.*
 import Skyflow.LogLevel
 import android.util.Log
 import android.webkit.URLUtil
+import okhttp3.Headers
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
@@ -380,6 +385,24 @@ import kotlin.Exception
             var queryString = ""
             map.forEach { (key, value) -> queryString = queryString + encode(key)+"=" + encode(value) + "&" }
             return queryString.substring(0,queryString.length-1)
+        }
+        fun getBody(requestBody: JSONObject, contentType: String): RequestBody {
+            val mediaType = contentType.toMediaTypeOrNull()
+            if(contentType.equals(ContentType.FORMURLENCODED.type)) {
+                return convertJSONToQueryString(requestBody).toRequestBody(mediaType)
+            }
+            else if(contentType.equals(ContentType.FORMDATA.type)) {
+                val map = r_urlencode(mutableListOf(), HashMap(), requestBody)
+                val x = MultipartBody.Builder().setType(MultipartBody.FORM)
+                map.forEach { (key, value) -> x.addPart(
+                    Headers.headersOf("Content-Disposition", "form-data; name=\"$key\""),
+                    "$value".toRequestBody(null))
+                }
+                return x.build()
+            }
+            else {
+                return requestBody.toString().toRequestBody(mediaType)
+            }
         }
     }
 }

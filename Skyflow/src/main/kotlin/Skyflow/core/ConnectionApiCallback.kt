@@ -5,20 +5,14 @@ import Skyflow.Callback
 import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
-import java.net.URL
 
 
 internal class ConnectionApiCallback(
@@ -172,26 +166,8 @@ internal class ConnectionApiCallback(
             }
             request.addHeader(key,it.value)
         }
-        val  requestBuild = request.post(getBody(requestBody)).build()
+        val  requestBuild = request.post(Utils.getBody(requestBody,getContentType())).build()
         return requestBuild
-    }
-    fun getBody(requestBody:JSONObject): RequestBody {
-        val mediaType = getContentType().toMediaTypeOrNull()
-        if(getContentType().equals(ContentType.FORMURLENCODED.type)) {
-            return Utils.convertJSONToQueryString(requestBody).toRequestBody(mediaType)
-        }
-        else if(getContentType().equals(ContentType.FORMDATA.type)) {
-            val map = Utils.r_urlencode(mutableListOf(), HashMap(), requestBody)
-            val x = MultipartBody.Builder().setType(MultipartBody.FORM)
-            map.forEach { (key, value) -> x.addPart(
-                Headers.headersOf("Content-Disposition", "form-data; name=\"$key\""),
-                "$value".toRequestBody(null))
-            }
-            return x.build()
-        }
-        else {
-           return requestBody.toString().toRequestBody(mediaType)
-        }
     }
     fun sendRequest(requestBuild: Request) { //send request to Connection
         okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
