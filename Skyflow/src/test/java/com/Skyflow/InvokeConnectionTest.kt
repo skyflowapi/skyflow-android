@@ -532,6 +532,10 @@ class InvokeConnectionTest {
         val connectionConfiguration = ConnectionConfig("https://www.google.com",RequestMethod.POST,queryParams = queryParams)
         val callback = ConnectionApiCallback(connectionConfiguration,ApiCallback(), logLevel = logLevel,skyflow)
         callback.addQueryParams()
+        //test ContentType
+        callback.setContentType(ContentType.APPLICATIONORJSON.type)
+        assertEquals(callback.getContentType(),ContentType.APPLICATIONORJSON.type)
+        //test queryparams
         TestCase.assertEquals("123", callback.queryMap.get("cvv"))
         TestCase.assertEquals("4111", callback.queryMap.get("card_number"))
     }
