@@ -81,25 +81,99 @@ class CollectTest {
         assertTrue(state["isValid"] as Boolean)
     }
 
-//    @Test
-//    fun testInvalidValueForPIN()
-//    {
-//        val container = skyflow.container(ContainerType.COLLECT)
-//        val collectInput = CollectElementInput("cards","PIN",
-//            SkyflowElementType.PIN,placeholder = "pin"
-//        )
-//        val pin = container.create(activity,collectInput) as? TextField
-//
-//        pin!!.inputField.setText("411")
-//        var state = StateforText(pin).getInternalState()
-//        assertFalse(state["isValid"] as Boolean)
-//
-//
-//        pin.inputField.setText("xyzzz")
-//        state = StateforText(pin).getInternalState()
-//        Assert.assertFalse(state["isValid"] as Boolean) //accepts only numbers
-//
-//    }
+    @Test
+    fun testExpireMonth()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","month",
+            SkyflowElementType.EXPIRATION_MONTH,placeholder = "month"
+        )
+        val month = container.create(activity,collectInput) as? TextField
+
+        month!!.setText("13")
+        var state = StateforText(month).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+
+        month.setText("11")
+        state = StateforText(month).getInternalState()
+        assertTrue(state["isValid"] as Boolean) // valid
+
+        month.setText("xxxx")
+        state = StateforText(month).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //accepts only numbers
+
+        month.setText("0")
+        state = StateforText(month).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //zero
+
+        month.setText("-5")
+        state = StateforText(month).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //negative
+    }
+
+    @Test
+    fun testExpireYear()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","year",
+            SkyflowElementType.EXPIRATION_YEAR,placeholder = "year"
+        )
+        val lognYear = container.create(activity,collectInput, CollectElementOptions(format = "yyyy")) as? TextField
+
+        lognYear!!.setText("202")
+        var state = StateforText(lognYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+        lognYear.setText("2021")
+        state = StateforText(lognYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+        lognYear.setText("2022")
+        state = StateforText(lognYear).getInternalState()
+        assertTrue(state["isValid"] as Boolean) // valid
+
+        lognYear.setText("2030")
+        state = StateforText(lognYear).getInternalState()
+        assertTrue(state["isValid"] as Boolean) //accepts only numbers
+
+        val shortYear = container.create(activity,collectInput, CollectElementOptions(format = "yy")) as? TextField
+        shortYear!!.setText("20")
+        state = StateforText(shortYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+        shortYear.setText("xyz")
+        state = StateforText(shortYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //not number
+
+        shortYear.setText("22")
+        state = StateforText(shortYear).getInternalState()
+        assertTrue(state["isValid"] as Boolean)
+
+        shortYear.setText("30")
+        state = StateforText(shortYear).getInternalState()
+        assertTrue(state["isValid"] as Boolean)
+    }
+
+        @Test
+    fun testInvalidValueForPIN()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","PIN",
+            SkyflowElementType.PIN,placeholder = "pin"
+        )
+        val pin = container.create(activity,collectInput) as? TextField
+
+        pin!!.setText("411")
+        var state = StateforText(pin).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+
+        pin.setText("xyzzz")
+        state = StateforText(pin).getInternalState()
+        Assert.assertFalse(state["isValid"] as Boolean) //accepts only numbers
+
+    }
 
     @Test
     fun testEmptyStateForSkyflowElement()
