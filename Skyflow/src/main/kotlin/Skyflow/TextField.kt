@@ -1,6 +1,7 @@
 package Skyflow
 
 import Skyflow.collect.elements.utils.*
+import Skyflow.collect.elements.validations.SkyflowValidateYear
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -27,7 +28,6 @@ import kotlin.String
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.util.Log
-import android.util.Log.w
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.SkyflowValidator
 import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
@@ -56,6 +56,7 @@ class TextField @JvmOverloads constructor(
     internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
     internal var expiryDateFormat = "mm/yy"
+    internal var yearFormat = "yy"
     private var userError : String = ""
     private  val tag = TextField::class.qualifiedName
     override var uuid = ""
@@ -144,12 +145,15 @@ class TextField @JvmOverloads constructor(
         {
             changeExpireDateValidations()
         }
+        else if(fieldType.equals(SkyflowElementType.EXPIRATION_YEAR)){
+            changeYearValidations()
+        }
         formatPatternForField(inputField.editableText)
     }
 
     private fun changeExpireDateValidations() {
         validationRules.rules.clear()
-        val expireDateList = mutableListOf<String>("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
+        val expireDateList = mutableListOf("mm/yy","mm/yyyy","yy/mm","yyyy/mm")
         if(expireDateList.contains(options.format.toLowerCase()))
         {
             expiryDateFormat = options.format.toLowerCase()
@@ -161,8 +165,24 @@ class TextField @JvmOverloads constructor(
             Log.w(tag,"Using default format mm/yy for EXPIRATION_DATE")
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
         }
-
     }
+
+    private fun changeYearValidations() {
+        validationRules.rules.clear()
+        val yearList = mutableListOf("yy","yyyy")
+        if(yearList.contains(options.format.toLowerCase()))
+        {
+            yearFormat = options.format.toLowerCase()
+            validationRules.add(SkyflowValidateYear(format = yearFormat))
+        }
+        else {
+            Log.w(tag,"invalid format for EXPIRATION_YEAR")
+            Log.w(tag,"Using default format yy for EXPIRATION_YEAR")
+            validationRules.add(SkyflowValidateYear(format = yearFormat))
+        }
+    }
+
+
 
     private fun buildError()
     {
@@ -349,6 +369,8 @@ class TextField @JvmOverloads constructor(
         }
     }
 
+
+
     private fun addSpaceSpanToCardNumber(editable: Editable?, spaceIndices: IntArray) {
         val length = editable!!.length
 
@@ -372,10 +394,14 @@ class TextField @JvmOverloads constructor(
             filterArray[0] = LengthFilter(cardtype.cardLength.get(cardtype.cardLength.size-1))
             inputField.setFilters(filterArray)
             addSpaceSpanToCardNumber(s,cardtype.formatPattern)
-        }
-        else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE))
-        {
+        } else if(fieldType.equals(SkyflowElementType.EXPIRATION_DATE)) {
             addSlashspanToExpiryDate(s,expiryDateFormat)
+        } else if(fieldType.equals(SkyflowElementType.CVV)){
+            inputField.filters = arrayOf<InputFilter>(LengthFilter(4))
+        } else if(fieldType.equals(SkyflowElementType.EXPIRATION_MONTH)) {
+            inputField.filters = arrayOf<InputFilter>(LengthFilter(2))
+        } else if(fieldType.equals(SkyflowElementType.EXPIRATION_YEAR)) {
+            inputField.filters = arrayOf<InputFilter>(LengthFilter(yearFormat.length))
         }
     }
 

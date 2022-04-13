@@ -1,6 +1,7 @@
 package  com.Skyflow.collect.elements.validations
 
 import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
+import Skyflow.utils.Utils
 import android.text.TextUtils
 import java.util.*
 
@@ -8,9 +9,6 @@ import java.util.*
 Validate input in scope of length.
  */
 internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override var error: SkyflowValidationError = "INVALID_EXPIRE_DATE") : ValidationRule,SkyflowInternalValidationProtocol {
-
-
-    private var mCalendar: Calendar =  Calendar.getInstance()
 
 
     /// validate length of text
@@ -64,40 +62,22 @@ internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override va
         val year:Int = yearString.toInt()
         val yearLength = yearString.length;
         if (yearLength == 2) {
-            currentYear = currentTwoDigitYear()
+            currentYear = Utils.currentTwoDigitYear()
         } else if (yearLength == 4) {
-            currentYear = currentFourDigitYear()
+            currentYear = Utils.currentFourDigitYear()
         } else {
             return false;
         }
 
-        if (year == currentYear && month < currentMonth()) {
+        if (year == currentYear && month < Utils.currentMonth()) {
             return false;
         }
 
         if (year < currentYear) {
             return false
         }
-
-
         return true;
     }
-
-    private fun currentMonth(): Int
-    {
-        return mCalendar.get(Calendar.MONTH)+1
-    }
-
-
-    private fun currentTwoDigitYear(): Int
-    {
-        return mCalendar.get(Calendar.YEAR) %100
-    }
-    private fun currentFourDigitYear() : Int
-    {
-        return mCalendar.get(Calendar.YEAR)
-    }
-
 
 }
 
