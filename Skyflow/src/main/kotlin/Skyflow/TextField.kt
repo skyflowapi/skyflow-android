@@ -249,6 +249,12 @@ class TextField @JvmOverloads constructor(
                onFocusTextField()
             } else {
                 onBlurTextField()
+                if(fieldType.equals(SkyflowElementType.EXPIRATION_MONTH)){
+                    val str = inputField.text.toString()
+                    if(str.equals("1")){
+                        inputField.setText("0"+str.get(0).toString())
+                    }
+                }
             }
         }.also { inputField.onFocusChangeListener = it }
 
@@ -383,6 +389,17 @@ class TextField @JvmOverloads constructor(
             }
         }
     }
+
+    private fun addSpanToExpiryMonth() {
+        val filterArray = arrayOfNulls<InputFilter>(1)
+        filterArray[0] = LengthFilter(yearFormat.length)
+        val str = inputField.text.toString()
+        inputField.setFilters(filterArray)
+        if(str.isNotEmpty() && str.toInt() > 1 && !str.get(0).toString().equals("0") && str.length<2) {
+            inputField.setText("0"+str)
+        }
+        inputField.setSelection(inputField.length())
+    }
     private fun formatPatternForField(s: Editable?)
     {
         if(fieldType.equals(SkyflowElementType.CARD_NUMBER))
@@ -399,7 +416,7 @@ class TextField @JvmOverloads constructor(
         } else if(fieldType.equals(SkyflowElementType.CVV)){
             inputField.filters = arrayOf<InputFilter>(LengthFilter(4))
         } else if(fieldType.equals(SkyflowElementType.EXPIRATION_MONTH)) {
-            inputField.filters = arrayOf<InputFilter>(LengthFilter(2))
+            addSpanToExpiryMonth()
         } else if(fieldType.equals(SkyflowElementType.EXPIRATION_YEAR)) {
             inputField.filters = arrayOf<InputFilter>(LengthFilter(yearFormat.length))
         }
