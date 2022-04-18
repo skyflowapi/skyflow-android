@@ -137,6 +137,10 @@ class CollectTest {
         state = StateforText(lognYear).getInternalState()
         assertTrue(state["isValid"] as Boolean) //accepts only numbers
 
+        lognYear.setText("2077")
+        state = StateforText(lognYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //accepts only numbers
+
         val shortYear = container.create(activity,collectInput, CollectElementOptions(format = "yy")) as? TextField
         shortYear!!.setText("20")
         state = StateforText(shortYear).getInternalState()
@@ -153,6 +157,31 @@ class CollectTest {
         shortYear.setText("30")
         state = StateforText(shortYear).getInternalState()
         assertTrue(state["isValid"] as Boolean)
+
+        lognYear.setText("77")
+        state = StateforText(lognYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean) //accepts only numbers
+
+    }
+
+    @Test
+    fun testExpireDate() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards", "year",
+            SkyflowElementType.EXPIRATION_DATE, placeholder = "year"
+        )
+        val lognYear = container.create(activity,
+            collectInput,
+            CollectElementOptions(format = "mm/yyyy")) as? TextField
+
+        lognYear!!.setText("12/2030")
+        var state = StateforText(lognYear).getInternalState()
+        assertTrue(state["isValid"] as Boolean)
+
+        lognYear.setText("12/2080")
+        state = StateforText(lognYear).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
     }
 
         @Test
