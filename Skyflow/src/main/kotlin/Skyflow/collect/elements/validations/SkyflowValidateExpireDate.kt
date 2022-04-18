@@ -73,7 +73,7 @@ internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override va
             return false;
         }
 
-        if (year < currentYear) {
+        if (year < currentYear || year > currentYear+50) {
             return false
         }
         return true;

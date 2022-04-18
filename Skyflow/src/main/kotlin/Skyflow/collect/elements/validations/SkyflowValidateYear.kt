@@ -20,10 +20,10 @@ class SkyflowValidateYear(override var error: SkyflowValidationError = "INVALID_
         }
         val year = text.toInt()
         val currentYear = Utils.currentFourDigitYear()
-        if(format.equals("yy") && year<(currentYear%100)) {
+        if(format.equals("yy") && (year<(currentYear%100) || year>((currentYear%100)+50))) {
             return false
         }
-        else if(format.equals("yyyy") && year<currentYear) {
+        else if(format.equals("yyyy") && (year<(currentYear) || year>(currentYear+50))) {
             return false
         }
         return true
