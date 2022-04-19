@@ -60,7 +60,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.13.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.14.0'
   ```
 
 #### Using maven
@@ -88,7 +88,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.13.0</version>
+   <version>1.14.0</version>
 </dependency>
 ```
 
@@ -345,6 +345,8 @@ Finally, the `type` field takes a Skyflow ElementType. Each type applies the app
 - `CARDHOLDER_NAME`
 - `CARD_NUMBER`
 - `EXPIRATION_DATE`
+- `EXPIRATION_MONTH`
+- `EXPIRATION_YEAR`
 - `CVV`
 - `PIN`
 
@@ -364,13 +366,19 @@ Skyflow.CollectElementOptions(
 
 `enableCardIcon` paramenter indicates whether the icon is visible for the `CARD_NUMBER` element, defaults to `true`
 
-`format` parameter takes string value and indicates the format pattern applicable to the element type, It's currently only applicable to `EXPIRATION_DATE` element type, the values that are accepted are
-  - mm/yy
+`format` parameter takes string value and indicates the format pattern applicable to the element type, It's currently only applicable to `EXPIRATION_DATE` and `EXPIRATION_YEAR` element types. 
+
+The values that are accepted for `EXPIRATION_DATE` are
+  - mm/yy (default)
   - mm/yyyy
   - yy/mm
   - yyyy/mm
 
-`NOTE`: If not specified or invalid value is passed to the `format` for `EXPIRATION_DATE` element, then it defaults to `mm/yy` format.
+The values that are accepted for `EXPIRATION_YEAR` are
+  - yy (default)
+  - yyyy
+
+`NOTE`: If not specified or invalid value is passed to the `format` then it takes default value.
 
 Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
 the `context` param takes android `Context` object as described below:

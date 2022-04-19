@@ -13,11 +13,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.Exception
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
- public class Utils {
+public class Utils {
 
     companion object {
         val tag = Utils::class.qualifiedName
@@ -402,6 +405,19 @@ import kotlin.Exception
             else {
                 return requestBody.toString().toRequestBody(mediaType)
             }
+        }
+
+        fun currentTwoDigitYear(): Int
+        {
+            return Calendar.getInstance().get(Calendar.YEAR) %100
+        }
+        fun currentFourDigitYear() : Int
+        {
+            return Calendar.getInstance().get(Calendar.YEAR)
+        }
+        fun currentMonth(): Int
+        {
+            return Calendar.getInstance().get(Calendar.MONTH)+1
         }
     }
 }

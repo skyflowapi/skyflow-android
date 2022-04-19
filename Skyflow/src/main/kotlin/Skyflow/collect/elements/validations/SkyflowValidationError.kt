@@ -23,6 +23,10 @@ internal enum class SkyflowValidationErrorType(var rawValue:String) //: String {
 
     invalidPin("INVALID_PIN"),
 
+    invalidmonth("INVALID_MONTH"),
+
+    invalidyear("INVALID_YEAR"),
+
     allowNumbers("ONLY_NUMBERS_ARE_ALLOWED");
 
 }

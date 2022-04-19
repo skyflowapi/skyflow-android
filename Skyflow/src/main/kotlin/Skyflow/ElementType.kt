@@ -1,4 +1,6 @@
 package Skyflow
+import Skyflow.collect.elements.validations.SkyflowValidateMonth
+import Skyflow.collect.elements.validations.SkyflowValidateYear
 import android.text.InputType
 import com.Skyflow.collect.elements.validations.*
 import com.Skyflow.collect.elements.validations.LengthMatchRule
@@ -31,7 +33,11 @@ enum class SkyflowElementType {
 
     INPUT_FIELD,
 
-    PIN;
+    PIN,
+
+    EXPIRATION_MONTH,
+
+    EXPIRATION_YEAR;
 
 
     fun getType(): Type {
@@ -91,6 +97,20 @@ enum class SkyflowElementType {
                 rules.add(RegexMatchRule("[0-9]*",
                     SkyflowValidationErrorType.allowNumbers.rawValue)
                 )
+                return Type(
+                    "####", "\\d*$",
+                    rules, InputType.TYPE_CLASS_NUMBER
+                )
+            }
+            EXPIRATION_MONTH  -> {
+                rules.add(SkyflowValidateMonth(SkyflowValidationErrorType.invalidmonth.rawValue))
+                return Type(
+                    "##", "\\d*$",
+                    rules, InputType.TYPE_CLASS_NUMBER
+                )
+            }
+            EXPIRATION_YEAR  -> {
+                rules.add(SkyflowValidateYear(SkyflowValidationErrorType.invalidmonth.rawValue,"yy"))
                 return Type(
                     "####", "\\d*$",
                     rules, InputType.TYPE_CLASS_NUMBER
