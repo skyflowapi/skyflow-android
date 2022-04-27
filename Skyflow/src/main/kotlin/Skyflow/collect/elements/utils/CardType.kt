@@ -50,7 +50,7 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
         3, SecurityCode.cvc.rawValue, R.drawable.ic_hypercard),
     UNKNOWN(
         "Unknown","\\d+",
-        intArrayOf(12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
+        intArrayOf(8,9,10,11,12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_emptycard),
     EMPTY(
         "Empty","^$",
@@ -65,7 +65,7 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
 
         fun forCardNumber(cardNumber: String) : CardType {
             val patternMatch = forCardPattern(cardNumber.replace(" ", "").replace("-", ""))
-            if (patternMatch.defaultName != "Empty" && patternMatch.defaultName != "Unknown") {
+            if (patternMatch.defaultName != "Empty") {
                 return patternMatch
             }
             else
@@ -77,13 +77,14 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
 
         private fun forCardPattern(cardNumber: String) : CardType {
             val cards = enumValues<CardType>()
+            if(cardNumber.isEmpty()) return EMPTY
             cards.forEach {
                 val pattern = Pattern.compile(it.regex)
                 if (pattern.matcher(cardNumber).matches() && cardNumber.length <= it.cardLength.get(it.cardLength.size-1)) {
                     return it
                 }
             }
-            return EMPTY
+            return UNKNOWN
         }
     }
     open fun getSpaceIndices(): IntArray {
