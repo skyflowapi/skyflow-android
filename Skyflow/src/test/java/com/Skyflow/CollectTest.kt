@@ -205,6 +205,26 @@ class CollectTest {
     }
 
     @Test
+    fun testValidCardForUnknown()
+    {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput("cards","card_number",
+            SkyflowElementType.CARD_NUMBER,placeholder = "card number"
+        )
+        val cardNumber = container.create(activity,collectInput) as? TextField
+
+        //invalid
+        cardNumber!!.setText("1111111")
+        var state = StateforText(cardNumber).getInternalState()
+        assertFalse(state["isValid"] as Boolean)
+
+        //valid
+        cardNumber.setText("5066991111111118")
+        state = StateforText(cardNumber).getInternalState()
+        Assert.assertTrue(state["isValid"] as Boolean) //accepts only numbers
+    }
+
+    @Test
     fun testEmptyStateForSkyflowElement()
     {
         val configuration = Configuration(
