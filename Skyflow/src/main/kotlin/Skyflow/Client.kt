@@ -58,6 +58,7 @@ class Client internal constructor(
         }
     }
 
+    @Deprecated("invokeConnection method is deprecated", level = DeprecationLevel.WARNING)
     fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback) {
         try {
             Logger.info(tag, Messages.INVOKE_CONNECTION_CALLED.getMessage(), configuration.options.logLevel)
@@ -74,6 +75,7 @@ class Client internal constructor(
         }
     }
 
+    @Deprecated("invokeSoapConnection method is deprecated", level = DeprecationLevel.WARNING)
     fun invokeSoapConnection(soapConnectionConfig: SoapConnectionConfig,callback: Callback) {
         try {
             validateSoapConnectionDetails(soapConnectionConfig)
