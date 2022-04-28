@@ -80,7 +80,7 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
             if(cardNumber.isEmpty()) return EMPTY
             cards.forEach {
                 val pattern = Pattern.compile(it.regex)
-                if (pattern.matcher(cardNumber).matches() && cardNumber.length <= it.cardLength.get(it.cardLength.size-1)) {
+                if (pattern.matcher(cardNumber).matches() && cardNumber.length <= it.cardLength.get(it.cardLength.size-1) && !it.equals(UNKNOWN)) {
                     return it
                 }
             }
