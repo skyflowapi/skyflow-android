@@ -17,7 +17,6 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
 //ext {
 //    compileSdkVersion = 29
 //    buildToolsVersion = '29.0.2'
