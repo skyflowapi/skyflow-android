@@ -58,6 +58,7 @@ class Client internal constructor(
         }
     }
 
+    @Deprecated("Support for this method will be removed soon. Please use any of the Server Side SDKs to invoke a connection", level = DeprecationLevel.WARNING)
     fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback) {
         try {
             Logger.info(tag, Messages.INVOKE_CONNECTION_CALLED.getMessage(), configuration.options.logLevel)
@@ -74,6 +75,7 @@ class Client internal constructor(
         }
     }
 
+    @Deprecated("Support for this method will be removed soon. Please contact admin", level = DeprecationLevel.WARNING)
     fun invokeSoapConnection(soapConnectionConfig: SoapConnectionConfig,callback: Callback) {
         try {
             validateSoapConnectionDetails(soapConnectionConfig)
