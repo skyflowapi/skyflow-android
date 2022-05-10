@@ -1595,8 +1595,8 @@ class UnitTests {
 
         val cardNumber3 = "11111"
         cardtype  = CardType.forCardNumber(cardNumber3)
-        assertTrue(cardtype.equals(CardType.EMPTY))
-        assertTrue(cardtype.defaultName.equals("Empty"))
+        assertTrue(cardtype.equals(CardType.UNKNOWN))
+        assertTrue(cardtype.defaultName.equals("Unknown"))
         assertTrue(cardtype.image.equals(R.drawable.ic_emptycard))
 
     }

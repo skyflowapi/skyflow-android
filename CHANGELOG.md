@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.15.0] - 2022-05-10
+
+### Added
+- support for generic card numbers.
+
+### Changed
+- Deprecated `invokeConnection()`.
+- Deprecated `invokeSoapConnection()`.
+
 ## [1.14.0] - 2022-04-19
 
 ### Added
