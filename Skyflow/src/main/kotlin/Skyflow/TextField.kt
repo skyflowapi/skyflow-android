@@ -261,13 +261,8 @@ class TextField @JvmOverloads constructor(
     }
     private fun changeCardIcon(cardtype:CardType)
     {
-            if(!cardtype.equals(CardType.EMPTY)) {
-                inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
-                inputField.compoundDrawablePadding = 8
-            } else {
-                inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,0,0)
-                inputField.compoundDrawablePadding = 0
-            }
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+        inputField.compoundDrawablePadding = 8
     }
     private fun onFocusTextField()
     {
