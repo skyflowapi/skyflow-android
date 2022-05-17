@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.15.0] - 2022-05-17
+
+### Fixed
+- add card icon for empty "CARD_NUMBER" collect element.
+
 ## [1.15.0] - 2022-05-10
 
 ### Added
