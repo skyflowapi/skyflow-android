@@ -1738,6 +1738,15 @@ class UnitTests {
         assertTrue(Utils.getRequestbodyForConnection(json,ContentType.FORMDATA.type).contentType().toString().contains(ContentType.FORMDATA.type))
         assertTrue(Utils.getRequestbodyForConnection(json,ContentType.APPLICATIONORJSON.type).contentType().toString().contains(ContentType.APPLICATIONORJSON.type))
     }
+
+    @Test
+    fun testGetBIN() {
+        assertEquals("41111111XXXXXXXX", CardType.getBin("4111111111111111"))
+        assertEquals("41111111XXXX", CardType.getBin("411111111111"))
+        assertEquals("41111111", CardType.getBin("41111111"))
+        assertEquals("4111", CardType.getBin("4111"))
+        assertEquals("378282XXXX",CardType.getBin("3782822412"))
+    }
 }
 
 class APITokenProviderForSuccess : TokenProvider {
