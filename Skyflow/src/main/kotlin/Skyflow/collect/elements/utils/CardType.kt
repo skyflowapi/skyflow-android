@@ -86,6 +86,22 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
             }
             return UNKNOWN
         }
+        fun getBin(cardNumber: String) : String {
+            var binCount = 8
+            val card = forCardNumber(cardNumber);
+            if(card === AMEX) binCount = 6;
+            var result = ""
+            var numbers = 0
+            for(char in cardNumber) {
+                if(numbers >= binCount) {
+                    result += "X"
+                } else {
+                    numbers += 1
+                    result += char
+                }
+            }
+            return result
+        }
     }
     open fun getSpaceIndices(): IntArray {
         return if (this == AMEX) CardType.AMEX_SPACE_INDICES else CardType.DEFAULT_SPACE_INDICES

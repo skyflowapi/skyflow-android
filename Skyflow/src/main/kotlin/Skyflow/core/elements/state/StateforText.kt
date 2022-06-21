@@ -5,6 +5,7 @@ import Skyflow.SkyflowElementType
 import Skyflow.TextField
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import Skyflow.State
+import Skyflow.collect.elements.utils.CardType
 import org.json.JSONObject
 
 class StateforText internal constructor(val tf: TextField) : State(tf.columnName, tf.isRequired) {
@@ -64,6 +65,8 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         var value = ""
         if(env == Env.DEV) {
             value =  tf.getValue()
+        } else if(env == Env.PROD && tf.fieldType == SkyflowElementType.CARD_NUMBER) {
+            value = CardType.getBin(tf.getValue())
         }
         state.put("value", value)
         return state
