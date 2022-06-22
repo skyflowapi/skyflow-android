@@ -1,3 +1,6 @@
+/*
+	Copyright (c) 2022 Skyflow, Inc. 
+*/
 package Skyflow.collect.elements.validations
 
 import android.text.TextUtils
