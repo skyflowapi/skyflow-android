@@ -26,20 +26,8 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, CollectActivity::class.java)
             startActivity(intent)
         }
-        cvv_generation.setOnClickListener{
-            val intent = Intent(this, GenerateCvv::class.java)
-            startActivity(intent)
-        }
-        payment_demo.setOnClickListener{
-            val intent = Intent(this, PullFunds::class.java)
-            startActivity(intent)
-        }
         validation_demo.setOnClickListener {
             val intent = Intent(this, CustomValidationsActivity::class.java)
-            startActivity(intent)
-        }
-        soap_demo.setOnClickListener {
-            val intent = Intent(this, SoapActivity::class.java)
             startActivity(intent)
         }
         }
