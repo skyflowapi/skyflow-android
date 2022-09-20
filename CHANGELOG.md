@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.21.0] - 2022-09-20
+
+### Changed
+- Removed `invokeConnection()`
+- Removed `invokeSoapConnection()`
+
 ## [1.16.0] - 2022-06-21
 
 ### Changed
