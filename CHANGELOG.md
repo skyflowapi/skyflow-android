@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.21.0] - 2022-09-20
+## [1.17.0] - 2022-09-20
 
 ### Changed
 - Removed `invokeConnection()`
