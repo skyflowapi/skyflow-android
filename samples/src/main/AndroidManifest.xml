@@ -16,9 +16,6 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name=".SoapActivity"
-            android:exported="true" />
-        <activity
             android:name=".CustomValidationsActivity"
             android:exported="true" />
         <activity android:name=".CollectActivity" />
@@ -31,11 +28,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".GenerateCvv"
-            android:exported="true" />
-        <activity android:name=".RevealActivity" />
-        <activity android:name=".PullFunds" />
     </application>
 
 </manifest>
