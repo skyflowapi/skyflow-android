@@ -199,8 +199,8 @@ class CollectActivity : AppCompatActivity() {
 private fun pureInsert(){
     val tokenProvider = DemoTokenProvider()
     val skyflowConfiguration = Configuration(
-        BuildConfig.VAULT_ID,
-        BuildConfig.VAULT_URL,
+        "VAULT_ID",
+        "VAULT_URL",
         tokenProvider,
         Options(LogLevel.ERROR)
     )
