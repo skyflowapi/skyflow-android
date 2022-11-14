@@ -117,7 +117,12 @@ enum class Messages(val message: String) {
     EMPTY_ID_IN_RESPONSE_XML("empty elementId present in ResponseXML"),
     DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML"),
     INVALID_FORMAT_REGEX("Invalid formatRegex - no match found for regex: %s"),
-    NOT_VALID_TOKENS("following tokens are not valid - %s");
+    NOT_VALID_TOKENS("following tokens are not valid - %s"),
+    NO_TABLE_KEY_IN_UPSERT("table key is not found in upsert options"),
+    NO_COLUMN_KEY_IN_UPSERT("column key is not found in the upsert options"),
+    EMPTY_TABLE_KEY_IN_UPSERT("the table value is empty in upsert options"),
+    EMPTY_COLUMN_KEY_IN_UPSERT("column value is empty in the upsert options"),
+    ALLOW_JSON_OBJECT_IN_UPSERT("upsert array should consists of json objects only")
 }
 
 fun Messages.getMessage(vararg values: String?): String{

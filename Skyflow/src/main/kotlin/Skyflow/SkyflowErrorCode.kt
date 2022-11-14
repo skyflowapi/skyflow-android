@@ -77,8 +77,12 @@ enum class SkyflowErrorCode(val code:Int, var message:String)
     DUPLICATE_ID_IN_RESPONSE_XML(400,Messages.DUPLICATE_ID_IN_RESPONSE_XML.message),
     EMPTY_REQUEST_XML(400,Messages.EMPTY_REQUEST_XML.message),
     INVALID_FORMAT_REGEX(400,Messages.INVALID_FORMAT_REGEX.message),
-    NOT_VALID_TOKENS(400,Messages.NOT_VALID_TOKENS.message);
-
+    NOT_VALID_TOKENS(400,Messages.NOT_VALID_TOKENS.message),
+    NO_TABLE_KEY_IN_UPSERT(400,Messages.NO_TABLE_KEY_IN_UPSERT.message),
+    NO_COLUMN_KEY_IN_UPSERT(400,Messages.NO_COLUMN_KEY_IN_UPSERT.message),
+    EMPTY_TABLE_KEY_IN_UPSERT(400,Messages.EMPTY_TABLE_KEY_IN_UPSERT.message),
+    EMPTY_COLUMN_KEY_IN_UPSERT(400,Messages.EMPTY_COLUMN_KEY_IN_UPSERT.message),
+    ALLOW_JSON_OBJECT_IN_UPSERT(400,Messages.ALLOW_JSON_OBJECT_IN_UPSERT.message);
 
     @JvmName("getCode1")
     fun getCode() : Int

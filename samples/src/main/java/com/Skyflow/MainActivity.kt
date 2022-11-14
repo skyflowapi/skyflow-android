@@ -26,6 +26,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, CollectActivity::class.java)
             startActivity(intent)
         }
+        upsert_demo.setOnClickListener {
+            val intent = Intent(this, UpsertFeature::class.java)
+            startActivity(intent)
+        }
         validation_demo.setOnClickListener {
             val intent = Intent(this, CustomValidationsActivity::class.java)
             startActivity(intent)

@@ -78,6 +78,7 @@ public class Utils {
                     map["fields"] = jsonObj["fields"]
                     map["method"] = "POST"
                     map["quorum"] = true
+                    map["upsert"] = getUpsertColumn(jsonObj.getString("table"), options.upsert,logLevel)
                     val jsonObject = jsonObj["fields"] as JSONObject
                     val keys: Iterator<String> = jsonObject.keys()
 
@@ -127,6 +128,29 @@ public class Utils {
             return true
         }
 
+        fun getUpsertColumn(tableName: String, options:JSONArray,logLevel: LogLevel): String {
+            for(index in 0..options.length()-1){
+                if(options.get(index) !is JSONObject) {
+                    throw SkyflowError(SkyflowErrorCode.ALLOW_JSON_OBJECT_IN_UPSERT, tag, logLevel)
+                }
+                if(!options.getJSONObject(index).has("table")) {
+                    throw SkyflowError(SkyflowErrorCode.NO_TABLE_KEY_IN_UPSERT, tag, logLevel)
+                }
+                if(!options.getJSONObject(index).has("column")) {
+                    throw SkyflowError(SkyflowErrorCode.NO_COLUMN_KEY_IN_UPSERT, tag, logLevel)
+                }
+                if(options.getJSONObject(index).get("table").toString().isEmpty()){
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY_IN_UPSERT, tag, logLevel)
+                }
+                if(options.getJSONObject(index).get("column").toString().isEmpty()) {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY_IN_UPSERT, tag, logLevel)
+                }
+                if (tableName.equals(options.getJSONObject(index).get("table").toString())) {
+                    return options.getJSONObject(index).get("column").toString();
+                }
+            }
+            return ""
+        }
         //removing empty json objects
         fun removeEmptyAndNullFields(response: JSONObject) {
             val keys = response.names()
