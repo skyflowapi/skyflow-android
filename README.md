@@ -60,7 +60,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.17.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.18.0'
   ```
 
 #### Using maven
@@ -88,7 +88,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.17.0</version>
+   <version>1.18.0</version>
 </dependency>
 ```
 
@@ -205,7 +205,7 @@ For `env` parameter, there are 2 accepted values in Skyflow.Env
 
 ## Inserting data into the vault
 
-To insert data into the vault from the integrated application, use the ```insert(records: JSONObject, options: InsertOptions?= InsertOptions() , callback: Skyflow.Callback)``` method of the Skyflow client. The records parameter takes a JSON object of the records to be inserted in the below format. The options parameter takes a object of optional parameters for the insertion. See below:
+To insert data into the vault from the integrated application, use the ```insert(records: JSONObject, options: InsertOptions?= InsertOptions() , callback: Skyflow.Callback)``` method of the Skyflow client. The records parameter takes a JSON object of the records to be inserted in the below format. The options parameter takes a object of optional parameters for the insertion. `insert` method also support upsert operations. See below:
 
 ```json5
 {
@@ -225,7 +225,13 @@ To insert data into the vault from the integrated application, use the ```insert
 An example of an insert call is given below:
 
 ```kt
-val insertOptions = Skyflow.InsertOptions(tokens: false) /*indicates whether or not tokens should be returned for the inserted data. Defaults to 'true'*/
+//Upsert options
+val upsertArray = JSONArray()
+val upsertColumn = JSONObject()
+upsertColumn.put("table", "cards")
+upsertColumn.put("column", "card_number")
+upsertArray.put(upsertColumn)
+val insertOptions = Skyflow.InsertOptions(tokens= false,upsert= upsertArray) /*indicates whether or not tokens should be returned for the inserted data. Defaults to 'true'*/
 val insertCallback = InsertCallback()    //Custom callback - implementation of Skyflow.Callback
 val records = JSONObject()
 val recordsArray = JSONArray()
@@ -547,6 +553,84 @@ container.collect(options = collectOptions, callback = insertCallback)
       "table": "persons",
       "fields": {
         "gender": "12f670af-6c7d-4837-83fb-30365fbc0b1e",
+      }
+    }
+  ]
+}
+
+```
+
+### End to end example of upsert support with Skyflow Elements
+
+#### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/UpsertFeature.kt):
+```kt
+val config = Skyflow.Configuration(vaultId = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider)
+val skyflowClient = Skyflow.initialize(config)
+val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
+val options = Skyflow.CollectElementOptions(required = true)
+val baseStyle = Skyflow.Style(borderColor = Color.BLUE)
+val baseTextStyle = Skyflow.Style(textColor = Color.BLACK)
+val completedStyle = Skyflow.Style(textColor = Color.GREEN)
+val focusTextStyle = Skyflow.Style(textColor = Color.RED)
+val inputStyles = Skyflow.Styles(base = baseStyle, complete = completedStyle)
+val labelStyles = Skyflow.Styles(base = baseTextStyle, focus = focusTextStyle)
+val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
+
+val cardNumberInput = Skyflow.CollectElementInput(
+       table = "cards",
+       column = "card_number",
+       type = Skyflow.ElementType.CARD_NUMBER
+       inputStyles = inputStyles,
+       labelStyles = labelStyles,
+       errorTextStyles = errorTextStyles,
+       label = "Card number",
+       placeholder = "enter your card number",
+)
+
+val nameInput = Skyflow.CollectElementInput(
+       table = "cards",
+       column = "full_name",
+       type = Skyflow.ElementType.CARD_NUMBER
+       inputStyles = inputStyles,
+       labelStyles = labelStyles,
+       errorTextStyles = errorTextStyles,
+       label = "Full name",
+       placeholder = "enter your name",
+)
+val cardNumberElement = container.create(context = Context,cardNumberInput, options)
+val nameElement = container.create(context = Context,namerInput, options)
+
+//Upsert options
+val upsertArray = JSONArray()
+val upsertColumn = JSONObject()
+upsertColumn.put("table", "cards")
+upsertColumn.put("column", "card_number")
+upsertArray.put(upsertColumn)
+
+val collectOptions = Skyflow.CollectOptions(tokens = true,upsert = upsertArray)
+
+public class InsertCallback: Skyflow.Callback {
+    override fun onSuccess(responseBody: Any) {
+        print(responseBody)
+    }
+    override fun onFailure(_ error: Error) {
+        print(error)
+    }
+}
+
+val insertCallback = InsertCallback()
+container.collect(options = collectOptions, callback = insertCallback)
+
+```
+#### Sample Response :
+```
+{
+  "records": [
+    {
+      "table": "cards",
+      "fields": {
+        "card_number": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
+        "name": "f3907186-e7e2-464f-91e5-48e12c2bfsi9"
       }
     }
   ]

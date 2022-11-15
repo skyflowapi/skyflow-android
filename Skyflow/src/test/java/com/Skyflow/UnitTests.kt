@@ -5,6 +5,7 @@ import Skyflow.collect.elements.utils.*
 import Skyflow.core.APIClient
 import Skyflow.core.JWTUtils
 import Skyflow.core.Logger
+import Skyflow.core.Messages
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
@@ -888,7 +889,7 @@ class UnitTests {
     fun testDateValidator()
     {
         val date = DateValidator()
-        assertTrue(date.isValid("10","22"))
+        assertTrue(date.isValid("10","28"))
         assertFalse(date.isValid("xx","12"))
         assertFalse(date.isValid("","22"))
         assertFalse(date.isValid("10",""))
@@ -1746,6 +1747,123 @@ class UnitTests {
         assertEquals("41111111", CardType.getBin("41111111"))
         assertEquals("4111", CardType.getBin("4111"))
         assertEquals("378282XXXX",CardType.getBin("3782822412"))
+    }
+
+    @Test
+    fun testGetUpsertColumn() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table","cards")
+        jsonObj.put("column","card_number")
+        val options = JSONArray()
+        options.put(jsonObj)
+        assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        assertEquals("", Utils.getUpsertColumn("cards", null,LogLevel.DEBUG))
+    }
+
+    @Test
+    fun testNoTableKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("column","card_number")
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.NO_TABLE_KEY_IN_UPSERT.message,0), e.getInternalErrorMessage())
+        }
+    }
+    @Test
+    fun testNoColumnKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table","cards")
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.NO_COLUMN_KEY_IN_UPSERT.message,0), e.getInternalErrorMessage())
+        }
+    }
+
+    @Test
+    fun testEmptyTableKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table","")
+        jsonObj.put("column","card_number")
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.INVALID_TABLE_IN_UPSERT_OPTION.message,0), e.getInternalErrorMessage())
+        }
+    }
+    @Test
+    fun testEmptyColumnKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table","cards")
+        jsonObj.put("column","")
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.INVALID_COLUMN_IN_UPSERT_OPTION.message,0), e.getInternalErrorMessage())
+        }
+    }
+
+    @Test
+    fun testNOnStringTableKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table",true)
+        jsonObj.put("column","card_number")
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.INVALID_TABLE_IN_UPSERT_OPTION.message,0), e.getInternalErrorMessage())
+        }
+    }
+    @Test
+    fun testNonStringColumnKeyInUpsert() {
+        val jsonObj = JSONObject()
+        jsonObj.put("table","cards")
+        jsonObj.put("column",true)
+        val options = JSONArray()
+        options.put(jsonObj)
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.INVALID_COLUMN_IN_UPSERT_OPTION.message,0), e.getInternalErrorMessage())
+        }
+    }
+
+    @Test
+    fun testEmptyUpsertValue() {
+        try{
+            assertEquals("card_number", Utils.getUpsertColumn("cards",JSONArray(),LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(String.format(Messages.EMPTY_UPSERT_OPTIONS_ARRAY.message,0), e.getInternalErrorMessage())
+        }
+    }
+
+    @Test
+    fun testNotJSONObjectInUpsert() {
+
+        try{
+            assertEquals("", Utils.getUpsertColumn("cards",JSONArray().put("123"),LogLevel.DEBUG))
+        }
+        catch (e: SkyflowError) {
+            assertEquals(Messages.ALLOW_JSON_OBJECT_IN_UPSERT.message, e.getInternalErrorMessage())
+        }
     }
 }
 

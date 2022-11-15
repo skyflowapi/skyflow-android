@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [1.18.0] - 2022-11-15
+### Added
+- `upsert` support while collecting data through skyflow elements.
+- `upsert` support for pure js `insert` method.
+
 ## [1.17.0] - 2022-09-20
 
 ### Changed
