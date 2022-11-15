@@ -118,11 +118,12 @@ enum class Messages(val message: String) {
     DUPLICATE_ID_IN_RESPONSE_XML("duplicate Id present in ResponseXML"),
     INVALID_FORMAT_REGEX("Invalid formatRegex - no match found for regex: %s"),
     NOT_VALID_TOKENS("following tokens are not valid - %s"),
-    NO_TABLE_KEY_IN_UPSERT("table key is not found in upsert options"),
-    NO_COLUMN_KEY_IN_UPSERT("column key is not found in the upsert options"),
-    EMPTY_TABLE_KEY_IN_UPSERT("the table value is empty in upsert options"),
-    EMPTY_COLUMN_KEY_IN_UPSERT("column value is empty in the upsert options"),
-    ALLOW_JSON_OBJECT_IN_UPSERT("upsert array should consists of json objects only")
+    NO_TABLE_KEY_IN_UPSERT("\"table\" key is required in upsert options object at index %s"),
+    NO_COLUMN_KEY_IN_UPSERT("\"column\" key is required in upsert option at index %s"),
+    INVALID_TABLE_IN_UPSERT_OPTION("Invalid table in upsert object at index %s, table of type non empty string is required"),
+    INVALID_COLUMN_IN_UPSERT_OPTION("Invalid column upsert object at index %s, column of type non empty string is required"),
+    ALLOW_JSON_OBJECT_IN_UPSERT("upsert array should consists of json objects only"),
+    EMPTY_UPSERT_OPTIONS_ARRAY("upsert option cannot be an empty array, atleast one object of table and column is required.")
 }
 
 fun Messages.getMessage(vararg values: String?): String{
