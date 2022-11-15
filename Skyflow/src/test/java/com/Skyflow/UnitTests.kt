@@ -1770,7 +1770,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
         }
         catch (e: SkyflowError) {
-            assertEquals(Messages.NO_TABLE_KEY_IN_UPSERT.message, e.getInternalErrorMessage())
+            assertEquals(String.format(Messages.NO_TABLE_KEY_IN_UPSERT.message,0), e.getInternalErrorMessage())
         }
     }
     @Test
@@ -1783,7 +1783,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards",options,LogLevel.DEBUG))
         }
         catch (e: SkyflowError) {
-            assertEquals(Messages.NO_COLUMN_KEY_IN_UPSERT.message, e.getInternalErrorMessage())
+            assertEquals(String.format(Messages.NO_COLUMN_KEY_IN_UPSERT.message,0), e.getInternalErrorMessage())
         }
     }
 
