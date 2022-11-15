@@ -100,7 +100,7 @@ internal fun Container<CollectContainer>.validateElement(element: TextField,err:
 internal fun Container<CollectContainer>.post(callback:Callback,options: CollectOptions?)
 {
     val records = CollectRequestBody.createRequestBody(this.collectElements, options!!.additionalFields, configuration.options.logLevel)
-    val insertOptions = InsertOptions(options.token)
+    val insertOptions = InsertOptions(options.token,options.upsert)
     this.client.apiClient.post(JSONObject(records), callback, insertOptions)
 }
 

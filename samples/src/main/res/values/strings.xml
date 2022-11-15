@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Skyflow-android</string>
     <string name="collect_demo">Collect Reveal Demo</string>
+    <string name="upsert_demo">Upsert Demo</string>
     <string name="reveal_demo">Reveal Demo</string>
     <string name="amount">Amount</string>
 </resources>
