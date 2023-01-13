@@ -114,12 +114,12 @@ class RevealActivity : AppCompatActivity() {
         val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()
-        record.put("table","persons")
+        record.put("table","cards")
         record.put("redaction",RedactionType.PLAIN_TEXT)
 
         val skyflowIds = ArrayList<String>()
-        skyflowIds.add("003ec10191faf50")
-        skyflowIds.add("054c9b6668882")
+        skyflowIds.add("<skyflow_id1>")
+        skyflowIds.add("<skyflow_id2>")
         record.put("ids",skyflowIds)
         recordsArray.put(record)
         val records = JSONObject()
@@ -134,7 +134,6 @@ class RevealActivity : AppCompatActivity() {
                 Log.d("getbyskyflow_ids",exception.toString())
 
             }
-
         })
     }
 
@@ -148,9 +147,9 @@ class RevealActivity : AppCompatActivity() {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "32207876")
+        recordObj.put("token", "<token1>")
         val recordObj1 = JSONObject()
-        recordObj1.put("token", "a1d928ff9d01d1c")
+        recordObj1.put("token", "<token2>")
         revealRecordsArray.put(recordObj)
         revealRecordsArray.put(recordObj1)
         revealRecords.put("records", revealRecordsArray)

@@ -31,8 +31,8 @@ class CollectActivity : AppCompatActivity() {
         setContentView(R.layout.activity_collect)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "VAULT_ID",
+            "VAULT_URL",
             tokenProvider,
             Options(LogLevel.ERROR, Env.PROD)
         )
@@ -85,7 +85,7 @@ class CollectActivity : AppCompatActivity() {
             Style(null, null, padding, null, R.font.roboto_light, Gravity.START, Color.RED)
         val errorStyles = Styles(baseErrorStyles)
         val validationSet = ValidationSet()
-        validationSet.add(LengthMatchRule(2,20,"not valid"))
+        validationSet.add(LengthMatchRule(2, 20, "not valid"))
         val cardNumberInput = CollectElementInput(
             "cards", "card_number", SkyflowElementType.CARD_NUMBER, styles, labelStyles,
             errorStyles, "Card Number", "CardNumber"
@@ -105,24 +105,32 @@ class CollectActivity : AppCompatActivity() {
             "Full Name",
             validations = validationSet
         )
-        val cvvInput =CollectElementInput(
+        val cvvInput = CollectElementInput(
             table = "cards",
             column = "cvv",
             type = SkyflowElementType.CVV,
             inputStyles = styles,
-             labelStyles = labelStyles,
+            labelStyles = labelStyles,
             errorTextStyles = errorStyles,
             placeholder = "CVV",
             altText = "CVV"
         )
         val options = CollectElementOptions(true)
-        val cardNumber = collectContainer.create(this, cardNumberInput, CollectElementOptions(enableCardIcon = false))
-        val expirationDate = collectContainer.create(this, expiryDateInput,CollectElementOptions(format = "yyyy/mm"))
+        val cardNumber = collectContainer.create(
+            this,
+            cardNumberInput,
+            CollectElementOptions(enableCardIcon = false)
+        )
+        val expirationDate = collectContainer.create(
+            this,
+            expiryDateInput,
+            CollectElementOptions(format = "yyyy/mm")
+        )
         val name = collectContainer.create(this, nameInput, options)
         val cvv = collectContainer.create(this, cvvInput)
-        
+
         cardNumber.on(EventName.FOCUS) { state ->
-                    Log.d(TAG, "focus: sate $state")
+            Log.d(TAG, "focus: sate $state")
         }
 
         cardNumber.on(EventName.BLUR) { state ->
@@ -190,25 +198,25 @@ class CollectActivity : AppCompatActivity() {
         }
 
         clear.setOnClickListener {
-            clearFields(mutableListOf(cardNumber,cvv,name,expirationDate))
+            clearFields(mutableListOf(cardNumber, cvv, name, expirationDate))
         }
 
     }
 
 
-private fun pureInsert(){
-    val tokenProvider = DemoTokenProvider()
-    val skyflowConfiguration = Configuration(
-        BuildConfig.VAULT_ID,
-        BuildConfig.VAULT_URL,
-        tokenProvider,
-        Options(LogLevel.ERROR)
-    )
-    val skyflow = init(skyflowConfiguration)
+    private fun pureInsert() {
+        val tokenProvider = DemoTokenProvider()
+        val skyflowConfiguration = Configuration(
+            "VAULT_ID",
+            "VAULT_URL",
+            tokenProvider,
+            Options(LogLevel.ERROR)
+        )
+        val skyflow = init(skyflowConfiguration)
 
-    try{
-        val records = JSONObject()
-        val recordsArray = JSONArray()
+        try {
+            val records = JSONObject()
+            val recordsArray = JSONArray()
 //        val record = JSONObject()
 //        record.put("table", "persons")
 //        val fields = JSONObject()
@@ -216,56 +224,54 @@ private fun pureInsert(){
 //        fields.put("card_number", "41111111111")
 //        record.put("fields", fields)
 //        recordsArray.put(record)
-        records.put("records", recordsArray)
+            records.put("records", recordsArray)
 
-        skyflow.insert(records, InsertOptions(true), object : Callback {
-            override fun onSuccess(responseBody: Any) {
-                Log.d("insert", "success: $responseBody")
-            }
+            skyflow.insert(records, InsertOptions(true), object : Callback {
+                override fun onSuccess(responseBody: Any) {
+                    Log.d("insert", "success: $responseBody")
+                }
 
-            override fun onFailure(exception: Any) {
-                Log.d(ContentValues.TAG, "failure: $exception")
-            }
+                override fun onFailure(exception: Any) {
+                    Log.d(ContentValues.TAG, "failure: $exception")
+                }
 
-        })
-    }catch (e: Exception){
-        Log.d("TAG", "testingFunction: $e")
-    }}
+            })
+        } catch (e: Exception) {
+            Log.d("TAG", "testingFunction: $e")
+        }
+    }
 
 
     //reset elements to initial state
-    fun clearFields(elements:List<TextField>)
-    {
-        for(element in elements)
-        {
+    fun clearFields(elements: List<TextField>) {
+        for (element in elements) {
             element.unmount()
         }
     }
 
 
-
-class DemoTokenProvider : TokenProvider {
-    override fun getBearerToken(callback: Callback) {
-        val url = "TOKEN_URL"
-        val request = okhttp3.Request.Builder().url(url).build()
-        val okHttpClient = OkHttpClient()
-        try {
-            val thread = Thread {
-                run {
-                    okHttpClient.newCall(request).execute().use { response ->
-                        if (!response.isSuccessful)
-                            throw IOException("Unexpected code $response")
-                        val accessTokenObject =
-                            JSONObject(response.body!!.string().toString())
-                        val accessToken = accessTokenObject["accessToken"]
-                        callback.onSuccess("$accessToken")
+    class DemoTokenProvider : TokenProvider {
+        override fun getBearerToken(callback: Callback) {
+            val url = "TOKEN_URL"
+            val request = okhttp3.Request.Builder().url(url).build()
+            val okHttpClient = OkHttpClient()
+            try {
+                val thread = Thread {
+                    run {
+                        okHttpClient.newCall(request).execute().use { response ->
+                            if (!response.isSuccessful)
+                                throw IOException("Unexpected code $response")
+                            val accessTokenObject =
+                                JSONObject(response.body!!.string().toString())
+                            val accessToken = accessTokenObject["accessToken"]
+                            callback.onSuccess("$accessToken")
+                        }
                     }
                 }
+                thread.start()
+            } catch (exception: Exception) {
+                callback.onFailure(exception)
             }
-            thread.start()
-        } catch (exception: Exception) {
-            callback.onFailure(exception)
         }
     }
-}
 }
