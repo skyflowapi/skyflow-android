@@ -37,7 +37,7 @@ Test the SDK by adding `VAULT-ID`, `VAULT-URL`, and `SERVICE-ACCOUNT` details in
 4. Install `skyflow-node`
 
         npm i skyflow-node
-5. Move the downloaded “credentials.json” file #Create a service account account into the bearer-token-generator directory.        
+5. Move the downloaded “credentials.json” file generated from [Create a service account](#create-a-service-account) step into the `bearer-token-generator` directory.        
 6. Create `index.js` file
 7. Open `index.js` file
 8. Populate `index.js` file with below code snippet
