@@ -22,15 +22,13 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ResponseTest {
-
-
-    lateinit var skyflow : Client
+    lateinit var skyflow: Client
     lateinit var logLevel: LogLevel
     lateinit var request: Request
     internal lateinit var apiClient: APIClient
+
     @Before
-    fun setup()
-    {
+    fun setup() {
         val configuration = Configuration(
             "b359c43f1b844ff4bea0f098d2c09",
             "https://vaulturl.com",
@@ -38,32 +36,47 @@ class ResponseTest {
         )
         skyflow = Client(configuration)
         logLevel = LogLevel.ERROR
-        request = Request
-                .Builder()
-                .url("https://www.url.com")
-                .build()
-        apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-
+        request = Request.Builder().url("https://www.url.com").build()
+        apiClient = APIClient(
+            "b359c43f1b84f098d2c09193",
+            "https://vaulturl.com/v1/vaults",
+            AccessTokenProvider(),
+            LogLevel.ERROR
+        )
     }
-    @Test
-    fun testVerifyResponseNotSuccessForCollectCallback() //fail
-    {
 
+    //fail
+    @Test
+    fun testVerifyResponseNotSuccessForCollectCallback() {
         val records = JSONObject()
-        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        val collectAPICallback = CollectAPICallback(apiClient, records, object : Callback {
+            override fun onSuccess(responseBody: Any) {}
+
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, params =  arrayOf("jwt expired")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
+                val expectedError = SkyflowError(
+                    SkyflowErrorCode.SERVER_ERROR,
+                    params = arrayOf("jwt expired")
+                ).getInternalErrorMessage()
+                assertEquals(expectedError, (exception as SkyflowError).getInternalErrorMessage())
             }
-        },InsertOptions(),logLevel)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"jwt expired")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
+        }, InsertOptions(), logLevel)
+
+        val contentObject = JSONObject()
+        val messageObject = JSONObject()
+        messageObject.put("message", "jwt expired")
+        contentObject.put("error", messageObject)
+
+        val responseBody = ResponseBody.create(
+            "application/json".toMediaTypeOrNull(),
+            contentObject.toString()
+        )
+
+        val res = Response.Builder()
+            .code(401).message("not found").protocol(Protocol.HTTP_2)
+            .request(request).body(responseBody).build()
         collectAPICallback.verifyResponse(res)
     }
+
     @Test
     fun testVerifyResponseSuccess() //failed because response is not json object
     {
