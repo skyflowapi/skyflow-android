@@ -10,6 +10,7 @@ import Skyflow.core.Logger
 import Skyflow.utils.Utils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import java.io.IOException
 
 internal class CollectAPICallback(
@@ -108,8 +109,12 @@ internal class CollectAPICallback(
             try {
                 if (!response.isSuccessful && response.body != null) {
                     val body = response.body!!.string()
-                    val responseJson = JSONObject(body)
-                    val message = responseJson.getJSONObject("error").getString("message")
+                    val message = try {
+                        val responseJson = JSONObject(body)
+                        responseJson.getJSONObject("error").getString("message")
+                    } catch (e: JSONException) {
+                        body
+                    }
 
                     val requestId = response.headers.get("x-request-id").toString()
                     val skyflowError = SkyflowError(
