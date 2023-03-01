@@ -29,10 +29,11 @@ object JWTUtils {
             JSONObject()
         }
     }
+
     fun isExpired(JWTEncoded: String): Boolean {
         val expireTime = decoded(JWTEncoded).getString("exp")
         val cal = Calendar.getInstance()
-        val currentTime = ((cal.timeInMillis / 1000) - 300).toString()
+        val currentTime = ((cal.timeInMillis / 1000) + 300).toString()
         return currentTime > expireTime
     }
 
@@ -43,13 +44,13 @@ object JWTUtils {
     }
 }
 
-internal class APIClient (
+internal class APIClient(
     val vaultId: String,
     val vaultURL: String,
     private val tokenProvider: TokenProvider,
     val logLevel: LogLevel,
     private var token: String = ""
-){
+) {
     private val tag = APIClient::class.qualifiedName
     private fun isValidToken(token: String?): Boolean {
         return if (token != "") {
@@ -58,6 +59,7 @@ internal class APIClient (
             false
         }
     }
+
     fun getAccessToken(callback: Callback) {
         try {
             if (!isValidToken(token)) {
@@ -65,49 +67,53 @@ internal class APIClient (
                 tokenProvider.getBearerToken(object : Callback {
                     override fun onSuccess(responseBody: Any) {
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
-                        if(!isValidToken(responseBody.toString())) {
-                            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
+                        if (!isValidToken(responseBody.toString())) {
+                            val error =
+                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
                             callback.onFailure(error)
-                        }
-                        else {
+                        } else {
                             token = "Bearer $responseBody"
                             callback.onSuccess(token)
                         }
                     }
+
                     override fun onFailure(exception: Any) {
-                        Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
-                        val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
+                        Logger.error(
+                            tag,
+                            Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(),
+                            logLevel
+                        )
+                        val error =
+                            SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
                         callback.onFailure(error)
                     }
                 })
             } else {
                 callback.onSuccess(token)
             }
-        }catch (e: Exception){
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN,tag,logLevel)
+        } catch (e: Exception) {
+            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
             callback.onFailure(error)
         }
     }
 
-    fun post(records: JSONObject, callback: Callback, options: InsertOptions){
+    fun post(records: JSONObject, callback: Callback, options: InsertOptions) {
         try {
-            val finalRecords = Utils.constructBatchRequestBody(records, options,logLevel)
-            val collectApiCallback = CollectAPICallback(this, records, callback, options,logLevel)
+            val finalRecords = Utils.constructBatchRequestBody(records, options, logLevel)
+            val collectApiCallback = CollectAPICallback(this, records, callback, options, logLevel)
             this.getAccessToken(collectApiCallback)
-        }
-        catch (e:Exception)
-        {
+        } catch (e: Exception) {
             callback.onFailure(e)
         }
     }
 
-     fun get(records:JSONObject, callback : Callback){
+    fun get(records: JSONObject, callback: Callback) {
 
         try {
             val list = constructBodyForDetokenize(records)
             val revealApiCallback = RevealApiCallback(callback, this, list)
             this.getAccessToken(revealApiCallback)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
     }
@@ -118,47 +124,46 @@ internal class APIClient (
     }
 
     fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback, client: Client) {
-        val connection = ConnectionApiCallback(connectionConfig,callback, logLevel,client)
+        val connection = ConnectionApiCallback(connectionConfig, callback, logLevel, client)
         this.getAccessToken(connection)
     }
 
-    fun invokeSoapConnection(soapConnectionConfig: SoapConnectionConfig, client: Client, callback: Callback) {
-        val soapValueCallback = SoapValueCallback(client,soapConnectionConfig,callback,logLevel)
-        val connection = SoapApiCallback(soapConnectionConfig,soapValueCallback, logLevel,client)
+    fun invokeSoapConnection(
+        soapConnectionConfig: SoapConnectionConfig,
+        client: Client,
+        callback: Callback
+    ) {
+        val soapValueCallback = SoapValueCallback(client, soapConnectionConfig, callback, logLevel)
+        val connection = SoapApiCallback(soapConnectionConfig, soapValueCallback, logLevel, client)
         this.getAccessToken(connection)
     }
 
     fun constructBodyForDetokenize(records: JSONObject): MutableList<RevealRequestRecord> {
         if (!records.has("records")) {
-            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
+            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
         }
-        if(records.get("records").toString().isEmpty())
-        {
-            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
+        if (records.get("records").toString().isEmpty()) {
+            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
         }
-        if(records.get("records") !is JSONArray)
-        {
-            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
+        if (records.get("records") !is JSONArray) {
+            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
         }
-        if(!records.has("records"))
-            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag,logLevel)
-        else if(records.get("records") !is JSONArray)
-            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag,logLevel)
+        if (!records.has("records"))
+            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+        else if (records.get("records") !is JSONArray)
+            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
         val jsonArray = records.getJSONArray("records")
-        if(jsonArray.length() == 0)
-            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag,logLevel)
+        if (jsonArray.length() == 0)
+            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
         val list = mutableListOf<RevealRequestRecord>()
         var i = 0
         while (i < jsonArray.length()) {
             val jsonobj1 = jsonArray.getJSONObject(i)
             if (!jsonobj1.has("token")) {
-                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN,tag,logLevel)
-            }
-            else if (jsonobj1.get("token").toString().isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag,logLevel)
-            }
-
-            else {
+                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+            } else if (jsonobj1.get("token").toString().isEmpty()) {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+            } else {
                 list.add(RevealRequestRecord(jsonobj1.get("token").toString()))
             }
             i++
