@@ -33,7 +33,7 @@ object JWTUtils {
     fun isExpired(JWTEncoded: String): Boolean {
         val expireTime = decoded(JWTEncoded).getString("exp")
         val cal = Calendar.getInstance()
-        val currentTime = ((cal.timeInMillis / 1000) + 300).toString()
+        val currentTime = ((cal.timeInMillis / 1000)).toString()
         return currentTime > expireTime
     }
 
