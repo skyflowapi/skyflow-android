@@ -12,10 +12,11 @@ internal class RevealValueCallback(
     var callback: Callback,
     var revealElements: MutableList<Label>,
     var logLevel: LogLevel
-) :
-    Callback {
-    val elementsMap = HashMap<String, Label>()
+) : Callback {
+
     private val tag = RevealValueCallback::class.qualifiedName
+    val elementsMap = HashMap<String, Label>()
+
     override fun onSuccess(responseBody: Any) {
         try {
             constructElementMap()
@@ -23,8 +24,7 @@ internal class RevealValueCallback(
             revealSuccessRecords(responseJSON, elementsMap)
             val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
             callback.onSuccess(revealResponse)
-        }
-        catch (e:Exception){
+        } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
     }
@@ -33,48 +33,53 @@ internal class RevealValueCallback(
         try {
             constructElementMap()
             val responseJSON = JSONObject(exception.toString())
-            if(responseJSON.has("records"))
-                revealSuccessRecords(responseJSON,elementsMap)
-            revealErrors(responseJSON,elementsMap)
+            if (responseJSON.has("records")) {
+                revealSuccessRecords(responseJSON, elementsMap)
+            }
+            revealErrors(responseJSON, elementsMap)
             val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
             callback.onFailure(revealResponse)
-        }
-        catch (e:Exception)
-        {
+        } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
     }
 
-    fun constructElementMap(){
-        for (element in revealElements){
+    private fun constructElementMap() {
+        for (element in revealElements) {
             elementsMap[element.revealInput.token!!] = element
         }
     }
-    fun revealSuccessRecords(responseJSON: JSONObject, elementsMap: HashMap<String, Label>)
-    {
-            val recordsArray = responseJSON.getJSONArray("records")
-            for (i in 0 until  recordsArray.length()) {
-                val recordObj = recordsArray[i] as JSONObject
-                val tokenId = recordObj.get("token")
-                val value = recordObj.getString("value")
-                Handler(Looper.getMainLooper()).post(Runnable {
-                    Utils.setValueForLabel(elementsMap[tokenId]!!, value)
-                })
-                recordObj.remove("value")
-            }
+
+    private fun revealSuccessRecords(
+        responseJSON: JSONObject,
+        elementsMap: HashMap<String, Label>
+    ) {
+        val recordsArray = responseJSON.getJSONArray("records")
+        for (i in 0 until recordsArray.length()) {
+            val recordObj = recordsArray[i] as JSONObject
+            val tokenId = recordObj.get("token")
+            val value = recordObj.getString("value")
+            Handler(Looper.getMainLooper()).post(Runnable {
+                Utils.setValueForLabel(elementsMap[tokenId]!!, value)
+            })
+            recordObj.remove("value")
+        }
     }
 
-    fun revealErrors(responseJSON: JSONObject, elementsMap: HashMap<String, Label>)
-    {
-            val errorArray = responseJSON.getJSONArray("errors")
-            var i = 0
-            while (i < errorArray.length()) {
-                val recordObj = errorArray[i] as JSONObject
-                val tokenId = recordObj.get("token").toString()
-                elementsMap[tokenId]!!.setErrorText("invalid token")
-                elementsMap[tokenId]!!.showError()
-                i++
+    private fun revealErrors(responseJSON: JSONObject, elementsMap: HashMap<String, Label>) {
+        val errorArray = responseJSON.getJSONArray("errors")
+
+        var i = 0
+        while (i < errorArray.length()) {
+            val recordObj = errorArray[i] as JSONObject
+            val tokenId = recordObj.get("token").toString()
+
+            Handler(Looper.getMainLooper()).post {
+                Utils.setErrorForLabel(elementsMap[tokenId]!!)
             }
+
+            i++
+        }
     }
 }
 
