@@ -2,6 +2,9 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import android.util.Log
 import android.webkit.URLUtil
 import okhttp3.Headers
@@ -482,6 +485,51 @@ public class Utils {
 
         fun currentMonth(): Int {
             return Calendar.getInstance().get(Calendar.MONTH) + 1
+        }
+
+        fun checkInputFormatOptions(
+            type: SkyflowElementType,
+            options: CollectElementOptions,
+            logLevel: LogLevel
+        ) {
+
+            if (SkyflowElementType.getUnsupportedInputFormatElements().contains(type)) {
+                if (options.translation != null || options.format.isNotEmpty()) {
+                    Logger.warn(
+                        tag,
+                        Messages.INPUT_FORMATTING_NOT_SUPPORTED.getMessage(type.toString()),
+                        logLevel,
+                    )
+                }
+            } else if (!SkyflowElementType.getSupportedInputFormatElements().contains(type)) {
+                if (options.translation != null) {
+                    Logger.warn(
+                        tag,
+                        Messages.INVALID_INPUT_TRANSLATION.getMessage(type.toString()),
+                        logLevel
+                    )
+                }
+            } else { // supported elements
+
+                // neither translation nor format passed
+                if (options.format.isEmpty() && options.translation == null) return
+
+                // only format passed
+                if (options.translation == null) {
+                    val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
+                    Logger.warn(
+                        tag,
+                        Messages.EMPTY_INPUT_TRANSLATION.getMessage(DEFAULT_TRANSLATION.toString()),
+                        logLevel
+                    )
+                    options.translation = DEFAULT_TRANSLATION
+                }
+                createRegexMapForTranslation(options)
+            }
+        }
+
+        private fun createRegexMapForTranslation(options: CollectElementOptions) {
+            options.createRegexMap()
         }
     }
 }

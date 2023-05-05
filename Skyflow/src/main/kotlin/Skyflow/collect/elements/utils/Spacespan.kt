@@ -4,7 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.style.ReplacementSpan
 
-class Spacespan : ReplacementSpan() {
+class Spacespan(internal val separator: String) : ReplacementSpan() {
     override fun getSize(
         paint: Paint,
         text: CharSequence,
@@ -21,6 +21,6 @@ class Spacespan : ReplacementSpan() {
         canvas: Canvas, text: CharSequence, start: Int, end: Int, x: Float, top: Int, y: Int,
         bottom: Int, paint: Paint
     ) {
-        canvas.drawText(text.subSequence(start, end).toString() + " ", x, y.toFloat(), paint)
+        canvas.drawText(text.subSequence(start, end).toString() + separator, x, y.toFloat(), paint)
     }
 }
