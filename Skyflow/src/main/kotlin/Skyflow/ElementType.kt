@@ -1,4 +1,5 @@
 package Skyflow
+
 import Skyflow.collect.elements.validations.SkyflowValidateMonth
 import Skyflow.collect.elements.validations.SkyflowValidateYear
 import android.text.InputType
@@ -10,13 +11,14 @@ import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
 import com.Skyflow.collect.elements.validations.SkyflowValidateLengthMatch
 import com.Skyflow.collect.elements.validations.SkyflowValidationErrorType
 
-class Type(var formatPattern:String, var regex: String,
-           var validation: ValidationSet, var keyboardType: Int) {
+class Type(
+    var formatPattern: String, var regex: String,
+    var validation: ValidationSet, var keyboardType: Int
+) {
 
 }
 
 enum class SkyflowElementType {
-
 
 
     /// Field type that requires Cardholder Name input formatting and validation.
@@ -45,8 +47,10 @@ enum class SkyflowElementType {
         when (this) {
             CARDHOLDER_NAME -> {
                 rules.add(
-                    RegexMatchRule("^([a-zA-Z0-9\\ \\,\\.\\-\\']{2,})$",
-                    SkyflowValidationErrorType.pattern.rawValue)
+                    RegexMatchRule(
+                        "^([a-zA-Z0-9\\ \\,\\.\\-\\']{2,})$",
+                        SkyflowValidationErrorType.pattern.rawValue
+                    )
                 )
                 return Type(
                     "", "^([a-zA-Z0-9\\ \\,\\.\\-\\']{2,})$",
@@ -63,12 +67,16 @@ enum class SkyflowElementType {
             }
             CVV -> {
                 rules.add(
-                    RegexMatchRule("\\d*$",
-                    SkyflowValidationErrorType.pattern.rawValue)
+                    RegexMatchRule(
+                        "\\d*$",
+                        SkyflowValidationErrorType.pattern.rawValue
+                    )
                 )
                 rules.add(
-                    SkyflowValidateLengthMatch(intArrayOf(3, 4),
-                    SkyflowValidationErrorType.lengthMathes.rawValue)
+                    SkyflowValidateLengthMatch(
+                        intArrayOf(3, 4),
+                        SkyflowValidationErrorType.lengthMathes.rawValue
+                    )
                 )
                 return Type(
                     "####", "\\d*$",
@@ -77,40 +85,53 @@ enum class SkyflowElementType {
             }
             EXPIRATION_DATE -> {
                 rules.add(
-                    RegexMatchRule("^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
-                    SkyflowValidationErrorType.pattern.rawValue)
+                    RegexMatchRule(
+                        "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
+                        SkyflowValidationErrorType.pattern.rawValue
+                    )
                 )
                 return Type(
                     "##/##", "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
                     rules, InputType.TYPE_CLASS_DATETIME
                 )
             }
-            INPUT_FIELD  -> {
+            INPUT_FIELD -> {
                 return Type(
                     "####", "\\d*$",
                     rules, InputType.TYPE_CLASS_TEXT
                 )
             }
-            PIN  -> {
-                rules.add(LengthMatchRule(4,12,SkyflowValidationErrorType.invalidPin.rawValue
-                ))
-                rules.add(RegexMatchRule("[0-9]*",
-                    SkyflowValidationErrorType.allowNumbers.rawValue)
+            PIN -> {
+                rules.add(
+                    LengthMatchRule(
+                        4, 12, SkyflowValidationErrorType.invalidPin.rawValue
+                    )
+                )
+                rules.add(
+                    RegexMatchRule(
+                        "[0-9]*",
+                        SkyflowValidationErrorType.allowNumbers.rawValue
+                    )
                 )
                 return Type(
                     "####", "\\d*$",
                     rules, InputType.TYPE_CLASS_NUMBER
                 )
             }
-            EXPIRATION_MONTH  -> {
+            EXPIRATION_MONTH -> {
                 rules.add(SkyflowValidateMonth(SkyflowValidationErrorType.invalidmonth.rawValue))
                 return Type(
                     "##", "\\d*$",
                     rules, InputType.TYPE_CLASS_NUMBER
                 )
             }
-            EXPIRATION_YEAR  -> {
-                rules.add(SkyflowValidateYear(SkyflowValidationErrorType.invalidmonth.rawValue,"yy"))
+            EXPIRATION_YEAR -> {
+                rules.add(
+                    SkyflowValidateYear(
+                        SkyflowValidationErrorType.invalidmonth.rawValue,
+                        "yy"
+                    )
+                )
                 return Type(
                     "####", "\\d*$",
                     rules, InputType.TYPE_CLASS_NUMBER
@@ -119,4 +140,18 @@ enum class SkyflowElementType {
         }
     }
 
+    companion object {
+        fun getUnsupportedInputFormatElements(): List<SkyflowElementType> {
+            return listOf(
+                CARDHOLDER_NAME,
+                CVV,
+                PIN,
+                EXPIRATION_MONTH
+            )
+        }
+
+        fun getSupportedInputFormatElements(): List<SkyflowElementType> {
+            return listOf(INPUT_FIELD)
+        }
+    }
 }
