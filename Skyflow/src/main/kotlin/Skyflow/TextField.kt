@@ -467,27 +467,6 @@ class TextField @JvmOverloads constructor(
         inputField.setSelection(inputField.length())
     }
 
-//    private fun formatPatternForField(s: Editable?) {
-//        if (fieldType.equals(SkyflowElementType.CARD_NUMBER)) {
-//            val cardtype =
-//                CardType.forCardNumber(inputField.text.toString().replace(" ", "").replace("-", ""))
-//            if (options.enableCardIcon)
-//                changeCardIcon(cardtype)
-//            val filterArray = arrayOfNulls<InputFilter>(1)
-//            filterArray[0] = LengthFilter(cardtype.cardLength.get(cardtype.cardLength.size - 1))
-//            inputField.setFilters(filterArray)
-//            addSeparatorToCardNumber(s, cardtype.formatPattern)
-//        } else if (fieldType.equals(SkyflowElementType.EXPIRATION_DATE)) {
-//            addSlashspanToExpiryDate(s, expiryDateFormat)
-//        } else if (fieldType.equals(SkyflowElementType.CVV)) {
-//            inputField.filters = arrayOf<InputFilter>(LengthFilter(4))
-//        } else if (fieldType.equals(SkyflowElementType.EXPIRATION_MONTH)) {
-//            addSpanToExpiryMonth()
-//        } else if (fieldType.equals(SkyflowElementType.EXPIRATION_YEAR)) {
-//            inputField.filters = arrayOf<InputFilter>(LengthFilter(yearFormat.length))
-//        }
-//    }
-
     private fun formatPatternForField(s: Editable?) {
         when (fieldType) {
             SkyflowElementType.CARD_NUMBER -> {
@@ -529,7 +508,6 @@ class TextField @JvmOverloads constructor(
                     actualValue = formattedInput
                     isFormatting = false
                 }
-                Log.d("ACTUAL VALUE", actualValue)
             }
 
             else -> {}
@@ -537,25 +515,19 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun formatInput(): String {
-        Log.d("INPUT FIELD TEXT", inputField.text.toString())
         var output = String()
         var index = 0 // maintains format index
         for (inputChar in inputField.text.toString()) {
-            Log.d("INPUT CHAR", inputChar.toString())
-            Log.d("FORMAT LENGTH", "${options.format.length} $index")
             if (index < options.format.length) {
                 var formatChar = options.format[index]
-                Log.d("FORMAT CHAR", formatChar.toString())
                 if (options.inputFormat.containsKey(formatChar)) {
                     val regex = options.inputFormat[formatChar]
                     if (regex!!.matches(inputChar.toString())) {
                         output = output.plus(inputChar)
-                        Log.d("OUTPUT REGEX MATCH", output)
                         index++
                     }
                 } else if (formatChar == inputChar) {
                     output = output.plus(inputChar)
-                    Log.d("FORMAT INPUT MATCH", output)
                     index++
                 } else {
                     for (k in index until options.format.length) {
@@ -564,13 +536,11 @@ class TextField @JvmOverloads constructor(
                             val regex = options.inputFormat[formatChar]
                             if (regex!!.matches(inputChar.toString())) {
                                 output = output.plus(inputChar)
-                                Log.d("OUTPUT REGEX MATCH", output)
                                 index++
                             }
                             break
                         } else {
                             output = output.plus(formatChar)
-                            Log.d("ELSE ELSE ELSE", output)
                             index++
                         }
                     }
@@ -578,7 +548,6 @@ class TextField @JvmOverloads constructor(
             } else break
         }
 
-        Log.d("OUTPUT", output)
         return output
     }
 
