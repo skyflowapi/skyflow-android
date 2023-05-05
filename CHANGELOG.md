@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.18.4] - 2023-03-29
+### Fixed
+- Fixed `setToken` method not behaving properly for Reveal Elements bug
+- Fixed UI errors not rendering properly in Reveal Elements bug
+
+## [1.18.3] - 2023-03-20
+### Fixed
+- Removed grace period logic for bearer token generation.
+
+## [1.18.2] - 2023-03-02
+### Fixed
+- Fixed android SDK cached token bug
+
+## [1.18.1] - 2023-02-08
+### Changed
+- Consistent error messages format across all methods
 
 ## [1.18.0] - 2022-11-15
 ### Added
