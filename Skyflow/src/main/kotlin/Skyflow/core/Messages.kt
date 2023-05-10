@@ -123,9 +123,15 @@ enum class Messages(val message: String) {
     INVALID_TABLE_IN_UPSERT_OPTION("Invalid table in upsert object at index %s, table of type non empty string is required"),
     INVALID_COLUMN_IN_UPSERT_OPTION("Invalid column upsert object at index %s, column of type non empty string is required"),
     ALLOW_JSON_OBJECT_IN_UPSERT("upsert array should consists of json objects only"),
-    EMPTY_UPSERT_OPTIONS_ARRAY("upsert option cannot be an empty array, atleast one object of table and column is required.")
+    EMPTY_UPSERT_OPTIONS_ARRAY("upsert option cannot be an empty array, atleast one object of table and column is required."),
+
+    VALIDATE_INPUT_FORMAT_OPTIONS("Validated Input Format Options for %s"),
+
+    INPUT_FORMATTING_NOT_SUPPORTED("format or translation are not supported on %s element type."),
+    INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
+    EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s")
 }
 
-fun Messages.getMessage(vararg values: String?): String{
+fun Messages.getMessage(vararg values: String?): String {
     return Utils.constructMessage(this.message, *values)
 }
