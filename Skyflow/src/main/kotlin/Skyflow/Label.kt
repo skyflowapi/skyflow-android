@@ -207,9 +207,14 @@ class Label @JvmOverloads constructor(
             placeholder.text = revealInput.altText
     }
 
-    internal fun setText(t: String) {
-        this.placeholder.text = t
-        actualValue = t
+    internal fun setText(text: String) {
+        var formattedText = text
+        if (options.format.isNotEmpty() || options.translation != null) {
+            formattedText = formatInput(text)
+        }
+
+        this.placeholder.text = formattedText
+        actualValue = text
     }
 
     fun getToken(): String {
@@ -221,6 +226,43 @@ class Label @JvmOverloads constructor(
     internal fun getValueForConnections(): String {
         if (actualValue != null) return actualValue!!
         return getToken()
+    }
+
+    private fun formatInput(value: String): String {
+        var output = String()
+        var index = 0 // maintains format index
+        for (inputChar in value) {
+            if (index < options.format.length) {
+                var formatChar = options.format[index]
+                if (options.inputFormat.containsKey(formatChar)) {
+                    val regex = options.inputFormat[formatChar]
+                    if (regex!!.matches(inputChar.toString())) {
+                        output = output.plus(inputChar)
+                        index++
+                    }
+                } else if (formatChar == inputChar) {
+                    output = output.plus(inputChar)
+                    index++
+                } else {
+                    for (k in index until options.format.length) {
+                        formatChar = options.format[k]
+                        if (options.inputFormat.containsKey(formatChar)) {
+                            val regex = options.inputFormat[formatChar]
+                            if (regex!!.matches(inputChar.toString())) {
+                                output = output.plus(inputChar)
+                                index++
+                            }
+                            break
+                        } else {
+                            output = output.plus(formatChar)
+                            index++
+                        }
+                    }
+                }
+            } else break
+        }
+
+        return output
     }
 
 }

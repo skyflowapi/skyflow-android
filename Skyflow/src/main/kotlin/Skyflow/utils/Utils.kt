@@ -297,6 +297,17 @@ public class Utils {
         fun setValueForLabel(label: Label, value: String) {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
+
+            val format = label.options.format
+            val translation = label.options.translation
+            val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
+
+            if (format.isNotEmpty() && translation == null) {
+                label.options.translation = DEFAULT_TRANSLATION
+            }
+
+            label.options.createRegexMap()
+
             if (formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
@@ -314,8 +325,9 @@ public class Utils {
                     Log.w(tag, "invalid replaceText - $replaceText")
                     label.setText(value)
                 }
-            } else
+            } else {
                 label.setText(value)
+            }
         }
 
         fun setErrorForLabel(label: Label) {

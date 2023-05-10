@@ -25,6 +25,7 @@ class InputFormattingTest {
     private lateinit var activityController: ActivityController<Activity>
     private lateinit var activity: Activity
 
+    // Collect Elements
     private lateinit var nameInput: CollectElementInput
     private lateinit var cardNumberInput: CollectElementInput
     private lateinit var pinInput: CollectElementInput
@@ -33,6 +34,10 @@ class InputFormattingTest {
     private lateinit var yearInput: CollectElementInput
     private lateinit var dateInput: CollectElementInput
     private lateinit var phoneInput: CollectElementInput
+
+    // Reveal Elements
+    private lateinit var cardNumber: RevealElementInput
+    private lateinit var phoneNumber: RevealElementInput
 
     private fun createCollectElements() {
 
@@ -93,6 +98,11 @@ class InputFormattingTest {
         )
     }
 
+    private fun createRevealElements() {
+        cardNumber = RevealElementInput(label = "Card Number", altText = "card number")
+        phoneNumber = RevealElementInput(label = "Phone Number", altText = "phone number")
+    }
+
     private fun dispatchKeyEvent(element: TextField) {
         element.inputField.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
     }
@@ -109,6 +119,7 @@ class InputFormattingTest {
         activityController = Robolectric.buildActivity(Activity::class.java).setup()
         activity = activityController.get()
         createCollectElements()
+        createRevealElements()
     }
 
     @Test
@@ -635,5 +646,119 @@ class InputFormattingTest {
             }
             Assert.assertEquals(4, spans.size)
         }
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements1() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(format = "XXXX-XXXX-XXXX-XXXX")
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "4111111111111111"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals("4111-1111-1111-1111", cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements2() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(format = "XXXX-XXXX-XXXX-XXXX")
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = ""
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals(String(), cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements3() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(format = "XXXX-XXXX-XXXX-XXXX")
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "411111111111111"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals("4111-1111-1111-111", cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements4() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(format = "XXXX-XXXX-XXXX-XXXX")
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "41111111111111110"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals("4111-1111-1111-1111", cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements5() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(
+            format = "XXXX-XXXX-XXXX-XXXX",
+            translation = hashMapOf(Pair('Y', "[0-9]"))
+        )
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "41111111111111110"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals("XXXX-XXXX-XXXX-XXXX", cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements6() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(
+            format = "",
+            translation = hashMapOf(Pair('X', "[0-9]"))
+        )
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "41111111111111110"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals(String(), cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements7() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val cardNumberOptions = RevealElementOptions(
+            format = "XXXX-XXXX-XXXX-XXXX",
+            translation = hashMapOf(Pair('X', "[A-Z]"))
+        )
+        val cardNumberReveal = container.create(activity, cardNumber, cardNumberOptions)
+        val value = "41111111111111110"
+        Utils.setValueForLabel(cardNumberReveal, value)
+        Assert.assertEquals(String(), cardNumberReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements8() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val inputFieldOptions = RevealElementOptions(
+            format = "XXXX",
+            translation = hashMapOf(Pair('X', "[ZA]"))
+        )
+        val inputFieldReveal = container.create(activity, cardNumber, inputFieldOptions)
+        val value = "ZA"
+        Utils.setValueForLabel(inputFieldReveal, value)
+        Assert.assertEquals("ZA", inputFieldReveal.placeholder.text.toString())
+    }
+
+    @Test
+    fun testInputFormattingForRevealElements9() {
+        val container = client.container(ContainerType.REVEAL)
+
+        val inputFieldOptions = RevealElementOptions(
+            format = "XXXX",
+            translation = hashMapOf(Pair('X', "[-]"))
+        )
+        val inputFieldReveal = container.create(activity, cardNumber, inputFieldOptions)
+        val value = "ZA"
+        Utils.setValueForLabel(inputFieldReveal, value)
+        Assert.assertEquals(String(), inputFieldReveal.placeholder.text.toString())
     }
 }
