@@ -15,13 +15,13 @@ internal class RevealValueCallback(
 ) : Callback {
 
     private val tag = RevealValueCallback::class.qualifiedName
-    val elementsMap = HashMap<String, Label>()
+    private val elementsList = mutableListOf<Pair<String, Label>>()
 
     override fun onSuccess(responseBody: Any) {
         try {
             constructElementMap()
             val responseJSON = JSONObject(responseBody.toString())
-            revealSuccessRecords(responseJSON, elementsMap)
+            revealSuccessRecords(responseJSON)
             val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
             callback.onSuccess(revealResponse)
         } catch (e: Exception) {
@@ -34,9 +34,9 @@ internal class RevealValueCallback(
             constructElementMap()
             val responseJSON = JSONObject(exception.toString())
             if (responseJSON.has("records")) {
-                revealSuccessRecords(responseJSON, elementsMap)
+                revealSuccessRecords(responseJSON)
             }
-            revealErrors(responseJSON, elementsMap)
+            revealErrors(responseJSON)
             val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
             callback.onFailure(revealResponse)
         } catch (e: Exception) {
@@ -46,40 +46,43 @@ internal class RevealValueCallback(
 
     private fun constructElementMap() {
         for (element in revealElements) {
-            elementsMap[element.revealInput.token!!] = element
+            elementsList.add(Pair(element.revealInput.token!!, element))
         }
     }
 
-    private fun revealSuccessRecords(
-        responseJSON: JSONObject,
-        elementsMap: HashMap<String, Label>
-    ) {
+    private fun revealSuccessRecords(responseJSON: JSONObject) {
         val recordsArray = responseJSON.getJSONArray("records")
         for (i in 0 until recordsArray.length()) {
             val recordObj = recordsArray[i] as JSONObject
             val tokenId = recordObj.get("token")
             val value = recordObj.getString("value")
-            Handler(Looper.getMainLooper()).post(Runnable {
-                Utils.setValueForLabel(elementsMap[tokenId]!!, value)
-            })
+            Handler(Looper.getMainLooper()).post {
+                for (element in elementsList) {
+                    if (element.first == tokenId) {
+                        Utils.setValueForLabel(element.second, value)
+                    }
+                }
+            }
             recordObj.remove("value")
         }
     }
 
-    private fun revealErrors(responseJSON: JSONObject, elementsMap: HashMap<String, Label>) {
+    private fun revealErrors(responseJSON: JSONObject) {
         val errorArray = responseJSON.getJSONArray("errors")
 
         var i = 0
         while (i < errorArray.length()) {
             val recordObj = errorArray[i] as JSONObject
             val tokenId = recordObj.get("token").toString()
-
             Handler(Looper.getMainLooper()).post {
-                Utils.setErrorForLabel(elementsMap[tokenId]!!)
+                for (element in elementsList) {
+                    if (element.first == tokenId) {
+                        Utils.setErrorForLabel(element.second)
+                    }
+                }
             }
 
             i++
         }
     }
 }
-
