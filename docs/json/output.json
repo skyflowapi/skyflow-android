@@ -1,0 +1,557 @@
+[ {
+  "name" : "Client",
+  "type" : "class",
+  "args" : [ {
+    "name" : "configuration",
+    "type" : "Skyflow.Configuration",
+    "description" : ""
+  } ],
+  "methods" : [ {
+    "name" : "container",
+    "args" : [ {
+      "name" : "type",
+      "type" : "kotlin.reflect.KClass<T>",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "Skyflow.Container<T>"
+  }, {
+    "name" : "detokenize",
+    "args" : [ {
+      "name" : "records",
+      "type" : "org.json.JSONObject",
+      "description" : ""
+    }, {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "kotlin.Unit"
+  }, {
+    "name" : "getById",
+    "args" : [ {
+      "name" : "records",
+      "type" : "org.json.JSONObject",
+      "description" : "This is getById records param"
+    }, {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : "This is getById callback param"
+    } ],
+    "description" : "This is getById function",
+    "returnType" : "kotlin.Unit"
+  }, {
+    "name" : "insert",
+    "args" : [ {
+      "name" : "records",
+      "type" : "org.json.JSONObject",
+      "description" : ""
+    }, {
+      "name" : "options",
+      "type" : "Skyflow.InsertOptions?",
+      "description" : ""
+    }, {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "kotlin.Unit"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : "This is Client class"
+}, {
+  "name" : "Configuration",
+  "type" : "class",
+  "args" : [ {
+    "name" : "vaultID",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "vaultURL",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "tokenProvider",
+    "type" : "Skyflow.TokenProvider",
+    "description" : ""
+  }, {
+    "name" : "options",
+    "type" : "Skyflow.Options",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "TokenProvider",
+  "type" : "interface",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "getBearerToken",
+    "args" : [ {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "kotlin.Unit"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "LogLevel",
+  "type" : "enum",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ "DEBUG", "INFO", "WARN", "ERROR" ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "Env",
+  "type" : "enum",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ "DEV", "PROD" ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "EventName",
+  "type" : "enum",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ "CHANGE", "READY", "FOCUS", "BLUR" ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "ContainerType",
+  "type" : "class",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : {
+    "properties" : [ {
+      "name" : "COLLECT",
+      "type" : "kotlin.reflect.KClass<Skyflow.CollectContainer>",
+      "description" : ""
+    }, {
+      "name" : "REVEAL",
+      "type" : "kotlin.reflect.KClass<Skyflow.RevealContainer>",
+      "description" : ""
+    } ],
+    "methods" : [ ]
+  },
+  "description" : ""
+}, {
+  "name" : "Callback",
+  "type" : "interface",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "onFailure",
+    "args" : [ {
+      "name" : "exception",
+      "type" : "kotlin.Any",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "kotlin.Unit"
+  }, {
+    "name" : "onSuccess",
+    "args" : [ {
+      "name" : "responseBody",
+      "type" : "kotlin.Any",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "kotlin.Unit"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "Options",
+  "type" : "class",
+  "args" : [ {
+    "name" : "logLevel",
+    "type" : "Skyflow.LogLevel",
+    "description" : ""
+  }, {
+    "name" : "env",
+    "type" : "Skyflow.Env",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "CollectElementInput",
+  "type" : "class",
+  "args" : [ {
+    "name" : "table",
+    "type" : "kotlin.String?",
+    "description" : ""
+  }, {
+    "name" : "column",
+    "type" : "kotlin.String?",
+    "description" : ""
+  }, {
+    "name" : "type",
+    "type" : "Skyflow.SkyflowElementType",
+    "description" : ""
+  }, {
+    "name" : "inputStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "labelStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "errorTextStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "label",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "placeholder",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "altText",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "validations",
+    "type" : "com.Skyflow.collect.elements.validations.ValidationSet",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "CollectElementOptions",
+  "type" : "class",
+  "args" : [ {
+    "name" : "required",
+    "type" : "kotlin.Boolean",
+    "description" : ""
+  }, {
+    "name" : "enableCardIcon",
+    "type" : "kotlin.Boolean",
+    "description" : ""
+  }, {
+    "name" : "format",
+    "type" : "kotlin.String",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "CollectOptions",
+  "type" : "class",
+  "args" : [ {
+    "name" : "token",
+    "type" : "kotlin.Boolean",
+    "description" : ""
+  }, {
+    "name" : "additionalFields",
+    "type" : "org.json.JSONObject?",
+    "description" : ""
+  }, {
+    "name" : "upsert",
+    "type" : "org.json.JSONArray?",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "RevealElementInput",
+  "type" : "class",
+  "args" : [ {
+    "name" : "token",
+    "type" : "kotlin.String?",
+    "description" : ""
+  }, {
+    "name" : "redaction",
+    "type" : "Skyflow.RedactionType?",
+    "description" : ""
+  }, {
+    "name" : "inputStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "labelStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "errorTextStyles",
+    "type" : "Skyflow.Styles",
+    "description" : ""
+  }, {
+    "name" : "label",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "altText",
+    "type" : "kotlin.String",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "RevealElementOptions",
+  "type" : "class",
+  "args" : [ {
+    "name" : "formatRegex",
+    "type" : "kotlin.String",
+    "description" : ""
+  }, {
+    "name" : "replaceText",
+    "type" : "kotlin.String?",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "RevealOptions",
+  "type" : "class",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "InsertOptions",
+  "type" : "class",
+  "args" : [ {
+    "name" : "tokens",
+    "type" : "kotlin.Boolean",
+    "description" : ""
+  }, {
+    "name" : "upsert",
+    "type" : "org.json.JSONArray?",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "SkyflowElementType",
+  "type" : "enum",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "getType",
+    "args" : [ ],
+    "description" : "",
+    "returnType" : "Skyflow.Type"
+  } ],
+  "enumValues" : [ "CARDHOLDER_NAME", "CARD_NUMBER", "EXPIRATION_DATE", "CVV", "INPUT_FIELD", "PIN", "EXPIRATION_MONTH", "EXPIRATION_YEAR" ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "RedactionType",
+  "type" : "enum",
+  "args" : [ ],
+  "methods" : [ ],
+  "enumValues" : [ "DEFAULT", "PLAIN_TEXT", "MASKED", "REDACTED" ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "Styles",
+  "type" : "class",
+  "args" : [ {
+    "name" : "base",
+    "type" : "Skyflow.Style?",
+    "description" : ""
+  }, {
+    "name" : "complete",
+    "type" : "Skyflow.Style?",
+    "description" : ""
+  }, {
+    "name" : "empty",
+    "type" : "Skyflow.Style?",
+    "description" : ""
+  }, {
+    "name" : "focus",
+    "type" : "Skyflow.Style?",
+    "description" : ""
+  }, {
+    "name" : "invalid",
+    "type" : "Skyflow.Style?",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "Style",
+  "type" : "class",
+  "args" : [ {
+    "name" : "borderColor",
+    "type" : "kotlin.Int?",
+    "description" : ""
+  }, {
+    "name" : "cornerRadius",
+    "type" : "kotlin.Float?",
+    "description" : ""
+  }, {
+    "name" : "padding",
+    "type" : "Skyflow.Padding?",
+    "description" : ""
+  }, {
+    "name" : "borderWidth",
+    "type" : "kotlin.Int?",
+    "description" : ""
+  }, {
+    "name" : "font",
+    "type" : "kotlin.Int?",
+    "description" : ""
+  }, {
+    "name" : "textAlignment",
+    "type" : "kotlin.Int?",
+    "description" : ""
+  }, {
+    "name" : "textColor",
+    "type" : "kotlin.Int?",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "Padding",
+  "type" : "class",
+  "args" : [ {
+    "name" : "left",
+    "type" : "kotlin.Int",
+    "description" : ""
+  }, {
+    "name" : "top",
+    "type" : "kotlin.Int",
+    "description" : ""
+  }, {
+    "name" : "right",
+    "type" : "kotlin.Int",
+    "description" : ""
+  }, {
+    "name" : "bottom",
+    "type" : "kotlin.Int",
+    "description" : ""
+  } ],
+  "methods" : [ ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "CollectContainer",
+  "type" : "class",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "collect",
+    "args" : [ {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : ""
+    }, {
+      "name" : "options",
+      "type" : "Skyflow.CollectOptions?",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "void"
+  }, {
+    "name" : "create",
+    "args" : [ {
+      "name" : "context",
+      "type" : "android.content.Context",
+      "description" : ""
+    }, {
+      "name" : "input",
+      "type" : "Skyflow.CollectElementInput",
+      "description" : ""
+    }, {
+      "name" : "options",
+      "type" : "Skyflow.CollectElementOptions",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "TextField"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+}, {
+  "name" : "RevealContainer",
+  "type" : "class",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "create",
+    "args" : [ {
+      "name" : "context",
+      "type" : "android.content.Context",
+      "description" : "This is create Container params"
+    }, {
+      "name" : "input",
+      "type" : "Skyflow.RevealElementInput",
+      "description" : ""
+    }, {
+      "name" : "options",
+      "type" : "Skyflow.RevealElementOptions",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "Label"
+  }, {
+    "name" : "reveal",
+    "args" : [ {
+      "name" : "callback",
+      "type" : "Skyflow.Callback",
+      "description" : ""
+    }, {
+      "name" : "options",
+      "type" : "Skyflow.RevealOptions?",
+      "description" : ""
+    } ],
+    "description" : "This is Reveal Container",
+    "returnType" : "void"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : "This is Reveal Container class"
+}, {
+  "name" : "Init",
+  "type" : "",
+  "args" : [ ],
+  "methods" : [ {
+    "name" : "init",
+    "args" : [ {
+      "name" : "configuration",
+      "type" : "Skyflow.Configuration",
+      "description" : ""
+    } ],
+    "description" : "",
+    "returnType" : "Client"
+  } ],
+  "enumValues" : [ ],
+  "companionObject" : null,
+  "description" : ""
+} ]

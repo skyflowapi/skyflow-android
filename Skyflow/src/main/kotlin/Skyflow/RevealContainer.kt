@@ -12,13 +12,16 @@ import Skyflow.utils.Utils.Companion.checkIfElementsMounted
 import java.lang.Exception
 import java.util.*
 
+@Description("This is Reveal Container class")
 class RevealContainer : ContainerProtocol {
     private val tag = RevealContainer::class.qualifiedName
 }
 
 private val tag = RevealContainer::class.qualifiedName
 
+@Deprecated("This is Deprecated")
 fun Container<RevealContainer>.create(
+    @Description("This is create Container params")
     context: Context,
     input: RevealElementInput,
     options: RevealElementOptions = RevealElementOptions()
@@ -40,6 +43,7 @@ fun Container<RevealContainer>.create(
     return revealElement
 }
 
+@Description("This is Reveal Container")
 fun Container<RevealContainer>.reveal(
     callback: Callback,
     options: RevealOptions? = RevealOptions()
