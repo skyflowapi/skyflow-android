@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 import kotlin.reflect.KClass
 
+@Description("This is Client class")
 class Client internal constructor(
     val configuration: Configuration,
 ){
@@ -45,7 +46,12 @@ class Client internal constructor(
         }
     }
 
-    fun getById(records: JSONObject, callback: Callback)
+    @Description("This is getById function")
+    fun getById(
+        @Description("This is getById records param")
+        records: JSONObject,
+        @Description("This is getById callback param")
+        callback: Callback)
     {
         Logger.info(tag, Messages.GET_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
         try {
@@ -197,6 +203,5 @@ class Client internal constructor(
         }
     }
 }
-
 
 
