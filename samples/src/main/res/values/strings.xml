@@ -3,5 +3,14 @@
     <string name="collect_demo">Collect Reveal Demo</string>
     <string name="upsert_demo">Upsert Demo</string>
     <string name="reveal_demo">Reveal Demo</string>
+    <string name="input_formatting_demo">Input Formatting Demo</string>
+    <string name="custom_validations_demo">custom validations DEMO</string>
     <string name="amount">Amount</string>
+
+    <!--  common  -->
+    <string name="submit">submit</string>
+    <string name="clear">clear</string>
+
+    <!--  scrollview  -->
+    <string name="scrollViewContentDescription">scrollview content description</string>
 </resources>
