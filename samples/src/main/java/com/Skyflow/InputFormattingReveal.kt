@@ -143,10 +143,10 @@ class InputFormattingReveal : AppCompatActivity() {
         val cardNumber = revealContainer.create(
             this,
             cardNumberInput,
-//            RevealElementOptions(
-//                format = "XXXX XXXX XXXX XXXX",
-//                translation = hashMapOf('X' to "[0-9]")
-//            )
+            RevealElementOptions(
+                format = "XXXX XXXX XXXX XXXX",
+                translation = hashMapOf('X' to "[0-9]")
+            )
         )
 
         val expiryYear = revealContainer.create(this, expiryYearInput)
@@ -155,8 +155,8 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val inputField = revealContainer.create(
             this, input, RevealElementOptions(
-//                format = "+91 (XXX) XXXX XXX",
-//                translation = hashMapOf('X' to "[0-9]")
+                format = "+91 (XXX) XXXX XXX",
+                translation = hashMapOf('X' to "[0-9]")
             )
         )
 

@@ -173,7 +173,7 @@ class InputFormattingCollect : AppCompatActivity() {
         val inputField = collectContainer.create(
             this, input, CollectElementOptions(
                 format = "+91 XXX-XXX-XXXX",
-//                translation = hashMapOf('X' to "[0-9]")
+                translation = hashMapOf('X' to "[0-9]")
             )
         )
 
