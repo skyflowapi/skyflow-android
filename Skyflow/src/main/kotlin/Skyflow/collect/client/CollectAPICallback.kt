@@ -2,15 +2,17 @@ package Skyflow.collect.client
 
 import Skyflow.*
 import Skyflow.Callback
-import okhttp3.*
-import org.json.JSONArray
-import org.json.JSONObject
-import Skyflow.core.*
+import Skyflow.core.APIClient
 import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import Skyflow.utils.Utils
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONException
+import org.json.JSONObject
 import java.io.IOException
 
 internal class CollectAPICallback(
@@ -49,10 +51,13 @@ internal class CollectAPICallback(
         val jsonBody: JSONObject = Utils.constructBatchRequestBody(records, options, logLevel)
         val body: RequestBody =
             jsonBody.toString().toRequestBody("application/json".toMediaTypeOrNull())
+
+        val metrics = Utils.fetchMetrics()
         val request = Request
             .Builder()
             .method("POST", body)
             .addHeader("Authorization", "$responseBody")
+            .addHeader("sky-metadata", "$metrics")
             .url(url)
             .build()
         return request

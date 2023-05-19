@@ -2,8 +2,11 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import Skyflow.core.Logger
+import android.os.Build
 import android.util.Log
 import android.webkit.URLUtil
+import com.skyflow_android.BuildConfig
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -484,6 +487,22 @@ public class Utils {
 
         fun currentMonth(): Int {
             return Calendar.getInstance().get(Calendar.MONTH) + 1
+        }
+
+        fun fetchMetrics(): JSONObject {
+            val metrics = JSONObject()
+            try {
+                metrics.put(
+                    "sdk_name_version",
+                    "${BuildConfig.SDK_NAME} ${BuildConfig.SDK_VERSION}"
+                )
+                metrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
+                metrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")
+                metrics.put("sdk_runtime_details", "kotlin-${KotlinVersion.CURRENT}")
+            } catch (err: Exception) {
+                Log.d(tag, "fetching SDK metrics failed")
+            }
+            return metrics
         }
     }
 }

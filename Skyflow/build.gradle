@@ -40,6 +40,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "SDK_NAME", "\"" + project.ext.mArtifactId + "\"")
+            buildConfigField("String", "SDK_VERSION", "\"" + project.ext.mVersionName + "\"")
+        }
+
+        debug {
+            buildConfigField("String", "SDK_NAME", "\"" + project.ext.mArtifactId + "\"")
+            buildConfigField("String", "SDK_VERSION", "\"" + project.ext.mVersionName + "\"")
         }
 
     }
@@ -136,8 +143,6 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.6.1"
     testImplementation 'io.mockk:mockk:1.8.5'
     androidTestImplementation "org.robolectric:robolectric:4.6.1"
-
-
 }
 publish.dependsOn assemble
 
