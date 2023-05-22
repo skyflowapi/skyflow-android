@@ -1,0 +1,60 @@
+name: Public Beta Release
+
+on:
+  push:
+    tags: "*.*.*-beta.*"
+
+jobs:
+  build-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_ACTIONS }}
+
+      - name: Get the current branch
+        id: check_step
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw##*/}
+          beta_branch="beta-release/$branch"
+          echo "::set-output name=branch::$beta_branch"
+          echo "Branch is $beta_branch."
+
+      - name: Create local properties file
+        run: |
+          touch local.properties
+          echo gpr.user=${{ github.actor }} >> local.properties
+          echo gpr.key=${{ secrets.PAT_ACTIONS }} >> local.properties
+
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        with:
+          fallback: 1.0.0
+
+      - name: Bump Version
+        run: |
+          chmod +x ./scripts/bump_version.sh
+          ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}"
+
+      - name: Commit changes
+        run: |
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.gihub.com
+          git branch -f ${{ steps.check_step.outputs.branch }} origin/${{ steps.check_step.outputs.branch }}
+          git checkout ${{ steps.check_step.outputs.branch }}  
+          git add Skyflow/build.gradle
+          git commit -m "[AUTOMATED] Public Beta Release ${{ steps.previoustag.outputs.tag }}"
+          git push origin
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Publish package
+        run: |
+          chmod +x gradlew
+          ./gradlew publish -Pbeta=true
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
