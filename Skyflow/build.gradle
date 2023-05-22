@@ -57,21 +57,38 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
 }
 
+def isBeta = project.hasProperty('beta') ? project.getProperty('beta') : false
+
 afterEvaluate {
     publishing {
         publications {
-            maven(MavenPublication) {
-                groupId mGroupId
-                artifactId mArtifactId
-                version mVersionName
+            if (!isBeta) {
+                maven(MavenPublication) {
+                    groupId mGroupId
+                    artifactId mArtifactId
+                    version mVersionName
 
-                from components.release
+                    from components.release
+                    artifact androidSourcesJar
 
-                artifact androidSourcesJar
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
+                }
+            } else {
+                mavenBeta(MavenPublication) {
+                    groupId mGroupId
+                    artifactId "$mArtifactId-beta"
+                    version mVersionName
 
-                pom {
-                    name = mLibraryName
-                    description = mLibraryDescription
+                    from components.release
+                    artifact androidSourcesJar
+
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
                 }
             }
         }
@@ -83,7 +100,8 @@ afterEvaluate {
                     username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
                     password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
                 }
-            }}
+            }
+        }
     }
 }
 dependencies {
@@ -103,7 +121,6 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.6.1"
     testImplementation 'io.mockk:mockk:1.8.5'
     androidTestImplementation "org.robolectric:robolectric:4.6.1"
-
 
 
 }
