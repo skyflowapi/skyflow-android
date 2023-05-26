@@ -3,7 +3,6 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
-import android.util.Log
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
@@ -292,15 +291,3 @@ class DetokenizeTests {
         Assert.assertEquals(RedactionType.PLAIN_TEXT.toString(), requestRecord[0].redaction)
     }
 }
-
-//skyflow.detokenize(records = detokenizeRecords, object : Callback {
-//    override fun onSuccess(responseBody: Any) {
-//    }
-//
-//    override fun onFailure(exception: Any) {
-//        Assert.assertEquals(
-//            skyflowError.getErrorMessage(),
-//            getErrorMessage(exception as JSONObject)
-//        )
-//    }
-//})

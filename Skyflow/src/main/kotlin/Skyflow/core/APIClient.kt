@@ -11,14 +11,11 @@ import Skyflow.soap.SoapApiCallback
 import Skyflow.soap.SoapConnectionConfig
 import Skyflow.soap.SoapValueCallback
 import Skyflow.utils.Utils
-import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.*
-import kotlin.reflect.typeOf
-
 
 object JWTUtils {
     @Throws(java.lang.Exception::class)
