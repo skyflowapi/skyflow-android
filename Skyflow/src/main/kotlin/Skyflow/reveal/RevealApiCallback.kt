@@ -38,12 +38,17 @@ internal class RevealApiCallback(
         val url = apiClient.vaultURL + apiClient.vaultId + "/detokenize"
         val body = JSONObject()
         val detokenizationParameters = JSONArray()
-        detokenizationParameters.put(JSONObject().put("token", record.token))
+
+        val parameterObject = JSONObject()
+        parameterObject.put("token", record.token)
+        parameterObject.put("redaction", record.redaction)
+        detokenizationParameters.put(parameterObject)
+
         body.put("detokenizationParameters", detokenizationParameters)
+
         val request = Request
             .Builder()
-            .method("POST", body.toString()
-                .toRequestBody("application/json".toMediaTypeOrNull()))
+            .method("POST", body.toString().toRequestBody("application/json".toMediaTypeOrNull()))
             .addHeader("Authorization", "$responseBody")
             .url(url)
             .build()

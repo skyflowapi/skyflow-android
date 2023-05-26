@@ -10,6 +10,7 @@ import junit.framework.Assert.*
 import junit.framework.TestCase
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -293,6 +294,18 @@ class RevealTest {
                 )
             }
         })
+    }
+
+    @Test
+    fun testNoRedactionPassed() {
+        val revealContainer = skyflow.container(ContainerType.REVEAL)
+        val revealInput = RevealElementInput(
+            token = "51b1406a-0a30-49bf-b303-0eef66bd502d",
+            label = "expire_date",
+            altText = "expire date"
+        )
+        val revealElement = revealContainer.create(activity, revealInput, RevealElementOptions())
+        Assert.assertEquals(RedactionType.PLAIN_TEXT, revealElement.revealInput.redaction)
     }
 
     @Test

@@ -228,7 +228,9 @@ public class Utils {
         }
 
         fun constructError(e: Exception, code: Int = 400): JSONObject {
-            val skyflowError = SkyflowError(params = arrayOf(e.message))
+            val skyflowError = if (e is SkyflowError) e
+            else SkyflowError(params = arrayOf(e.message))
+
             skyflowError.setErrorCode(code)
             val finalError = JSONObject()
             val errors = JSONArray()
