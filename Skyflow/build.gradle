@@ -10,7 +10,7 @@ ext {
     mGroupId = "com.skyflowapi.android"
     mArtifactId = "skyflow-android-sdk"
     mVersionCode = 1
-    mVersionName = "1.19.0-beta.1-dev.912611c"
+    mVersionName = "1.18.4"
 
     mLibraryName = "skyflow-android"
     mLibraryDescription = "Skyflow’s android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data."
@@ -58,11 +58,12 @@ task androidSourcesJar(type: Jar) {
 }
 
 def isBeta = project.hasProperty('beta') ? project.getProperty('beta') : false
+def isInternal = project.hasProperty('dev') ? project.getProperty('dev') : false
 
 afterEvaluate {
     publishing {
         publications {
-            if (!isBeta) {
+            if (!isBeta && !isInternal) {
                 maven(MavenPublication) {
                     groupId mGroupId
                     artifactId mArtifactId
@@ -76,10 +77,24 @@ afterEvaluate {
                         description = mLibraryDescription
                     }
                 }
-            } else {
+            } else if (isBeta && !isInternal) {
                 mavenBeta(MavenPublication) {
                     groupId mGroupId
                     artifactId "$mArtifactId-beta"
+                    version mVersionName
+
+                    from components.release
+                    artifact androidSourcesJar
+
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
+                }
+            } else if (!isBeta && isInternal) {
+                mavenInternal(MavenPublication) {
+                    groupId mGroupId
+                    artifactId "$mArtifactId-dev"
                     version mVersionName
 
                     from components.release
