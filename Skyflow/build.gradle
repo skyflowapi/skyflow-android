@@ -58,11 +58,12 @@ task androidSourcesJar(type: Jar) {
 }
 
 def isBeta = project.hasProperty('beta') ? project.getProperty('beta') : false
+def isInternal = project.hasProperty('dev') ? project.getProperty('dev') : false
 
 afterEvaluate {
     publishing {
         publications {
-            if (!isBeta) {
+            if (!isBeta && !isInternal) {
                 maven(MavenPublication) {
                     groupId mGroupId
                     artifactId mArtifactId
@@ -76,10 +77,24 @@ afterEvaluate {
                         description = mLibraryDescription
                     }
                 }
-            } else {
+            } else if (isBeta && !isInternal) {
                 mavenBeta(MavenPublication) {
                     groupId mGroupId
                     artifactId "$mArtifactId-beta"
+                    version mVersionName
+
+                    from components.release
+                    artifact androidSourcesJar
+
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
+                }
+            } else if (!isBeta && isInternal) {
+                mavenInternal(MavenPublication) {
+                    groupId mGroupId
+                    artifactId "$mArtifactId-dev"
                     version mVersionName
 
                     from components.release
