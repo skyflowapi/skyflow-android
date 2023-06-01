@@ -1944,7 +1944,7 @@ class UnitTests {
         val expectedMetrics = JSONObject()
         expectedMetrics.put(
             "sdk_name_version",
-            "${BuildConfig.SDK_NAME} ${BuildConfig.SDK_VERSION}"
+            "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
         )
         expectedMetrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
         expectedMetrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")

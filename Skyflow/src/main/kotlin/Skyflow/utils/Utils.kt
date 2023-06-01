@@ -494,7 +494,7 @@ public class Utils {
             try {
                 metrics.put(
                     "sdk_name_version",
-                    "${BuildConfig.SDK_NAME} ${BuildConfig.SDK_VERSION}"
+                    "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
                 )
                 metrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
                 metrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")
