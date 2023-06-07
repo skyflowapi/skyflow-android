@@ -9,7 +9,6 @@ import Skyflow.reveal.RevealRequestBody
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
-import org.json.JSONObject
 import java.lang.Exception
 import java.util.*
 
@@ -92,6 +91,6 @@ internal fun Container<RevealContainer>.get(callback: Callback, options: RevealO
         this.revealElements,
         configuration.options.logLevel
     )
-    val records = JSONObject(RevealRequestBody.createRequestBody(this.revealElements))
+    val records = RevealRequestBody.createRequestBody(this.revealElements)
     this.client.apiClient.get(records, revealValueCallback)
 }
