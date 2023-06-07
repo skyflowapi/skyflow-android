@@ -60,7 +60,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.18.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.19.0'
   ```
 
 #### Using maven
@@ -88,7 +88,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.18.0</version>
+   <version>1.19.0</version>
 </dependency>
 ```
 
@@ -868,19 +868,23 @@ cardNumber.clearValue()
 ## Retrieving data from the vault
 For non-PCI use-cases, retrieving data from the vault and revealing it in the mobile can be done either using the SkyflowID's or tokens as described below
 
-- ### Using Skyflow tokens
-    For retrieving using tokens, use the `detokenize(records)` method. The records parameter takes a JSON object that contains `records` to be fetched as shown below.
+- ### Using tokens
+    To retrieve record data using tokens, use the `detokenize(records)` method. The `records` parameter takes a JSON object that contains tokens for record values to fetch:
+
     ```json5
     {
       "records":[
         {
           "token": "string",                 // token for the record to be fetched
+          "redaction": Skyflow.RedactionType // Optional. Redaction to apply for retrieved data. E.g. RedactionType.MASKED 
         }
       ]
     }
    ```
-   
-  An example of a detokenize call:
+  
+  Note: `redaction` defaults to [`RedactionType.PLAIN_TEXT`](#redaction-types).
+
+  The following example code makes a detokenize call to reveal the masked value of a token:
   ```kt
   val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
 
@@ -888,6 +892,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   val recordsArray = JSONArray()
   val recordObj = JSONObject()
   recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
+  recordObj.put("redaction", RedactionType.MASKED)
   recordsArray.put(recordObj)
   records.put("records", recordsArray)
 
@@ -899,7 +904,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     "records": [
       {
         "token": "131e70dc-6f76-4319-bdd3-96281e051051",
-        "value": "1990-01-01"
+        "value": "j***oe"
       }
     ]
   }
@@ -981,7 +986,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
     ]
   }
   ```
-
+### Redaction types
   There are four enum values in Skyflow.RedactionType:
   - `PLAIN_TEXT`
   - `MASKED`
@@ -998,21 +1003,23 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.REVEAL)
 ```
 
 ### Step 2: Create a reveal Element
-Then define a Skyflow Element to reveal data as shown below.
+Next, define a Skyflow Element to reveal data as shown below:
 ```kt
 val revealElementInput = Skyflow.RevealElementInput(
         token = "string",
-        inputStyles = Skyflow.Styles(),        //optional, styles to be applied to the element
-        labelStyles = Skyflow.Styles(),  //optional, styles to be applied to the label of the reveal element
+        redaction = Skyflow.RedactionType,   // optional. Redaction to apply for retrieved data. E.g. RedactionType.MASKED   
+        inputStyles = Skyflow.Styles(),      //optional, styles to be applied to the element
+        labelStyles = Skyflow.Styles(),      //optional, styles to be applied to the label of the reveal element
         errorTextStyles = Skyflow.Styles(),  //optional styles that will be applied to the errorText of the reveal element
-        label = "cardNumber"            //optional, label for the element,
-        altText = "XXXX XXXX XXXX XXXX" //optional, string that is shown before reveal, will show token if altText is not provided
+        label = "cardNumber"                 //optional, label for the element,
+        altText = "XXXX XXXX XXXX XXXX"      //optional, string that is shown before reveal, will show token if altText is not provided 
     )
 
 ```
 
-`Note`: 
+`Notes`: 
 - `token` is optional only if it is being used in invokeConnection()
+- `redaction` defaults to [`RedactionType.PLAIN_TEXT`](#redaction-types)
 
 The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
 
@@ -1097,6 +1104,7 @@ val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
 //Create Reveal Elements
 val cardNumberInput = Skyflow.RevealElementInput(
         token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+        redaction = RedactionType.MASKED,
         inputStyles = inputStyles,
         labelStyles = labelStyles,
         errorTextStyles = errorTextStyles,
@@ -1108,6 +1116,7 @@ val cardNumberElement = container.create(context = Context, input = cardNumberIn
 
 val nameInput = Skyflow.RevealElementInput(
         token = "89024714-6a26-4256-b9d4-55ad69aa4047",
+        redaction = RedactionType.DEFAULT,
         inputStyles = inputStyles,
         labelStyles = labelStyles,
         errorTextStyles = errorTextStyles,
@@ -1151,7 +1160,7 @@ The response below shows that some tokens assigned to the reveal elements get re
 {
   "success": [
     {
-      "id": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75"
+      "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75"
     }
   ],
  "errors": [
