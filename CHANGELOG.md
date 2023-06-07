@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.19.0] - 2023-06-07
+### Added
+- `redaction` key for detokenize method for column group support.
+- `redaction` property in Reveal Element
+
 ## [1.18.4] - 2023-03-29
 ### Fixed
 - Fixed `setToken` method not behaving properly for Reveal Elements bug
