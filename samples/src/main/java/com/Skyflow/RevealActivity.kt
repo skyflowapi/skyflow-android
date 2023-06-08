@@ -36,17 +36,20 @@ class RevealActivity : AppCompatActivity() {
         val error_styles = Styles(base_error_style)
         val cardNumberInput = RevealElementInput(
            card_number.toString(),
-            inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
-            label = "card number",altText =  "41111"
+           redaction = RedactionType.MASKED,
+           inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
+           label = "card number",altText =  "41111"
         )
 
         val expiryDateInput = RevealElementInput(
             expiry_date.toString(),
+            redaction = RedactionType.PLAIN_TEXT,
             label =  "expire date",altText = "mm/yyyy"
         )
 
         val fullNameInput = RevealElementInput(
             name.toString(),
+            redaction = RedactionType.DEFAULT,
             inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
             label = "name",altText =  "name"
         )
@@ -54,6 +57,7 @@ class RevealActivity : AppCompatActivity() {
 
         val cvvElement = RevealElementInput(
             cvv_token.toString(),
+            redaction = RedactionType.REDACTED,
             inputStyles = styles, labelStyles = labelStyles,errorTextStyles = error_styles,
             label = "CVV",altText =  "***"
         )
