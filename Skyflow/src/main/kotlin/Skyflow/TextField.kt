@@ -128,7 +128,7 @@ class TextField @JvmOverloads constructor(
     private fun buildTextField()
     {
         state = StateforText(this)
-        border.setColor(Color.WHITE)
+        border.setColor(Color.TRANSPARENT)
         border.setStroke(collectInput.inputStyles.base.borderWidth,collectInput.inputStyles.base.borderColor)
         border.cornerRadius = collectInput.inputStyles.base.cornerRadius
         inputField.setBackgroundDrawable(border)
