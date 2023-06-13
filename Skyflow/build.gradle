@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
 //group='com.github.skyflowapi'
 //version = rootProject.ext.versionName
 ext {
@@ -145,7 +146,7 @@ dependencies {
     androidTestImplementation "org.robolectric:robolectric:4.6.1"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21"
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3'
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 }
 publish.dependsOn assemble
 

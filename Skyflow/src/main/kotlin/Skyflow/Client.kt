@@ -14,8 +14,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 import kotlin.reflect.KClass
 
-@Description("This is Client class")
+@Description("This is the description for Client class")
 class Client internal constructor(
+    @Description("Description for configuration param")
     val configuration: Configuration,
 ){
     internal val tag = Client::class.qualifiedName
@@ -24,7 +25,16 @@ class Client internal constructor(
         configuration.tokenProvider,configuration.options.logLevel)
 
     internal val elementMap = HashMap<String,Any>()
-    fun insert(records:  JSONObject, options: InsertOptions? = InsertOptions(), callback: Callback){
+
+    @Description("This is the description for insert function")
+    fun insert(
+        @Description("Description for records param")
+        records:  JSONObject, 
+        @Description("Description for options param")
+        options: InsertOptions? = InsertOptions(),
+        @Description("Description for callback param")
+        callback: Callback
+    ){
         try {
             Utils.checkVaultDetails(configuration)
             Logger.info(tag, Messages.INSERTING_RECORDS.getMessage(configuration.vaultID), configuration.options.logLevel)
@@ -35,7 +45,14 @@ class Client internal constructor(
             callback.onFailure(e)
         }
     }
-    fun detokenize(records: JSONObject, callback: Callback) {
+
+    @Description("This is the description for detokenize function")
+    fun detokenize(
+        @Description("Description for records param")
+        records: JSONObject,
+        @Description("Description for callback param")
+        callback: Callback
+    ) {
         try {
             Utils.checkVaultDetails(configuration)
             this.apiClient.get(records,loggingCallback(callback, Messages.DETOKENIZE_SUCCESS.getMessage()))
@@ -46,13 +63,13 @@ class Client internal constructor(
         }
     }
 
-    @Description("This is getById function")
+    @Description("This is description for getById function")
     fun getById(
-        @Description("This is getById records param")
+        @Description("Description for records param")
         records: JSONObject,
-        @Description("This is getById callback param")
-        callback: Callback)
-    {
+        @Description("Description for callback param")
+        callback: Callback
+    ){
         Logger.info(tag, Messages.GET_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
         try {
             Utils.checkVaultDetails(configuration)
@@ -179,8 +196,11 @@ class Client internal constructor(
         return result
     }
 
-
-    fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T>{
+    @Description("This is the description for container function")
+    fun <T:ContainerProtocol> container(
+        @Description("Description for type param")
+        type: KClass<T>
+    ) : Container<T>{
         if(type == ContainerType.COLLECT){
             Logger.info(tag, Messages.COLLECT_CONTAINER_CREATED.getMessage(), configuration.options.logLevel)
         }

@@ -1,10 +1,10 @@
 package com.Skyflow
 
-import Skyflow.CollectContainer
 import Skyflow.Description
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlin.reflect.KParameter
 import com.fasterxml.jackson.databind.SerializationFeature
+import kotlinx.serialization.Serializable
 import java.io.File
 import kotlin.reflect.*
 //import java.lang.reflect.Modifier
@@ -12,9 +12,13 @@ import kotlin.reflect.KVisibility
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 
+@Serializable
 data class Arg(val name: String, val type: String, val description: String?)
+@Serializable
 data class Method(val name: String, val args: List<Arg>, val description: String?, val returnType: String)
+@Serializable
 data class CompanionObject(val properties:List<Arg>, val methods: List<Method>)
+@Serializable
 data class ClassInfo(
     val name: String,
     val type: String,
@@ -54,6 +58,12 @@ class Student(val name: String, val age: Int) {
 }
 class GenJson  {}
 
+fun getReturnType(returnType: String): String {
+    if(returnType == "void") {
+        return "Unit"
+    }
+    else return returnType
+}
 fun getMethodDetails(method: KFunction<*>): Method {
     return  if (method.parameters.isNotEmpty()) {
         Method(
@@ -61,21 +71,32 @@ fun getMethodDetails(method: KFunction<*>): Method {
             method.parameters
                 .filterNot { it.kind == KParameter.Kind.INSTANCE }
                 .map {
+                    val type = it.type
+
+                    val typeName = if (type.classifier == null) {
+                        "null"
+                    } else if (type.arguments.isNotEmpty() && type.classifier is KClass<*>) {
+                        val containerTypeName = (type.classifier as KClass<*>).simpleName
+                        var typeArgs = type.arguments.map { arg -> arg.type?.classifier }.joinToString(", ")
+                        "$containerTypeName<$typeArgs>"
+                    } else {
+                        (type.classifier as KClass<*>).simpleName ?: "null"
+                    }
                     Arg(
                         it.name.toString(),
-                        it.type.toString(),
+                        typeName,
                         it.findAnnotation<Description>()?.text ?: ""
                     )
                 },
             method.findAnnotation<Description>()?.text ?: "",
-            method.returnType.toString()
+            getReturnType(method.javaMethod?.returnType?.simpleName.toString())
         )
     } else {
         Method(
             method.name,
             emptyList(),
             method.findAnnotation<Description>()?.text ?: "",
-            method.returnType.toString()
+            getReturnType(method.javaMethod?.returnType?.simpleName.toString())
         )
     }
 }
@@ -83,9 +104,21 @@ fun getMethodDetails(method: KFunction<*>): Method {
 fun getCompanionObjectDetails(module: KClass<out Any>): CompanionObject {
     // get properties and methods defined inside companion object
     val properties = module.companionObject?.declaredMemberProperties
-        ?.map { Arg(
+        ?.map {
+            val type = it.returnType
+
+            val typeName = if (type.classifier == null) {
+                "null"
+            } else if (type.arguments.isNotEmpty() && type.classifier is KClass<*>) {
+                val containerTypeName = (type.classifier as KClass<*>).simpleName
+                var typeArgs = type.arguments.map { arg -> (arg.type?.classifier as KClass<*>).simpleName }.joinToString(", ")
+                "$containerTypeName<$typeArgs>"
+            } else {
+                (type.classifier as KClass<*>).simpleName ?: "null"
+            }
+            Arg(
             it.name,
-            it.returnType.toString(),
+            typeName,
             it.findAnnotation<Description>()?.text ?: ""
         )}!!
     val methods = module.companionObject?.declaredFunctions
@@ -153,17 +186,32 @@ fun main() {
             args = when (module.java.isInterface) {
                 true -> emptyList()
                 false -> module.constructors?.first()
-                    ?.parameters?.map {
+                    ?.parameters.map {
+                        val type = it.type
+
+                        val typeName = if (type.classifier == null) {
+                            "null"
+                        } else if (type.arguments.isNotEmpty() && type.classifier is KClass<*>) {
+                            val containerTypeName = (type.classifier as KClass<*>).simpleName
+                            var typeArgs = type.arguments.map { arg -> (arg.type?.classifier as KClass<*>).simpleName }.joinToString(", ")
+//                            if(module.simpleName == "ContainerType") println("$containerTypeName<$typeArgs>")
+                            "$containerTypeName<$typeArgs>"
+                        } else {
+                            (type.classifier as KClass<*>).simpleName ?: "null"
+                        }
+//                        if(module.simpleName == "CollectElementInput") {
+//                            println(it.name + "  " + it.annotations.toString() + "  " + it.hasAnnotation<Deprecated>())
+//                        }
                         Arg(
                             it.name!!,
-                            it.type.toString(),
-                            it.findAnnotation<Description>()?.text ?: ""
+                            typeName,
+                            it.findAnnotation<Deprecated>()?.message ?: it.findAnnotation<Description>()?.text ?: ""
                         )
                     }
             }
 
             methods = module.declaredFunctions
-                .filterNot { method -> method.hasAnnotation<Deprecated>() }
+//                .filterNot { method -> method.hasAnnotation<Deprecated>() }
                 .filterNot { method -> method.visibility == KVisibility.INTERNAL }
                 .map { method -> getMethodDetails(method) }
 
@@ -202,21 +250,32 @@ fun main() {
                             .filterNot { it.name.toString() == "null" }
                             .filterNot { it.kind == KParameter.Kind.INSTANCE }
                             .map {
+                                val type = it.type
+
+                                val typeName = if (type.classifier == null) {
+                                    "null"
+                                } else if (type.arguments.isNotEmpty() && type.classifier is KClass<*>) {
+                                    val containerTypeName = (type.classifier as KClass<*>).simpleName
+                                    var typeArgs = type.arguments.map { arg -> arg.type?.classifier }.joinToString(", ")
+                                    "$containerTypeName<$typeArgs>"
+                                } else {
+                                    (type.classifier as KClass<*>).simpleName ?: "null"
+                                }
                                 Arg(
                                     it.name.toString(),
-                                    it.type.toString(),
+                                    typeName,
                                     it.findAnnotation<Description>()?.text ?: ""
                                 )
                             },
                         method.kotlinFunction?.findAnnotation<Description>()?.text ?: "",
-                        method.returnType.simpleName.toString()
+                        getReturnType(method.returnType.simpleName.toString())
                     )
                 } else {
                     Method(
                         method.name,
                         emptyList(),
                         method.kotlinFunction?.findAnnotation<Description>()?.text ?: "",
-                        method.returnType.simpleName.toString()
+                        getReturnType(method.returnType.simpleName.toString())
                     )
                 }
             }

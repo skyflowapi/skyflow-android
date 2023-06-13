@@ -10,7 +10,7 @@ import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import java.util.*
 
-
+@Description("This is the description for CollectContainer class")
 open class CollectContainer : ContainerProtocol {
 
 }
@@ -18,7 +18,15 @@ open class CollectContainer : ContainerProtocol {
 private val tag = CollectContainer::class.qualifiedName
 
 
-fun Container<CollectContainer>.create(context: Context, input : CollectElementInput, options : CollectElementOptions = CollectElementOptions()) : TextField
+@Description("This is the description for create function")
+fun Container<CollectContainer>.create(
+    @Description("Description for context param")
+    context: Context,
+    @Description("Description for input param")
+    input : CollectElementInput,
+    @Description("Description for options param")
+    options : CollectElementOptions = CollectElementOptions()
+) : TextField
 {
     Logger.info(tag, Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label), configuration.options.logLevel)
     val collectElement = TextField(context, configuration.options)
@@ -30,7 +38,13 @@ fun Container<CollectContainer>.create(context: Context, input : CollectElementI
     return collectElement
 }
 
-fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
+@Description("This is the description for collect function")
+fun Container<CollectContainer>.collect(
+    @Description("Description for callback param")
+    callback: Callback,
+    @Description("Description for options param")
+    options: CollectOptions? = CollectOptions()
+){
     try {
         Utils.checkVaultDetails(client.configuration)
         Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
