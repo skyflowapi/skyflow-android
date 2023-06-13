@@ -15,6 +15,7 @@ class Type(var formatPattern:String, var regex: String,
 
 }
 
+@Description("This is the description for SkyflowElementType enum class")
 enum class SkyflowElementType {
 
 

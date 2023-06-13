@@ -1,3 +1,13 @@
 package Skyflow
 
-public class Padding(val left:Int=10,val top:Int=10,val right:Int=10,val bottom:Int=10) {}
+@Description("This is the description for Padding class")
+public class Padding(
+    @Description("Description for left param")
+    val left:Int=10,
+    @Description("Description for top param")
+    val top:Int=10,
+    @Description("Description for right param")
+    val right:Int=10,
+    @Description("Description for bottom param")
+    val bottom:Int=10
+) {}
