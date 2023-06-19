@@ -3,6 +3,8 @@ package Skyflow.core
 import Skyflow.*
 import android.util.Base64
 import Skyflow.collect.client.CollectAPICallback
+import Skyflow.get.GetAPICallback
+import Skyflow.get.GetOptions
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.reveal.RevealApiCallback
 import Skyflow.reveal.RevealByIdCallback
@@ -120,6 +122,17 @@ internal class APIClient(
     fun getById(records: MutableList<GetByIdRecord>, callback: Callback) {
         val revealApiCallback = RevealByIdCallback(callback, this, records)
         this.getAccessToken(revealApiCallback)
+    }
+
+    fun get(records: JSONObject, options: GetOptions? = GetOptions(false), callback: Callback) {
+        try {
+            Utils.validateGetInputAndOptions(records, options, logLevel)
+            val requestBody = Utils.constructRequestBodyForGet(records)
+            val getAPICallback = GetAPICallback(callback, this, requestBody, options)
+            this.getAccessToken(getAPICallback)
+        } catch (e: Exception) {
+            callback.onFailure(Utils.constructError(e))
+        }
     }
 
     fun invokeConnection(connectionConfig: ConnectionConfig, callback: Callback, client: Client) {
