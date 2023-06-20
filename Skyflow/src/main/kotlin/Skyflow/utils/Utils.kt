@@ -3,12 +3,9 @@ package Skyflow.utils
 import Skyflow.*
 import Skyflow.LogLevel
 import Skyflow.core.Logger
-<<<<<<< HEAD
 import android.os.Build
-=======
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
->>>>>>> SK-234 INput Formatting in Android SDK
 import android.util.Log
 import android.webkit.URLUtil
 import com.skyflow_android.BuildConfig
@@ -521,7 +518,7 @@ public class Utils {
             }
             return metrics
         }
-        
+
         fun checkInputFormatOptions(
             type: SkyflowElementType,
             options: CollectElementOptions,
