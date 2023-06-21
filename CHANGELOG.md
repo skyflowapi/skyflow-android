@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.20.0] - 2023-06-21
+### Added
+- Input Formatting support for Collect and Reveal elements
+
+### Fixed
+- Same tokens set for multiple Reveal Elements bug
+
 ## [1.18.4] - 2023-03-29
 ### Fixed
 - Fixed `setToken` method not behaving properly for Reveal Elements bug
