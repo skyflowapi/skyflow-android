@@ -358,38 +358,69 @@ Finally, the `type` field takes a Skyflow ElementType. Each type applies the app
 
 The `INPUT_FIELD` type is a custom UI element without any built-in validations. See the section on [`validations`](#validations) for more information on validations.
 
-Along with `CollectElementInput` we can define other options which are optional inside the `CollectElementOptions` object which is described below.
+Along with `CollectElementInput` you can define other options in the `CollectElementOptions` object which is described below.
 
 ```kt
 Skyflow.CollectElementOptions(
   required: Boolean, //indicates whether the field is marked as required. Defaults to 'false'
   enableCardIcon: Boolean, //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
-  format: String //Format for the element (only applicable currently for "EXPIRATION_DATE")
+  format: String, //Format for the element (only applicable currently for "EXPIRATION_DATE")
+  translation: HashMap<Char, String> // Indicates the allowed data type value for format.
 )
 ```
-	
-`required` parameter indicates whether the field is marked as required or not, if not provided, it defaults to `false`
 
-`enableCardIcon` paramenter indicates whether the icon is visible for the `CARD_NUMBER` element, defaults to `true`
+- `required`: Indicates whether the field is marked as required or not. Default is `false`.
 
-`format` parameter takes string value and indicates the format pattern applicable to the element type, It's currently only applicable to `EXPIRATION_DATE` and `EXPIRATION_YEAR` element types. 
+- `enableCardIcon`: Indicates whether the icon is visible for the CARD_NUMBER element. Default is `true`.
 
-The values that are accepted for `EXPIRATION_DATE` are
-  - mm/yy (default)
-  - mm/yyyy
-  - yy/mm
-  - yyyy/mm
+- `format`:  A string value that indicates the format pattern applicable to the element type. Only applicable to `EXPIRATION_DATE`, `CARD_NUMBER`, `EXPIRATION_YEAR` and `INPUT_FIELD` elements.
+  - For `INPUT_FIELD` elements,
+    -  the length of `format` determines the expected length of the user input.
+    - if `translation` isn't specified, the `format` value is considered a string literal.
 
-The values that are accepted for `EXPIRATION_YEAR` are
-  - yy (default)
-  - yyyy
+- `translation`: A hashmap of key/value pairs, where the key is a character that appears in `format` and the value is a regex pattern of acceptable inputs for that character. Each key can only appear once. Only applicable for `INPUT_FIELD` elements.
 
-`NOTE`: If not specified or invalid value is passed to the `format` then it takes default value.
+Accepted values by element type:
+
+| Element type    | `format`                                                                                  | `translation`                                                         | Examples                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| EXPIRATION_DATE | <ul><li>`mm/yy`(default)</li><li>`mm/yyyy`</li> <li>`yy/mm`</li> <li> `yyyy/mm`</li></ul> | N/A                                                                   | <ul><li>12/27</li><li>12/2027</li> <li>27/12</li> <li> 2027/12</li></ul></ul>                                                            |
+| EXPIRATION_YEAR | <ul><li>`yy`(default)</li><li>`yyyy`</li>                                                 | N/A                                                                   | <ul><li>27</li><li>2027</li> </ul>                                                                                                       |
+| CARD_NUMBER     | <ul><li> `XXXX XXXX XXXX XXXX` (default)</li><li>`XXXX-XXXX-XXXX-XXXX`</li> </ul>         | N/A                                                                   | <ul><li>1234 5678 9012 3456</li><li>1234-5678-9012-3456</li> </ul>                                                                       |
+| INPUT_FIELD     | A string that matches the desired output, with placeholder characters of your choice.     | A hashmap of key/value pairs. Defaults to `hashmapOf('X' to "[0-9]")` | With `format: +91 XXXX-XX-XXXX` and `translation: hashmapOf('X' to "[0-9]")`, user input of "1234121234" displays as "+91 1234-12-1234". |
+
+Collect Element Options examples for INPUT_FIELD
+
+Example 1
+```kotlin
+Skyflow.CollectElementOptions(
+  required: true, 
+  enableCardIcon: true,
+  format: "+91 XXXX-XX-XXXX",
+  translation: hashmapOf('X' to "[0-9]")
+)
+```
+User input: "1234121234"
+
+Value displayed in INPUT_FIELD: "+91 1234-12-1234"    
+
+Example 2
+```kotlin
+Skyflow.CollectElementOptions(
+  required: true, 
+  enableCardIcon: true,
+  format: "AY XX-XXX-XXXX",
+  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+)
+```
+User input: "B1234121234"
+
+Value displayed in INPUT_FIELD: "AB 12-341-2123"
 
 Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the ```create(context:Context,input: CollectElementInput, options: CollectElementOptions)``` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes a `Skyflow.CollectElementOptions`, 
 the `context` param takes android `Context` object as described below:
 
-```kt
+```kotlin
 val collectElementInput =  Skyflow.CollectElementInput(
         table = "string",            //the table this data belongs to
         column = "string",           //the column into which this data should be inserted
@@ -404,10 +435,10 @@ val collectElementInput =  Skyflow.CollectElementInput(
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
-            required = false,  //indicates whether the field is marked as required. Defaults to 'false'
-            enableCardIcon = true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
-            format = "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
-            )  
+        required = false,  //indicates whether the field is marked as required. Defaults to 'false'
+        enableCardIcon = true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
+        format = "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
+)  
 
 const element = container.create(context = Context, collectElementInput, collectElementOptions)
 ```
@@ -1048,10 +1079,48 @@ var labelStyles = Skyflow.Styles(base =
                     Skyflow.Style(textColor = COLOR.RED))
 ```
 
-Once you've defined a `Skyflow.RevealElementInput` object, you can use the `create()` method of the container to create the Element as shown below:
-
+Along with `RevealElementInput`, you can define other options in the `RevealElementOptions` object as described below:
 ```kt
-val element = container.create(context = Context, input = revealElementInput,RevealElementOptions(formateRegex="..$"))
+Skyflow.RevealElementOptions(
+  format: String, // Format for the element.
+  translation: HashMap<Char, String> // Indicates the allowed data type value for format
+)
+```
+- `format`: A string value that indicates how the  element should display the value, including placeholder characters that map to keys `translation` If `translation` isn't specified, the `format` value is considered a string literal.
+
+- `translation`: A hashmap of key/value pairs, where the key is a character that appears in `format` and the value is a regex pattern of acceptable inputs for that character. Each key can only appear once. Defaults to `hashmapOf('X' to "[0-9]")`.
+
+Reveal Element Options examples:
+
+Example 1:
+```kotlin
+let element = container.create(input: revealElementInput)
+Skyflow.RevealElementOptions(
+  format: "(XXX) XXX-XXXX",
+  translation: hashmapOf('X' to "[0-9]") 
+)
+```
+Value from vault: "1234121234"
+
+Value displayed in element: "(123) 412-1234"
+
+Example 2:
+```kotlin
+Skyflow.RevealElementOptions(
+  format: "XXXX-XXXXXX-XXXXX",
+  translation: hashmapOf('X' to "[0-9]") 
+)
+```
+Value from vault: "374200000000004"
+
+Value displayed in element: "3742-000000-00004"
+
+Once you've defined a `Skyflow.RevealElementInput` object and `Skyflow.RevealElementOptions`, you can use the `create()` method of the container to create the Element as shown below:
+
+```kotlin
+let element = container.create(input: revealElementInput, options: Skyflow.RevealElementOptions(format: "XXXX-XXXXXX-XXXXX",
+translation: hashmapOf('X' to "[0-9]")
+))
 ```
 
 ### Step 3: Mount Elements to the Screen

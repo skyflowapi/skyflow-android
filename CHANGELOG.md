@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.20.0] - 2023-06-21
+### Added
+- Input Formatting support for Collect and Reveal elements
+
+### Fixed
+- Same tokens set for multiple Reveal Elements bug
+
 ## [1.19.0] - 2023-06-07
 ### Added
 - `redaction` key for detokenize method for column group support.
