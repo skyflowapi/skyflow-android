@@ -2,8 +2,13 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import Skyflow.core.Logger
+import android.os.Build
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import android.util.Log
 import android.webkit.URLUtil
+import com.skyflow_android.BuildConfig
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -228,7 +233,9 @@ public class Utils {
         }
 
         fun constructError(e: Exception, code: Int = 400): JSONObject {
-            val skyflowError = SkyflowError(params = arrayOf(e.message))
+            val skyflowError = if (e is SkyflowError) e
+            else SkyflowError(params = arrayOf(e.message))
+
             skyflowError.setErrorCode(code)
             val finalError = JSONObject()
             val errors = JSONArray()
@@ -287,6 +294,17 @@ public class Utils {
         fun setValueForLabel(label: Label, value: String) {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
+
+            val format = label.options.format
+            val translation = label.options.translation
+            val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
+
+            if (format.isNotEmpty() && translation == null) {
+                label.options.translation = DEFAULT_TRANSLATION
+            }
+
+            label.options.createRegexMap()
+
             if (formatRegex.isNotEmpty() && replaceText == null) {
                 val regex = Regex(formatRegex)
                 val matches = regex.find(value)
@@ -304,8 +322,9 @@ public class Utils {
                     Log.w(tag, "invalid replaceText - $replaceText")
                     label.setText(value)
                 }
-            } else
+            } else {
                 label.setText(value)
+            }
         }
 
         fun setErrorForLabel(label: Label) {
@@ -482,6 +501,67 @@ public class Utils {
 
         fun currentMonth(): Int {
             return Calendar.getInstance().get(Calendar.MONTH) + 1
+        }
+
+        fun fetchMetrics(): JSONObject {
+            val metrics = JSONObject()
+            try {
+                metrics.put(
+                    "sdk_name_version",
+                    "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
+                )
+                metrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
+                metrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")
+                metrics.put("sdk_runtime_details", "kotlin-${KotlinVersion.CURRENT}")
+            } catch (err: Exception) {
+                Log.d(tag, "fetching SDK metrics failed")
+            }
+            return metrics
+        }
+
+        fun checkInputFormatOptions(
+            type: SkyflowElementType,
+            options: CollectElementOptions,
+            logLevel: LogLevel
+        ) {
+
+            if (SkyflowElementType.getUnsupportedInputFormatElements().contains(type)) {
+                if (options.translation != null || options.format.isNotEmpty()) {
+                    Logger.warn(
+                        tag,
+                        Messages.INPUT_FORMATTING_NOT_SUPPORTED.getMessage(type.toString()),
+                        logLevel,
+                    )
+                }
+            } else if (!SkyflowElementType.getSupportedInputFormatElements().contains(type)) {
+                if (options.translation != null) {
+                    Logger.warn(
+                        tag,
+                        Messages.INVALID_INPUT_TRANSLATION.getMessage(type.toString()),
+                        logLevel
+                    )
+                }
+            } else { // supported elements
+
+                // neither translation nor format passed
+                if (options.format.isEmpty() && options.translation == null) return
+
+                // only format passed
+                if (options.translation == null) {
+                    val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
+                    Logger.warn(
+                        tag,
+                        Messages.EMPTY_INPUT_TRANSLATION.getMessage(DEFAULT_TRANSLATION.toString()),
+                        logLevel
+                    )
+                    options.translation = DEFAULT_TRANSLATION
+                }
+                createRegexMapForTranslation(options)
+            }
+        }
+
+        private fun createRegexMapForTranslation(options: CollectElementOptions) {
+            options.createRegexMap()
         }
     }
 }

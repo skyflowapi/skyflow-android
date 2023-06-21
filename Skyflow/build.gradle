@@ -10,7 +10,7 @@ ext {
     mGroupId = "com.skyflowapi.android"
     mArtifactId = "skyflow-android-sdk"
     mVersionCode = 1
-    mVersionName = "1.18.4"
+    mVersionName = "1.20.0"
 
     mLibraryName = "skyflow-android"
     mLibraryDescription = "Skyflow’s android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data."
@@ -40,6 +40,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "SDK_NAME", "\"" + project.ext.mArtifactId + "\"")
+            buildConfigField("String", "SDK_VERSION", "\"" + project.ext.mVersionName + "\"")
+        }
+
+        debug {
+            buildConfigField("String", "SDK_NAME", "\"" + project.ext.mArtifactId + "\"")
+            buildConfigField("String", "SDK_VERSION", "\"" + project.ext.mVersionName + "\"")
         }
 
     }
@@ -57,21 +64,53 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
 }
 
+def isBeta = project.hasProperty('beta') ? project.getProperty('beta') : false
+def isInternal = project.hasProperty('dev') ? project.getProperty('dev') : false
+
 afterEvaluate {
     publishing {
         publications {
-            maven(MavenPublication) {
-                groupId mGroupId
-                artifactId mArtifactId
-                version mVersionName
+            if (!isBeta && !isInternal) {
+                maven(MavenPublication) {
+                    groupId mGroupId
+                    artifactId mArtifactId
+                    version mVersionName
 
-                from components.release
+                    from components.release
+                    artifact androidSourcesJar
 
-                artifact androidSourcesJar
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
+                }
+            } else if (isBeta && !isInternal) {
+                mavenBeta(MavenPublication) {
+                    groupId mGroupId
+                    artifactId "$mArtifactId-beta"
+                    version mVersionName
 
-                pom {
-                    name = mLibraryName
-                    description = mLibraryDescription
+                    from components.release
+                    artifact androidSourcesJar
+
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
+                }
+            } else if (!isBeta && isInternal) {
+                mavenInternal(MavenPublication) {
+                    groupId mGroupId
+                    artifactId "$mArtifactId-dev"
+                    version mVersionName
+
+                    from components.release
+                    artifact androidSourcesJar
+
+                    pom {
+                        name = mLibraryName
+                        description = mLibraryDescription
+                    }
                 }
             }
         }
@@ -83,7 +122,8 @@ afterEvaluate {
                     username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
                     password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
                 }
-            }}
+            }
+        }
     }
 }
 dependencies {
@@ -103,9 +143,6 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.6.1"
     testImplementation 'io.mockk:mockk:1.8.5'
     androidTestImplementation "org.robolectric:robolectric:4.6.1"
-
-
-
 }
 publish.dependsOn assemble
 

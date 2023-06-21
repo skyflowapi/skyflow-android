@@ -10,8 +10,10 @@ import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
 import android.app.Activity
+import android.os.Build
 import android.view.ViewGroup
 import android.widget.CheckBox
+import com.skyflow_android.BuildConfig
 import com.skyflow_android.R
 import io.mockk.MockKAnnotations
 //import junit.framework.Assert
@@ -1935,6 +1937,21 @@ class UnitTests {
         } catch (e: SkyflowError) {
             assertEquals(Messages.ALLOW_JSON_OBJECT_IN_UPSERT.message, e.getInternalErrorMessage())
         }
+    }
+
+    @Test
+    fun testFetchMetrics() {
+        val expectedMetrics = JSONObject()
+        expectedMetrics.put(
+            "sdk_name_version",
+            "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
+        )
+        expectedMetrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
+        expectedMetrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")
+        expectedMetrics.put("sdk_runtime_details", "kotlin-${KotlinVersion.CURRENT}")
+
+        val actualMetrics = Utils.fetchMetrics()
+        Assert.assertEquals(expectedMetrics.toString(), actualMetrics.toString())
     }
 }
 

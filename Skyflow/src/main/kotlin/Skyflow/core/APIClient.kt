@@ -17,7 +17,6 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.*
 
-
 object JWTUtils {
     @Throws(java.lang.Exception::class)
     fun decoded(JWTEncoded: String): JSONObject {
@@ -158,13 +157,32 @@ internal class APIClient(
         val list = mutableListOf<RevealRequestRecord>()
         var i = 0
         while (i < jsonArray.length()) {
-            val jsonobj1 = jsonArray.getJSONObject(i)
-            if (!jsonobj1.has("token")) {
+            val recordObject = jsonArray.getJSONObject(i)
+            if (!recordObject.has("token")) {
                 throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
-            } else if (jsonobj1.get("token").toString().isEmpty()) {
+            } else if (recordObject.get("token").toString().isEmpty()) {
                 throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+            } else if (recordObject.has("redaction")) {
+                val redaction = recordObject.get("redaction")
+                if (redaction.toString().isEmpty()) {
+                    throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE, tag, logLevel)
+                } else if (redaction !is RedactionType) {
+                    throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, logLevel)
+                } else {
+                    list.add(
+                        RevealRequestRecord(
+                            recordObject.get("token").toString(),
+                            redaction.toString()
+                        )
+                    )
+                }
             } else {
-                list.add(RevealRequestRecord(jsonobj1.get("token").toString()))
+                list.add(
+                    RevealRequestRecord(
+                        recordObject.get("token").toString(),
+                        RedactionType.PLAIN_TEXT.toString()
+                    )
+                )
             }
             i++
         }

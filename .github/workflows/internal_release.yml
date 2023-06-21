@@ -2,10 +2,10 @@ name: Internal Release
 on:
   push:
     tags-ignore:
-      - '*'
+      - "*"
     paths-ignore:
-      - 'Skyflow/build.gradle'
-      - '*.md'
+      - "Skyflow/build.gradle"
+      - "*.md"
     branches:
       - release/*
 
@@ -27,38 +27,39 @@ jobs:
 
       - name: Get Previous tag
         id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 1.0.0
+        run: |
+          git fetch --tags
+          tag=$(git describe --tags --abbrev=0 origin/main)
+          echo "::set-output name=tag::$tag"
+          echo "latest stable tag is $tag"
 
       - name: Cache Gradle and wrapper
         uses: actions/cache@v2
         with:
           path: |
-                ~/.gradle/caches
-                ~/.gradle/wrapper
+            ~/.gradle/caches
+            ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
 
       - name: Bump Version
         run: |
-           chmod +x ./scripts/bump_version.sh
-           ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}" "$(git rev-parse --short "$GITHUB_SHA")"
-    
+          chmod +x ./scripts/bump_version.sh
+          ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}" "$(git rev-parse --short "$GITHUB_SHA")"
+
       - name: Commit changes
         run: |
-           git config user.name ${{ github.actor }}
-           git config user.email ${{ github.actor }}@users.noreply.gihub.com
-           git add Skyflow/build.gradle
-           git commit -m "[AUTOMATED] Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
-           git push origin
-
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.gihub.com
+          git add Skyflow/build.gradle
+          git commit -m "[AUTOMATED] Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
+          git push origin
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Publish package
         run: |
-           chmod +x gradlew
-           ./gradlew publish
+          chmod +x gradlew
+          ./gradlew publish -Pdev=true
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
