@@ -43,9 +43,7 @@ class DetokenizeTests {
 
     private fun getErrorMessage(error: JSONObject): String {
         val errors = error.getJSONArray("errors")
-        println("ERRORS ${errors.toString()}")
         val skyflowError = errors.getJSONObject(0).get("error") as SkyflowError
-        println("SKYFLOW-ERROR ${skyflowError.message}")
         return skyflowError.getErrorMessage()
     }
 
