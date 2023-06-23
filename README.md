@@ -42,25 +42,27 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the Github package registry to your root project build.gradle file
 
   ```java
-  def githubProperties = new Properties() githubProperties.load(new FileInputStream(file(“github.properties”)))
+  def githubProperties = new Properties() 
+  githubProperties.load(new FileInputStream(file(“github.properties”)))
   allprojects {
-     repositories {
-	    ...
-	      maven {
-            url "https://maven.pkg.github.com/skyflowapi/skyflow-android-sdk"
-            credentials
-                    {
-                        username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER_NAME")
-                        password = githubProperties['gpr.key'] ?: System.getenv("GPR_PAT")
-                    }
-        }
-     }
+    repositories {
+    ...
+      maven {
+          url "https://maven.pkg.github.com/skyflowapi/skyflow-android-sdk"
+          credentials {
+            username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER_NAME")
+            password = githubProperties['gpr.key'] ?: System.getenv("GPR_PAT")
+          }
+      }
+    }
+    ...
+  }
   ```
 
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.19.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.21.0'
   ```
 
 #### Using maven
@@ -88,7 +90,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.19.0</version>
+   <version>1.21.0</version>
 </dependency>
 ```
 
@@ -941,79 +943,213 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   }
   ```
 
-- ### Using Skyflow ID's
-    For retrieving using SkyflowID's, use the `getById(records)` method.The records parameter takes a JSON object that contains `records` to be fetched as shown below.
+- ### Using Skyflow ID's or Unique Column Values
+    For retrieving data from the vault, use the `get(records: JSONObject, options: GetOptions? = GetOptions(), callback: Skyflow.Callback)` method.
+    
+    The `records` parameter takes a JSON object that contains an array of the records to fetch. Each object inside array should contain:
+
+    - Either an array of Skyflow IDs to fetch
+    - Or a column name and an array of column values
+
+    The second parameter, `options`, is a `GetOptions` object that retrieves tokens of Skyflow IDs. 
+
+    Notes: 
+    - You can use either Skyflow IDs or unique values to retrieve records. You can't use both at the same time.
+    - GetOptions parameter is applicable only for retrieving tokens using Skyflow ID.
+    - You can't pass GetOptions along with the redaction type.
+    - `tokens` defaults to false.
+
     ```json5
     {
       "records":[
         {
-          ids: ArrayList<String>(),       // Array of SkyflowID's of the records to be fetched
-          table: "string"          // name of table holding the above skyflow_id's
-          redaction: Skyflow.RedactionType    //redaction to be applied to retrieved data
+          "ids": JSONArray(),            // Array of SkyflowID's of the records to be fetched
+          "table": String,                       // name of table holding the above skyflow_id's
+          "redaction": Skyflow.RedactionType     // redaction to be applied to retrieved data
+        },
+        {
+          "table": String,                      // name of table from where records are to be fetched
+          "redaction": Skyflow.RedactionType,   // redaction to be applied to retrieved data
+          "columnName": String,                 // a unique column name
+          "colunmnValues": JSONArray()  // Array of Column Values of the records to be fetched
         }
       ]
     }
     ```
 
-    An example of getById call:
-    ```kt
+    An example of get call to fetch records:
+    ```kotlin
     val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
 
-    var recordsArray = JSONArray()
-    var record = JSONObject()
-    record.put("table","cards")
-    record.put("redaction","PLAIN_TEXT")
+    val recordsArray = JSONArray()
 
-    val skyflowIDs = ArrayList<String>()
-    skyflowIDs.add("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
-    skyflowIDs.add("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
-    record.put("ids",skyflowIDs)
-     
-    var record1 = JSONObject()
-    record1.put("table","cards")
-    record1.put("redaction","PLAIN_TEXT")
+    val record = JSONObject()
+    val skyflowIDs = JSONArray()
+    skyflowIDs.put("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+    skyflowIDs.put("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+    
+    record.put("ids", skyflowIDs)
+    record.put("table", "cards")
+    record.put("redaction", RedactionType.PLAIN_TEXT)
 
-    val recordSkyflowIDs = ArrayList<String>()
-    recordSkyflowIDs.add("invalid skyflow id")   // invalid skyflow ID
-    record.put("ids",recordSkyflowIDs)
+    val record1 = JSONObject()
+    val recordSkyflowIDs = JSONArray()
+    recordSkyflowIDs.put("invalid skyflow id")   // invalid skyflow ID
+    
+    record1.put("ids", recordSkyflowIDs)
+    record1.put("table", "cards")
+    record1.put("redaction", RedactionType.PLAIN_TEXT)
+
+    val record2 = JSONObject()
+    val columnValues = JSONArray()
+    columnValues.put("john.doe@gmail.com")
+    columnValues.put("jane.doe@gmail.com")
+    
+    record2.put("table", "customers")
+    record2.put("redaction", RedactionType.PLAIN_TEXT)
+    record2.put("columnName", "email")
+    record2.put("columnValues", columnValues)
+    
+    val record3 = JSONObject()
+    val columnValues1 = JSONArray()
+    columnValues1.put("invalid column value")    // invalid column value
+    
+    record3.put("table", "customers")
+    record3.put("redaction", RedactionType.PLAIN_TEXT)
+    record3.put("columnName", "email")
+    record3.put("columnValues", columnValues1)
+
+    recordsArray.put(record)
     recordsArray.put(record1)
-    val records = JSONObject()
-    records.put("records",recordsArray)
+    recordsArray.put(record2)
+    recordsArray.put(record3)
 
-    skyflowClient.getById(records = records, callback = getCallback)
+    val records = JSONObject()
+    records.put("records", recordsArray)
+
+    skyflowClient.getById(records = records, GetOptions(), callback = getCallback)
     ```
 
   The sample response:
   ```json
   {
     "records": [
-        {
-            "fields": {
-                "card_number": "4111111111111111",
-                "expiry_date": "11/35",
-                "fullname": "myname",
-                "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
-            },
-            "table": "cards"
+      {
+        "fields": {
+          "card_number": "4111111111111111",
+          "expiry_date": "11/35",
+          "fullname": "myname",
+          "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
         },
-        {
-            "fields": {
-                "card_number": "4111111111111111",
-                "expiry_date": "10/23",
-                "fullname": "sam",
-                "id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
-            },
-            "table": "cards"
-        }
+        "table": "cards"
+      },
+      {
+        "fields": {
+          "card_number": "4111111111111111",
+          "expiry_date": "10/23",
+          "fullname": "sam",
+          "id": "da26de53-95d5-4bdb-99db-8d8c66a35ff9"
+        },
+        "table": "cards"
+      },
+      {
+        "fields": {
+          "card_number": "4111111111111111",
+          "email": "john@doe@gmail.com",
+          "name": "john",
+          "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
+        },
+        "table": "customers"
+      },
+      {
+        "fields": {
+          "card_number": "4111111111111111",
+          "email": "jane@doe@gmail.com",
+          "name": "jane",
+          "id": "f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9"
+        },
+        "table": "customers"
+      }
     ],
     "errors": [
-        {
-            "error": {
-                "code": "404",
-                "description": "No Records Found"
-            },
-            "ids": ["invalid skyflow id"]
-        }
+      {
+        "error": {
+          "code": "404",
+          "description": "No Records Found"
+        },
+        "ids": ["invalid skyflow id"]
+      },
+      {
+        "error": {
+          "code": "404",
+          "description": "No Records Found"
+        },
+        "columnName": "customers",
+        "columnValues": ["invalid column value"]
+      }
+    ]
+  }
+  ```
+
+  An example of get call to fetch tokens:
+  ```kotlin
+  val getCallback = GetCallback() //Custom callback - implementation of Skyflow.Callback
+
+  val recordsArray = JSONArray()
+
+  val validRecord = JSONObject()
+  val validSkyflowIDs = JSONArray()
+  validSkyflowIDs.put("f8d8a622-b557-4c6b-a12c-c5ebe0b0bfd9")
+  validSkyflowIDs.put("da26de53-95d5-4bdb-99db-8d8c66a35ff9")
+  
+  validRecord.put("ids", validSkyflowIDs)
+  validRecord.put("table", "cards")
+
+  val invalidRecord = JSONObject()
+  val invalidRecordSkyflowIDs = JSONArray()
+  invalidRecordSkyflowIDs.put("invalid skyflow id")   // invalid skyflow ID
+  
+  invalidRecord.put("ids", invalidRecordSkyflowIDs)
+  invalidRecord.put("table", "cards")
+  
+  recordsArray.put(validRecord)
+  recordsArray.put(invalidRecord)
+  
+  val records = JSONObject()
+  records.put("records", recordsArray)
+
+  skyflowClient.getById(records = records, GetOptions(true), callback = getCallback)
+  ```
+
+  The sample Response:
+  ```json
+  {
+    "records": [
+      {
+        "fields": {
+          "card_number": "9802-3257-3113-0294",
+          "expiry_date": "45012507-f72b-4f5c-9bf9-86b133bae719",
+          "fullname": "131e2507-f72b-4f5c-9bf9-86b133bae719",
+        },
+        "table": "cards"
+      },
+      {
+        "fields": {
+          "card_number": "0294-3213-3157-9802",
+          "expiry_date": "131e2507-f72b-4f5c-9bf9-86b133bae719",
+          "fullname": "45012507-f72b-4f5c-9bf9-86b133bae719",
+        },
+        "table": "cards"
+      }
+    ],
+    "errors": [
+      {
+        "error": {
+          "code": "404",
+          "description": "No Records Found"
+        },
+        "ids": ["invalid skyflow id"]
+      }
     ]
   }
   ```
