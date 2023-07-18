@@ -1,10 +1,10 @@
 package Skyflow
 
-@Description("This is the description for Options class")
+@Description("This class contains additional parameters for skyflow client configuration.")
 class Options(
-    @Description("Description for logLevel param")
+    @Description("The log level for the client.")
     val logLevel: LogLevel = LogLevel.ERROR,
-    @Description("Description for env param")
+    @Description("The working environment.")
     val env: Env = Env.PROD
 ) {
 }

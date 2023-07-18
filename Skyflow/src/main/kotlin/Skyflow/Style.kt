@@ -4,21 +4,21 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.view.Gravity
 
-@Description("This is the description for Style class")
+@Description("This class contains various styles for skyflow elements.")
 class Style(
-    @Description("Description for borderColor param")
+    @Description("The color of the border.")
     borderColor: Int? = Color.BLACK,
-    @Description("Description for cornerRadius param")
+    @Description("The radius applied to the corners.")
     cornerRadius: Float? = 20f,
-    @Description("Description for padding param")
+    @Description("Padding for the element.")
     padding: Padding? = Padding(10,10,10,10),
-    @Description("Description for borderWidth param")
+    @Description("Width of the border.")
     borderWidth: Int? = 2,
-    @Description("Description for font param")
+    @Description("Type of font used.")
     font: Int? = Typeface.NORMAL,
-    @Description("Description for textAlignment param")
+    @Description("Alignment of the text.")
     textAlignment: Int? = Gravity.LEFT,
-    @Description("Description for textColor param")
+    @Description("Color of the text.")
     textColor: Int? = Color.BLACK)
 {
     var borderColor = borderColor ?: Color.BLACK

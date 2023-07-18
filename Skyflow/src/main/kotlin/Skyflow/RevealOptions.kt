@@ -1,5 +1,5 @@
 package Skyflow
 
-@Description("This is the description for RevealOptions class")
+@Description("Additional options for the reveal elements.")
 class RevealOptions {
 }

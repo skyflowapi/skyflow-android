@@ -14,9 +14,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 import kotlin.reflect.KClass
 
-@Description("This is the description for Client class")
+@Description("This class contains an instance of the Skyflow client.")
 class Client internal constructor(
-    @Description("Description for configuration param")
+    @Description("The skyflow client initialization includes configuration options.")
     val configuration: Configuration,
 ){
     internal val tag = Client::class.qualifiedName
@@ -26,13 +26,13 @@ class Client internal constructor(
 
     internal val elementMap = HashMap<String,Any>()
 
-    @Description("This is the description for insert function")
+    @Description("The function inserts data into the vault.")
     fun insert(
-        @Description("Description for records param")
+        @Description("Inserts records into the vault.")
         records:  JSONObject, 
-        @Description("Description for options param")
+        @Description("Additional options for insert method/request.")
         options: InsertOptions? = InsertOptions(),
-        @Description("Description for callback param")
+        @Description("Implementation of Skyflow.Callback.")
         callback: Callback
     ){
         try {
@@ -46,11 +46,11 @@ class Client internal constructor(
         }
     }
 
-    @Description("This is the description for detokenize function")
+    @Description("This function retrieves record the data using tokens.")
     fun detokenize(
-        @Description("Description for records param")
+        @Description("This parameter takes a JSON object that contains tokens for fetching record values.")
         records: JSONObject,
-        @Description("Description for callback param")
+        @Description("Implementation of Skyflow.Callback.")
         callback: Callback
     ) {
         try {
@@ -63,11 +63,11 @@ class Client internal constructor(
         }
     }
 
-    @Description("This is description for getById function")
+    @Description("This function retrieves using SkyflowID's.")
     fun getById(
-        @Description("Description for records param")
+        @Description("This parameter takes a JSON object that contains records to fetch.")
         records: JSONObject,
-        @Description("Description for callback param")
+        @Description("Implementation of Skyflow.Callback.")
         callback: Callback
     ){
         Logger.info(tag, Messages.GET_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
@@ -196,9 +196,9 @@ class Client internal constructor(
         return result
     }
 
-    @Description("This is the description for container function")
+    @Description("This method creates a skyflow container.")
     fun <T:ContainerProtocol> container(
-        @Description("Description for type param")
+        @Description("This parameter defines the type of the container.")
         type: KClass<T>
     ) : Container<T>{
         if(type == ContainerType.COLLECT){

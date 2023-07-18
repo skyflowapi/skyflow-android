@@ -12,7 +12,7 @@ import Skyflow.utils.Utils.Companion.checkIfElementsMounted
 import java.lang.Exception
 import java.util.*
 
-@Description("This is the description for Reveal Container class")
+@Description("This container will contain all reveal elements.")
 class RevealContainer : ContainerProtocol {
     private val tag = RevealContainer::class.qualifiedName
 }
@@ -21,11 +21,11 @@ private val tag = RevealContainer::class.qualifiedName
 
 @Description("This is description for create function")
 fun Container<RevealContainer>.create(
-    @Description("Description for context param")
+    @Description("This parameter takes android context object.")
     context: Context,
-    @Description("Description for input param")
+    @Description("This parameter takes a Skyflow.RevealElementInput object.")
     input: RevealElementInput,
-    @Description("Description for options param")
+    @Description("This parameter takes a Skyflow.RevealElementOptions object.")
     options: RevealElementOptions = RevealElementOptions()
 ): Label {
     Logger.info(
@@ -45,11 +45,11 @@ fun Container<RevealContainer>.create(
     return revealElement
 }
 
-@Description("This is description for reveal function")
+@Description("This function reveals data in the container.")
 fun Container<RevealContainer>.reveal(
-    @Description("Description for callback param")
+    @Description("Implementation of Skyflow.Callback.")
     callback: Callback,
-    @Description("Description for options param")
+    @Description("Additional options for the reveal method.")
     options: RevealOptions? = RevealOptions()
 ) {
     try {

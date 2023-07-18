@@ -1,17 +1,17 @@
 package Skyflow
 
-@Description("This is the description for Callback interface")
+@Description("This interface contains the results of the implementation of callback.")
 interface Callback {
 
-        @Description("This is the description for onSuccess function")
+        @Description("Implementation when callback results in success.")
         fun onSuccess(
-            @Description("Description for responseBody param")
+            @Description("The success response.")
             responseBody: Any
         )
 
-        @Description("This is the description for onFailure function")
+        @Description("Implementation when callback results in failure.")
         fun onFailure(
-            @Description("Description for exception param")
+            @Description("The failure response.")
             exception: Any
         )
     }

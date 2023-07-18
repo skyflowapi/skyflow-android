@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("This is the description for Env enum class")
+@Description("Supported environments.")
 enum class Env {
     DEV,
     PROD

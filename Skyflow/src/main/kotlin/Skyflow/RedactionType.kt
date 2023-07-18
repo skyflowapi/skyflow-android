@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("This is the description for RedactionType enum class")
+@Description("Supported redaction types.")
 enum class RedactionType {
     DEFAULT,
     PLAIN_TEXT,

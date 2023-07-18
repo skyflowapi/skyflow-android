@@ -1,16 +1,16 @@
 package  Skyflow
 
-@Description("This is the description for Styles class")
+@Description("This class contains different styles to apply on a skyflow element.")
 public class Styles(
-    @Description("Description for base param")
+    @Description("The styles applied on skyflow elements in its base form.")
     base: Style? = Style(),
-    @Description("Description for complete param")
+    @Description("The styles applied when value is valid.")
     complete: Style? = Style(),
-    @Description("Description for empty param")
+    @Description("The styles applied when skyflow element is empty.")
     empty: Style? =  Style(),
-    @Description("Description for focus param")
+    @Description("The styles applied when skyflow element is focused.")
     focus: Style? = Style(),
-    @Description("Description for invalid param")
+    @Description("The styles applied when value is invalid.")
     invalid: Style? = Style()
 ) {
     var base = base ?: Style()

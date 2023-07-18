@@ -3,13 +3,13 @@ package Skyflow
 import org.json.JSONArray
 import org.json.JSONObject
 
-@Description("This is the description for CollectOptions class")
+@Description("This class contains the additional parameters for the collect method.")
 class CollectOptions(
-    @Description("Description for token param")
+    @Description("Indicates whether tokens for the collected data should be returned or not. Defaults to 'true'.")
     val token:Boolean = true,
-    @Description("Description for additionalFields param")
+    @Description("Insert the non-PCI elements data into the vault in the format of the records object.")
     val additionalFields: JSONObject? = null,
-    @Description("Description for upsert param")
+    @Description("This parameter takes a JSONArray, if provided, upsert operation will be performed instead of insert.")
     val upsert : JSONArray? = null
 ) {
 }

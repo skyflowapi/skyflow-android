@@ -1,9 +1,9 @@
 package Skyflow
 
-@Description("This is the description for RevealElementOptions class")
+@Description("This class contaions additional options for the reveal element.")
 class RevealElementOptions(
-    @Description("Description for formatRegex param")
+    @Description("The format for the element.")
     var formatRegex : String = "",
-    @Description("Description for replaceText param")
+    @Description("The text to replace with, when the format matches.")
     var replaceText:String? = null
 ) {}

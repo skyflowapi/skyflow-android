@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("This is the description for LogLevel enum class")
+@Description("Supported log levels.")
 enum class LogLevel {
     DEBUG,
     INFO,

@@ -1,13 +1,13 @@
 package Skyflow
 
-@Description("This is the description for Padding class")
+@Description("This class sets the padding for the collect element which takes all the left, top, right, bottom padding values.")
 public class Padding(
-    @Description("Description for left param")
+    @Description("Value for left padding.")
     val left:Int=10,
-    @Description("Description for top param")
+    @Description("Value for top padding.")
     val top:Int=10,
-    @Description("Description for right param")
+    @Description("Value for right padding.")
     val right:Int=10,
-    @Description("Description for bottom param")
+    @Description("Value for bottom padding.")
     val bottom:Int=10
 ) {}

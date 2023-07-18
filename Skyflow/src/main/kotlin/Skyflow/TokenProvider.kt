@@ -1,10 +1,10 @@
 package Skyflow
 
-@Description("This is the description for TokenProvider interface")
+@Description("This interface defines the behavior of a class that can provide a bearer token.")
 interface TokenProvider {
-    @Description("This is description for getBearerToken function")
+    @Description("This function gets a bearer token.")
     fun getBearerToken(
-        @Description("Description for callback param")
+        @Description("This function is called when the bearer token is available.")
         callback: Callback
     )
 }

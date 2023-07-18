@@ -1,15 +1,15 @@
 package Skyflow
 
 
-@Description("This is the description for Configuration class")
+@Description("This class contains the parameters required for skyflow client initialisation.")
 class Configuration(
-    @Description("Description for vaultID param")
+    @Description("Unique ID of a vault.")
     val vaultID: String = "",
-    @Description("Description for vaultURL param")
+    @Description("The URL of the vault.")
     var vaultURL: String = "",
-    @Description("Description for tokenProvider param")
+    @Description("An implementation of the token provider interface.")
     val tokenProvider: TokenProvider,
-    @Description("Description for options param")
+    @Description("Additional options for configuration.")
     val options: Options = Options(),
 ){
     init {
