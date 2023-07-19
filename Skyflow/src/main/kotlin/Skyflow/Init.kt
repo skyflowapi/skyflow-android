@@ -4,9 +4,9 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
 
-@Description("This function initialises skyflow client.")
+@Description("Initialises skyflow client.")
 fun init(
-    @Description("The configuration for the skyflow client.")
+    @Description("Configuration for the skyflow client.")
     configuration: Configuration
 ) : Client{
     val tag = Client::class.qualifiedName

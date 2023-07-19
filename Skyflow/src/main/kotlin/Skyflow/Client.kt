@@ -14,9 +14,9 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.Exception
 import kotlin.reflect.KClass
 
-@Description("This class contains an instance of the Skyflow client.")
+@Description("Contains an instance of the Skyflow client.")
 class Client internal constructor(
-    @Description("The skyflow client initialization includes configuration options.")
+    @Description("Skyflow client initialization includes configuration options.")
     val configuration: Configuration,
 ){
     internal val tag = Client::class.qualifiedName
@@ -26,7 +26,7 @@ class Client internal constructor(
 
     internal val elementMap = HashMap<String,Any>()
 
-    @Description("The function inserts data into the vault.")
+    @Description("Inserts data into the vault.")
     fun insert(
         @Description("Inserts records into the vault.")
         records:  JSONObject, 
@@ -46,9 +46,9 @@ class Client internal constructor(
         }
     }
 
-    @Description("This function retrieves record the data using tokens.")
+    @Description("Retrieves record the data using tokens.")
     fun detokenize(
-        @Description("This parameter takes a JSON object that contains tokens for fetching record values.")
+        @Description("Takes a JSON object that contains tokens for fetching record values.")
         records: JSONObject,
         @Description("Implementation of Skyflow.Callback.")
         callback: Callback
@@ -63,9 +63,9 @@ class Client internal constructor(
         }
     }
 
-    @Description("This function retrieves using SkyflowID's.")
+    @Description("Retrieves using SkyflowID's.")
     fun getById(
-        @Description("This parameter takes a JSON object that contains records to fetch.")
+        @Description("Takes a JSON object that contains records to fetch.")
         records: JSONObject,
         @Description("Implementation of Skyflow.Callback.")
         callback: Callback
@@ -196,9 +196,9 @@ class Client internal constructor(
         return result
     }
 
-    @Description("This method creates a skyflow container.")
+    @Description("Creates a skyflow container.")
     fun <T:ContainerProtocol> container(
-        @Description("This parameter defines the type of the container.")
+        @Description("Defines the type of the container.")
         type: KClass<T>
     ) : Container<T>{
         if(type == ContainerType.COLLECT){

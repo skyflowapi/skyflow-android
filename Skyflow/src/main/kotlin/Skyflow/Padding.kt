@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("This class sets the padding for the collect element which takes all the left, top, right, bottom padding values.")
+@Description("Sets the padding for the collect element which takes all the left, top, right, bottom padding values.")
 public class Padding(
     @Description("Value for left padding.")
     val left:Int=10,

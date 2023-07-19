@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("This interface contains the results of the implementation of callback.")
+@Description("Contains the results of the implementation of callback.")
 interface Callback {
 
         @Description("Implementation when callback results in success.")

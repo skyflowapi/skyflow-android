@@ -10,7 +10,7 @@ import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import java.util.*
 
-@Description("This container will contain all collect elements.")
+@Description("Contains all the Collect Elements.")
 open class CollectContainer : ContainerProtocol {
 
 }
@@ -18,13 +18,13 @@ open class CollectContainer : ContainerProtocol {
 private val tag = CollectContainer::class.qualifiedName
 
 
-@Description("This creates a skyflow collect element.")
+@Description("Creates a skyflow collect element.")
 fun Container<CollectContainer>.create(
-    @Description("This parameter takes an Android Context object.")
+    @Description("Takes an Android Context object.")
     context: Context,
-    @Description("This parameter takes a Skyflow.CollectElementInput object.")
+    @Description("Takes a Skyflow.CollectElementInput object.")
     input : CollectElementInput,
-    @Description("This parameter takes a Skyflow.CollectElementOptions object.")
+    @Description("Takes a Skyflow.CollectElementOptions object.")
     options : CollectElementOptions = CollectElementOptions()
 ) : TextField
 {
@@ -38,11 +38,11 @@ fun Container<CollectContainer>.create(
     return collectElement
 }
 
-@Description("This function collects data and saves it to a vault.")
+@Description("Collects data and saves it to a vault.")
 fun Container<CollectContainer>.collect(
     @Description("Implementation of Skyflow.Callback.")
     callback: Callback,
-    @Description("The collect method offers additional options.")
+    @Description("Collect method offers additional options.")
     options: CollectOptions? = CollectOptions()
 ){
     try {
