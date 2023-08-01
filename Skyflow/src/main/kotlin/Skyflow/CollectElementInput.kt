@@ -2,28 +2,28 @@ package Skyflow
 
 import com.Skyflow.collect.elements.validations.ValidationSet
 
-@Description("Contains the parameters that are required for the collect element.")
+@Description("Configuration for a Collect Element.")
 class CollectElementInput(
-    @Description("Data belongs to this table.")
+    @Description("Table that the data belongs to.")
     internal var table: String? = null,
-    @Description("Data should be inserted into the column.")
+    @Description("Column that the data belongs to.")
     internal var column: String? = null,
-    @Description("Skyflow.ElementType enum.")
+    @Description("Type of the element.")
     internal var type: SkyflowElementType,
-    @Description("Styles that are applied to the form element.")
+    @Description("Styles for the element.")
     internal var inputStyles: Styles = Styles(),
-    @Description("Styles that are applied to the label of the collect element.")
+    @Description("Styles for the element's label.")
     internal var labelStyles:Styles=Styles(),
-    @Description("Styles that are applied to the errorText of the collect element.")
+    @Description("Styles for the element's error text.")
     internal var errorTextStyles:Styles=Styles(),
-    @Description("Label of the form element.")
+    @Description("Label for the element.")
     internal var label: String = "",
-    @Description("Placeholder for the form element.")
+    @Description("Placeholder text for the element.")
     internal var placeholder: String = "",
-    @Description("String that acts as an initial value to the collect element.")                      
+    @Description("Alt text for the element.")                      
     @Deprecated("altText parameter is deprecated" , level = DeprecationLevel.WARNING)
     internal var altText: String = "",
-    @Description("Set of validations to the collect element.")
+    @Description("Input validation rules for the element.")
     internal var validations : ValidationSet = ValidationSet()
 ) {
 }

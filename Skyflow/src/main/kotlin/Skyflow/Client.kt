@@ -28,9 +28,9 @@ class Client internal constructor(
 
     @Description("Inserts data into the vault.")
     fun insert(
-        @Description("Inserts records into the vault.")
+        @Description("Records to insert.")
         records:  JSONObject, 
-        @Description("Additional options for insert method/request.")
+        @Description("Options for the insertion.")
         options: InsertOptions? = InsertOptions(),
         @Description("Implementation of Skyflow.Callback.")
         callback: Callback
@@ -63,7 +63,7 @@ class Client internal constructor(
         }
     }
 
-    @Description("Retrieves using SkyflowID's.")
+    @Description("Reveals records by Skyflow ID.")
     fun getById(
         @Description("Takes a JSON object that contains records to fetch.")
         records: JSONObject,
@@ -196,9 +196,9 @@ class Client internal constructor(
         return result
     }
 
-    @Description("Creates a skyflow container.")
+    @Description("Creates a container.")
     fun <T:ContainerProtocol> container(
-        @Description("Defines the type of the container.")
+        @Description("Type of the container.")
         type: KClass<T>
     ) : Container<T>{
         if(type == ContainerType.COLLECT){

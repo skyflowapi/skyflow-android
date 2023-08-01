@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("Contains the valid skyflow container types.")
+@Description("Contains valid Skyflow container types.")
 class ContainerType {
     companion object{
         val COLLECT = CollectContainer::class;

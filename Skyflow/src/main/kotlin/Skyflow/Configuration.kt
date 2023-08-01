@@ -3,9 +3,9 @@ package Skyflow
 
 @Description("Contains the parameters required for skyflow client initialisation.")
 class Configuration(
-    @Description("Unique ID of a vault.")
+    @Description("ID of the vault to connect to.")
     val vaultID: String = "",
-    @Description("URL of the vault.")
+    @Description("URL of the vault to connect to.")
     var vaultURL: String = "",
     @Description("An implementation of the token provider interface.")
     val tokenProvider: TokenProvider,

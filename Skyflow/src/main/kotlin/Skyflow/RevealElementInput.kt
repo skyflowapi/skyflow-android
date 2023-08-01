@@ -1,19 +1,19 @@
 package Skyflow
 
-@Description("Contains the parameters required for reveal element.")
+@Description("Configuration for Reveal Elements.")
 class RevealElementInput(
-    @Description("Value of the Skyflow token.")
+    @Description("A token to retrieve the value of.")
     internal var token: String? = null,
-    @Description("Redaction to apply for retrieved data. E.g. RedactionType.MASKED.")
+    @Description("Redaction type of the revealed data.")
     internal var redaction: RedactionType? = RedactionType.PLAIN_TEXT,
-    @Description("Styles applied to the element.")
+    @Description("Input styles for the Reveal Element.")
     internal var inputStyles: Styles = Styles(),
-    @Description("Styles applied to the label of the reveal element.")
+    @Description("Styles for the Reveal Element's label.")
     internal var labelStyles: Styles = Styles(),
-    @Description("Styles applied to the errorText of the reveal element.")
+    @Description("Styles for the Reveal Element's error text.")
     internal var errorTextStyles: Styles = Styles(),
-    @Description("The label for the element.")
+    @Description("Label for the Reveal Element.")
     internal var label: String = "",
-    @Description("String that is shown before reveal, will show token if altText is not provided.")
+    @Description("Alternative text for the Reveal Element.")
     internal var altText: String = ""
 ) {}

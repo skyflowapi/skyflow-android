@@ -18,13 +18,13 @@ open class CollectContainer : ContainerProtocol {
 private val tag = CollectContainer::class.qualifiedName
 
 
-@Description("Creates a skyflow collect element.")
+@Description("Creates a Collect Element.")
 fun Container<CollectContainer>.create(
     @Description("Takes an Android Context object.")
     context: Context,
-    @Description("Takes a Skyflow.CollectElementInput object.")
+    @Description("Input configuration for a Collect Element.")
     input : CollectElementInput,
-    @Description("Takes a Skyflow.CollectElementOptions object.")
+    @Description("Additional options for a Collect Element.")
     options : CollectElementOptions = CollectElementOptions()
 ) : TextField
 {
