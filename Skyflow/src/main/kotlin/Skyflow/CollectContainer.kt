@@ -10,31 +10,32 @@ import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONObject
 import java.util.*
 
-
 open class CollectContainer : ContainerProtocol {
-
 }
 
 private val tag = CollectContainer::class.qualifiedName
 
-
 fun Container<CollectContainer>.create(
     context: Context,
-    input : CollectElementInput,
-    options : CollectElementOptions = CollectElementOptions()
-) : TextField {
+    input: CollectElementInput,
+    options: CollectElementOptions = CollectElementOptions()
+): TextField {
     Utils.checkInputFormatOptions(input.type, options, configuration.options.logLevel)
     Logger.info(
         tag,
         Messages.VALIDATE_INPUT_FORMAT_OPTIONS.getMessage(input.label),
         configuration.options.logLevel
     )
-    Logger.info(tag, Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label), configuration.options.logLevel)
-    val collectElement = TextField(context, configuration.options)
-    collectElement.setupField(input,options)
+    Logger.info(
+        tag,
+        Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label),
+        configuration.options.logLevel
+    )
+    val collectElement = TextField(context, configuration.options, collectElements.size)
+    collectElement.setupField(input, options)
     collectElements.add(collectElement)
     val uuid = UUID.randomUUID().toString()
-    client.elementMap.put(uuid,collectElement)
+    client.elementMap[uuid] = collectElement
     collectElement.uuid = uuid
     return collectElement
 }
