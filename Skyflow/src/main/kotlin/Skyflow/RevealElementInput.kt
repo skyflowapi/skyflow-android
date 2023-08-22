@@ -4,7 +4,7 @@ package Skyflow
 class RevealElementInput(
     @Description("A token to retrieve the value of.")
     internal var token: String? = null,
-    @Description("Redaction type of the revealed data.")
+    @Description("Redaction type applied to the data. Defaults to `RedactionType.PLAIN_TEXT`.")
     internal var redaction: RedactionType? = RedactionType.PLAIN_TEXT,
     @Description("Input styles for the Reveal Element.")
     internal var inputStyles: Styles = Styles(),

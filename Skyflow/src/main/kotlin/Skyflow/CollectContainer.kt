@@ -22,7 +22,7 @@ private val tag = CollectContainer::class.qualifiedName
 fun Container<CollectContainer>.create(
     @Description("Takes an Android Context object.")
     context: Context,
-    @Description("Input configuration for a Collect Element.")
+    @Description("Configuration for a Collect Element.")
     input : CollectElementInput,
     @Description("Additional options for a Collect Element.")
     options : CollectElementOptions = CollectElementOptions()
@@ -38,11 +38,11 @@ fun Container<CollectContainer>.create(
     return collectElement
 }
 
-@Description("Collects data and saves it to a vault.")
+@Description("Collects data and inserts it into a vault.")
 fun Container<CollectContainer>.collect(
     @Description("Implementation of Skyflow.Callback.")
     callback: Callback,
-    @Description("Collect method offers additional options.")
+    @Description("Additional collect options.")
     options: CollectOptions? = CollectOptions()
 ){
     try {

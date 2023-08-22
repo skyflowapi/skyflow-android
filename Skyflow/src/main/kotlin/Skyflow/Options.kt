@@ -1,6 +1,6 @@
 package Skyflow
 
-@Description("Contains additional parameters for skyflow client configuration.")
+@Description("Additional configuration for the Skyflow client.")
 class Options(
     @Description("Log level for the client.")
     val logLevel: LogLevel = LogLevel.ERROR,

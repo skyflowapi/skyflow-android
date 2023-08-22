@@ -48,7 +48,7 @@ class Client internal constructor(
 
     @Description("Retrieves record the data using tokens.")
     fun detokenize(
-        @Description("Takes a JSON object that contains tokens for fetching record values.")
+        @Description("Tokens to return values for.")
         records: JSONObject,
         @Description("Implementation of Skyflow.Callback.")
         callback: Callback
@@ -63,9 +63,9 @@ class Client internal constructor(
         }
     }
 
-    @Description("Reveals records by Skyflow ID.")
+    @Description("Reveal records by Skyflow ID.")
     fun getById(
-        @Description("Takes a JSON object that contains records to fetch.")
+        @Description("Records to fetch.")
         records: JSONObject,
         @Description("Implementation of Skyflow.Callback.")
         callback: Callback

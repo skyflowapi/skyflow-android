@@ -4,7 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.view.Gravity
 
-@Description("Contains various styles for skyflow elements.")
+@Description("Style options for elements.")
 class Style(
     @Description("Color of the border.")
     borderColor: Int? = Color.BLACK,

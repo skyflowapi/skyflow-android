@@ -1,7 +1,7 @@
 package Skyflow
 
 
-@Description("Contains the parameters required for skyflow client initialisation.")
+@Description("Parameters to initialize a Skyflow client.")
 class Configuration(
     @Description("ID of the vault to connect to.")
     val vaultID: String = "",

@@ -1,6 +1,6 @@
 package  Skyflow
 
-@Description("Contains different styles to apply on a skyflow element.")
+@Description("Styles to apply to elements.")
 public class Styles(
     @Description("Styles applied on skyflow elements in its base form.")
     base: Style? = Style(),

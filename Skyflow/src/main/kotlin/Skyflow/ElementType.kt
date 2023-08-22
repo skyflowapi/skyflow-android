@@ -15,7 +15,7 @@ class Type(var formatPattern:String, var regex: String,
 
 }
 
-@Description("Contains all the supported skyflow element types.")
+@Description("Skyflow Element types.")
 enum class SkyflowElementType {
 
 
