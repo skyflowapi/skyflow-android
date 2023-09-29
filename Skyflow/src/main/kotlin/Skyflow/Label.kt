@@ -77,7 +77,6 @@ class Label @JvmOverloads constructor(
         )
         border.cornerRadius = revealInput.inputStyles.base.cornerRadius
         placeholder.setBackgroundDrawable(border)
-        placeholder.setTextIsSelectable(true)
     }
 
     @SuppressLint("WrongConstant")

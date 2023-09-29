@@ -295,6 +295,7 @@ public class Utils {
             val formatRegex = label.options.formatRegex
             val replaceText = label.options.replaceText
 
+            label.placeholder.setTextIsSelectable(true)
             val format = label.options.format
             val translation = label.options.translation
             val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
