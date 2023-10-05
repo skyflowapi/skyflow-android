@@ -296,6 +296,8 @@ public class Utils {
             val replaceText = label.options.replaceText
 
             label.placeholder.setTextIsSelectable(true)
+            label.enableCopy(value)
+
             val format = label.options.format
             val translation = label.options.translation
             val DEFAULT_TRANSLATION = hashMapOf(Pair('X', "[0-9]"))
