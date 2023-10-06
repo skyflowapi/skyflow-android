@@ -1481,7 +1481,36 @@ class CollectTest {
         pin.clearValue()
     }
 
+    @Test
+    fun testCopyWhenEnableCopyIsTrue() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val options = CollectElementOptions(enableCopy = true)
+        val collectInput = CollectElementInput(
+            "cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "XXXX"
+        )
+        val cardNumber = container.create(activity, collectInput, options)
+        cardNumber.onAttachedToWindow()
+        cardNumber.setText("4111111111111110")
+        Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
+        cardNumber.setText("4111111111111111")
+        Assert.assertNotNull(cardNumber.inputField.compoundDrawablesRelative[2])
+    }
 
+    @Test
+    fun testCopyAndEnableCopyIsFalse() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput(
+            "cards", "card_number",
+            SkyflowElementType.CARD_NUMBER, placeholder = "XXXX"
+        )
+        val cardNumber = container.create(activity, collectInput)
+        cardNumber.onAttachedToWindow()
+        cardNumber.setText("4111111111111110")
+        Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
+        cardNumber.setText("4111111111111111")
+        Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
+    }
 }
 
 
