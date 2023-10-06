@@ -4,7 +4,8 @@ class RevealElementOptions(
     var formatRegex: String = "",
     var replaceText: String? = null,
     var format: String = "",
-    var translation: HashMap<Char, String>? = null
+    var translation: HashMap<Char, String>? = null,
+    val enableCopy: Boolean = false
 ) {
     internal var inputFormat: HashMap<Char, Regex> = hashMapOf()
 

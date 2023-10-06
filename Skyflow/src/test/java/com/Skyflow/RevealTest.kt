@@ -986,4 +986,31 @@ class RevealTest {
     }
     //end RevealValueCallback
 
+    @Test
+    fun testCopyAndEnableCopyIsTrue() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val options = RevealElementOptions(format = "(XX)-XX", enableCopy = true)
+        val revealInput = RevealElementInput("1234", null)
+        val inputField = container.create(activity, revealInput, options)
+
+        Assert.assertNull(inputField.placeholder.compoundDrawablesRelative[2])
+        Utils.setValueForLabel(inputField, "1234")
+        Assert.assertNotNull(inputField.placeholder.compoundDrawablesRelative[2])
+        Assert.assertEquals("1234", inputField.getValue())
+        Assert.assertEquals("(12)-34", inputField.placeholder.text.toString())
+    }
+
+    @Test
+    fun testCopyAndEnableCopyIsFalse() {
+        val container = skyflow.container(ContainerType.REVEAL)
+        val options = RevealElementOptions(format = "(XX)-XX")
+        val revealInput = RevealElementInput("1234", null)
+        val inputField = container.create(activity, revealInput, options)
+
+        Assert.assertNull(inputField.placeholder.compoundDrawablesRelative[2])
+        Utils.setValueForLabel(inputField, "1234")
+        Assert.assertNull(inputField.placeholder.compoundDrawablesRelative[2])
+        Assert.assertEquals("1234", inputField.getValue())
+        Assert.assertEquals("(12)-34", inputField.placeholder.text.toString())
+    }
 }
