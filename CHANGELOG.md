@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.22.0] - 2023-10-10
+### Added
+- Support for Composable elements.
+
 ## [1.21.0] - 2023-10-06
 ### Added
 - Ability to customise Copy behaviour for Collect and Reveal Elements.
