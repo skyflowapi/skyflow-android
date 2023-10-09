@@ -12,6 +12,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
   * [Configuration](#configuration)
 * [Initializing Skyflow-android](#initializing-skyflow-android)
 * [Securely collecting data client-side](#securely-collecting-data-client-side)
+* [Securely collecting data client-side using composable elements](#securely-collecting-data-client-side-using-composable-elements)
 * [Securely revealing data client-side](#securely-revealing-data-client-side)
 
 # Installation
@@ -304,15 +305,18 @@ The `inputStyles` field accepts a Skyflow.Styles object which consists of multip
 
 Each Style object accepts the following properties, please note that each property is optional:
 
-```kt
+```kotlin
 Skyflow.Style(
-    borderColor: Int            //optional
-    cornerRadius: Float         //optional
-    padding: Skyflow.Padding    //optional
-    borderWidth: Int            //optional
-    font:  Int                  //optional
-    textAlignment: Int          //optional
-    textColor: Int              //optional
+  borderColor: Int            // optional
+  cornerRadius: Float         // optional
+  padding: Skyflow.Padding    // optional
+  borderWidth: Int            // optional
+  font:  Int                  // optional
+  textAlignment: Int          // optional
+  textColor: Int              // optional
+  width: Int                  // optional
+  height: Int                 // optional
+  margin: Skyflow.Margin      // optional
 )
 ```
 Here Skyflow.Padding is a class which can be used to set the padding for the collect element which takes all the left, top, right, bottom padding values.
@@ -343,6 +347,9 @@ The parameters in `Skyflow.Style` object that are respected for `label` and `err
 - font
 - textColor
 - textAlignment
+- width
+- height
+- margin
 
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
 
@@ -747,6 +754,7 @@ The handler ```(state: JSONObject) -> Unit``` is a callback function you provide
 val state = {
   "elementType": Skyflow.ElementType,
   "isEmpty": Bool,
+  "isRequired": Bool,
   "isFocused": Bool,
   "isValid": Bool,
   "value": String 
@@ -776,8 +784,8 @@ val cardHolderNameInput = Skyflow.CollectElementInput(
     type = Skyflow.ElementType.CARDHOLDER_NAME,
 )
 
-val cardNumber = container.create(input = cardNumberInput)
-val cardHolderName = container.create(input = cardHolderNameInput)
+val cardNumber = container.create(context = Context, input = cardNumberInput)
+val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
 
 //subscribing to CHANGE event, which gets triggered when element changes
 cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
@@ -794,6 +802,7 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
 {
    "elementType": Skyflow.ElementType.CARD_NUMBER,
    "isEmpty": false,
+   "isRequired": false,
    "isFocused": true,
    "isValid": true,
    "value": "4111111111111111"
@@ -801,6 +810,7 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
 {
    "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
    "isEmpty": false,
+   "isRequired": false,
    "isFocused": true,
    "isValid": true,
    "value": "John"
@@ -870,26 +880,727 @@ cardNumber.resetError()
 
 ##### Sample code snippet for setValue and clearValue
 
-```kt
+```kotlin
 //create skyflow client with env DEV 
-val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(env = Skyflow.Env.DEV))
+val config = Skyflow.Configuration(
+  vaultID = VAULT_ID,
+  vaultURL = VAULT_URL,
+  tokenProvider = demoTokenProvider,
+  options = Skyflow.Options(env = Skyflow.Env.DEV)
+)
 val skyflowClient = Skyflow.initialize(config)
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-    table = "cards",
-    column = "cardNumber",
-    type = Skyflow.ElementType.CARD_NUMBER,
+  table = "cards",
+  column = "cardNumber",
+  type = Skyflow.ElementType.CARD_NUMBER,
 )
 val cardNumber = container.create(input = cardNumberInput)
 //Set a value programatically
 cardNumber.setValue("4111111111111111")
 //Clear the value
 cardNumber.clearValue()
+```
+
+---
+
+# Securely collecting data client-side using composable elements
+Composable Elements combine multiple Skyflow Elements in a single row. The following steps create a composable element and securely collect data through it.
+
+- [**Collecting data through Composable Elements**](#collecting-data-through-composable-elements)
+- [**Event Listeners on Composable Elements**](#event-listeners-on-composable-elements)
+- [**Update Composable Elements**](#update-composable-elements)
+- [**Event Listeners on Composable Container**](#event-listeners-on-composable-container)
+
+## Collecting data through Composable Elements
+### Step 1: Create a composable container
+
+First create a **container** for the form elements using the `skyflowClient.container(type: Skyflow.ContainerType, options: Skyflow.ContainerOptions)` method as show below
+
+```kotlin
+val container  = skyflowClient.container(type = ContainerType.COMPOSABLE, options = ContainerOptions(layout = arrayOf(2, 1)))
+```
+
+The container requires an options object that contains the following keys:
+
+- `layout`: An array that indicates the number of rows in the container and the number of elements in each row. The index value of the array defines the number of rows, and each value in the array represents the number of elements in that row, in order.  
+  
+  For example: `arrayOf(2, 1)` means the container has two rows, with two elements in the first row and one element in the second row.
+  
+  `Note`: The sum of values in the layout array should be equal to the number of elements created
+
+- `styles`: styles to apply to each composable row.
+
+- `errorTextStyles`: styles to apply if an error is encountered.
+
+```kotlin
+val containerOptions = ContainerOptions(
+  layout: [1, 1, 2],               // required
+  styles: Skyflow.Styles,          // optional
+  errorTextStyles: Skyflow.Styles  // optional
+)
+```
+### Step 2: Create Composable Elements
+Composable Elements use the following schema:
+
+```kotlin
+val composableElementInput = Skyflow.CollectElementInput(
+  table: String,                   // optional, the table this data belongs to
+  column: String,                  // optional, the column into which this data should be inserted
+  inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
+  labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
+  errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
+  label: String,                   // optional label for the form element
+  placeholder: String,             // optional placeholder for the form element
+  altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
+  validations: ValidationSet,      // optional set of validations for the input element
+  type: Skyflow.ElementType,       // Skyflow.ElementType enum
+)
+```
+The `table` and `column` fields indicate which table and column in the vault the Element correspond to.
+
+**Note**: 
+- Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
+ 
+The `inputStyles` parameter accepts a `Skyflow.Styles` object which consists of multiple `Skyflow.Style` objects which should be applied to the form element in the following states:
+ 
+- `base`: all other variants inherit from these styles
+- `complete`: applied when the Element has valid input
+- `empty`: applied when the Element has no input
+- `focus`: applied when the Element has focus
+- `invalid`: applied when the Element has invalid input
+ 
+Each Style object accepts the following properties, please note that each property is optional:
+ 
+```kotlin
+Skyflow.Style(
+  borderColor: Int            // optional
+  cornerRadius: Float         // optional
+  padding: Skyflow.Padding    // optional
+  borderWidth: Int            // optional
+  font:  Int                  // optional
+  textAlignment: Int          // optional
+  textColor: Int              // optional
+  width: Int                  // optional
+  height: Int                 // optional
+  margin: Skyflow.Margin      // optional
+)
+```
+
+Here `Skyflow.Padding` and `Skyflow.Margin` are classes which can be used to set the padding and margin respectively for the composable element which takes all the left, top, right, bottom values.
+
+```kt
+Skyflow.Padding(left: Int, top: Int, right: Int, bottom: Int)
+
+Skyflow.Margin(left: Int, top: Int, right: Int, bottom: Int)
+```
+
+An example Skyflow.Styles object
+```kotlin
+val styles = Skyflow.Styles(
+  base: Style,                    // optional
+  complete: Style,                // optional
+  empty: Style,                   // optional
+  focus: Style,                   // optional
+  invalid: Style                  // optional
+)
+```
+
+**Notes**:
+- The `labelStyles` and `errorTextStyles` fields accept the above mentioned `Skyflow.Styles` object which are applied to the `label` and `errorText` text views respectively.
+ 
+- The states that are available for `labelStyles` are `base` and `focus`.
+ 
+- The `errorTextStyles` will be ignored for composable element passed in `CollectElementInput` and `errorTextStyles` passed in `ContainerOptions` will be used instead.
+
+- The state that is available for `errorTextStyles` is only the base state, it shows up when there is some error in the composable element.
+ 
+- The parameters in `Skyflow.Style` object that are respected for `label` and `errorText` text views are
+  - padding
+  - font
+  - textColor
+  - textAlignment
+  - width
+  - height
+  - margin
+ 
+Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
+ 
+Finally, the `type` parameter takes a Skyflow.ElementType. Each type applies the appropriate regex and validations to the form element. 
+
+The Android SDK supports the following composable elements:
+
+- `INPUT_FIELD`
+- `CARDHOLDER_NAME`
+- `CARD_NUMBER`
+- `EXPIRATION_DATE`
+- `CVV`
+- `PIN`
+- `EXPIRATION_YEAR`
+- `EXPIRATION_MONTH`
+
+**Note**: Only when the entered value in the below composable elements is valid, the focus shifts automatically. The element types are:
+
+- `CARD_NUMBER`
+- `EXPIRATION_DATE`
+- `EXPIRATION_MONTH`
+- `EXPIRATION_YEAR`
+
+The `INPUT_FIELD` type is a custom UI element without any built-in validations. See the section on [validations](#validations) for more information on validations.
+ 
+Along with `CollectElementInput`, you can define other options in the `CollectElementOptions` object which is described below.
+ 
+```kotlin
+Skyflow.CollectElementOptions(
+  required: Boolean,                        // Indicates whether the field is marked as required. Defaults to 'false'
+  enableCardIcon: Boolean,                  // Indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
+  format: String,                           // Format for the element 
+  translation: HashMap<Character, String>   // Indicates the allowed data type value for format.
+)
+```
+- `required`: Indicates whether the field is marked as required or not. Default is `false`.
+- `enableCardIcon`: Indicates whether the icon is visible for the CARD_NUMBER element. Default is `true`.
+- `format`:  A string value that indicates the format pattern applicable to the element type. Only applicable to `EXPIRATION_DATE`, `CARD_NUMBER`, `EXPIRATION_YEAR`, and `INPUT_FIELD` elements.
+  - For INPUT_FIELD elements,
+    - the length of `format` determines the expected length of the user input.
+    - if `translation` isn't specified, the `format` value is considered a string literal.
+- `translation`: A dictionary of key/value pairs, where the key is a character that appears in `format` and the value is a regex pattern of acceptable inputs for that character. Each key can only appear once. Only applicable for INPUT_FIELD elements.
+
+Accepted values by element type:
+
+| Element type    | `format`                                                                                  | `translation`                                                         | Examples                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| EXPIRATION_DATE | <ul><li>`mm/yy`(default)</li><li>`mm/yyyy`</li> <li>`yy/mm`</li> <li> `yyyy/mm`</li></ul> | N/A                                                                   | <ul><li>12/27</li><li>12/2027</li> <li>27/12</li> <li> 2027/12</li></ul></ul>                                                            |
+| EXPIRATION_YEAR | <ul><li>`yy`(default)</li><li>`yyyy`</li>                                                 | N/A                                                                   | <ul><li>27</li><li>2027</li> </ul>                                                                                                       |
+| CARD_NUMBER     | <ul><li> `XXXX XXXX XXXX XXXX` (default)</li><li>`XXXX-XXXX-XXXX-XXXX`</li> </ul>         | N/A                                                                   | <ul><li>1234 5678 9012 3456</li><li>1234-5678-9012-3456</li> </ul>                                                                       |
+| INPUT_FIELD     | A string that matches the desired output, with placeholder characters of your choice.     | A hashmap of key/value pairs. Defaults to `hashmapOf('X' to "[0-9]")` | With `format: +91 XXXX-XX-XXXX` and `translation: hashmapOf('X' to "[0-9]")`, user input of "1234121234" displays as "+91 1234-12-1234". |
+
+Collect Element Options examples for INPUT_FIELD
+
+Example 1
+```kotlin
+Skyflow.CollectElementOptions(
+  required: true, 
+  enableCardIcon: true,
+  format: "+91 XXXX-XX-XXXX",
+  translation: hashmapOf('X' to "[0-9]")
+)
+```
+User input: "1234121234"
+
+Value displayed in INPUT_FIELD: "+91 1234-12-1234"    
+
+Example 2
+```kotlin
+Skyflow.CollectElementOptions(
+  required: true, 
+  enableCardIcon: true,
+  format: "AY XX-XXX-XXXX",
+  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+)
+```
+User input: "B1234121234"
+
+Value displayed in INPUT_FIELD: "AB 12-341-2123"
+
+Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objects are defined, add to the container using the `create(context: Context, input: CollectElementInput, options: CollectElementOptions)` method as shown below. The `input` param takes a `Skyflow.CollectElementInput` object as defined above and the `options` parameter takes an `Skyflow.CollectElementOptions` object as described below:
+ 
+```kotlin
+val composableElementInput = Skyflow.CollectElementInput(
+  table: String,                  // the table this data belongs to
+  column: String,                 // the column into which this data should be inserted
+  inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
+  labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
+  errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
+  label: String,                   // optional label for the form element
+  placeholder: String,             // optional placeholder for the form element
+  altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
+  validations: ValidationSet,      // optional set of validations for the input element
+  type: Skyflow.ElementType,       // Skyflow.ElementType enum
+)
+
+val collectElementOptions = Skyflow.CollectElementOptions(
+  required: false,  // indicates whether the field is marked as required. Defaults to 'false',
+  enableCardIcon: true, // indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
+  format: "mm/yy" // Format for the element
+)
+
+val element = container.create(context = Context, input: composableElementInput, options: collectElementOptions)
+```
+### Step 3: Mount Elements to the Screen
+
+To specify where the Elements will be rendered on the screen, fetch composable layout using `container.getComposableLayout()` and add it to a layout in your app programmatically.
+
+```kotlin
+try {
+  val composableLayout = container.getComposableLayout()
+  existingLayout.addView(composableLayout)
+} catch(error: Exception) {
+  println(error)
 }
 ```
 
+The Skyflow Element is an implementation of native android View so it can be used/mounted similarly.Alternatively, you can use the unmount method to reset any element to it's initial state.
+
+```kotlin
+fun clearFieldsOnSubmit(elements: List<TextField>) {
+  // resets all elements in the array
+  for element in elements {
+    element.unmount()
+  }
+}
+```
+### Step 4: Collect data from elements
+
+When the form is ready to be submitted, call the `collect(options: Skyflow.CollectOptions? = CollectOptions(), callback: Skyflow.Callback)` method on the container object. The options parameter takes `Skyflow.CollectOptions` object.
+
+`Skyflow.CollectOptions` takes three optional fields
+- `tokens`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
+- `additionalFields`: Non-PCI elements data to be inserted into the vault which should be in the `records` object format as described in the above [Inserting data into vault](#Inserting-data-into-the-vault) section.
+- `upsert`: To support upsert operations, the table containing the data and a column marked as unique in that table.
+
+```kotlin
+// NON-PCI fields object creation
+val nonPCIRecords = JSONObject()
+val recordsArray = JSONArray()
+
+val record = JSONObject()
+record.put("table", "persons")
+
+val fields = JSONObject()
+fields.put("gender", "MALE")
+
+record.put("fields", fields)
+recordsArray.put(record)
+
+nonPCIRecords.put("records", recordsArray)
+
+//Upsert options
+val upsertArray = JSONArray()
+
+val upsertColumn = JSONObject()
+upsertColumn.put("table", "cards")
+upsertColumn.put("column", "card_number")
+
+upsertArray.put(upsertColumn)
+
+val options = Skyflow.CollectOptions(tokens = true, additonalFields = nonPCIRecords, upsert = upsertArray)
+val insertCallback = InsertCallback() //Custom callback - implementation of Skyflow.callback
+container.collect(options, insertCallback)
+```
+#### End to end example of collecting data with Composable Elements
+
+##### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/ComposableActivity.kt):
+```kotlin
+//Initialize skyflow configuration
+val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider)
+
+//Initialize skyflow client
+val skyflowClient = Skyflow.init(config)
+
+//Create a ComposableContainer
+val container = skyflowClient.container(
+  type = Skyflow.ContainerType.COMPOSABLE,
+  options = ContainerOptions(layout = arrayOf(1, 2))
+)
+
+//Initialize and set required options
+val options = Skyflow.CollectElementOptions(required = true)
+
+//Create Skyflow.Styles with individual Skyflow.Style variants
+val baseCardStyle = Skyflow.Style(borderColor = Color.TRANSPARENT)
+val baseDateStyle = Skyflow.Style(borderColor = Color.TRANSPARENT, width = 300)
+val baseCvvStyle = Skyflow.Style(borderColor = Color.TRANSPARENT, width = 200)
+val completedStyle = Skyflow.Style(textColor = Color.TRANSPARENT)
+val baseTextStyle = Skyflow.Style(textColor = Color.BLACK)
+val focusTextStyle = Skyflow.Style(textColor = Color.RED)
+val cardStyles = Skyflow.Styles(base = baseCardStyle, complete = completedStyle)
+val dateStyles = Skyflow.Styles(base = baseDateStyle, complete = completedStyle)
+val cvvStyles = Skyflow.Styles(base = baseCvvStyle, complete = completedStyle)
+val labelStyles = Skyflow.Styles(base = baseTextStyle, focus = focusTextStyle)
+val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
+
+//Create a CollectElementInput
+val cardNumber = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardNumber",
+  type = Skyflow.ElementType.CARD_NUMBER
+  inputStyles = cardStyles,
+  labelStyles = labelStyles,
+  errorTextStyles = errorTextStyles,
+  label = "card number",
+  placeholder = "card number",
+)
+
+val expDate = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "expiryDate",
+  type = Skyflow.ElementType.EXPIRATION_DATE
+  inputStyles = dateStyles,
+  labelStyles = labelStyles,
+  errorTextStyles = errorTextStyles,
+  label = "Expiry Date",
+  placeholder = "mm/yy",
+)
+
+val cvv = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cvv",
+  type = Skyflow.ElementType.CVV
+  inputStyles = cvvStyles,
+  labelStyles = labelStyles,
+  errorTextStyles = errorTextStyles,
+  label = "CVV",
+  placeholder = "***",
+)
+
+//Create a CollectElementOptions instance
+val options = Skyflow.CollectElementOptions(required = true)
+
+//Create a Composable Element from the Composable Container
+val cardNumberElement = container.create(context = Context, cardNumber, options)
+val expDateElement = container.create(context = Context, expDate, options)
+val cvvElement = container.create(context = Context, cvv, options)
+
+//Fetch composable layout and add to main view
+try {
+  val composableLayout = container.getComposableLayout()
+  parent.addView(composableLayout)
+} catch (error: Exception) {
+  println(error)
+}
+
+// Non-PCI fields data
+val nonPCIRecords = JSONObject()
+val recordsArray = JSONArray()
+
+val record = JSONObject()
+record.put("table", "persons")
+
+val fields = JSONObject()
+fields.put("gender", "MALE")
+
+record.put("fields", fields)
+recordsArray.put(record)
+
+nonPCIRecords.put("records", recordsArray)
+
+//Upsert options
+val upsertArray = JSONArray()
+
+val upsertColumn = JSONObject()
+upsertColumn.put("table", "cards")
+upsertColumn.put("column", "card_number")
+
+upsertArray.put(upsertColumn)
+
+//Initialize and set required options for insertion
+val collectOptions = Skyflow.CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertArray)
+
+//Implement a custom Skyflow.Callback to be called on Insertion success/failure
+class InsertCallback: Skyflow.Callback {
+  override fun onSuccess(responseBody: Any) {
+    print(responseBody)
+  }
+  override fun onFailure(_ error: Error) {
+    print(error)
+  }
+}
+
+//Initialize InsertCallback which is an implementation of Skyflow.Callback interface
+val insertCallback = InsertCallback()
+
+//Call collect method on CollectContainer
+container.collect(options = collectOptions, callback = insertCallback)
+```
+##### Sample Response :
+```json
+{
+  "records": [
+    {
+      "table": "cards",
+      "fields": {
+        "cardNumber": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
+        "expiryDate": "d0369871-91e5-466f-e7e2-48e12c2bcbc2",
+        "cvv": "c7093186-466f-e7e2-91e5-48e12c2bcbc3",
+      }
+    },
+    {
+      "table": "persons",
+      "fields": {
+        "gender": "12f670af-6c7d-4837-83fb-30365fbc0b1e",
+      }
+    }
+  ]
+}
+```
+
+[For information on validations, see validations.](#validations)
+
+## Event Listeners on Composable Elements
+You can communicate with Skyflow Elements by listening to element events:
+
+```kotlin
+element.on(eventName: Skyflow.EventName) { state ->
+  // handle function
+}
+```
+
+The SDK supports four events:
+
+- `CHANGE`: Triggered when the Element's value changes.
+- `READY`: Triggered when the Element is fully rendered.
+- `FOCUS`: Triggered when the Element gains focus.
+- `BLUR`: Triggered when the Element loses focus.
+
+The handler `(state: JSONObject) -> Unit` is a callback function you provide, that will be called when the event is fired with the state object as shown below. 
+
+```kotlin
+val state = {
+  "elementType": Skyflow.ElementType,
+  "isEmpty": Bool ,
+  "isRequired": Bool,
+  "isFocused": Bool,
+  "isValid": Bool,
+  "value": String
+}
+```
+
+`Note`: 
+values of SkyflowElements will be returned in element state object only when `env` is `DEV`, else it is empty string i.e, '', but in case of CARD_NUMBER type element when the `env` is `PROD` for all the card types except AMEX, it will return first eight digits, for AMEX it will return first six digits and rest all digits in masked format.
+
+#### Example Usage of Event Listener on Composable Elements
+
+```kotlin
+// create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(
+  vaultID = VAULT_ID,
+  vaultURL = VAULT_URL,
+  tokenProvider = demoTokenProvider,
+  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+)
+
+val skyflowClient = Skyflow.init(config)
+
+val containerOptions = ContainerOptions(
+  layout = arrayOf(1, 1),
+  styles = Styles(base: Style(borderColor: UIColor.gray)),
+  errorTextStyles = Styles(base: Style(textColor: UIColor.red))
+)
+
+//Create a Composable Container.
+val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, options: containerOptions)
+
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardNumber",
+  type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardHolderNameInput = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardHolderName",
+  type = Skyflow.ElementType.CARDHOLDER_NAME,
+)    
+
+val cardNumber = container.create(context = Context, input = cardNumberInput)
+val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
+
+try {
+  val composableLayout = container.getComposableLayout()
+  parent.addView(composableLayout)
+} catch (error: Exception) {
+  println(error)
+}
+
+// subscribing to CHANGE event, which gets triggered when element changes
+cardNumber.on(eventName: Skyflow.EventName.CHANGE) { state ->
+  // Your implementation when Change event occurs
+  log.info("on change", state)
+}
+
+cardHolderName.on(eventName: Skyflow.EventName.CHANGE) { state ->
+  // Your implementation when Change event occurs
+  log.info("on change", state)
+}
+```
+
+#### Sample Element state object when `env` is `DEV`
+```kotlin
+{
+  "elementType": Skyflow.ElementType.CARD_NUMBER,
+  "isEmpty": false,
+  "isRequired": false,
+  "isFocused": true,
+  "isValid": true,
+  "value": "4111111111111111"
+}
+{
+  "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+  "isEmpty": false,
+  "isRequired": false,
+  "isFocused": true,
+  "isValid": true,
+  "value": "John"
+}
+```
+#### Sample Element state object when `env` is `PROD`
+```kotlin
+{
+  "elementType": Skyflow.ElementType.CARD_NUMBER,
+  "isEmpty": false,
+  "isRequired": false,
+  "isFocused": true,
+  "isValid": true,
+  "value": "41111111XXXXXXXX"
+}
+{
+  "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+  "isEmpty": false,
+  "isRequired": false,
+  "isFocused": true,
+  "isValid": true,
+  "value": ""
+}
+```
+## Update Composable Elements
+You can update composable element properties with the `update` interface.
+
+The `update` interface takes the below object:
+```kotlin
+val updateElement =  Skyflow.CollectElementInput(
+  table: String,                   // optional the table this data belongs to
+  column: String,                  // optional the column into which this data should be inserted
+  inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
+  labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
+  errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
+  label: String,                   // optional label for the form element
+  placeholder: String,             // optional placeholder for the form element
+  altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
+  validations: ValidationSet,      // optional set of validations for the input element
+)
+```
+Only include the properties that you want to update for the specified composable element.
+
+Properties your provided when you created the element remain the same until you explicitly update them.
+
+`Notes`: 
+- You can't update the type property of an element.
+- Upon calling the update method, if not passed, all Styles i.e. `inputStyles`, `labelStyles` and `errorTextStyles` will be overridden by default Styles.
+
+#### End to end example
+```kotlin
+// create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(
+  vaultID = VAULT_ID,
+  vaultURL = VAULT_URL,
+  tokenProvider = demoTokenProvider,
+  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+)
+
+val skyflowClient = Skyflow.init(config)
+
+val containerOptions = ContainerOptions(
+  layout = arrayOf(1, 1),
+  styles = Styles(base: Style(borderColor: UIColor.gray)),
+  errorTextStyles = Styles(base: Style(textColor: UIColor.red))
+)
+
+//Create a Composable Container.
+val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, options: containerOptions)
+
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardNumber",
+  type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardHolderNameInput = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardHolderName",
+  type = Skyflow.ElementType.CARDHOLDER_NAME,
+)    
+
+val cardNumber = container.create(context = Context, input = cardNumberInput)
+val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
+
+try {
+  val composableLayout = container.getComposableLayout()
+  parent.addView(composableLayout)
+} catch (error: Exception) {
+  println(error)
+}
+
+// Update table, column, inputStyles properties on cardNumber.
+cardNumber.update(update = CollectElementInput(
+  table = "cards",
+  column = "cardHolderName",
+  inputStyles = Skyflow.Styles(base: Style(borderColor: UIColor.red))
+))
+
+val lengthRule = LengthMatchRule(minLength = 5, maxLength = 16, error = "Must be between 5 and 16 digits")
+
+// Update validations and placeholder property on cardHolderName.
+cardHolderName.update(update = CollectElementInput(
+  placeholder = "cardHolderName",
+  validations = ValidationSet(rules = mutableListOf(lengthRule)))
+)
+```
+
+## Event Listeners on Composable Container
+
+Currently, the SDK supports one event:
+- `SUBMIT`: Triggered when the Enter key is pressed in any container element.
+  
+The handler function `() -> Unit` is a callback function you provide that's called when the `SUBMIT` event fires.
+
+#### Example
+```kotlin
+// create skyflow client with loglevel:"DEBUG"
+val config = Skyflow.Configuration(
+  vaultID = VAULT_ID,
+  vaultURL = VAULT_URL,
+  tokenProvider = demoTokenProvider,
+  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+)
+
+val skyflowClient = Skyflow.init(config)
+
+val containerOptions = ContainerOptions(
+  layout = arrayOf(1),
+  styles = Styles(base: Style(borderColor: UIColor.gray)),
+  errorTextStyles = Styles(base: Style(textColor: UIColor.red))
+)
+
+//Create a Composable Container.
+val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, options: containerOptions)
+
+// Create a CollectElementInput
+val cardNumberInput = Skyflow.CollectElementInput(
+  table = "cards",
+  column = "cardNumber",
+  type = Skyflow.ElementType.CARD_NUMBER,
+)
+
+val cardNumber = container.create(context = Context, input = cardNumberInput)
+
+try {
+  val composableLayout = container.getComposableLayout()
+  parent.addView(composableLayout)
+} catch (error: Exception) {
+  println(error)
+}
+
+//Call Submit event listener on container
+container.on(EventName.SUBMIT) {
+  // Your implementation when Submit (enter) event occurs
+  log.info("on submit", "submit event triggerred")
+}
+```
 
 ---
 # Securely revealing data client-side
