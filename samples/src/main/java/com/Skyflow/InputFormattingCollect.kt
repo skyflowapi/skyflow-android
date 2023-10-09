@@ -11,10 +11,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
-import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_input_formatting.*
 import org.json.JSONObject
-
 
 class InputFormattingCollect : AppCompatActivity() {
 
@@ -155,25 +153,27 @@ class InputFormattingCollect : AppCompatActivity() {
             CollectElementOptions(
                 enableCardIcon = true,
                 format = "XXXX-XXXX-XXXX-XXXX",
+                enableCopy = true
             )
         )
 
         val expirationYear = collectContainer.create(
             this,
             expiryYearInput,
-            CollectElementOptions(format = "yyyy/mm")
+            CollectElementOptions(format = "yyyy/mm", enableCopy = true)
         )
 
         val expirationDate = collectContainer.create(
             this,
             expiryDateInput,
-            CollectElementOptions(format = "yyyy/mm")
+            CollectElementOptions(format = "yyyy/mm", enableCopy = true)
         )
 
         val inputField = collectContainer.create(
             this, input, CollectElementOptions(
                 format = "+91 XXX-XXX-XXXX",
-                translation = hashMapOf('X' to "[0-9]")
+                translation = hashMapOf('X' to "[0-9]"),
+                enableCopy = true
             )
         )
 

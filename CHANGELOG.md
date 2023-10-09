@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.21.0] - 2023-10-06
+### Added
+- Ability to customise Copy behaviour for Collect and Reveal Elements.
+
+## [1.20.1] - 2023-09-28
+### Added
+- Copy functionality for Reveal Elements
+
 ## [1.20.0] - 2023-06-21
 ### Added
 - Input Formatting support for Collect and Reveal elements

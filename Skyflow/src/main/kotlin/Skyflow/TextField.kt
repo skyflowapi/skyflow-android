@@ -7,11 +7,16 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
@@ -20,6 +25,7 @@ import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.animation.Animation
@@ -27,6 +33,7 @@ import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.isDigitsOnly
 import com.Skyflow.collect.elements.validations.*
@@ -80,6 +87,7 @@ class TextField @JvmOverloads constructor(
             ComposableEvents.ON_BEGIN_EDITING -> this.onBeginEditing = handler
         }
     }
+    private var drawableRight: Drawable? = null
 
     override var uuid = ""
     override fun getValue(): String {
@@ -119,6 +127,66 @@ class TextField @JvmOverloads constructor(
                 setErrorText("invalid " + collectInput.label)
             return builtinValidationError
         }
+    }
+
+    private fun appendIcon(iconName: String) {
+        lateinit var drawable: Drawable
+        val copyDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copy)
+        val copiedDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copied)
+
+        when (iconName) {
+            "COPY" -> drawable = copyDrawable!!
+            "COPIED" -> {
+                drawable = copiedDrawable!!
+                Handler(Looper.getMainLooper()).postDelayed({
+                    inputField.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        copyDrawable,
+                        null
+                    )
+                    drawableRight = copyDrawable
+                }, 2000) // 2000 milliseconds = 2 seconds
+            }
+        }
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, drawable, null)
+        inputField.compoundDrawablePadding = 8
+        drawableRight = drawable
+    }
+
+    private fun removeIcon() {
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                return performCopyAction(event)
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    private fun performCopyAction(event: MotionEvent): Boolean {
+        val extraTapArea = 10
+        val actionX = event.rawX
+        if (drawableRight != null) {
+            val wBound = inputField.right - inputField.compoundDrawables[2].bounds.width()
+            if (actionX >= wBound - extraTapArea && actionX <= inputField.right) {
+                handleTap()
+                return true
+            }
+        }
+        return true
+    }
+
+    private fun handleTap() {
+        val textToCopy = this.actualValue
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("CustomCopyTextView", textToCopy)
+        clipboard.setPrimaryClip(clip)
+        VibrationHelper.vibrate(context, 10)
+        appendIcon("COPIED")
     }
 
     override fun setupField(
@@ -304,11 +372,9 @@ class TextField @JvmOverloads constructor(
         //when text changes
         inputField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -318,7 +384,14 @@ class TextField @JvmOverloads constructor(
                 actualValue = inputField.text.toString()
                 formatPatternForField(s)
                 state = StateforText(this@TextField)
-                // add logic for auto shift
+                if (state.getInternalState().getBoolean("isValid")){
+                    if (options.enableCopy) {
+                        appendIcon("COPY")
+                    }
+                } else if (options.enableCopy){
+                    removeIcon()
+                }
+                
                 if (userOnchangeListener !== null) {
                     userOnchangeListener?.let {
                         it((state as StateforText).getState(optionsForLogging.env))
