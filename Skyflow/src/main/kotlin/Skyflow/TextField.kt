@@ -2,13 +2,25 @@ package Skyflow
 
 import Skyflow.collect.elements.utils.*
 import Skyflow.collect.elements.validations.SkyflowValidateYear
+import Skyflow.core.elements.state.StateforText
+import Skyflow.utils.EventName
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
+import android.text.InputFilter
+import android.text.InputFilter.LengthFilter
+import android.text.Spanned
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.animation.Animation
@@ -17,27 +29,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
-import Skyflow.core.elements.state.StateforText
-import Skyflow.utils.EventName
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.graphics.Typeface
-import android.graphics.drawable.Drawable
-import android.os.Handler
-import android.os.Looper
-import android.text.Spanned
 import androidx.core.text.isDigitsOnly
+import com.Skyflow.collect.elements.validations.*
 import com.skyflow_android.R
 import org.json.JSONObject
-import kotlin.String
-import android.text.InputFilter
-import android.text.InputFilter.LengthFilter
-import android.util.Log
-import android.view.MotionEvent
-import androidx.core.content.ContextCompat
-import com.Skyflow.collect.elements.validations.*
-import com.Skyflow.collect.elements.validations.SkyflowValidator
-import com.Skyflow.collect.elements.validations.SkyflowValidateExpireDate
 import java.util.*
 
 
@@ -69,7 +64,8 @@ class TextField @JvmOverloads constructor(
 
     private var isFormatting = false
 
-    private var drawableRight: Drawable? = null
+    private var drawableRight = 0
+    private var drawableLeft = 0
 
     override var uuid = ""
     override fun getValue(): String {
@@ -110,32 +106,34 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun appendIcon(iconName: String) {
-        lateinit var drawable: Drawable
-        val copyDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copy)
-        val copiedDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copied)
+        var drawableIcon = 0
+        val copyIcon = R.drawable.ic_copy
+        val copiedIcon = R.drawable.ic_copied
 
         when (iconName) {
-            "COPY" -> drawable = copyDrawable!!
+            "COPY" -> {
+                drawableIcon = copyIcon
+            }
             "COPIED" -> {
-                drawable = copiedDrawable!!
+                drawableIcon = copiedIcon
                 Handler(Looper.getMainLooper()).postDelayed({
-                    inputField.setCompoundDrawablesWithIntrinsicBounds(
-                        null,
-                        null,
-                        copyDrawable,
-                        null
+                    inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        drawableLeft,
+                        0,
+                        copyIcon,
+                        0
                     )
-                    drawableRight = copyDrawable
+                    drawableIcon = copyIcon
                 }, 2000) // 2000 milliseconds = 2 seconds
             }
         }
-        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, drawable, null)
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, 0, drawableIcon, 0)
         inputField.compoundDrawablePadding = 8
-        drawableRight = drawable
+        drawableRight = drawableIcon
     }
 
     private fun removeIcon() {
-        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, 0, 0, 0)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -148,11 +146,10 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun performCopyAction(event: MotionEvent): Boolean {
-        val extraTapArea = 10
         val actionX = event.rawX
-        if (drawableRight != null) {
+        if (drawableRight != 0) {
             val wBound = inputField.right - inputField.compoundDrawables[2].bounds.width()
-            if (actionX >= wBound - extraTapArea && actionX <= inputField.right) {
+            if (actionX >= wBound && actionX <= inputField.right) {
                 handleTap()
                 return true
             }
@@ -320,14 +317,15 @@ class TextField @JvmOverloads constructor(
                 actualValue = inputField.text.toString()
                 formatPatternForField(s)
                 state = StateforText(this@TextField)
-                if (state.getInternalState().getBoolean("isValid")){
+                if (state.getInternalState().getBoolean("isValid")) {
                     if (options.enableCopy) {
                         appendIcon("COPY")
                     }
-                }else if (options.enableCopy){
+                } else if (options.enableCopy) {
                     removeIcon()
                 }
-                if (userOnchangeListener !== null)
+
+                if (userOnchangeListener !== null) {
                     userOnchangeListener?.let {
                         it(
                             (state as StateforText).getState(
@@ -335,6 +333,7 @@ class TextField @JvmOverloads constructor(
                             )
                         )
                     }
+                }
             }
 
         })
@@ -356,8 +355,14 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun changeCardIcon(cardtype: CardType) {
-        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(cardtype.image, 0, 0, 0)
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
+            cardtype.image,
+            0,
+            drawableRight,
+            0
+        )
         inputField.compoundDrawablePadding = 8
+        drawableLeft = cardtype.image
     }
 
     private fun onFocusTextField() {
