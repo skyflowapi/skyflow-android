@@ -2,6 +2,9 @@ package Skyflow
 
 import Skyflow.collect.elements.utils.*
 import Skyflow.collect.elements.validations.SkyflowValidateYear
+import Skyflow.composable.ComposableEvents
+import Skyflow.core.Logger
+import Skyflow.core.Messages
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.content.ClipData
@@ -20,6 +23,7 @@ import android.text.Spanned
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
@@ -34,14 +38,16 @@ import com.Skyflow.collect.elements.validations.*
 import com.skyflow_android.R
 import org.json.JSONObject
 import java.util.*
-
+import kotlin.reflect.KClassifier
 
 @Suppress("DEPRECATION")
 class TextField @JvmOverloads constructor(
     context: Context,
     val optionsForLogging: Options,
+    val index: Int,
+    val containerType: KClassifier? = ContainerType.COLLECT,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
+    defStyleAttr: Int = 0
 ) : Element(context, attrs, defStyleAttr), BaseElement {
 
     internal var label = TextView(context)
@@ -57,12 +63,28 @@ class TextField @JvmOverloads constructor(
     internal var userOnFocusListener: ((JSONObject) -> Unit)? = null
     internal var userOnBlurListener: ((JSONObject) -> Unit)? = null
     internal var userOnReadyListener: ((JSONObject) -> Unit)? = null
+    internal var containerOnSubmitListener: (() -> Unit)? = null
+    internal var onFocusIsTrue: (() -> Unit)? = null
+    internal var onBeginEditing: (() -> Unit)? = null
+    internal var onEndEditing: (() -> Unit)? = null
     internal var expiryDateFormat = "mm/yy"
     internal var yearFormat = "yy"
     private var userError: String = ""
     private val tag = TextField::class.qualifiedName
 
     private var isFormatting = false
+
+    private lateinit var inputFieldLP: LayoutParams
+    private lateinit var labelLP: LayoutParams
+    private lateinit var errorLP: LayoutParams
+
+    internal fun applyCallback(eventName: ComposableEvents, handler: (() -> Unit)) {
+        when (eventName) {
+            ComposableEvents.ON_FOCUS_IS_TRUE -> this.onFocusIsTrue = handler
+            ComposableEvents.ON_END_EDITING -> this.onEndEditing = handler
+            ComposableEvents.ON_BEGIN_EDITING -> this.onBeginEditing = handler
+        }
+    }
 
     private var drawableRight = 0
     private var drawableLeft = 0
@@ -79,19 +101,21 @@ class TextField @JvmOverloads constructor(
         }
         var builtinValidationError = ""
         if (isRequired && str.isEmpty()) {
-            builtinValidationError = "value is empty\n"
+            builtinValidationError = "value is empty"
             setErrorText("value is required")
             return builtinValidationError
         }
         builtinValidationError += SkyflowValidator.validate(str, validationRules)
         if (builtinValidationError == "") {
-            return if (collectInput.validations.rules.isEmpty())
+            return if (collectInput.validations.rules.isEmpty()) {
+                setErrorText("")
                 ""
-            else {
+            } else {
                 val customValidationError = SkyflowValidator.validate(str, collectInput.validations)
-                if (customValidationError == "")
+                if (customValidationError == "") {
+                    setErrorText("")
                     ""
-                else {
+                } else {
                     setErrorText(customValidationError)
                     customValidationError
                 }
@@ -168,8 +192,9 @@ class TextField @JvmOverloads constructor(
 
     override fun setupField(
         collectInput: CollectElementInput,
-        options: CollectElementOptions
+        options: CollectElementOptions,
     ) {
+
         super.setupField(collectInput, options)
         this.state = StateforText(this)
         validationRules = fieldType.getType().validation
@@ -183,6 +208,12 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun buildLabel() {
+        labelLP = LayoutParams(
+            collectInput.labelStyles.base.width,
+            collectInput.labelStyles.base.height,
+        )
+        val margin = collectInput.labelStyles.base.margin
+        labelLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         label.text = collectInput.label
         val labelPadding = collectInput.labelStyles.base.padding
         label.textSize = 16F
@@ -196,10 +227,17 @@ class TextField @JvmOverloads constructor(
         if (collectInput.labelStyles.base.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.base.font)
         label.gravity = collectInput.labelStyles.base.textAlignment
-
+        label.layoutParams = labelLP
+        label.requestLayout()
     }
 
     private fun buildTextField() {
+        inputFieldLP = LayoutParams(
+            collectInput.inputStyles.base.width,
+            collectInput.inputStyles.base.height,
+        )
+        val margin = collectInput.inputStyles.base.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         state = StateforText(this)
         border.setColor(Color.WHITE)
         border.setStroke(
@@ -213,6 +251,8 @@ class TextField @JvmOverloads constructor(
         inputField.hint = collectInput.placeholder
         inputField.setTextColor(collectInput.inputStyles.base.textColor)
         inputField.inputType = fieldType.getType().keyboardType
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
 
         if (collectInput.inputStyles.base.font != Typeface.NORMAL)
             inputField.typeface =
@@ -260,6 +300,12 @@ class TextField @JvmOverloads constructor(
 
 
     private fun buildError() {
+        errorLP = LayoutParams(
+            collectInput.errorTextStyles.base.width,
+            collectInput.errorTextStyles.base.height,
+        )
+        val margin = collectInput.errorTextStyles.base.margin
+        errorLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         error.visibility = View.INVISIBLE
         val errorPadding = collectInput.errorTextStyles.base.padding
         error.setPadding(
@@ -274,15 +320,32 @@ class TextField @JvmOverloads constructor(
             error.typeface =
                 ResourcesCompat.getFont(context, collectInput.errorTextStyles.base.font)
         error.gravity = collectInput.errorTextStyles.base.textAlignment
+        error.layoutParams = errorLP
+        error.requestLayout()
     }
 
-    public fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
+    fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
         when (eventName) {
             EventName.CHANGE -> this.userOnchangeListener = handler
             EventName.READY -> this.userOnReadyListener = handler
             EventName.BLUR -> this.userOnBlurListener = handler
             EventName.FOCUS -> this.userOnFocusListener = handler
+            EventName.SUBMIT -> {
+                Logger.error(tag, Messages.INVALID_EVENT_TYPE.message, optionsForLogging.logLevel)
+            }
         }
+    }
+
+    fun update(updateCollectInput: CollectElementInput) {
+        this.collectInput.table = updateCollectInput.table
+        this.collectInput.column = updateCollectInput.column
+        this.collectInput.label = updateCollectInput.label
+        this.collectInput.placeholder = updateCollectInput.placeholder
+        this.collectInput.validations = updateCollectInput.validations
+        this.collectInput.inputStyles = updateCollectInput.inputStyles
+        this.collectInput.labelStyles = updateCollectInput.labelStyles
+        this.collectInput.errorTextStyles = updateCollectInput.errorTextStyles
+        this.setupField(this.collectInput, this.options)
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -292,9 +355,14 @@ class TextField @JvmOverloads constructor(
         setListenersForText()
         if (userOnReadyListener !== null)
             userOnReadyListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
-        addView(label)
+        if (label.text.isNotEmpty() || containerType != ContainerType.COMPOSABLE) {
+            addView(label)
+        }
         addView(inputField)
-        addView(error)
+        if (containerType != ContainerType.COMPOSABLE) {
+            addView(error)
+        }
+
 //        error.visibility = INVISIBLE
         if (userError.isNotEmpty()) {
             invalidTextField()
@@ -321,19 +389,16 @@ class TextField @JvmOverloads constructor(
                     if (options.enableCopy) {
                         appendIcon("COPY")
                     }
-                } else if (options.enableCopy) {
+                } else if (options.enableCopy){
                     removeIcon()
                 }
-
+                
                 if (userOnchangeListener !== null) {
                     userOnchangeListener?.let {
-                        it(
-                            (state as StateforText).getState(
-                                optionsForLogging.env
-                            )
-                        )
+                        it((state as StateforText).getState(optionsForLogging.env))
                     }
                 }
+                onBeginEditing?.invoke()
             }
 
         })
@@ -352,6 +417,14 @@ class TextField @JvmOverloads constructor(
             }
         }.also { inputField.onFocusChangeListener = it }
 
+        // listens for enter key press if composable container
+        inputField.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
+                // Handle the Enter key press
+                this.containerOnSubmitListener?.invoke()
+            }
+            false
+        }
     }
 
     private fun changeCardIcon(cardtype: CardType) {
@@ -366,6 +439,13 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun onFocusTextField() {
+        onFocusIsTrue?.invoke()
+        labelLP = LayoutParams(
+            collectInput.labelStyles.focus.width,
+            collectInput.labelStyles.focus.height,
+        )
+        val labelMargin = collectInput.labelStyles.focus.margin
+        labelLP.setMargins(labelMargin.left, labelMargin.top, labelMargin.right, labelMargin.bottom)
         val labelPadding = collectInput.labelStyles.focus.padding
         label.setPadding(
             labelPadding.left,
@@ -377,7 +457,15 @@ class TextField @JvmOverloads constructor(
         if (collectInput.labelStyles.focus.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.focus.font)
         label.gravity = collectInput.labelStyles.focus.textAlignment
+        label.layoutParams = labelLP
+        label.requestLayout()
 
+        inputFieldLP = LayoutParams(
+            collectInput.inputStyles.focus.width,
+            collectInput.inputStyles.focus.height,
+        )
+        val margin = collectInput.inputStyles.focus.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         val inputFieldPadding = collectInput.inputStyles.focus.padding
         inputField.setPadding(
             inputFieldPadding.left,
@@ -393,6 +481,8 @@ class TextField @JvmOverloads constructor(
         border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
         inputField.setBackgroundDrawable(border)
         inputField.gravity = collectInput.inputStyles.focus.textAlignment
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
         if (collectInput.inputStyles.focus.font != Typeface.NORMAL)
             inputField.typeface =
                 ResourcesCompat.getFont(context, collectInput.inputStyles.focus.font)
@@ -402,7 +492,12 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun onBlurTextField() {
-
+        labelLP = LayoutParams(
+            collectInput.labelStyles.base.width,
+            collectInput.labelStyles.base.height,
+        )
+        val margin = collectInput.labelStyles.base.margin
+        labelLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         val labelPadding = collectInput.labelStyles.base.padding
         label.textSize = 16F
         label.setPadding(
@@ -415,6 +510,8 @@ class TextField @JvmOverloads constructor(
         if (collectInput.labelStyles.base.font != Typeface.NORMAL)
             label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.base.font)
         label.gravity = collectInput.labelStyles.base.textAlignment
+        label.layoutParams = labelLP
+        label.requestLayout()
 
         val internalState = this.state.getInternalState()
         if (internalState["isEmpty"] as Boolean && !isRequired) {
@@ -422,6 +519,7 @@ class TextField @JvmOverloads constructor(
         } else if (!(internalState["isValid"] as Boolean)) {
             invalidTextField()
         } else {
+            error.visibility = INVISIBLE
             validTextField()
         }
         if (userOnBlurListener !== null)
@@ -429,7 +527,12 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun validTextField() {
-        error.visibility = INVISIBLE
+        inputFieldLP = LayoutParams(
+            collectInput.inputStyles.complete.width,
+            collectInput.inputStyles.complete.height,
+        )
+        val margin = collectInput.inputStyles.complete.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         val inputFieldPadding = collectInput.inputStyles.complete.padding
         inputField.setPadding(
             inputFieldPadding.left,
@@ -445,12 +548,21 @@ class TextField @JvmOverloads constructor(
         border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
         inputField.setBackgroundDrawable(border)
         inputField.gravity = collectInput.inputStyles.complete.textAlignment
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
         if (collectInput.inputStyles.complete.font != Typeface.NORMAL)
             inputField.typeface =
                 ResourcesCompat.getFont(context, collectInput.inputStyles.complete.font)
     }
 
     internal fun invalidTextField() {
+        onEndEditing?.invoke()
+        inputFieldLP = LayoutParams(
+            collectInput.inputStyles.invalid.width,
+            collectInput.inputStyles.invalid.height,
+        )
+        val margin = collectInput.inputStyles.invalid.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         val inputFieldPadding = collectInput.inputStyles.invalid.padding
         inputField.setPadding(
             inputFieldPadding.left,
@@ -459,6 +571,8 @@ class TextField @JvmOverloads constructor(
             inputFieldPadding.bottom
         )
         inputField.setTextColor(collectInput.inputStyles.invalid.textColor)
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
         border.setStroke(
             collectInput.inputStyles.invalid.borderWidth,
             collectInput.inputStyles.invalid.borderColor
@@ -475,6 +589,12 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun emptyTextField() {
+        inputFieldLP = LayoutParams(
+            collectInput.inputStyles.empty.width,
+            collectInput.inputStyles.empty.height,
+        )
+        val margin = collectInput.inputStyles.empty.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
         val inputFieldPadding = collectInput.inputStyles.empty.padding
         inputField.setPadding(
             inputFieldPadding.left,
@@ -490,6 +610,8 @@ class TextField @JvmOverloads constructor(
         border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
         inputField.setBackgroundDrawable(border)
         inputField.gravity = collectInput.inputStyles.empty.textAlignment
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
         if (collectInput.inputStyles.empty.font != Typeface.NORMAL)
             inputField.typeface =
                 ResourcesCompat.getFont(context, collectInput.inputStyles.empty.font)
@@ -639,6 +761,7 @@ class TextField @JvmOverloads constructor(
         error.visibility = View.INVISIBLE
         actualValue = ""
         setText("")
+        onFocusIsTrue?.invoke()
     }
 
     override fun setError(error: String) {
@@ -653,6 +776,7 @@ class TextField @JvmOverloads constructor(
         val internalState = state.getInternalState()
         setErrorText(internalState["validationError"].toString())
         validTextField()
+        onEndEditing?.invoke()
     }
 
     internal fun setText(value: String) {
