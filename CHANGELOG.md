@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.22.0] - 2023-10-10
+## [1.22.0] - 2023-10-12
 ### Added
 - Support for Composable elements.
+
+## [1.21.1] - 2023-10-09
+### Fixed
+- Card Icon not visible when both `enableCardIcon` and `enableCopy` were set to `true`.
 
 ## [1.21.0] - 2023-10-06
 ### Added
