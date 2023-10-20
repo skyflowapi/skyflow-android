@@ -9,6 +9,7 @@ import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
 import android.app.Activity
+import android.graphics.Color
 import android.view.ViewGroup
 import com.skyflow_android.R
 import okhttp3.OkHttpClient
@@ -20,6 +21,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
 import java.io.IOException
 import android.util.Log
+import android.view.Gravity
 import com.Skyflow.collect.elements.validations.ValidationSet
 //import junit.framework.Assert
 //import junit.framework.Assert.*
@@ -1510,6 +1512,38 @@ class CollectTest {
         Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
         cardNumber.setText("4111111111111111")
         Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
+    }
+
+    @Test
+    fun testCollectElementStyles() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val baseStyle = Style(
+            backgroundColor = Color.CYAN,
+            borderColor = Color.BLUE,
+            borderWidth = 3,
+            cornerRadius = 25f,
+            margin = Margin(15, 15, 15, 15),
+            padding = Padding(15, 15, 15, 15),
+            placeholderColor = Color.parseColor("#eeaaee"),
+            textAlignment = Gravity.START,
+            textColor = Color.GREEN
+        )
+        val inputStyles = Styles(base = baseStyle)
+        val collectInput = CollectElementInput(
+            table = "cards",
+            column = "card_number",
+            inputStyles = inputStyles,
+            type = SkyflowElementType.CARD_NUMBER,
+            placeholder = "XXXX"
+        )
+        val cardNumber = container.create(activity, collectInput)
+        cardNumber.onAttachedToWindow()
+        Assert.assertEquals(15, cardNumber.inputField.paddingLeft)
+        Assert.assertEquals(15, cardNumber.inputField.paddingTop)
+        Assert.assertEquals(15, cardNumber.inputField.paddingRight)
+        Assert.assertEquals(15, cardNumber.inputField.paddingBottom)
+        Assert.assertEquals(Color.parseColor("#eeaaee"), cardNumber.inputField.currentHintTextColor)
+        Assert.assertEquals(Color.GREEN, cardNumber.inputField.currentTextColor)
     }
 }
 

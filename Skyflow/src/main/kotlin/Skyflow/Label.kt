@@ -21,6 +21,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.skyflow_android.R
 
 @Suppress("DEPRECATION")
+@SuppressLint("ClickableViewAccessibility")
 class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : LinearLayout(context, attrs, defStyleAttr), BaseElement {
@@ -72,26 +73,15 @@ class Label @JvmOverloads constructor(
         drawableRight = drawable
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        when (event?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                return performCopyAction(event)
-            }
-        }
-        return super.onTouchEvent(event)
-    }
-
-    private fun performCopyAction(event: MotionEvent): Boolean {
+    private fun performCopyAction(event: MotionEvent) {
         val extraTapArea = 10
         val actionX = event.rawX
         if (drawableRight != null) {
             val wBound = placeholder.right - placeholder.compoundDrawables[2].bounds.width()
             if (actionX >= wBound - extraTapArea && actionX <= placeholder.right) {
                 handleTap()
-                return true
             }
         }
-        return true
     }
 
     private fun handleTap() {
@@ -175,9 +165,21 @@ class Label @JvmOverloads constructor(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         super.setOrientation(LinearLayout.VERTICAL)
+        setListenersForText()
         addView(label)
         addView(placeholder)
         addView(error)
+    }
+
+    private fun setListenersForText() {
+        placeholder.setOnTouchListener { _, event ->
+            when (event?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    performCopyAction(event)
+                }
+            }
+            false
+        }
     }
 
     fun setErrorText(error: String) {
