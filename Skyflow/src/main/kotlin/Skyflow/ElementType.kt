@@ -153,5 +153,9 @@ enum class SkyflowElementType {
         fun getSupportedInputFormatElements(): List<SkyflowElementType> {
             return listOf(INPUT_FIELD)
         }
+
+        fun getAutoFocusSupportedElements(): List<SkyflowElementType> {
+            return listOf(CARD_NUMBER, EXPIRATION_DATE, EXPIRATION_MONTH, EXPIRATION_YEAR)
+        }
     }
 }

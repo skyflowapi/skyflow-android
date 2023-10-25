@@ -818,7 +818,6 @@ class InvokeConnectionTest {
         card_number!!.inputField.setText("4111 1111 1111 1111")
         val records = JSONObject()
         records.put("cardNumber",card_number)
-        val containerOptions = ContainerOptions()
         // activity.addContentView(card_number,layoutParams)
         val connectionConfiguration = ConnectionConfig("https://www.url.com",RequestMethod.POST, requestBody = records)
         val callback = ConnectionApiCallback(connectionConfiguration,ApiCallback(), logLevel = logLevel,skyflow)

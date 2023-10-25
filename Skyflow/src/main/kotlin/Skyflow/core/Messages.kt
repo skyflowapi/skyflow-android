@@ -1,7 +1,6 @@
 package Skyflow.core
 
 import Skyflow.utils.Utils
-import com.skyflow_android.R
 
 enum class Messages(val message: String) {
     INVALID_URL("Invalid client credentials. Expecting \"https://XYZ\" for vaultURL"),
@@ -11,6 +10,7 @@ enum class Messages(val message: String) {
     COLLECT_CONTAINER_CREATED("Created Collect container successfully"),
     CREATE_REVEAL_CONTAINER("Creating Reveal container"),
     REVEAL_CONTAINER_CREATED("Created Reveal container successfully"),
+    COMPOSABLE_CONTAINER_CREATED("Created Composable container successfully"),
     VALIDATE_RECORDS("Validating insert records"),
     VALIDATE_DETOKENIZE_INPUT("Validating detokenize input"),
     VALIDATE_GET_BY_ID_INPUT("Validating getByID input"),
@@ -42,6 +42,8 @@ enum class Messages(val message: String) {
     DETOKENIZING_RECORDS("Detokenizing records"),
     DETOKENIZING_FAILED("Failed revealed data from vault with id %s"),
     GET_BY_ID_CALLED("getById method called"),
+    GET_CALLED("get method called"),
+    GETTING_RECORDS("retrieving data using get called"),
     GETTING_RECORDS_BY_ID_CALLED("retrieving records using skyflow ids"),
     INVOKE_CONNECTION_CALLED("invokeConnection method called"),
 
@@ -124,12 +126,31 @@ enum class Messages(val message: String) {
     INVALID_COLUMN_IN_UPSERT_OPTION("Invalid column upsert object at index %s, column of type non empty string is required"),
     ALLOW_JSON_OBJECT_IN_UPSERT("upsert array should consists of json objects only"),
     EMPTY_UPSERT_OPTIONS_ARRAY("upsert option cannot be an empty array, atleast one object of table and column is required."),
+    EMPTY_RECORD_OBJECT("record object can not be empty at index %s"),
+    EMPTY_RECORD_IDS_IN_GET("ids cannot be in record object at index %s"),
+    INVALID_RECORD_IDS_TYPE("invalid type of ids in record object at index %s"),
+    EMPTY_ID("empty value in ids"),
+    REDACTION_WITH_TOKENS_NOT_SUPPORTED("redaction cannot be used when tokens are true in options"),
+    TOKENS_NOT_SUPPORTED_WITH_COLUMN_DETAILS("tokens cannot be used when column details (name and values) are passed"),
+    MISSING_RECORD_COLUMN_VALUES("Column Values is required when Column Name is specified"),
+    MISSING_RECORD_COLUMN_NAME("Column Name is required when Column Values is specified"),
+    INVALID_RECORD_COLUMN_NAME_TYPE("Invalid Column Name type in record object at index %s. Must be String"),
+    EMPTY_RECORD_COLUMN_NAME("Column Name is empty in record object at index %s"),
+    INVALID_RECORD_COLUMN_VALUES_TYPE("Invalid Column Values type in record object at index %s. Must be JSONArray"),
+    INVALID_COLUMN_VALUE_TYPE("Invalid Column Value type. Must be String"),
+    EMPTY_RECORD_COLUMN_VALUES("Column Values cannot be empty in record object at index %s"),
+    EMPTY_COLUMN_VALUE("Column Value is empty"),
+    BOTH_IDS_AND_COLUMN_DETAILS_SPECIFIED("Both skyflow ids and column details (name and values) are specified in record object at index %s"),
+    NEITHER_IDS_NOR_COLUMN_DETAILS_SPECIFIED("Neither skyflow ids nor column details (name and values) are specified in record object at index %s"),
+    FAILED_TO_GET("Failed to Get records"),
 
     VALIDATE_INPUT_FORMAT_OPTIONS("Validated Input Format Options for %s"),
 
     INPUT_FORMATTING_NOT_SUPPORTED("format or translation are not supported on %s element type."),
     INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
-    EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s")
+    EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s"),
+
+    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("Created elements count should be equal to sum of layout values.")
 }
 
 fun Messages.getMessage(vararg values: String?): String {

@@ -28,8 +28,8 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "<VAULT_ID>",
+            "<VAULT_URL>",
             tokenProvider,
             Options(LogLevel.DEBUG, Env.PROD)
         )
@@ -145,18 +145,28 @@ class InputFormattingReveal : AppCompatActivity() {
             cardNumberInput,
             RevealElementOptions(
                 format = "XXXX XXXX XXXX XXXX",
-                translation = hashMapOf('X' to "[0-9]")
+                translation = hashMapOf('X' to "[0-9]"),
+                enableCopy = true
             )
         )
 
-        val expiryYear = revealContainer.create(this, expiryYearInput)
+        val expiryYear = revealContainer.create(
+            this,
+            expiryYearInput,
+            RevealElementOptions(enableCopy = true)
+        )
 
-        val expiryDate = revealContainer.create(this, expiryDateInput)
+        val expiryDate = revealContainer.create(
+            this,
+            expiryDateInput,
+            RevealElementOptions(enableCopy = true)
+        )
 
         val inputField = revealContainer.create(
             this, input, RevealElementOptions(
                 format = "+91 (XXX) XXXX XXX",
-                translation = hashMapOf('X' to "[0-9]")
+                translation = hashMapOf('X' to "[0-9]"),
+                enableCopy = true
             )
         )
 
@@ -168,6 +178,8 @@ class InputFormattingReveal : AppCompatActivity() {
         lp.setMargins(20, -20, 20, 0)
 
         cardNumber.layoutParams = lp
+        expiryYear.layoutParams = lp
+        expiryDate.layoutParams = lp
         inputField.layoutParams = lp
 
         var index = 0
@@ -186,12 +198,13 @@ class InputFormattingReveal : AppCompatActivity() {
             revealContainer.reveal(object : Callback {
                 override fun onSuccess(responseBody: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect success: $responseBody")
+                    Log.d(TAG, "reveal success: $responseBody")
                 }
 
                 override fun onFailure(exception: Any) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect success: $exception")
+                    Log.d(TAG, "reveal failure: $exception")
+
                 }
             })
         }

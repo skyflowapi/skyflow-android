@@ -1,17 +1,27 @@
 package Skyflow
 
+import Skyflow.collect.elements.utils.VibrationHelper
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import com.skyflow_android.R
 
 @Suppress("DEPRECATION")
+@SuppressLint("ClickableViewAccessibility")
 class Label @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : LinearLayout(context, attrs, defStyleAttr), BaseElement {
@@ -27,6 +37,61 @@ class Label @JvmOverloads constructor(
     internal var isTokenNull = false
     internal var isError = false
     internal var uuid = ""
+
+    private var drawableRight: Drawable? = null
+    private var valueToCopy: String = ""
+
+    internal fun enableCopy(valueToCopy: String) {
+        if (options.enableCopy) {
+            this.valueToCopy = valueToCopy
+            appendIcon("COPY")
+        }
+    }
+
+    private fun appendIcon(iconName: String) {
+        lateinit var drawable: Drawable
+        val copyDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copy)
+        val copiedDrawable = ContextCompat.getDrawable(context, R.drawable.ic_copied)
+
+        when (iconName) {
+            "COPY" -> drawable = copyDrawable!!
+            "COPIED" -> {
+                drawable = copiedDrawable!!
+                Handler(Looper.getMainLooper()).postDelayed({
+                    placeholder.setCompoundDrawablesWithIntrinsicBounds(
+                        null,
+                        null,
+                        copyDrawable,
+                        null
+                    )
+                    drawableRight = copyDrawable
+                }, 2000) // 2000 milliseconds = 2 seconds
+            }
+        }
+        placeholder.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, drawable, null)
+        placeholder.compoundDrawablePadding = 8
+        drawableRight = drawable
+    }
+
+    private fun performCopyAction(event: MotionEvent) {
+        val extraTapArea = 10
+        val actionX = event.rawX
+        if (drawableRight != null) {
+            val wBound = placeholder.right - placeholder.compoundDrawables[2].bounds.width()
+            if (actionX >= wBound - extraTapArea && actionX <= placeholder.right) {
+                handleTap()
+            }
+        }
+    }
+
+    private fun handleTap() {
+        val textToCopy = this.valueToCopy
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("CustomCopyTextView", textToCopy)
+        clipboard.setPrimaryClip(clip)
+        VibrationHelper.vibrate(context, 10)
+        appendIcon("COPIED")
+    }
 
     fun getID(): String {
         return uuid
@@ -100,9 +165,21 @@ class Label @JvmOverloads constructor(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         super.setOrientation(LinearLayout.VERTICAL)
+        setListenersForText()
         addView(label)
         addView(placeholder)
         addView(error)
+    }
+
+    private fun setListenersForText() {
+        placeholder.setOnTouchListener { _, event ->
+            when (event?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    performCopyAction(event)
+                }
+            }
+            false
+        }
     }
 
     fun setErrorText(error: String) {

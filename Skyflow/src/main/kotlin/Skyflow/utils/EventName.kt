@@ -4,5 +4,6 @@ enum class EventName {
     CHANGE,
     READY,
     FOCUS,
-    BLUR
+    BLUR,
+    SUBMIT
 }
