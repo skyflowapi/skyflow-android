@@ -12,26 +12,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:orientation="vertical"/>
+        android:orientation="vertical" />
 
     <Button
+        android:id="@+id/submit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
         android:layout_marginTop="10dp"
+        android:layout_marginRight="50dp"
         android:background="#403E6B"
-        android:text="submit"
-        android:id="@+id/submit"/>
+        android:text="@string/submit" />
 
     <Button
+        android:id="@+id/clear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
         android:layout_marginTop="10dp"
+        android:layout_marginRight="50dp"
         android:background="#403E6B"
-        android:text="clear"
-        android:id="@+id/clear"/>
+        android:text="@string/clear" />
 
 </LinearLayout>

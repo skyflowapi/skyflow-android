@@ -6,6 +6,7 @@ import Skyflow.get.GetOptions
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.soap.SoapConnectionConfig
 import Skyflow.utils.Utils
+import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
 import org.json.JSONArray
 import org.json.JSONObject
@@ -193,6 +194,24 @@ class Client internal constructor(
             Logger.info(tag, Messages.REVEAL_CONTAINER_CREATED.getMessage(), configuration.options.logLevel)
         }
         return Container<T>(configuration,this)
+    }
+
+    fun <T : ContainerProtocol> container(
+        type: KClass<T>,
+        context: Context,
+        options: ContainerOptions
+    ): Container<T> {
+        when (type) {
+            ContainerType.COMPOSABLE -> {
+                Logger.info(
+                    tag,
+                    Messages.COMPOSABLE_CONTAINER_CREATED.getMessage(),
+                    configuration.options.logLevel
+                )
+            }
+            else -> container(type)
+        }
+        return Container(configuration, this, context, options)
     }
 
     inner class loggingCallback(

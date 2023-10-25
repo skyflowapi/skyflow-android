@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.22.0] - 2023-10-12
+### Added
+- Support for Composable elements.
+
+## [1.21.1] - 2023-10-09
+### Fixed
+- Card Icon not visible when both `enableCardIcon` and `enableCopy` were set to `true`.
+
+## [1.21.0] - 2023-10-06
+### Added
+- Ability to customise Copy behaviour for Collect and Reveal Elements.
+
+## [1.20.1] - 2023-09-28
+### Added
+- Copy functionality for Reveal Elements
+
+## [1.20.0] - 2023-06-21
+### Added
+- Input Formatting support for Collect and Reveal elements
+
+### Fixed
+- Same tokens set for multiple Reveal Elements bug
+
 ## [1.19.0] - 2023-06-07
 ### Added
 - `redaction` key for detokenize method for column group support.

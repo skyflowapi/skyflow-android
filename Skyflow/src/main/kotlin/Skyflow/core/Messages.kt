@@ -10,6 +10,7 @@ enum class Messages(val message: String) {
     COLLECT_CONTAINER_CREATED("Created Collect container successfully"),
     CREATE_REVEAL_CONTAINER("Creating Reveal container"),
     REVEAL_CONTAINER_CREATED("Created Reveal container successfully"),
+    COMPOSABLE_CONTAINER_CREATED("Created Composable container successfully"),
     VALIDATE_RECORDS("Validating insert records"),
     VALIDATE_DETOKENIZE_INPUT("Validating detokenize input"),
     VALIDATE_GET_BY_ID_INPUT("Validating getByID input"),
@@ -142,6 +143,14 @@ enum class Messages(val message: String) {
     BOTH_IDS_AND_COLUMN_DETAILS_SPECIFIED("Both skyflow ids and column details (name and values) are specified in record object at index %s"),
     NEITHER_IDS_NOR_COLUMN_DETAILS_SPECIFIED("Neither skyflow ids nor column details (name and values) are specified in record object at index %s"),
     FAILED_TO_GET("Failed to Get records"),
+
+    VALIDATE_INPUT_FORMAT_OPTIONS("Validated Input Format Options for %s"),
+
+    INPUT_FORMATTING_NOT_SUPPORTED("format or translation are not supported on %s element type."),
+    INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
+    EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s"),
+
+    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("Created elements count should be equal to sum of layout values.")
 }
 
 fun Messages.getMessage(vararg values: String?): String {
