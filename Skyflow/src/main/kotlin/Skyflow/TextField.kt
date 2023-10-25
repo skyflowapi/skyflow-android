@@ -7,22 +7,19 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.text.Editable
-import android.text.InputFilter
+import android.text.*
 import android.text.InputFilter.LengthFilter
-import android.text.Spanned
-import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -41,6 +38,7 @@ import java.util.*
 import kotlin.reflect.KClassifier
 
 @Suppress("DEPRECATION")
+@SuppressLint("ClickableViewAccessibility")
 class TextField @JvmOverloads constructor(
     context: Context,
     val optionsForLogging: Options,
@@ -160,15 +158,6 @@ class TextField @JvmOverloads constructor(
         inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, 0, 0, 0)
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        when (event?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                return performCopyAction(event)
-            }
-        }
-        return super.onTouchEvent(event)
-    }
-
     private fun performCopyAction(event: MotionEvent): Boolean {
         val actionX = event.rawX
         if (drawableRight != 0) {
@@ -190,74 +179,36 @@ class TextField @JvmOverloads constructor(
         appendIcon("COPIED")
     }
 
-    override fun setupField(
-        collectInput: CollectElementInput,
-        options: CollectElementOptions,
-    ) {
-
+    override fun setupField(collectInput: CollectElementInput, options: CollectElementOptions) {
         super.setupField(collectInput, options)
         this.state = StateforText(this)
         validationRules = fieldType.getType().validation
         padding = collectInput.inputStyles.base.padding
         state = StateforText(this)
         this.collectInput = collectInput
-
+        buildLabel()
         buildTextField()
         buildError()
-        buildLabel()
     }
 
     private fun buildLabel() {
-        labelLP = LayoutParams(
-            collectInput.labelStyles.base.width,
-            collectInput.labelStyles.base.height,
-        )
-        val margin = collectInput.labelStyles.base.margin
-        labelLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        label.text = collectInput.label
-        val labelPadding = collectInput.labelStyles.base.padding
-        label.textSize = 16F
-        label.setPadding(
-            labelPadding.left,
-            labelPadding.top,
-            labelPadding.right,
-            labelPadding.bottom
-        )
-        label.setTextColor(collectInput.labelStyles.base.textColor)
-        if (collectInput.labelStyles.base.font != Typeface.NORMAL)
-            label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.base.font)
-        label.gravity = collectInput.labelStyles.base.textAlignment
-        label.layoutParams = labelLP
-        label.requestLayout()
+        val spannableString = SpannableStringBuilder(collectInput.label)
+        if (isRequired && spannableString.isNotEmpty()) {
+            spannableString.append(" *")
+            val colorSpan = ForegroundColorSpan(collectInput.labelStyles.requiredAsterisk.textColor)
+            val start = spannableString.length - 1
+            val end = spannableString.length
+            spannableString.setSpan(colorSpan, start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
+        }
+        label.text = spannableString
+        applyLabelStyle(collectInput.labelStyles.base)
     }
 
     private fun buildTextField() {
-        inputFieldLP = LayoutParams(
-            collectInput.inputStyles.base.width,
-            collectInput.inputStyles.base.height,
-        )
-        val margin = collectInput.inputStyles.base.margin
-        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        state = StateforText(this)
-        border.setColor(Color.WHITE)
-        border.setStroke(
-            collectInput.inputStyles.base.borderWidth,
-            collectInput.inputStyles.base.borderColor
-        )
-        border.cornerRadius = collectInput.inputStyles.base.cornerRadius
-        inputField.setBackgroundDrawable(border)
-        inputField.setPadding(padding.left, padding.top, padding.right, padding.bottom)
-        inputField.gravity = collectInput.inputStyles.base.textAlignment
+        applyInputStyle(collectInput.inputStyles.base)
         inputField.hint = collectInput.placeholder
-        inputField.setTextColor(collectInput.inputStyles.base.textColor)
         inputField.inputType = fieldType.getType().keyboardType
-        inputField.layoutParams = inputFieldLP
-        inputField.requestLayout()
-
-        if (collectInput.inputStyles.base.font != Typeface.NORMAL)
-            inputField.typeface =
-                ResourcesCompat.getFont(context, collectInput.inputStyles.base.font)
-
+        state = StateforText(this)
         when (fieldType) {
             SkyflowElementType.EXPIRATION_DATE -> {
                 changeExpireDateValidations()
@@ -267,8 +218,13 @@ class TextField @JvmOverloads constructor(
             }
             else -> {}
         }
-
         formatPatternForField(inputField.editableText)
+    }
+
+    private fun buildError() {
+        applyErrorTextStyle(collectInput.errorTextStyles.base)
+        error.visibility = View.INVISIBLE
+        mErrorAnimator = AnimationUtils.loadAnimation(context, R.anim.error_animation)
     }
 
     private fun changeExpireDateValidations() {
@@ -277,10 +233,13 @@ class TextField @JvmOverloads constructor(
         if (expireDateList.contains(options.format.toLowerCase())) {
             expiryDateFormat = options.format.toLowerCase()
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
-
         } else {
-            Log.w(tag, "invalid format for EXPIRATION_DATE")
-            Log.w(tag, "Using default format mm/yy for EXPIRATION_DATE")
+            Logger.warn(tag, "invalid format for EXPIRATION_DATE", optionsForLogging.logLevel)
+            Logger.warn(
+                tag,
+                "Using default format mm/yy for EXPIRATION_DATE",
+                optionsForLogging.logLevel
+            )
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
         }
     }
@@ -292,36 +251,14 @@ class TextField @JvmOverloads constructor(
             yearFormat = options.format.toLowerCase()
             validationRules.add(SkyflowValidateYear(format = yearFormat))
         } else {
-            Log.w(tag, "invalid format for EXPIRATION_YEAR")
-            Log.w(tag, "Using default format yy for EXPIRATION_YEAR")
+            Logger.warn(tag, "invalid format for EXPIRATION_YEAR", optionsForLogging.logLevel)
+            Logger.warn(
+                tag,
+                "Using default format yy for EXPIRATION_YEAR",
+                optionsForLogging.logLevel
+            )
             validationRules.add(SkyflowValidateYear(format = yearFormat))
         }
-    }
-
-
-    private fun buildError() {
-        errorLP = LayoutParams(
-            collectInput.errorTextStyles.base.width,
-            collectInput.errorTextStyles.base.height,
-        )
-        val margin = collectInput.errorTextStyles.base.margin
-        errorLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        error.visibility = View.INVISIBLE
-        val errorPadding = collectInput.errorTextStyles.base.padding
-        error.setPadding(
-            errorPadding.left,
-            errorPadding.top,
-            errorPadding.right,
-            errorPadding.bottom
-        )
-        mErrorAnimator = AnimationUtils.loadAnimation(context, R.anim.error_animation)
-        error.setTextColor(collectInput.errorTextStyles.base.textColor)
-        if (collectInput.errorTextStyles.base.font != Typeface.NORMAL)
-            error.typeface =
-                ResourcesCompat.getFont(context, collectInput.errorTextStyles.base.font)
-        error.gravity = collectInput.errorTextStyles.base.textAlignment
-        error.layoutParams = errorLP
-        error.requestLayout()
     }
 
     fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
@@ -389,10 +326,10 @@ class TextField @JvmOverloads constructor(
                     if (options.enableCopy) {
                         appendIcon("COPY")
                     }
-                } else if (options.enableCopy){
+                } else if (options.enableCopy) {
                     removeIcon()
                 }
-                
+
                 if (userOnchangeListener !== null) {
                     userOnchangeListener?.let {
                         it((state as StateforText).getState(optionsForLogging.env))
@@ -425,94 +362,102 @@ class TextField @JvmOverloads constructor(
             }
             false
         }
+
+        inputField.setOnTouchListener { _, event ->
+            when (event?.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    performCopyAction(event)
+                }
+            }
+            false
+        }
     }
 
-    private fun changeCardIcon(cardtype: CardType) {
+    private fun changeCardIcon(cardType: CardType) {
         inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
-            cardtype.image,
+            cardType.image,
             0,
             drawableRight,
             0
         )
         inputField.compoundDrawablePadding = 8
-        drawableLeft = cardtype.image
+        drawableLeft = cardType.image
+    }
+
+    private fun applyLabelStyle(style: Style) {
+        labelLP = LayoutParams(style.width, style.height)
+        val labelMargin = style.margin
+        labelLP.setMargins(labelMargin.left, labelMargin.top, labelMargin.right, labelMargin.bottom)
+        val padding = style.padding
+        label.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+        label.textSize = 16F
+        label.setTextColor(style.textColor)
+        if (style.font != Typeface.NORMAL)
+            label.typeface = ResourcesCompat.getFont(context, style.font)
+        label.gravity = style.textAlignment
+        label.minWidth = style.minWidth
+        label.maxWidth = style.maxWidth
+        label.minHeight = style.minHeight
+        if (style.maxHeight != null)
+            label.maxHeight = style.maxHeight!!
+        label.layoutParams = labelLP
+        label.requestLayout()
+    }
+
+    private fun applyInputStyle(style: Style) {
+        inputFieldLP = LayoutParams(style.width, style.height)
+        val margin = style.margin
+        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
+        val padding = style.padding
+        inputField.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+        inputField.setTextColor(style.textColor)
+        inputField.setHintTextColor(style.placeholderColor)
+        border.setColor(style.backgroundColor)
+        border.setStroke(style.borderWidth, style.borderColor)
+        border.cornerRadius = style.cornerRadius
+        inputField.setBackgroundDrawable(border)
+        if (style.font != Typeface.NORMAL)
+            inputField.typeface = ResourcesCompat.getFont(context, style.font)
+        inputField.gravity = style.textAlignment
+        inputField.minWidth = style.minWidth
+        inputField.maxWidth = style.maxWidth
+        inputField.minHeight = style.minHeight
+        if (style.maxHeight != null)
+            inputField.maxHeight = style.maxHeight!!
+        inputField.layoutParams = inputFieldLP
+        inputField.requestLayout()
+    }
+
+    private fun applyErrorTextStyle(style: Style) {
+        errorLP = LayoutParams(style.width, style.height)
+        val margin = style.margin
+        errorLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
+        val padding = style.padding
+        error.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+        error.setTextColor(style.textColor)
+        if (style.font != Typeface.NORMAL)
+            error.typeface = ResourcesCompat.getFont(context, style.font)
+        error.gravity = style.textAlignment
+        error.minWidth = style.minWidth
+        error.maxWidth = style.maxWidth
+        error.minHeight = style.minHeight
+        if (style.maxHeight != null)
+            error.maxHeight = style.maxHeight!!
+        error.layoutParams = errorLP
+        error.requestLayout()
     }
 
     private fun onFocusTextField() {
         onFocusIsTrue?.invoke()
-        labelLP = LayoutParams(
-            collectInput.labelStyles.focus.width,
-            collectInput.labelStyles.focus.height,
-        )
-        val labelMargin = collectInput.labelStyles.focus.margin
-        labelLP.setMargins(labelMargin.left, labelMargin.top, labelMargin.right, labelMargin.bottom)
-        val labelPadding = collectInput.labelStyles.focus.padding
-        label.setPadding(
-            labelPadding.left,
-            labelPadding.top,
-            labelPadding.right,
-            labelPadding.bottom
-        )
-        label.setTextColor(collectInput.labelStyles.focus.textColor)
-        if (collectInput.labelStyles.focus.font != Typeface.NORMAL)
-            label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.focus.font)
-        label.gravity = collectInput.labelStyles.focus.textAlignment
-        label.layoutParams = labelLP
-        label.requestLayout()
-
-        inputFieldLP = LayoutParams(
-            collectInput.inputStyles.focus.width,
-            collectInput.inputStyles.focus.height,
-        )
-        val margin = collectInput.inputStyles.focus.margin
-        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        val inputFieldPadding = collectInput.inputStyles.focus.padding
-        inputField.setPadding(
-            inputFieldPadding.left,
-            inputFieldPadding.top,
-            inputFieldPadding.right,
-            inputFieldPadding.bottom
-        )
-        inputField.setTextColor(collectInput.inputStyles.focus.textColor)
-        border.setStroke(
-            collectInput.inputStyles.focus.borderWidth,
-            collectInput.inputStyles.focus.borderColor
-        )
-        border.cornerRadius = collectInput.inputStyles.focus.cornerRadius
-        inputField.setBackgroundDrawable(border)
-        inputField.gravity = collectInput.inputStyles.focus.textAlignment
-        inputField.layoutParams = inputFieldLP
-        inputField.requestLayout()
-        if (collectInput.inputStyles.focus.font != Typeface.NORMAL)
-            inputField.typeface =
-                ResourcesCompat.getFont(context, collectInput.inputStyles.focus.font)
+        applyLabelStyle(collectInput.labelStyles.focus)
+        applyInputStyle(collectInput.inputStyles.focus)
         error.visibility = View.INVISIBLE
         if (userOnFocusListener !== null)
             userOnFocusListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
     }
 
     private fun onBlurTextField() {
-        labelLP = LayoutParams(
-            collectInput.labelStyles.base.width,
-            collectInput.labelStyles.base.height,
-        )
-        val margin = collectInput.labelStyles.base.margin
-        labelLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        val labelPadding = collectInput.labelStyles.base.padding
-        label.textSize = 16F
-        label.setPadding(
-            labelPadding.left,
-            labelPadding.top,
-            labelPadding.right,
-            labelPadding.bottom
-        )
-        label.setTextColor(collectInput.labelStyles.base.textColor)
-        if (collectInput.labelStyles.base.font != Typeface.NORMAL)
-            label.typeface = ResourcesCompat.getFont(context, collectInput.labelStyles.base.font)
-        label.gravity = collectInput.labelStyles.base.textAlignment
-        label.layoutParams = labelLP
-        label.requestLayout()
-
+        applyLabelStyle(collectInput.labelStyles.base)
         val internalState = this.state.getInternalState()
         if (internalState["isEmpty"] as Boolean && !isRequired) {
             emptyTextField()
@@ -526,99 +471,24 @@ class TextField @JvmOverloads constructor(
             userOnBlurListener?.let { it((state as StateforText).getState(optionsForLogging.env)) }
     }
 
-    private fun validTextField() {
-        inputFieldLP = LayoutParams(
-            collectInput.inputStyles.complete.width,
-            collectInput.inputStyles.complete.height,
-        )
-        val margin = collectInput.inputStyles.complete.margin
-        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        val inputFieldPadding = collectInput.inputStyles.complete.padding
-        inputField.setPadding(
-            inputFieldPadding.left,
-            inputFieldPadding.top,
-            inputFieldPadding.right,
-            inputFieldPadding.bottom
-        )
-        inputField.setTextColor(collectInput.inputStyles.complete.textColor)
-        border.setStroke(
-            collectInput.inputStyles.complete.borderWidth,
-            collectInput.inputStyles.complete.borderColor
-        )
-        border.cornerRadius = collectInput.inputStyles.complete.cornerRadius
-        inputField.setBackgroundDrawable(border)
-        inputField.gravity = collectInput.inputStyles.complete.textAlignment
-        inputField.layoutParams = inputFieldLP
-        inputField.requestLayout()
-        if (collectInput.inputStyles.complete.font != Typeface.NORMAL)
-            inputField.typeface =
-                ResourcesCompat.getFont(context, collectInput.inputStyles.complete.font)
+    private fun emptyTextField() {
+        applyInputStyle(collectInput.inputStyles.empty)
     }
 
     internal fun invalidTextField() {
         onEndEditing?.invoke()
-        inputFieldLP = LayoutParams(
-            collectInput.inputStyles.invalid.width,
-            collectInput.inputStyles.invalid.height,
-        )
-        val margin = collectInput.inputStyles.invalid.margin
-        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        val inputFieldPadding = collectInput.inputStyles.invalid.padding
-        inputField.setPadding(
-            inputFieldPadding.left,
-            inputFieldPadding.top,
-            inputFieldPadding.right,
-            inputFieldPadding.bottom
-        )
-        inputField.setTextColor(collectInput.inputStyles.invalid.textColor)
-        inputField.layoutParams = inputFieldLP
-        inputField.requestLayout()
-        border.setStroke(
-            collectInput.inputStyles.invalid.borderWidth,
-            collectInput.inputStyles.invalid.borderColor
-        )
-        border.cornerRadius = collectInput.inputStyles.invalid.cornerRadius
-        inputField.setBackgroundDrawable(border)
-        inputField.gravity = collectInput.inputStyles.invalid.textAlignment
-        if (collectInput.inputStyles.invalid.font != Typeface.NORMAL)
-            inputField.typeface =
-                ResourcesCompat.getFont(context, collectInput.inputStyles.invalid.font)
+        applyInputStyle(collectInput.inputStyles.invalid)
         VibrationHelper.vibrate(context, 10)
         error.visibility = View.VISIBLE
         startAnimation(mErrorAnimator)
     }
 
-    private fun emptyTextField() {
-        inputFieldLP = LayoutParams(
-            collectInput.inputStyles.empty.width,
-            collectInput.inputStyles.empty.height,
-        )
-        val margin = collectInput.inputStyles.empty.margin
-        inputFieldLP.setMargins(margin.left, margin.top, margin.right, margin.bottom)
-        val inputFieldPadding = collectInput.inputStyles.empty.padding
-        inputField.setPadding(
-            inputFieldPadding.left,
-            inputFieldPadding.top,
-            inputFieldPadding.right,
-            inputFieldPadding.bottom
-        )
-        inputField.setTextColor(collectInput.inputStyles.empty.textColor)
-        border.setStroke(
-            collectInput.inputStyles.empty.borderWidth,
-            collectInput.inputStyles.empty.borderColor
-        )
-        border.cornerRadius = collectInput.inputStyles.empty.cornerRadius
-        inputField.setBackgroundDrawable(border)
-        inputField.gravity = collectInput.inputStyles.empty.textAlignment
-        inputField.layoutParams = inputFieldLP
-        inputField.requestLayout()
-        if (collectInput.inputStyles.empty.font != Typeface.NORMAL)
-            inputField.typeface =
-                ResourcesCompat.getFont(context, collectInput.inputStyles.empty.font)
+    private fun validTextField() {
+        applyInputStyle(collectInput.inputStyles.complete)
     }
 
-    var previousLength = 0
-    private fun addSlashspanToExpiryDate(editable: Editable?, expiryDateFormat: String) {
+    private var previousLength = 0
+    private fun addSlashSpanToExpiryDate(editable: Editable?, expiryDateFormat: String) {
 
         val filterArray = arrayOfNulls<InputFilter>(1)
         filterArray[0] = LengthFilter(expiryDateFormat.length)
@@ -688,7 +558,7 @@ class TextField @JvmOverloads constructor(
             }
 
             SkyflowElementType.EXPIRATION_DATE -> {
-                addSlashspanToExpiryDate(s, expiryDateFormat)
+                addSlashSpanToExpiryDate(s, expiryDateFormat)
             }
 
             SkyflowElementType.EXPIRATION_MONTH -> {
@@ -793,7 +663,7 @@ class TextField @JvmOverloads constructor(
             actualValue = value
             setText(value)
         } else {
-            Log.w(tag, "setValue can be called only in dev mode")
+            Logger.warn(tag, "setValue can be called only in dev mode", optionsForLogging.logLevel)
         }
     }
 
@@ -802,7 +672,11 @@ class TextField @JvmOverloads constructor(
             actualValue = ""
             setText("")
         } else {
-            Log.w(tag, "clearValue can be called only in dev mode")
+            Logger.warn(
+                tag,
+                "clearValue can be called only in dev mode",
+                optionsForLogging.logLevel
+            )
         }
     }
 
