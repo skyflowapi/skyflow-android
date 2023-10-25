@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.23.0] - 2023-10-25
+### Added
+- Support for more styling in Collect Elements.
+- Indicate required Collect Elements with `*` symbol.
+- Support for Get interface
+
 ## [1.22.0] - 2023-10-12
 ### Added
 - Support for Composable elements.
