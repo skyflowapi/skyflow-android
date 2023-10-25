@@ -2,6 +2,7 @@ package Skyflow.utils
 
 import Skyflow.*
 import Skyflow.LogLevel
+import Skyflow.core.Logger
 import Skyflow.get.GetOptions
 import Skyflow.get.GetRecord
 import android.os.Build
@@ -719,6 +720,7 @@ public class Utils {
                 requestBody.add(requestRecord)
             }
             return requestBody
+        }
 
         fun checkInputFormatOptions(
             type: SkyflowElementType,

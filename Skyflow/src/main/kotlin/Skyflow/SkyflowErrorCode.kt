@@ -109,7 +109,7 @@ enum class SkyflowErrorCode(val code:Int, var message:String)
         400,
         Messages.NEITHER_IDS_NOR_COLUMN_DETAILS_SPECIFIED.message
     ),
-    FAILED_TO_GET(400,Messages.FAILED_TO_GET.message);
+    FAILED_TO_GET(400,Messages.FAILED_TO_GET.message),
     MISMATCH_ELEMENT_COUNT_LAYOUT_SUM(400, Messages.MISMATCH_ELEMENT_COUNT_LAYOUT_SUM.message);
     @JvmName("getCode1")
     fun getCode() : Int
