@@ -3,6 +3,8 @@ package Skyflow.utils
 import Skyflow.*
 import Skyflow.LogLevel
 import Skyflow.core.Logger
+import Skyflow.get.GetOptions
+import Skyflow.get.GetRecord
 import android.os.Build
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
@@ -520,6 +522,204 @@ public class Utils {
                 Log.d(tag, "fetching SDK metrics failed")
             }
             return metrics
+        }
+
+        internal fun validateGetInputAndOptions(
+            records: JSONObject,
+            options: GetOptions?,
+            logLevel: LogLevel
+        ) {
+            if (!records.has("records")) {
+                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+            } else if (records.get("records").toString().isEmpty()) {
+                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+            } else if (records.get("records") !is JSONArray) {
+                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
+            }
+
+            val recordsArray = records.getJSONArray("records")
+
+            (0 until recordsArray.length()).forEach {
+                val recordObject = recordsArray.getJSONObject(it)
+                var hasIds = false
+                var hasRedaction = false
+
+                if (!recordObject.keys().hasNext()) {
+                    throw SkyflowError(
+                        SkyflowErrorCode.EMPTY_RECORD_OBJECT, tag, logLevel, arrayOf(it.toString())
+                    )
+                }
+
+                // checking for table
+                if (!recordObject.has("table")) {
+                    throw SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY, tag, logLevel)
+                } else if (recordObject.get("table") !is String) {
+                    throw SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, tag, logLevel)
+                } else if (recordObject.get("table").toString().isEmpty()) {
+                    throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, tag, logLevel)
+                }
+
+                // checking for ids
+                if (recordObject.has("ids")) {
+                    val ids = recordObject.get("ids")
+                    if (ids !is JSONArray) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.INVALID_RECORD_IDS_TYPE, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else if (ids.length() == 0) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.EMPTY_RECORD_IDS_IN_GET, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else {
+                        hasIds = true
+                        for (i in 0 until ids.length()) {
+                            if (ids[i] !is String) {
+                                throw SkyflowError(
+                                    SkyflowErrorCode.INVALID_RECORD_ID_TYPE, tag, logLevel
+                                )
+                            } else if (ids[i].toString().isEmpty()) {
+                                throw SkyflowError(SkyflowErrorCode.EMPTY_ID, tag, logLevel)
+                            }
+                        }
+                    }
+                }
+
+                // checking for redaction
+                if (recordObject.has("redaction")) hasRedaction = true
+
+                val hasColumnName = recordObject.has("columnName")
+                val hasColumnValues = recordObject.has("columnValues")
+
+                if (options?.tokens == true && hasRedaction) {
+                    throw SkyflowError(
+                        SkyflowErrorCode.REDACTION_WITH_TOKENS_NOT_SUPPORTED, tag, logLevel
+                    )
+                } else if (options?.tokens == true && hasColumnName && hasColumnValues) {
+                    throw SkyflowError(
+                        SkyflowErrorCode.TOKENS_NOT_SUPPORTED_WITH_COLUMN_DETAILS, tag, logLevel
+                    )
+                } else if (options?.tokens == false) {
+                    if (!hasRedaction) {
+                        throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR, tag, logLevel)
+                    } else if (recordObject.get("redaction").toString().isEmpty()) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.MISSING_REDACTION_VALUE,
+                            tag, logLevel
+                        )
+                    } else if (recordObject.get("redaction") !is RedactionType) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.INVALID_REDACTION_TYPE,
+                            tag, logLevel
+                        )
+                    }
+                }
+
+                // checking for column name and column values
+                if (!hasColumnName && hasColumnValues) {
+                    throw SkyflowError(SkyflowErrorCode.MISSING_RECORD_COLUMN_NAME, tag, logLevel)
+                } else if (hasColumnName && !hasColumnValues) {
+                    throw SkyflowError(SkyflowErrorCode.MISSING_RECORD_COLUMN_VALUES, tag, logLevel)
+                } else if (hasColumnName && hasColumnValues) {
+                    if (hasIds) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.BOTH_IDS_AND_COLUMN_DETAILS_SPECIFIED, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    }
+
+                    val columnName = recordObject.get("columnName")
+                    val columnValues = recordObject.get("columnValues")
+
+                    if (columnName !is String) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.INVALID_RECORD_COLUMN_NAME_TYPE, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else if (columnName.toString().isEmpty()) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.EMPTY_RECORD_COLUMN_NAME, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else if (columnValues !is JSONArray) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.INVALID_RECORD_COLUMN_VALUES_TYPE,
+                            tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else if (columnValues.length() == 0) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.EMPTY_RECORD_COLUMN_VALUES, tag, logLevel,
+                            arrayOf(it.toString())
+                        )
+                    } else {
+                        for (i in 0 until columnValues.length()) {
+                            if (columnValues[i] !is String) {
+                                throw SkyflowError(
+                                    SkyflowErrorCode.INVALID_COLUMN_VALUE_TYPE, tag, logLevel
+                                )
+                            } else if (columnValues[i].toString().isEmpty()) {
+                                throw SkyflowError(
+                                    SkyflowErrorCode.EMPTY_COLUMN_VALUE, tag, logLevel
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    if (!hasIds) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.NEITHER_IDS_NOR_COLUMN_DETAILS_SPECIFIED,
+                            tag, logLevel, arrayOf(it.toString())
+                        )
+                    }
+                }
+            }
+        }
+
+        internal fun constructRequestBodyForGet(records: JSONObject): MutableList<GetRecord> {
+            val requestBody = mutableListOf<GetRecord>()
+            val recordsArray = records.getJSONArray("records")
+            for (it in 0 until recordsArray.length()) {
+                val record = recordsArray.getJSONObject(it)
+
+                val table = record.getString("table")
+                val ids = arrayListOf<String>()
+                val columnValues = arrayListOf<String>()
+
+                val redaction = if (record.has("redaction")) {
+                    record.getString("redaction")
+                } else null
+
+                if (record.has("ids")) {
+                    val skyflowIds = record.getJSONArray("ids")
+                    for (i in 0 until skyflowIds.length()) {
+                        ids.add(skyflowIds[i].toString())
+                    }
+
+                    requestBody.add(
+                        GetRecord(skyflowIds = ids, table = table, redaction = redaction)
+                    )
+                    continue
+                } else if (record.has("columnValues")) {
+                    val skyflowColumnValues = record.getJSONArray("columnValues")
+                    for (i in 0 until skyflowColumnValues.length()) {
+                        columnValues.add(skyflowColumnValues[i].toString())
+                    }
+                }
+
+                val columnName = record.getString("columnName")
+
+                val requestRecord = GetRecord(
+                    table = table,
+                    redaction = redaction,
+                    columnName = columnName,
+                    columnValues = columnValues
+                )
+
+                requestBody.add(requestRecord)
+            }
+            return requestBody
         }
 
         fun checkInputFormatOptions(

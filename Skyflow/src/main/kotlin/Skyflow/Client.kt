@@ -2,6 +2,7 @@ package Skyflow
 
 import Skyflow.core.*
 import Skyflow.core.Logger
+import Skyflow.get.GetOptions
 import Skyflow.reveal.GetByIdRecord
 import Skyflow.soap.SoapConnectionConfig
 import Skyflow.utils.Utils
@@ -54,6 +55,17 @@ class Client internal constructor(
             Logger.info(tag, Messages.GET_BY_ID_CALLED.getMessage(), configuration.options.logLevel)
             val result = constructBodyForGetById(records)
             this.apiClient.getById(result, callback)
+        } catch (e: Exception) {
+            callback.onFailure(Utils.constructError(e))
+        }
+    }
+
+    fun get(records: JSONObject, options: GetOptions?, callback: Callback) {
+        Logger.info(tag, Messages.GET_CALLED.getMessage(), configuration.options.logLevel)
+        try {
+            Utils.checkVaultDetails(configuration)
+            Logger.info(tag, Messages.GETTING_RECORDS.getMessage(), configuration.options.logLevel)
+            this.apiClient.get(records, options, callback)
         } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
@@ -173,7 +185,6 @@ class Client internal constructor(
         }
         return result
     }
-
 
     fun <T:ContainerProtocol> container(type: KClass<T>) : Container<T>{
         if(type == ContainerType.COLLECT){
