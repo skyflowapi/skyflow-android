@@ -85,6 +85,8 @@ class RevealActivity : AppCompatActivity() {
             label = "CVV", altText = "***"
         )
 
+        val linearParent = findViewById<LinearLayout>(R.id.linear_parent)
+
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
             "VAULT_ID",
@@ -105,10 +107,10 @@ class RevealActivity : AppCompatActivity() {
         fullName.layoutParams = lp
         cvv.layoutParams = lp
 
-        linear_parent.addView(fullName)
-        linear_parent.addView(cardNumber)
-        linear_parent.addView(expiry)
-        linear_parent.addView(cvv)
+        linearParent.addView(fullName)
+        linearParent.addView(cardNumber)
+        linearParent.addView(expiry)
+        linearParent.addView(cvv)
 
         reveal.setOnClickListener {
             getByIds()
