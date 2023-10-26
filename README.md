@@ -316,31 +316,42 @@ Skyflow.Style(
   font:  Int                  // optional
   textAlignment: Int          // optional
   textColor: Int              // optional
+  placeholderColor: Int       // optional
   width: Int                  // optional
   height: Int                 // optional
   margin: Skyflow.Margin      // optional
+  backgroundColor: Int        // optional
+  minWidth: Int               // optional
+  maxWidth: Int               // optional
+  minHeight: Int              // optional
+  maxHeight: Int              // optional
 )
 ```
-Here Skyflow.Padding is a class which can be used to set the padding for the collect element which takes all the left, top, right, bottom padding values.
+Here `Skyflow.Padding` and `Skyflow.Margin` are classes which can be used to set the padding and margin respectively for the composable element which takes all the left, top, right, bottom values.
 
 ```kt
 Skyflow.Padding(left: Int, top: Int, right: Int, bottom: Int)
+
+Skyflow.Margin(left: Int, top: Int, right: Int, bottom: Int)
 ```
 
 An example Skyflow.Styles object
-```kt
+```kotlin
 val inputStyles = Skyflow.Styles(
-        base = Skyflow.Style(),        //optional
-        complete  = Skyflow.Style(),   //optional
-        empty = Skyflow.Style(),       //optional
-        focus = Skyflow.Style(),       //optional
-        invalid = Skyflow.Style()      //optional
-    )
+  base = Skyflow.Style(),              // optional
+  complete  = Skyflow.Style(),         // optional
+  empty = Skyflow.Style(),             // optional
+  focus = Skyflow.Style(),             // optional
+  invalid = Skyflow.Style(),           // optional
+  requiredAsterisk = Skyflow.Style()   // optional 
+)
 ```
 
 The `labelStyles` and `errorTextStyles` fields accept the above mentioned `Skyflow.Styles` object which are applied to the `label` and `errorText` text views respectively.
 
-The states that are available for `labelStyles` are `base` and `focus`.
+The states that are available for `labelStyles` are `base`, `focus` and `requiredAsterisk`.
+
+`requiredAsterisk`: Styles applied for the Asterisk symbol in the label. Defaults to `red`.
 
 The state that is available for `errorTextStyles` is only the `base` state, it shows up when there is some error in the collect element.
 
@@ -352,6 +363,10 @@ The parameters in `Skyflow.Style` object that are respected for `label` and `err
 - width
 - height
 - margin
+- minWidth
+- maxWidth
+- minHeight
+- maxHeight
 
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
 
@@ -985,9 +1000,15 @@ Skyflow.Style(
   font:  Int                  // optional
   textAlignment: Int          // optional
   textColor: Int              // optional
+  placeholderColor: Int       // optional
   width: Int                  // optional
   height: Int                 // optional
   margin: Skyflow.Margin      // optional
+  backgroundColor: Int        // optional
+  minWidth: Int               // optional
+  maxWidth: Int               // optional
+  minHeight: Int              // optional
+  maxHeight: Int              // optional
 )
 ```
 
@@ -1027,6 +1048,10 @@ val styles = Skyflow.Styles(
   - width
   - height
   - margin
+  - minWidth
+  - maxWidth
+  - minHeight
+  - maxHeight
  
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
  
