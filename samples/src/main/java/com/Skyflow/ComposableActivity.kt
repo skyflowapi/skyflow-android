@@ -62,7 +62,7 @@ class ComposableActivity : AppCompatActivity() {
             R.font.roboto_light,
             Gravity.START,
             Color.parseColor("#403E6B"),
-            530,
+            width = 800,
             margin = Margin(0, 0, 0, 0)
         )
         val bstyle2 = Style(
@@ -73,7 +73,7 @@ class ComposableActivity : AppCompatActivity() {
             R.font.roboto_light,
             Gravity.START,
             Color.parseColor("#403E6B"),
-            350,
+            width = 350,
             margin = Margin(0, 0, 0, 0)
         )
         val bstyle3 = Style(
@@ -84,7 +84,7 @@ class ComposableActivity : AppCompatActivity() {
             R.font.roboto_light,
             Gravity.START,
             Color.parseColor("#403E6B"),
-            220,
+            width = 300,
             margin = Margin(0, 0, 0, 0)
         )
         val cstyle = Style(
