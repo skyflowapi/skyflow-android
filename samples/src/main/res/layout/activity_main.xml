@@ -43,7 +43,6 @@
         android:background="#403E6B"
         android:text="@string/custom_validations_demo" />
 
-
     <Button
         android:id="@+id/input_formatting_demo"
         android:layout_width="match_parent"
@@ -53,4 +52,15 @@
         android:layout_marginRight="50dp"
         android:background="#403E6B"
         android:text="@string/input_formatting_demo" />
+
+    <Button
+        android:id="@+id/composable_elements_demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="50dp"
+        android:background="#403E6B"
+        android:text="@string/composable_elements_demo" />
+
 </LinearLayout>
