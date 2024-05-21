@@ -100,7 +100,11 @@ class TextField @JvmOverloads constructor(
         var builtinValidationError = ""
         if (isRequired && str.isEmpty()) {
             builtinValidationError = "value is empty"
-            setErrorText("value is required")
+            if(collectInput.label.isEmpty())
+                setErrorText("Field is required")
+            else
+                setErrorText(collectInput.label +" is required")
+
             return builtinValidationError
         }
         builtinValidationError += SkyflowValidator.validate(str, validationRules)
@@ -120,9 +124,9 @@ class TextField @JvmOverloads constructor(
             }
         } else {
             if (collectInput.label.isEmpty())
-                setErrorText("invalid field")
+                setErrorText("Invalid value")
             else
-                setErrorText("invalid " + collectInput.label)
+                setErrorText("Invalid " + collectInput.label)
             return builtinValidationError
         }
     }

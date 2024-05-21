@@ -13,6 +13,7 @@ import Skyflow.soap.SoapApiCallback
 import Skyflow.soap.SoapConnectionConfig
 import Skyflow.soap.SoapValueCallback
 import Skyflow.utils.Utils
+import com.skyflow_android.BuildConfig
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -70,7 +71,7 @@ internal class APIClient(
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         if (!isValidToken(responseBody.toString())) {
                             val error =
-                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
+                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
                             callback.onFailure(error)
                         } else {
                             token = "Bearer $responseBody"
@@ -85,7 +86,7 @@ internal class APIClient(
                             logLevel
                         )
                         val error =
-                            SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
+                            SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
                         callback.onFailure(error)
                     }
                 })
@@ -93,7 +94,7 @@ internal class APIClient(
                 callback.onSuccess(token)
             }
         } catch (e: Exception) {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
+            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
             callback.onFailure(error)
         }
     }
