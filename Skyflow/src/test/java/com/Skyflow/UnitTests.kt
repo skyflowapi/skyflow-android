@@ -504,7 +504,9 @@ class UnitTests {
             val x = Utils.constructBatchRequestBody(records, InsertOptions(), LogLevel.ERROR)
             assertEquals(x.toString().trim(), JSONObject().toString().trim())
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_KEY, params = arrayOf())
+            val skyflowError = SkyflowError(
+                SkyflowErrorCode.EMPTY_FIELD_IN_FIELDS, params = arrayOf("0")
+            )
             assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
