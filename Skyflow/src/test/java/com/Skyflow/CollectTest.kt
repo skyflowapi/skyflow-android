@@ -1082,7 +1082,10 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+            val skyflowError = SkyflowError(
+                SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_TABLE_KEY,
+                params = arrayOf("0")
+            )
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1118,7 +1121,11 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
+            val skyflowError =
+                SkyflowError(
+                    SkyflowErrorCode.ADDITIONAL_FIELDS_TABLE_KEY_NOT_FOUND,
+                    params = arrayOf("0")
+                )
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1155,7 +1162,11 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+            val skyflowError =
+                SkyflowError(
+                    SkyflowErrorCode.ADDITIONAL_FIELDS_INVALID_TABLE_NAME,
+                    params = arrayOf("0")
+                )
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1191,7 +1202,11 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.FIELDS_KEY_ERROR)
+            val skyflowError =
+                SkyflowError(
+                    SkyflowErrorCode.ADDITIONAL_FIELDS_FIELDS_KEY_NOT_FOUND,
+                    params = arrayOf("0")
+                )
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1226,7 +1241,8 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_FIELDS)
+            val skyflowError =
+                SkyflowError(SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_FIELDS, params = arrayOf("0"))
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1255,7 +1271,7 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+            val skyflowError = SkyflowError(SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_RECORDS)
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -1283,7 +1299,7 @@ class CollectTest {
         try {
             CollectRequestBody.createRequestBody(container.collectElements, records, LogLevel.ERROR)
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+            val skyflowError = SkyflowError(SkyflowErrorCode.ADDITIONAL_FIELDS_INVALID_RECORDS)
             TestCase.assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()

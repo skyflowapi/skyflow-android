@@ -116,85 +116,92 @@ class InsertTest {
     }
 
     @Test
-    fun testEmptyTableName()
-    {
+    fun testEmptyTableName() {
         val records = JSONObject()
         val recordsArray = JSONArray()
+
         val record = JSONObject()
         record.put("table", "")
+
         val fields = JSONObject()
         fields.put("fullname", "san")
         fields.put("card_number", "41111111111")
         fields.put("expiry_date","11/22")
+
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        skyflow.insert(records, InsertOptions(),object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+
+        skyflow.insert(records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME.getMessage())
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf("0")
+                )
+                assertEquals(skyflowError.getErrorMessage(), (exception as SkyflowError).message)
             }
-
         })
     }
 
     @Test
-    fun testEmptyColumnName()
-    {
+    fun testEmptyColumnName() {
         val records = JSONObject()
         val recordsArray = JSONArray()
+
         val record = JSONObject()
         record.put("table", "cards")
+
         val fields = JSONObject()
         fields.put("", "xyz")
         fields.put("cardNumber", "41111111111")
         fields.put("expiry_date","11/22")
         record.put("fields", fields)
+
         recordsArray.put(record)
         records.put("records", recordsArray)
-        skyflow.insert(records, InsertOptions(),object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+
+        skyflow.insert(records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.EMPTY_COLUMN_NAME.getMessage())
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.EMPTY_FIELD_IN_FIELDS, params = arrayOf("0")
+                )
+                assertEquals(skyflowError.getErrorMessage(), (exception as SkyflowError).message)
             }
-
         })
     }
 
     @Test
-    fun testMissingTable()
-    {
+    fun testMissingTable() {
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
+
         val fields = JSONObject()
-       // fields.put("table", "cards")
         fields.put("cardNumber", "41111111111")
         fields.put("expiry_date","11/22")
         record.put("fields", fields)
+
         recordsArray.put(record)
         records.put("records", recordsArray)
-        skyflow.insert(records, InsertOptions(),object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+
+        skyflow.insert(records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message.toString(),SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT.getMessage())
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.TABLE_KEY_NOY_FOUND, params = arrayOf("0")
+                )
+                assertEquals(skyflowError.getErrorMessage(), (exception as SkyflowError).message)
             }
 
         })
     }
 
     @Test
-    fun testMissingFields()
-    {
+    fun testMissingFields() {
         val records = JSONObject()
         val recordsArray = JSONArray()
         val record = JSONObject()
@@ -206,15 +213,15 @@ class InsertTest {
         //record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        skyflow.insert(records, InsertOptions(),object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        skyflow.insert(records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.FIELDS_KEY_ERROR.getMessage())
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.FIELDS_KEY_NOT_FOUND, params = arrayOf("0")
+                )
+                assertEquals(skyflowError.getErrorMessage(), (exception as SkyflowError).message)
             }
-
         })
     }
 
@@ -245,27 +252,33 @@ class InsertTest {
     }
 
     @Test
-    fun testInvalidTableType()
-    {
+    fun testInvalidTableType() {
         val records = JSONObject()
         val recordsArray = JSONArray()
+
         val record = JSONObject()
         record.put("table", JSONObject())
+
         val fields = JSONObject()
         fields.put("cardNumber", "41111111111")
         fields.put("expiry_date","11/22")
+
         record.put("fields", fields)
         recordsArray.put(record)
         records.put("records", recordsArray)
-        skyflow.insert(records, InsertOptions(),object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+
+        skyflow.insert(records, InsertOptions(), object : Callback {
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                assertEquals((exception as SkyflowError).message,SkyflowErrorCode.INVALID_TABLE_NAME.getMessage())
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf("0")
+                )
+                assertEquals(
+                    skyflowError.getErrorMessage(),
+                    (exception as SkyflowError).getErrorMessage()
+                )
             }
-
         })
     }
 

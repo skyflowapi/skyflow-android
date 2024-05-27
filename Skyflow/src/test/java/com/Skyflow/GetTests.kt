@@ -217,7 +217,7 @@ class GetTests {
         getRecords.put("records", recordsArray)
 
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_TABLE_KEY, utilsTag, logLevel
+            SkyflowErrorCode.TABLE_KEY_NOY_FOUND, utilsTag, logLevel, arrayOf("0")
         )
 
         try {
@@ -231,7 +231,9 @@ class GetTests {
     fun testEmptyTableInRecordObject() {
         getRecord.put("table", String())
         getRecords.put("records", recordsArray)
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, utilsTag, logLevel)
+        val skyflowError = SkyflowError(
+            SkyflowErrorCode.EMPTY_TABLE_KEY, utilsTag, logLevel, arrayOf("0")
+        )
 
         try {
             Utils.validateGetInputAndOptions(getRecords, GetOptions(), logLevel)
@@ -244,7 +246,9 @@ class GetTests {
     fun testInvalidTableTypeInRecordObject() {
         getRecord.put("table", JSONObject())
         getRecords.put("records", recordsArray)
-        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, utilsTag, logLevel)
+        val skyflowError = SkyflowError(
+            SkyflowErrorCode.INVALID_TABLE_NAME, utilsTag, logLevel, arrayOf("0")
+        )
 
         try {
             Utils.validateGetInputAndOptions(getRecords, GetOptions(), logLevel)
@@ -273,7 +277,7 @@ class GetTests {
         getRecord.put("ids", JSONObject())
         getRecords.put("records", recordsArray)
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.INVALID_RECORD_IDS_TYPE, utilsTag, logLevel, arrayOf("0")
+            SkyflowErrorCode.INVALID_IDS, utilsTag, logLevel, arrayOf("0")
         )
 
         try {
@@ -287,7 +291,11 @@ class GetTests {
     fun testInvalidIdTypeInRecordObject() {
         getRecord.getJSONArray("ids").put(123)
         getRecords.put("records", recordsArray)
-        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORD_ID_TYPE, utilsTag, logLevel)
+        val skyflowError =
+            SkyflowError(
+                SkyflowErrorCode.INVALID_ID_IN_RECORD_IDS,
+                utilsTag, logLevel, arrayOf("0")
+            )
 
         try {
             Utils.validateGetInputAndOptions(getRecords, GetOptions(), logLevel)
@@ -300,7 +308,8 @@ class GetTests {
     fun testEmptyIdValueInRecordObject() {
         getRecord.getJSONArray("ids").put(String())
         getRecords.put("records", recordsArray)
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_ID, utilsTag, logLevel)
+        val skyflowError =
+            SkyflowError(SkyflowErrorCode.EMPTY_ID_IN_RECORD_IDS, utilsTag, logLevel, arrayOf("0"))
 
         try {
             Utils.validateGetInputAndOptions(getRecords, GetOptions(), logLevel)
@@ -329,7 +338,7 @@ class GetTests {
         getRecord.put("redaction", String())
         getRecords.put("records", recordsArray)
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_REDACTION_VALUE, utilsTag, logLevel, arrayOf("0")
+            SkyflowErrorCode.EMPTY_REDACTION_VALUE, utilsTag, logLevel, arrayOf("0")
         )
 
         try {
@@ -371,7 +380,7 @@ class GetTests {
         getRecord.remove("redaction")
         getRecords.put("records", recordsArray)
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.REDACTION_KEY_ERROR, utilsTag, logLevel, arrayOf("0")
+            SkyflowErrorCode.REDACTION_KEY_NOT_FOUND, utilsTag, logLevel, arrayOf("0")
         )
 
         try {
@@ -398,7 +407,7 @@ class GetTests {
         getRecords.put("records", recordsArray)
 
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_RECORD_COLUMN_NAME, utilsTag, logLevel, arrayOf("0")
+            SkyflowErrorCode.MISSING_RECORD_COLUMN_NAME, utilsTag, logLevel, arrayOf("1")
         )
 
         try {
@@ -414,7 +423,7 @@ class GetTests {
         getRecords.put("records", recordsArray)
 
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_RECORD_COLUMN_VALUES, utilsTag, logLevel, arrayOf("0")
+            SkyflowErrorCode.MISSING_RECORD_COLUMN_VALUES, utilsTag, logLevel, arrayOf("1")
         )
 
         try {
@@ -528,7 +537,7 @@ class GetTests {
         getRecords.put("records", recordsArray)
 
         val skyflowError = SkyflowError(
-            SkyflowErrorCode.INVALID_COLUMN_VALUE_TYPE, utilsTag, logLevel
+            SkyflowErrorCode.INVALID_COLUMN_VALUE_TYPE, utilsTag, logLevel, arrayOf("1")
         )
 
         try {
@@ -543,7 +552,9 @@ class GetTests {
         getRecordColumnDetails.put("columnValues", JSONArray(arrayOf("value1", "")))
         getRecords.put("records", recordsArray)
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_VALUE, utilsTag, logLevel)
+        val skyflowError = SkyflowError(
+            SkyflowErrorCode.EMPTY_COLUMN_VALUE, utilsTag, logLevel, arrayOf("1")
+        )
 
         try {
             Utils.validateGetInputAndOptions(getRecords, GetOptions(), logLevel)
@@ -684,8 +695,7 @@ class GetTests {
 
             override fun onFailure(exception: Any) {
                 val expectedError = SkyflowError(
-                    SkyflowErrorCode.UNKNOWN_ERROR,
-                    getResponseTag, logLevel, params = arrayOf("Failed to Get records")
+                    SkyflowErrorCode.FAILED_TO_GET, getResponseTag, logLevel,
                 )
                 Assert.assertEquals(
                     expectedError.getErrorMessage(), getErrorMessage(exception as JSONObject)

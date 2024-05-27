@@ -2,7 +2,6 @@ package com.Skyflow
 
 import Skyflow.*
 import android.content.Context
-import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import junit.framework.Assert.assertEquals
 import org.json.JSONArray
@@ -130,7 +129,9 @@ class GetTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.TOKEN_KEY_NOT_FOUND, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),getErrorMessage(exception as JSONObject))
             }
 

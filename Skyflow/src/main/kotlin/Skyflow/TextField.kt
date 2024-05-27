@@ -100,10 +100,10 @@ class TextField @JvmOverloads constructor(
         var builtinValidationError = ""
         if (isRequired && str.isEmpty()) {
             builtinValidationError = "value is empty"
-            if(collectInput.label.isEmpty())
+            if (collectInput.label.isEmpty())
                 setErrorText("Field is required")
             else
-                setErrorText(collectInput.label +" is required")
+                setErrorText("${collectInput.label} is required")
 
             return builtinValidationError
         }
@@ -126,7 +126,7 @@ class TextField @JvmOverloads constructor(
             if (collectInput.label.isEmpty())
                 setErrorText("Invalid value")
             else
-                setErrorText("Invalid " + collectInput.label)
+                setErrorText("Invalid ${collectInput.label}")
             return builtinValidationError
         }
     }

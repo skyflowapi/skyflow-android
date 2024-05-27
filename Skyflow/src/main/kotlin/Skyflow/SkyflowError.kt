@@ -17,7 +17,7 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
         if(logLevel != null)
             Logger.error(tag, logMessage, logLevel)
         this.internalMessage = logMessage
-        this.message = "Interface : $tag - $logMessage"
+        this.message = logMessage
     }
     fun setErrorCode(code:Int)
     {

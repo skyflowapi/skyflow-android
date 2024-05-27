@@ -13,7 +13,6 @@ import Skyflow.soap.SoapApiCallback
 import Skyflow.soap.SoapConnectionConfig
 import Skyflow.soap.SoapValueCallback
 import Skyflow.utils.Utils
-import com.skyflow_android.BuildConfig
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
@@ -71,7 +70,7 @@ internal class APIClient(
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         if (!isValidToken(responseBody.toString())) {
                             val error =
-                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
+                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
                             callback.onFailure(error)
                         } else {
                             token = "Bearer $responseBody"
@@ -86,7 +85,7 @@ internal class APIClient(
                             logLevel
                         )
                         val error =
-                            SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
+                            SkyflowError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel)
                         callback.onFailure(error)
                     }
                 })
@@ -94,7 +93,7 @@ internal class APIClient(
                 callback.onSuccess(token)
             }
         } catch (e: Exception) {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel, arrayOf("Android", "${BuildConfig.SDK_VERSION}"))
+            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
             callback.onFailure(error)
         }
     }
@@ -155,33 +154,35 @@ internal class APIClient(
         if (!records.has("records")) {
             throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
         }
-        if (records.get("records").toString().isEmpty()) {
-            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
-        }
         if (records.get("records") !is JSONArray) {
             throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
         }
-        if (!records.has("records"))
-            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
-        else if (records.get("records") !is JSONArray)
-            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
-        val jsonArray = records.getJSONArray("records")
-        if (jsonArray.length() == 0)
+        if (records.getJSONArray("records").length() == 0) {
             throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+        }
+        val jsonArray = records.getJSONArray("records")
         val list = mutableListOf<RevealRequestRecord>()
         var i = 0
         while (i < jsonArray.length()) {
             val recordObject = jsonArray.getJSONObject(i)
             if (!recordObject.has("token")) {
-                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.TOKEN_KEY_NOT_FOUND, tag, logLevel, arrayOf("$i")
+                )
             } else if (recordObject.get("token").toString().isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.EMPTY_TOKEN, tag, logLevel, arrayOf("$i")
+                )
             } else if (recordObject.has("redaction")) {
                 val redaction = recordObject.get("redaction")
                 if (redaction.toString().isEmpty()) {
-                    throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE, tag, logLevel)
+                    throw SkyflowError(
+                        SkyflowErrorCode.EMPTY_REDACTION_VALUE, tag, logLevel, arrayOf("$i")
+                    )
                 } else if (redaction !is RedactionType) {
-                    throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, logLevel)
+                    throw SkyflowError(
+                        SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, logLevel, arrayOf("$i")
+                    )
                 } else {
                     list.add(
                         RevealRequestRecord(

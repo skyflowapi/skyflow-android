@@ -41,16 +41,13 @@ class UnitTests {
     fun setup() {
         MockKAnnotations.init(this)
         val configuration = Configuration(
-            "b359c43f1b844ff4bea0f098",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "b359c43f1b844ff4bea0f098", "https://vaulturl.com", AccessTokenProvider()
         )
         skyflow = Client(configuration)
         activityController = Robolectric.buildActivity(Activity::class.java).setup()
         activity = activityController.get()
         layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
     }
 
@@ -92,34 +89,27 @@ class UnitTests {
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
-
         })
 
         revealRecords.put("records", "")
         apiClient.get(revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
-
         })
         revealRecords.put("records", "{}")
         apiClient.get(revealRecords, object : Callback {
@@ -130,8 +120,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -156,10 +145,10 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND, params = arrayOf("0"))
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -186,8 +175,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -209,8 +197,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -225,29 +212,23 @@ class UnitTests {
         val revealRecords = JSONObject()
         revealRecords.put("records", JSONArray())
         apiClient.get(revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
-
         })
-
     }
-
 
     @Test
     fun testEmptyVaultID() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "", "https://vaulturl.com", AccessTokenProvider()
         )
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
@@ -264,8 +245,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -276,9 +256,7 @@ class UnitTests {
     @Test
     fun testEmptyVaultURL2() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault_id",
-            "",
-            AccessTokenProvider()
+            "vault_id", "", AccessTokenProvider()
         )
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
@@ -295,8 +273,7 @@ class UnitTests {
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -306,9 +283,7 @@ class UnitTests {
     @Test
     fun testInvalidVaultURL2() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault_id",
-            "http://www.goog.com",
-            AccessTokenProvider()
+            "vault_id", "http://www.goog.com", AccessTokenProvider()
         )
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
@@ -328,8 +303,7 @@ class UnitTests {
                     params = arrayOf(skyflowConfiguration.vaultURL)
                 )
                 Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    skyflowError.getInternalErrorMessage(), getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -348,27 +322,23 @@ class UnitTests {
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
         apiClient.get(revealRecords, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
                 assertEquals(
-                    SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID).getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    SkyflowError(
+                        SkyflowErrorCode.EMPTY_TOKEN, params = arrayOf("0")
+                    ).getInternalErrorMessage(),
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
-
         })
-
     }
 
     @Test
     fun testValidRequestForDetokenizeInClient() {
         val configuration = Configuration(
-            "12344",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "12344", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val revealRecords = JSONObject()
@@ -458,7 +428,8 @@ class UnitTests {
             val x = Utils.constructBatchRequestBody(records, InsertOptions(), LogLevel.ERROR)
             assertEquals(x.toString().trim(), JSONObject().toString().trim())
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY, params = arrayOf())
+            val skyflowError =
+                SkyflowError(SkyflowErrorCode.TABLE_KEY_NOY_FOUND, params = arrayOf("0"))
             assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -483,7 +454,8 @@ class UnitTests {
             val x = Utils.constructBatchRequestBody(records, InsertOptions(), LogLevel.ERROR)
             assertEquals(x.toString().trim(), JSONObject().toString().trim())
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf())
+            val skyflowError =
+                SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf("0"))
             assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
@@ -508,13 +480,12 @@ class UnitTests {
             val x = Utils.constructBatchRequestBody(records, InsertOptions(), LogLevel.ERROR)
             assertEquals(x.toString().trim(), JSONObject().toString().trim())
         } catch (exception: Exception) {
-            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf())
+            val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf("0"))
             assertEquals(
                 skyflowError.getInternalErrorMessage(),
                 (exception as SkyflowError).getInternalErrorMessage()
             )
         }
-
     }
 
     @Test
@@ -549,8 +520,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val card_number = container.create(activity, collectInput, options) as? TextField
         card_number!!.inputField.setText("4111")
@@ -574,8 +544,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val card_number = container.create(activity, collectInput, options) as? TextField
         activity.addContentView(card_number, layoutParams)
@@ -598,8 +567,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(true)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val card_number = container.create(activity, collectInput, options) as? TextField
         activity.addContentView(card_number, layoutParams)
@@ -621,11 +589,7 @@ class UnitTests {
     fun testBearerTokenFunction() //success
     {
         val client = APIClient(
-            "1234",
-            "https://vaulturl.com",
-            APITokenProviderForSuccess(),
-            LogLevel.ERROR,
-            ""
+            "1234", "https://vaulturl.com", APITokenProviderForSuccess(), LogLevel.ERROR, ""
         )
         client.getAccessToken(object : Callback {
             override fun onSuccess(responseBody: Any) {
@@ -643,9 +607,7 @@ class UnitTests {
     @Test
     fun testInsertEmptyVaultID() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "", "https://vaulturl.com", AccessTokenProvider()
         )
         val records = JSONObject()
         val skyflowClient = Client(skyflowConfiguration)
@@ -668,9 +630,7 @@ class UnitTests {
     @Test
     fun testInsertEmptyVaultURL() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault_id",
-            "",
-            AccessTokenProvider()
+            "vault_id", "", AccessTokenProvider()
         )
         val records = JSONObject()
         val skyflowClient = Client(skyflowConfiguration)
@@ -692,9 +652,7 @@ class UnitTests {
     @Test
     fun testInsertInvalidVaultURL() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault_id",
-            "http://www.goog.com",
-            AccessTokenProvider()
+            "vault_id", "http://www.goog.com", AccessTokenProvider()
         )
         val records = JSONObject()
         val skyflowClient = Client(skyflowConfiguration)
@@ -719,9 +677,7 @@ class UnitTests {
     @Test
     fun testValidRequestForInsert() {
         val skyflowConfiguration = Skyflow.Configuration(
-            "vault_id",
-            "https://www.google.com",
-            AccessTokenProvider()
+            "vault_id", "https://www.google.com", AccessTokenProvider()
         )
         val records = JSONObject()
         val skyflowClient = Client(skyflowConfiguration)
@@ -756,18 +712,16 @@ class UnitTests {
         recordsArray.put(record)
         records.put("records", recordsArray)
         apiClient.post(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
                     (exception as SkyflowError).getInternalErrorMessage()
                 )
             }
-
         }, InsertOptions())
     }
 
@@ -809,9 +763,7 @@ class UnitTests {
         requestRecord.put("xxx", CheckBox(activity))
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(
-            connectionURL = url,
-            methodName = RequestMethod.POST,
-            requestBody = requestRecord
+            connectionURL = url, methodName = RequestMethod.POST, requestBody = requestRecord
         )
 
         apiClient.invokeConnection(connectionRequestBody, object : Callback {
@@ -839,9 +791,7 @@ class UnitTests {
         requestRecord.put("card_number", "41111")
         val url = "BuildConfig.GATEWAY_CVV_GEN_URL " // eg:  url.../{cardNumber}/...
         val connectionRequestBody = ConnectionConfig(
-            connectionURL = url,
-            methodName = RequestMethod.POST,
-            requestBody = requestRecord
+            connectionURL = url, methodName = RequestMethod.POST, requestBody = requestRecord
         )
 
         apiClient.invokeConnection(connectionRequestBody, object : Callback {
@@ -874,8 +824,7 @@ class UnitTests {
 
         val container = skyflow.container(ContainerType.COLLECT)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.INPUT_FIELD, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.INPUT_FIELD, placeholder = "card number"
         )
         val first_name = container.create(activity, collectInput) as TextField
         activity.addContentView(first_name, layoutParams)
@@ -969,9 +918,7 @@ class UnitTests {
     @Test
     fun testNoRecords() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val records = JSONObject()
@@ -995,9 +942,7 @@ class UnitTests {
     @Test
     fun testInvalidRecords() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val records = JSONObject()
@@ -1021,35 +966,28 @@ class UnitTests {
     @Test
     fun testEmptyRecords() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val records = JSONObject()
         records.put("records", JSONArray())
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORDS)
                 Assert.assertEquals(
-                    UnitTests.getErrorMessage(exception as JSONObject),
-                    skyflowError.getInternalErrorMessage()
+                    skyflowError.getInternalErrorMessage(),
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
-
         })
     }
 
     @Test
     fun testMissingIds() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1065,27 +1003,23 @@ class UnitTests {
         val records = JSONObject()
         records.put("records", recordsArray)
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_IDS)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.IDS_KEY_NOT_FOUND, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
-
         })
     }
 
     @Test
     fun testEmptyIds() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1099,15 +1033,14 @@ class UnitTests {
         val records = JSONObject()
         records.put("records", recordsArray)
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -1118,9 +1051,7 @@ class UnitTests {
     @Test
     fun testEmptySkyflowId() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1135,27 +1066,23 @@ class UnitTests {
         val records = JSONObject()
         records.put("records", recordsArray)
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_ID_IN_RECORD_IDS, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
-
         })
     }
 
     @Test
     fun testInvalidIds() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1168,27 +1095,22 @@ class UnitTests {
         val records = JSONObject()
         records.put("records", recordsArray)
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS)
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_IDS, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
-
         })
     }
 
     @Test
     fun testMissingRedaction() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1206,13 +1128,13 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.REDACTION_KEY_NOT_FOUND, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
-
         })
     }
 
@@ -1220,9 +1142,7 @@ class UnitTests {
     @Test
     fun testMissingTable() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1240,10 +1160,11 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.TABLE_KEY_NOY_FOUND, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
 
@@ -1253,9 +1174,7 @@ class UnitTests {
     @Test
     fun testInvalidTableType() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1273,7 +1192,8 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
                     UnitTests.getErrorMessage(exception as JSONObject)
@@ -1287,9 +1207,7 @@ class UnitTests {
     @Test
     fun testInvalidRedaction() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1305,18 +1223,16 @@ class UnitTests {
         val records = JSONObject()
         records.put("records", recordsArray)
         client.getById(records, object : Callback {
-            override fun onSuccess(responseBody: Any) {
-
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject)
                 )
             }
-
         })
     }
 
@@ -1324,9 +1240,7 @@ class UnitTests {
     @Test
     fun testEmptyRedaction() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1347,10 +1261,11 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_REDACTION_VALUE, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
 
@@ -1360,9 +1275,7 @@ class UnitTests {
     @Test
     fun testEmptyTableName() {
         val configuration = Configuration(
-            "1234",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "1234", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1383,10 +1296,11 @@ class UnitTests {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY)
+                val skyflowError =
+                    SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf("0"))
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    UnitTests.getErrorMessage(exception as JSONObject)
+                    getErrorMessage(exception as JSONObject, true)
                 )
             }
 
@@ -1396,9 +1310,7 @@ class UnitTests {
     @Test
     fun testInvalidVaultURL() {
         val configuration = Configuration(
-            "1234",
-            "http://sb1.aa51.vault.skyflowapis.tech>",
-            AccessTokenProvider()
+            "1234", "http://sb1.aa51.vault.skyflowapis.tech>", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1420,8 +1332,7 @@ class UnitTests {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(
-                    SkyflowErrorCode.INVALID_VAULT_URL,
-                    params = arrayOf(configuration.vaultURL)
+                    SkyflowErrorCode.INVALID_VAULT_URL, params = arrayOf(configuration.vaultURL)
                 )
                 Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
@@ -1435,9 +1346,7 @@ class UnitTests {
     @Test
     fun testEmptyVaultURL() {
         val configuration = Configuration(
-            "1234",
-            "",
-            AccessTokenProvider()
+            "1234", "", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1471,9 +1380,7 @@ class UnitTests {
     @Test
     fun testEmptyVaultId() {
         val configuration = Configuration(
-            "",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1508,9 +1415,7 @@ class UnitTests {
     @Test
     fun testValidRequestForGetById() {
         val configuration = Configuration(
-            "23456",
-            "https://vaulturl.com",
-            AccessTokenProvider()
+            "23456", "https://vaulturl.com", AccessTokenProvider()
         )
         val client = Client(configuration)
         val recordsArray = JSONArray()
@@ -1557,8 +1462,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.FOCUS) { state ->
@@ -1578,8 +1482,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.BLUR) { state ->
@@ -1599,8 +1502,7 @@ class UnitTests {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
-            "cards", "card_number",
-            SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
         )
         val element = (container.create(activity, collectInput, options) as? TextField)
         element?.on(EventName.READY) { state ->
@@ -1649,14 +1551,15 @@ class UnitTests {
         val client =
             APIClient("1234", "https://vaulturl.com", APITokenProviderForFail(), LogLevel.ERROR)
         client.getAccessToken(object : Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val errorMessage = "bearer token is invalid or expired"
-                assertEquals(errorMessage, (exception as SkyflowError).getInternalErrorMessage())
+                val skyflowError = SkyflowError(SkyflowErrorCode.BEARER_TOKEN_REJECTED)
+                assertEquals(
+                    skyflowError.getInternalErrorMessage(),
+                    (exception as SkyflowError).getInternalErrorMessage()
+                )
             }
-
         })
     }
 
@@ -1668,14 +1571,13 @@ class UnitTests {
     }
 
     companion object {
-        fun getErrorMessage(error: JSONObject): String {
+        fun getErrorMessage(error: JSONObject, returnFull: Boolean? = false): String {
             val errors = error.getJSONArray("errors")
             val skyflowError = errors.getJSONObject(0).get("error") as SkyflowError
             val message = skyflowError.getInternalErrorMessage()
-            if (message.indexOf("-") != -1)
-                return message.substring(message.indexOf("-") + 2)
-            else
-                return message
+            return if (returnFull == true) message
+            else if (message.indexOf("-") != -1) message.substring(message.indexOf("-") + 2)
+            else message
         }
     }
 
@@ -1683,7 +1585,8 @@ class UnitTests {
     fun testGetValueForLabel() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(
-            activity, RevealElementInput(label = "cvv", token = "1234"),
+            activity,
+            RevealElementInput(label = "cvv", token = "1234"),
             RevealElementOptions(formatRegex = "..$")
         )
         activity.addContentView(cvv, layoutParams)
@@ -1696,7 +1599,8 @@ class UnitTests {
     fun testSetValueForLabel() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(
-            activity, RevealElementInput(label = "cvv", token = "1234"),
+            activity,
+            RevealElementInput(label = "cvv", token = "1234"),
             RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1")
         )
         activity.addContentView(cvv, layoutParams)
@@ -1708,7 +1612,8 @@ class UnitTests {
     fun testSetValueForLabel1() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(
-            activity, RevealElementInput(label = "cvv", token = "1234"),
+            activity,
+            RevealElementInput(label = "cvv", token = "1234"),
             RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1")
         )
         activity.addContentView(cvv, layoutParams)
@@ -1720,7 +1625,8 @@ class UnitTests {
     fun testSetValueForLabelFailed() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(
-            activity, RevealElementInput(label = "cvv", token = "1234"),
+            activity,
+            RevealElementInput(label = "cvv", token = "1234"),
             RevealElementOptions(formatRegex = "^([0-9]{1})$", replaceText = "0$1")
         )
         activity.addContentView(cvv, layoutParams)
@@ -1733,7 +1639,8 @@ class UnitTests {
     {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val cvv = revealContainer.create(
-            activity, RevealElementInput(label = "cvv", token = "1234"),
+            activity,
+            RevealElementInput(label = "cvv", token = "1234"),
             RevealElementOptions(replaceText = "0$1")
         )
         activity.addContentView(cvv, layoutParams)
@@ -1933,9 +1840,14 @@ class UnitTests {
     fun testNotJSONObjectInUpsert() {
 
         try {
-            assertEquals("", Utils.getUpsertColumn("cards", JSONArray().put("123"), LogLevel.DEBUG))
+            assertEquals(
+                String(),
+                Utils.getUpsertColumn("cards", JSONArray().put("123"), LogLevel.DEBUG)
+            )
         } catch (e: SkyflowError) {
-            assertEquals(Messages.ALLOW_JSON_OBJECT_IN_UPSERT.message, e.getInternalErrorMessage())
+            val skyflowError =
+                SkyflowError(SkyflowErrorCode.ALLOW_JSON_OBJECT_IN_UPSERT, params = arrayOf("0"))
+            assertEquals(skyflowError.getInternalErrorMessage(), e.getInternalErrorMessage())
         }
     }
 
@@ -1943,8 +1855,7 @@ class UnitTests {
     fun testFetchMetrics() {
         val expectedMetrics = JSONObject()
         expectedMetrics.put(
-            "sdk_name_version",
-            "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
+            "sdk_name_version", "${BuildConfig.SDK_NAME}@${BuildConfig.SDK_VERSION}"
         )
         expectedMetrics.put("sdk_client_device_model", "${Build.BRAND} ${Build.MODEL}")
         expectedMetrics.put("sdk_client_os_details", "android-${Build.VERSION.RELEASE}")
