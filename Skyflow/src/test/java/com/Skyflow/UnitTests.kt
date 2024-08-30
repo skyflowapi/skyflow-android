@@ -877,14 +877,16 @@ class UnitTests {
             "cards", "card_number",
             SkyflowElementType.INPUT_FIELD, placeholder = "card number"
         )
-        val first_name = container.create(activity, collectInput) as TextField
-        activity.addContentView(first_name, layoutParams)
-        val stateforText = StateforText(first_name)
-        assertTrue(stateforText.isEmpty)
-        assertTrue(stateforText.isValid)
-        assertFalse(stateforText.isFocused)
-        assertEquals(0, stateforText.inputLength)
-        assertEquals(SkyflowElementType.INPUT_FIELD, stateforText.fieldType)
+        val firstName = container.create(activity, collectInput) as TextField
+        activity.addContentView(firstName, layoutParams)
+        val stateForText = StateforText(firstName)
+        assertTrue(stateForText.isEmpty)
+        assertTrue(stateForText.isValid)
+        assertFalse(stateForText.isFocused)
+        assertEquals(0, stateForText.inputLength)
+        assertEquals(SkyflowElementType.INPUT_FIELD, stateForText.fieldType)
+        assertEquals(String(), stateForText.validationError)
+        assertEquals(String(), stateForText.selectedCardScheme)
     }
 
     @Test
@@ -1632,7 +1634,7 @@ class UnitTests {
         val cardNumber2 = "5454422955385717"
         cardtype = CardType.forCardNumber(cardNumber2)
         assertTrue(cardtype.equals(CardType.MASTERCARD))
-        assertTrue(cardtype.defaultName.equals("MasterCard"))
+        assertTrue(cardtype.defaultName.equals("Mastercard"))
         assertTrue(cardtype.image.equals(R.drawable.ic_mastercard))
 
         val cardNumber3 = "11111"
@@ -1952,6 +1954,12 @@ class UnitTests {
 
         val actualMetrics = Utils.fetchMetrics()
         Assert.assertEquals(expectedMetrics.toString(), actualMetrics.toString())
+    }
+
+    @Test
+    fun testCardMetadata() {
+        val cardMetadata = CardMetadata(arrayOf(CardType.MASTERCARD, CardType.CARTES_BANCAIRES))
+        Assert.assertEquals(2, cardMetadata.scheme.size)
     }
 }
 
