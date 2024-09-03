@@ -83,9 +83,9 @@ class TextField @JvmOverloads constructor(
     private lateinit var errorLP: LayoutParams
 
     internal var cardType = CardType.EMPTY
+    internal var isCustomCardBrandSelected = false
     private var dAWidth = 0
     private var cIWidth = 0
-    private var isCustomCardBrandSelected = false
 
     internal fun applyCallback(eventName: ComposableEvents, handler: (() -> Unit)) {
         when (eventName) {
@@ -225,7 +225,6 @@ class TextField @JvmOverloads constructor(
         applyInputStyle(collectInput.inputStyles.base)
         inputField.hint = collectInput.placeholder
         inputField.inputType = fieldType.getType().keyboardType
-        state = StateforText(this)
         when (fieldType) {
             SkyflowElementType.EXPIRATION_DATE -> {
                 changeExpireDateValidations()
@@ -236,6 +235,7 @@ class TextField @JvmOverloads constructor(
             else -> {}
         }
         formatPatternForField(inputField.editableText)
+        state = StateforText(this)
     }
 
     private fun buildError() {
@@ -426,6 +426,7 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun showCardBrandChoices(event: MotionEvent, view: View): Boolean {
+        if (options.cardMetadata.scheme.size < 2) return false
         val popupMenu = PopupMenu(context, view)
 
         val cardChoices = options.cardMetadata.scheme
@@ -614,6 +615,9 @@ class TextField @JvmOverloads constructor(
     private fun formatPatternForField(s: Editable?) {
         when (fieldType) {
             SkyflowElementType.CARD_NUMBER -> {
+                if (options.cardMetadata.scheme.size < 2) {
+                    updateCardChoice(CardType.EMPTY, false)
+                }
                 cardType = if (!isCustomCardBrandSelected) {
                     CardType.forCardNumber(inputField.text.toString())
                 } else cardType
