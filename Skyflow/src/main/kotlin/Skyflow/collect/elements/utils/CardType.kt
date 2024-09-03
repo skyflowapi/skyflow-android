@@ -17,7 +17,7 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
         "Visa" , "^4\\d*", intArrayOf(13,16), intArrayOf(4,8,12),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_visa),
     MASTERCARD(
-        "MasterCard","^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
+        "Mastercard","^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[0-1]|2720)\\d*",
         intArrayOf(16),intArrayOf(4,8,12),
         3,  SecurityCode.cvc.rawValue, R.drawable.ic_mastercard),
     DISCOVER(
@@ -29,11 +29,11 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
         intArrayOf(15),intArrayOf(4,10),
         4, SecurityCode.cid.rawValue, R.drawable.ic_amex),
     DINERS_CLUB(
-        "Diners Club","^(36|38|30[0-5])\\d*",
+        "DinersClub","^(36|38|30[0-5])\\d*",
         intArrayOf(14,15,16,17,18,19),intArrayOf(4,10),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_diners),
     JCB(
-        "JCB","^35\\d*",
+        "Jcb","^35\\d*",
         intArrayOf(16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvv.rawValue, R.drawable.ic_jcb),
     MAESTRO(
@@ -41,13 +41,16 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
         intArrayOf(12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvc.rawValue, R.drawable.ic_maestro),
     UNIONPAY(
-        "UnionPay","^62\\d*",
+        "Unionpay","^62\\d*",
         intArrayOf(16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvn.rawValue, R.drawable.ic_unionpay),
     HIPERCARD(
-        "HiperCard","^606282\\d*",
+        "Hipercard","^606282\\d*",
         intArrayOf(14,15,16,17,18,19),intArrayOf(4,8,12,16),
         3, SecurityCode.cvc.rawValue, R.drawable.ic_hypercard),
+    CARTES_BANCAIRES("Cartes Bancaires", "^4\\d*",
+        intArrayOf(13,16), intArrayOf(4,8,12), 3,
+        SecurityCode.cvv.rawValue, R.drawable.ic_cartes_bancaires),
     UNKNOWN(
         "Unknown","\\d+",
         intArrayOf(8,9,10,11,12,13,14,15,16,17,18,19),intArrayOf(4,8,12,16),
@@ -101,6 +104,16 @@ enum class  CardType (var defaultName:String,var regex: String,var cardLength:In
                 }
             }
             return result
+        }
+
+        internal fun getCardType(name: String): CardType {
+            val cards = enumValues<CardType>()
+            cards.forEach {
+                if (it.defaultName == name) {
+                    return it
+                }
+            }
+            return UNKNOWN
         }
     }
     open fun getSpaceIndices(): IntArray {

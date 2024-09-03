@@ -5,7 +5,8 @@ class CollectElementOptions(
     var enableCardIcon: Boolean = true,
     var format: String = "",
     var translation: HashMap<Char, String>? = null,
-    val enableCopy: Boolean = false
+    val enableCopy: Boolean = false,
+    var cardMetadata: CardMetadata = CardMetadata(arrayOf())
 ) {
     internal var inputFormat: HashMap<Char, Regex> = hashMapOf()
     private val HYPHEN_CARD_NUMBER_FORMAT = "XXXX-XXXX-XXXX-XXXX"

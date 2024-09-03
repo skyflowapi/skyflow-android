@@ -16,6 +16,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
     var validationError: SkyflowValidationError = ""
     var isFocused: Boolean = false
     var fieldType: SkyflowElementType
+    var selectedCardScheme: String
 
     init {
         validationError = tf.validate()
@@ -24,6 +25,12 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         inputLength = tf.inputField.length()
         isFocused = tf.inputField.hasFocus()
         fieldType = tf.collectInput.type
+        selectedCardScheme = getCardSchemeString()
+    }
+
+    private fun getCardSchemeString(): String {
+        return if (tf.cardType === CardType.EMPTY) ""
+        else tf.cardType.toString()
     }
 
     override fun show(): String {
@@ -34,6 +41,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
                 "isEmpty": $isEmpty,
                 "validationErrors": $validationError,
                 "inputLength": $inputLength
+                "selectedCardScheme": $selectedCardScheme
             }
         """
     }
@@ -49,6 +57,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         result.put("inputLength", inputLength)
         result.put("validationError", validationError)
         result.put("isFocused", isFocused)
+        result.put("selectedCardScheme", selectedCardScheme)
 
         return result
     }
@@ -60,6 +69,7 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         state.put("isRequired", isRequired)
         state.put("isFocused", isFocused)
         state.put("isValid", isValid)
+        state.put("selectedCardScheme", selectedCardScheme)
         var value = ""
         if (env == Env.DEV) {
             value = tf.getValue()
