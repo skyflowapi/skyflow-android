@@ -12,7 +12,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -21,14 +23,18 @@ import android.text.InputFilter.LengthFilter
 import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.text.isDigitsOnly
 import com.Skyflow.collect.elements.validations.*
@@ -76,6 +82,11 @@ class TextField @JvmOverloads constructor(
     private lateinit var labelLP: LayoutParams
     private lateinit var errorLP: LayoutParams
 
+    internal var cardType = CardType.EMPTY
+    internal var isCustomCardBrandSelected = false
+    private var dAWidth = 0
+    private var cIWidth = 0
+
     internal fun applyCallback(eventName: ComposableEvents, handler: (() -> Unit)) {
         when (eventName) {
             ComposableEvents.ON_FOCUS_IS_TRUE -> this.onFocusIsTrue = handler
@@ -84,8 +95,8 @@ class TextField @JvmOverloads constructor(
         }
     }
 
-    private var drawableRight = 0
-    private var drawableLeft = 0
+    private var drawableRight: Drawable? = null
+    private var drawableLeft: Drawable? = null
 
     override var uuid = ""
     override fun getValue(): String {
@@ -128,9 +139,9 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun appendIcon(iconName: String) {
-        var drawableIcon = 0
-        val copyIcon = R.drawable.ic_copy
-        val copiedIcon = R.drawable.ic_copied
+        var drawableIcon: Drawable? = null
+        val copyIcon = ContextCompat.getDrawable(this.context, R.drawable.ic_copy)
+        val copiedIcon = ContextCompat.getDrawable(this.context, R.drawable.ic_copied)
 
         when (iconName) {
             "COPY" -> {
@@ -141,26 +152,32 @@ class TextField @JvmOverloads constructor(
                 Handler(Looper.getMainLooper()).postDelayed({
                     inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
                         drawableLeft,
-                        0,
+                        null,
                         copyIcon,
-                        0
+                        null
                     )
                     drawableIcon = copyIcon
                 }, 2000) // 2000 milliseconds = 2 seconds
             }
         }
-        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, 0, drawableIcon, 0)
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
+            drawableLeft,
+            null,
+            drawableIcon,
+            null
+        )
         inputField.compoundDrawablePadding = 8
         drawableRight = drawableIcon
     }
 
     private fun removeIcon() {
-        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, 0, 0, 0)
+        drawableRight = null
+        inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(drawableLeft, null, null, null)
     }
 
     private fun performCopyAction(event: MotionEvent): Boolean {
         val actionX = event.rawX
-        if (drawableRight != 0) {
+        if (drawableRight !== null) {
             val wBound = inputField.right - inputField.compoundDrawables[2].bounds.width()
             if (actionX >= wBound && actionX <= inputField.right) {
                 handleTap()
@@ -208,7 +225,6 @@ class TextField @JvmOverloads constructor(
         applyInputStyle(collectInput.inputStyles.base)
         inputField.hint = collectInput.placeholder
         inputField.inputType = fieldType.getType().keyboardType
-        state = StateforText(this)
         when (fieldType) {
             SkyflowElementType.EXPIRATION_DATE -> {
                 changeExpireDateValidations()
@@ -219,6 +235,7 @@ class TextField @JvmOverloads constructor(
             else -> {}
         }
         formatPatternForField(inputField.editableText)
+        state = StateforText(this)
     }
 
     private fun buildError() {
@@ -285,6 +302,11 @@ class TextField @JvmOverloads constructor(
         this.setupField(this.collectInput, this.options)
     }
 
+    fun update(updateCollectOptions: CollectElementOptions) {
+        this.options.cardMetadata = updateCollectOptions.cardMetadata
+        this.setupField(this.collectInput, this.options)
+    }
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -320,10 +342,13 @@ class TextField @JvmOverloads constructor(
                     return
                 }
                 actualValue = inputField.text.toString()
+                if (actualValue.isEmpty()) {
+                    updateCardChoice(CardType.EMPTY, false)
+                }
                 formatPatternForField(s)
                 state = StateforText(this@TextField)
                 if (state.getInternalState().getBoolean("isValid")) {
-                    if (options.enableCopy) {
+                    if (options.enableCopy && actualValue.isNotEmpty()) {
                         appendIcon("COPY")
                     }
                 } else if (options.enableCopy) {
@@ -363,10 +388,11 @@ class TextField @JvmOverloads constructor(
             false
         }
 
-        inputField.setOnTouchListener { _, event ->
+        inputField.setOnTouchListener { view, event ->
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
                     performCopyAction(event)
+                    showCardBrandChoices(event, view)
                 }
             }
             false
@@ -374,14 +400,63 @@ class TextField @JvmOverloads constructor(
     }
 
     private fun changeCardIcon(cardType: CardType) {
+        val dropdownArrow = ContextCompat.getDrawable(this.context, R.drawable.ic_dropdown)
+        val cardImage = ContextCompat.getDrawable(this.context, cardType.image)
+
+        dAWidth = dropdownArrow?.intrinsicWidth ?: 0
+        cIWidth = cardImage?.intrinsicWidth ?: 0
+
+        var icons = arrayOf(cardImage)
+        var layerDrawable = LayerDrawable(icons)
+        if (options.cardMetadata.scheme.size > 1) {
+            icons = arrayOf(cardImage, dropdownArrow)
+            layerDrawable = LayerDrawable(icons)
+            layerDrawable.setLayerInset(0, 0, 0, dAWidth, 0)
+            layerDrawable.setLayerInset(1, cIWidth, 0, 0, 0)
+        }
+        drawableLeft = layerDrawable
+
         inputField.setCompoundDrawablesRelativeWithIntrinsicBounds(
-            cardType.image,
-            0,
+            drawableLeft,
+            null,
             drawableRight,
-            0
+            null
         )
         inputField.compoundDrawablePadding = 8
-        drawableLeft = cardType.image
+    }
+
+    private fun showCardBrandChoices(event: MotionEvent, view: View): Boolean {
+        if (options.cardMetadata.scheme.size < 2) return false
+        val popupMenu = PopupMenu(context, view)
+
+        val cardChoices = options.cardMetadata.scheme
+        cardChoices.forEach {
+            popupMenu.menu.add(Menu.NONE, it.ordinal, Menu.NONE, it.defaultName)
+        }
+
+        popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+            val selectedCardType = CardType.getCardType(menuItem.title.toString())
+            updateCardChoice(selectedCardType, true)
+            changeCardIcon(selectedCardType)
+            inputField.setSelection(inputField.length())
+            true
+        }
+
+        val actionX = event.rawX
+        if (drawableLeft != null) {
+            val wBound = inputField.left + inputField.compoundDrawables[0].bounds.width()
+            if (actionX >= inputField.left && actionX <= wBound) {
+                popupMenu.show()
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun updateCardChoice(selectedCardType: CardType, customCardSelected: Boolean) {
+        cardType = selectedCardType
+        isCustomCardBrandSelected = customCardSelected
+        state = StateforText(this@TextField)
     }
 
     private fun applyLabelStyle(style: Style) {
@@ -540,7 +615,13 @@ class TextField @JvmOverloads constructor(
     private fun formatPatternForField(s: Editable?) {
         when (fieldType) {
             SkyflowElementType.CARD_NUMBER -> {
-                val cardType = CardType.forCardNumber(inputField.text.toString())
+                if (options.cardMetadata.scheme.size < 2) {
+                    updateCardChoice(CardType.EMPTY, false)
+                }
+                cardType = if (!isCustomCardBrandSelected) {
+                    CardType.forCardNumber(inputField.text.toString())
+                } else cardType
+
                 val separator = options.parseFormatForSeparator()
 
                 if (options.enableCardIcon) {
