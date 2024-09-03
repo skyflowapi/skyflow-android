@@ -3,6 +3,8 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.collect.client.CollectAPICallback
 import Skyflow.collect.client.CollectRequestBody
+import Skyflow.collect.elements.utils.Card
+import Skyflow.collect.elements.utils.CardType
 import Skyflow.collect.elements.validations.ElementValueMatchRule
 import Skyflow.core.APIClient
 import Skyflow.core.elements.state.StateforText
@@ -22,6 +24,7 @@ import org.robolectric.android.controller.ActivityController
 import java.io.IOException
 import android.util.Log
 import android.view.Gravity
+import android.view.MotionEvent
 import com.Skyflow.collect.elements.validations.ValidationSet
 //import junit.framework.Assert
 //import junit.framework.Assert.*
@@ -38,6 +41,12 @@ class CollectTest {
     private lateinit var activityController: ActivityController<Activity>
     private lateinit var activity: Activity
     lateinit var layoutParams: ViewGroup.LayoutParams
+
+    private fun getCardSchemes(len: Int): Array<CardType> {
+        return if (len < 8) arrayOf(CardType.CARTES_BANCAIRES)
+        else arrayOf(CardType.CARTES_BANCAIRES, CardType.MASTERCARD)
+    }
+
 
     @Before
     fun setup() {
@@ -1560,6 +1569,36 @@ class CollectTest {
         Assert.assertEquals(15, cardNumber.inputField.paddingBottom)
         Assert.assertEquals(Color.parseColor("#eeaaee"), cardNumber.inputField.currentHintTextColor)
         Assert.assertEquals(Color.GREEN, cardNumber.inputField.currentTextColor)
+    }
+
+    @Test
+    fun testUpdateCollectElementOptions() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        val collectInput = CollectElementInput(
+            table = "cards",
+            column = "card_number",
+            type = SkyflowElementType.CARD_NUMBER,
+            placeholder = "XXXX"
+        )
+        val options = CollectElementOptions(required = true, enableCopy = true)
+        val cardNumber = container.create(activity, collectInput, options)
+        cardNumber.onAttachedToWindow()
+
+        cardNumber.on(EventName.CHANGE) { state ->
+            val value = state.get("value")
+            val cards = getCardSchemes(value.toString().length)
+            cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(cards)))
+        }
+
+        var state = StateforText(cardNumber)
+        Assert.assertTrue(state.getInternalState().getBoolean("isRequired"))
+        Assert.assertNull(cardNumber.inputField.compoundDrawablesRelative[2])
+
+        cardNumber.setText("5428480012345671")
+        state = StateforText(cardNumber)
+        Assert.assertTrue(state.getInternalState().getBoolean("isRequired"))
+        Assert.assertNotNull(cardNumber.inputField.compoundDrawablesRelative[2])
+        Assert.assertEquals(CardType.MASTERCARD, cardNumber.cardType)
     }
 }
 
