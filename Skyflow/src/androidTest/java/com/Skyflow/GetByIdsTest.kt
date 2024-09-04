@@ -153,7 +153,9 @@ class GetByIdsTest {
 
             override fun onFailure(exception: Any) {
                 Log.d("exp",exception.toString())
-                val skyflowError = SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.EMPTY_TABLE_KEY, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -162,8 +164,7 @@ class GetByIdsTest {
     }
 
     @Test
-    fun testEmptyRedaction()
-    {
+    fun testEmptyRedaction() {
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -176,17 +177,17 @@ class GetByIdsTest {
         recordsArray.put(record)
         val records = JSONObject()
         records.put("records",recordsArray)
-        skyflowClient.getById(records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        skyflowClient.getById(records,object : Callback {
+
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.EMPTY_REDACTION_VALUE, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
-
         })
     }
 
@@ -211,7 +212,9 @@ class GetByIdsTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.INVALID_REDACTION_TYPE, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -240,7 +243,9 @@ class GetByIdsTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.INVALID_TABLE_NAME, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -268,7 +273,9 @@ class GetByIdsTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.TABLE_KEY_ERROR)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.TABLE_KEY_NOY_FOUND, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -277,8 +284,7 @@ class GetByIdsTest {
     }
 
     @Test
-    fun testMissingRedaction()
-    {
+    fun testMissingRedaction() {
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -291,17 +297,17 @@ class GetByIdsTest {
         recordsArray.put(record)
         val records = JSONObject()
          records.put("records",recordsArray)
-        skyflowClient.getById(records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        skyflowClient.getById(records,object : Callback {
+
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.REDACTION_KEY_NOT_FOUND, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
-
         })
     }
 
@@ -356,7 +362,9 @@ class GetByIdsTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORDS)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.INVALID_RECORDS
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -395,8 +403,7 @@ class GetByIdsTest {
 
 
     @Test
-    fun testMissingIds()
-    {
+    fun testMissingIds() {
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -409,17 +416,17 @@ class GetByIdsTest {
         recordsArray.put(record)
         val records = JSONObject()
         records.put("records",recordsArray)
-        skyflowClient.getById(records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        skyflowClient.getById(records,object : Callback {
+
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_IDS)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.IDS_KEY_NOT_FOUND, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
-
         })
     }
 
@@ -442,7 +449,9 @@ class GetByIdsTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS)
+                val skyflowError = SkyflowError(
+                    SkyflowErrorCode.EMPTY_RECORD_IDS, params = arrayOf("0")
+                )
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -451,8 +460,7 @@ class GetByIdsTest {
     }
 
     @Test
-    fun testInvalidIds()
-    {
+    fun testInvalidIds() {
         val recordsArray = JSONArray()
         val record = JSONObject()
         record.put("table","cards")
@@ -462,17 +470,15 @@ class GetByIdsTest {
         recordsArray.put(record)
         val records = JSONObject()
         records.put("records",recordsArray)
-        skyflowClient.getById(records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
+        skyflowClient.getById(records,object : Callback {
+
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS)
+                val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_IDS, params = arrayOf("0"))
                 assertEquals(skyflowError.getErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
-
         })
     }
 

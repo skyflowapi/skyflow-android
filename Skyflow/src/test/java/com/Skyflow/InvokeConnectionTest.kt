@@ -1177,7 +1177,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -1197,7 +1197,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -1217,7 +1217,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -1237,7 +1237,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -1257,7 +1257,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }
@@ -1277,7 +1277,7 @@ class InvokeConnectionTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN)
                 assertEquals(skyflowError.getInternalErrorMessage(),
                     getErrorMessage(exception as JSONObject))
             }

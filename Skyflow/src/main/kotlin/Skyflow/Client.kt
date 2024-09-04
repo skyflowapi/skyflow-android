@@ -127,58 +127,94 @@ class Client internal constructor(
     }
 
     internal fun constructBodyForGetById(records: JSONObject): MutableList<GetByIdRecord> {
-        if(!records.has("records"))
-            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,tag, configuration.options.logLevel)
-        else if(records.get("records") !is JSONArray)
-            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS,tag, configuration.options.logLevel)
+        if (!records.has("records"))
+            throw SkyflowError(
+                SkyflowErrorCode.RECORDS_KEY_NOT_FOUND,
+                tag, configuration.options.logLevel
+            )
+        else if (records.get("records") !is JSONArray)
+            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, configuration.options.logLevel)
         val jsonArray = records.getJSONArray("records")
-        if(jsonArray.length() == 0)
-            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS,tag, configuration.options.logLevel)
+        if (jsonArray.length() == 0)
+            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, configuration.options.logLevel)
         var i = 0
         val result = mutableListOf<GetByIdRecord>()
         while (i < jsonArray.length()) {
             val jsonObj = jsonArray.getJSONObject(i)
-            if(jsonObj == {})
-                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, configuration.options.logLevel)
+            if (jsonObj == {})
+                throw SkyflowError(
+                    SkyflowErrorCode.EMPTY_RECORD_OBJECT, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
             else if (!jsonObj.has("table")) {
-                throw SkyflowError(SkyflowErrorCode.MISSING_TABLE_KEY,tag, configuration.options.logLevel)
-            } else if (jsonObj.get("table") !is String)
-                throw SkyflowError(SkyflowErrorCode.INVALID_TABLE_NAME,tag, configuration.options.logLevel)
-            else if (!jsonObj.has("redaction")) {
-                throw SkyflowError(SkyflowErrorCode.REDACTION_KEY_ERROR,tag, configuration.options.logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.TABLE_KEY_NOY_FOUND, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
+            } else if (jsonObj.get("table") !is String) {
+                throw SkyflowError(
+                    SkyflowErrorCode.INVALID_TABLE_NAME, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
+            } else if (!jsonObj.has("redaction")) {
+                throw SkyflowError(
+                    SkyflowErrorCode.REDACTION_KEY_NOT_FOUND, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
             } else if (!jsonObj.has("ids")) {
-                throw SkyflowError(SkyflowErrorCode.MISSING_IDS,tag, configuration.options.logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.IDS_KEY_NOT_FOUND, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
             } else if (jsonObj.getString("table").isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_TABLE_KEY,tag, configuration.options.logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.EMPTY_TABLE_KEY, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
             } else if (jsonObj.getString("redaction").isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.MISSING_REDACTION_VALUE,tag, configuration.options.logLevel)
-            } else if (!(jsonObj.get("redaction").toString()
-                    .equals("PLAIN_TEXT") || jsonObj.get("redaction")
-                    .toString()
-                    .equals("DEFAULT") ||
-                        jsonObj.get("redaction").toString()
-                            .equals("MASKED") || jsonObj.get("redaction")
-                    .toString()
-                    .equals("REDACTED"))
+                throw SkyflowError(
+                    SkyflowErrorCode.EMPTY_REDACTION_VALUE, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
+            } else if (!(jsonObj.get("redaction").toString() == "PLAIN_TEXT" ||
+                        jsonObj.get("redaction").toString() == "DEFAULT" ||
+                        jsonObj.get("redaction").toString() == "MASKED" ||
+                        jsonObj.get("redaction").toString() == "REDACTED")
             ) {
-                throw SkyflowError(SkyflowErrorCode.INVALID_REDACTION_TYPE,tag, configuration.options.logLevel)
+                throw SkyflowError(
+                    SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, configuration.options.logLevel,
+                    arrayOf("$i")
+                )
             } else {
                 var skyflowIds = jsonObj.get("ids")
                 try {
                     skyflowIds = skyflowIds as ArrayList<String>
-                }
-                catch (e:Exception)
-                {
-                    throw SkyflowError(SkyflowErrorCode.INVALID_RECORD_IDS,tag, configuration.options.logLevel)
+                } catch (e: Exception) {
+                    throw SkyflowError(
+                        SkyflowErrorCode.INVALID_IDS, tag, configuration.options.logLevel,
+                        arrayOf("$i")
+                    )
                 }
                 if (skyflowIds.isEmpty()) {
-                    throw SkyflowError(SkyflowErrorCode.EMPTY_RECORD_IDS,tag, configuration.options.logLevel)
+                    throw SkyflowError(
+                        SkyflowErrorCode.EMPTY_RECORD_IDS, tag, configuration.options.logLevel,
+                        arrayOf("$i")
+                    )
                 }
                 for (j in 0 until skyflowIds.size) {
-                    if (skyflowIds.get(j).isEmpty())
-                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID,tag, configuration.options.logLevel)
+                    if (skyflowIds[j].isEmpty()) {
+                        throw SkyflowError(
+                            SkyflowErrorCode.EMPTY_ID_IN_RECORD_IDS,
+                            tag, configuration.options.logLevel,
+                            arrayOf("$i")
+                        )
+                    }
                 }
-                val record = GetByIdRecord(skyflowIds, jsonObj.get("table").toString(), jsonObj.get("redaction").toString())
+                val record = GetByIdRecord(
+                    skyflowIds,
+                    jsonObj.get("table").toString(),
+                    jsonObj.get("redaction").toString()
+                )
                 result.add(record)
             }
             i++

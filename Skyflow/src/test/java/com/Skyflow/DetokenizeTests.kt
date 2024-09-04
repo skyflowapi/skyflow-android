@@ -166,7 +166,8 @@ class DetokenizeTests {
         detokenizeRecordsArray.put(recordObj)
         detokenizeRecords.put("records", detokenizeRecordsArray)
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN, apiClientTag, logLevel)
+        val skyflowError =
+            SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND, apiClientTag, logLevel, arrayOf("0"))
 
         try {
             apiClient.constructBodyForDetokenize(detokenizeRecords)
@@ -190,7 +191,8 @@ class DetokenizeTests {
         detokenizeRecordsArray.put(recordObj)
         detokenizeRecords.put("records", detokenizeRecordsArray)
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, apiClientTag, logLevel)
+        val skyflowError =
+            SkyflowError(SkyflowErrorCode.EMPTY_TOKEN, apiClientTag, logLevel, arrayOf("0"))
 
         try {
             apiClient.constructBodyForDetokenize(detokenizeRecords)
