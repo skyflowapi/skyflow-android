@@ -29,8 +29,8 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
     }
 
     private fun getCardSchemeString(): String {
-        return if (tf.cardType === CardType.EMPTY) ""
-        else tf.cardType.toString()
+        return if (tf.cardType === CardType.EMPTY || !tf.isCustomCardBrandSelected) ""
+        else tf.cardType.defaultName.uppercase()
     }
 
     override fun show(): String {
@@ -69,12 +69,14 @@ class StateforText internal constructor(val tf: TextField) : State(tf.columnName
         state.put("isRequired", isRequired)
         state.put("isFocused", isFocused)
         state.put("isValid", isValid)
-        state.put("selectedCardScheme", selectedCardScheme)
         var value = ""
         if (env == Env.DEV) {
             value = tf.getValue()
         } else if (env == Env.PROD && tf.fieldType == SkyflowElementType.CARD_NUMBER) {
             value = CardType.getBin(tf.getValue())
+        }
+        if (tf.fieldType == SkyflowElementType.CARD_NUMBER) {
+            state.put("selectedCardScheme", selectedCardScheme)
         }
         state.put("value", value)
         return state
