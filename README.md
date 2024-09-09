@@ -408,7 +408,7 @@ Skyflow.CollectElementOptions(
 
 - `enableCopy`: Indicates whether to enable the copy icon in collect elements to copy text to clipboard.
 
-- `cardMetadata`: An object of metadata keys to control card number element behavior. It supports an optional key called `scheme`, which accepts an array of Skyflow supported card types based on which SDK will display the card brand choice dropdown in the card number element. `Skyflow.CardType` is an enum with all Skyflow supported card schemes.
+- `cardMetadata`: An object of metadata keys to control card number element behavior. It supports an optional key called `scheme`, which accepts an array of Skyflow-supported card types and determines which brands display in the card number element's card brand choice dropdown. `Skyflow.CardType` is an enum with all Skyflow-supported card schemes.
 
 ```kotlin
 class CardMetadata(var scheme: Array<CardType>) {}
@@ -799,7 +799,7 @@ val state = {
 ```
 `Notes:`
 - values of SkyflowElements will be returned in element state object only when `env` is `DEV`, else it is empty string i.e, '', but in case of CARD_NUMBER type element when the `env` is `PROD` for all the card types except AMEX, it will return first eight digits, for AMEX it will return first six digits and rest all digits in masked format.
-- `selectedCardScheme` will exist only for `CARD_NUMBER` element state and its value will be populated only when card brand choice selection is triggered, otherwise, it will always be an empty string.
+- `selectedCardScheme` is only populated for the `CARD_NUMBER` element states when a user chooses a card brand. By default, `selectedCardScheme` is an empty string.
 
 ##### Sample code snippet for using listeners
 ```kt
