@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.24.1] - 2024-09-09
+### Added
+- Fixed element state for card brand choice 
+
+## [1.24.0] - 2024-09-03
+### Added
+- Support for card brand choice for Card Number element.
+
 ## [1.23.0] - 2023-10-25
 ### Added
 - Support for more styling in Collect Elements.

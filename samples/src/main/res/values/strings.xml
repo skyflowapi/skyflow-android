@@ -6,6 +6,7 @@
     <string name="input_formatting_demo">Input Formatting Demo</string>
     <string name="custom_validations_demo">custom validations DEMO</string>
     <string name="composable_elements_demo">composable elements demo</string>
+    <string name="card_brand_choice_demo">card brand choice demo</string>
     <string name="amount">Amount</string>
 
     <!--  common  -->

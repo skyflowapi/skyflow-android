@@ -34,6 +34,11 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, ComposableActivity::class.java)
             startActivity(intent)
         }
+
+        card_brand_choice_demo.setOnClickListener {
+            val intent = Intent(this, CardBrandChoiceActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
 
