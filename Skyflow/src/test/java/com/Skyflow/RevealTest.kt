@@ -102,7 +102,7 @@ class RevealTest {
                 )
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
 
@@ -133,7 +133,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
                 junit.framework.Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
 
             }
@@ -163,7 +163,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -190,12 +190,12 @@ class RevealTest {
 
             override fun onFailure(exception: Any) {
                 val skyflowError = SkyflowError(
-                    SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                    SkyflowErrorCode.ELEMENT_NOT_MOUNTED_REVEAL,
                     params = arrayOf(revealElement.label.text.toString())
                 )
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -219,14 +219,13 @@ class RevealTest {
             revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
         activity.addContentView(revealElement, layoutParams)
         revealContainer.reveal(object : Callback {
-            override fun onSuccess(responseBody: Any) {
-            }
+            override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID)
+                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_REVEAL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -254,10 +253,10 @@ class RevealTest {
 
             override fun onFailure(exception: Any) {
                 assertEquals(revealElement.getValue(), "")
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -287,10 +286,10 @@ class RevealTest {
 
             override fun onFailure(exception: Any) {
                 assertEquals(revealElement.getValue(), "")
-                val skyflowError = SkyflowError(SkyflowErrorCode.MISSING_TOKEN)
+                val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -468,11 +467,9 @@ class RevealTest {
             }
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(
-                    SkyflowErrorCode.UNKNOWN_ERROR,
-                    params = arrayOf("Failed to reveal")
-                ).getInternalErrorMessage()
-                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject))
+                val expectedError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
+                    .getInternalErrorMessage()
+                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject, true))
             }
         }, LogLevel.ERROR).insertResponse(null, false)
 
@@ -589,11 +586,7 @@ class RevealTest {
         }, LogLevel.ERROR)
         val failedResponse = JSONArray()
         val resObj = JSONObject()
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.UNKNOWN_ERROR,
-            logLevel = LogLevel.ERROR,
-            params = arrayOf("unknown")
-        )
+        val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
         resObj.put("error", skyflowError)
         resObj.put("ids", "[\"123\",\"456\"]")
         failedResponse.put(resObj)
@@ -604,11 +597,9 @@ class RevealTest {
             }
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(
-                    SkyflowErrorCode.UNKNOWN_ERROR,
-                    params = arrayOf("Failed to reveal")
-                ).getInternalErrorMessage()
-                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject))
+                val expectedError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
+                    .getInternalErrorMessage()
+                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject, true))
             }
 
         }, LogLevel.ERROR).insertResponse(null, false)
@@ -872,7 +863,7 @@ class RevealTest {
 
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(
-                    "{\"errors\":[{\"error\":\"Skyflow.SkyflowError: Interface :  - Value string of type java.lang.String cannot be converted to JSONObject\"}]}",
+                    "{\"errors\":[{\"error\":\"Skyflow.SkyflowError: Value string of type java.lang.String cannot be converted to JSONObject\"}]}",
                     exception.toString()
                 )
             }

@@ -63,22 +63,22 @@ internal fun Container<RevealContainer>.validateElements() {
         val token = element.revealInput.token
         if (!checkIfElementsMounted(element)) {
             throw SkyflowError(
-                SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
-                tag,
-                configuration.options.logLevel,
+                SkyflowErrorCode.ELEMENT_NOT_MOUNTED_REVEAL, tag, configuration.options.logLevel,
                 arrayOf(element.revealInput.label)
             )
         }
 
         if (element.isTokenNull) {
-            throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, configuration.options.logLevel)
+            throw SkyflowError(
+                SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL, tag, configuration.options.logLevel,
+            )
         } else if (token!!.isEmpty()) {
-            throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, configuration.options.logLevel)
+            throw SkyflowError(
+                SkyflowErrorCode.EMPTY_TOKEN_REVEAL, tag, configuration.options.logLevel
+            )
         } else if (element.isError) {
             throw SkyflowError(
-                SkyflowErrorCode.INVALID_INPUT,
-                tag,
-                configuration.options.logLevel,
+                SkyflowErrorCode.ERROR_STATE_REVEAL, tag, configuration.options.logLevel,
                 arrayOf("${element.error.text}")
             )
         }
