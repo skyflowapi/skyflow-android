@@ -102,7 +102,7 @@ class RevealTest {
                 )
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
 
@@ -133,7 +133,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
                 junit.framework.Assert.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
 
             }
@@ -163,7 +163,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -195,7 +195,7 @@ class RevealTest {
                 )
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -256,7 +256,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -289,7 +289,7 @@ class RevealTest {
                 val skyflowError = SkyflowError(SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL)
                 assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    getErrorMessage(exception as JSONObject)
+                    UnitTests.getErrorMessage(exception as JSONObject, true)
                 )
             }
         })
@@ -469,7 +469,7 @@ class RevealTest {
             override fun onFailure(exception: Any) {
                 val expectedError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
                     .getInternalErrorMessage()
-                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject))
+                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject, true))
             }
         }, LogLevel.ERROR).insertResponse(null, false)
 
@@ -599,7 +599,7 @@ class RevealTest {
             override fun onFailure(exception: Any) {
                 val expectedError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL)
                     .getInternalErrorMessage()
-                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject))
+                assertEquals(expectedError, UnitTests.getErrorMessage(exception as JSONObject, true))
             }
 
         }, LogLevel.ERROR).insertResponse(null, false)

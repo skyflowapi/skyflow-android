@@ -192,8 +192,8 @@ enum class Messages(val message: String) {
 
     VALIDATE_INPUT_FORMAT_OPTIONS("Validated Input Format Options for %s"),
 
-    INPUT_FORMATTING_NOT_SUPPORTED("$SDK_NAME_VERSION Mount failed. Format must be a non-empty string. Specify a valid format."),
-    INVALID_INPUT_TRANSLATION("$SDK_NAME_VERSION Mount failed. Translation must be a non-empty object. Specify a valid translation."),
+    INPUT_FORMATTING_NOT_SUPPORTED("format or translation are not supported on %s element type."),
+    INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
     EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s"),
 
     MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers.")

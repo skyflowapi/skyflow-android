@@ -252,7 +252,7 @@ class ResponseTest {
             }
             override fun onFailure(exception: Any) {
                 val expectedError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, params =  arrayOf("vaulturl.com/v1/vaults")).getInternalErrorMessage()
-                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject))
+                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject, true))
             }
         }, apiClient,records)
         revealByIdAPICallback.onSuccess("token")
