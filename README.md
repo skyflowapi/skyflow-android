@@ -63,7 +63,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.21.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.24.0'
   ```
 
 #### Using maven
@@ -91,7 +91,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.21.0</version>
+   <version>1.24.0</version>
 </dependency>
 ```
 
@@ -391,6 +391,7 @@ Skyflow.CollectElementOptions(
   format: String, // Format for the element (currently applicable for "EXPIRATION_DATE", "CARD_NUMBER", "EXPIRATION_YEAR" and "INPUT_FIELD")
   translation: HashMap<Char, String> // Indicates the allowed data type value for format.
   enableCopy: Boolean, // Indicates whether to enable the copy icon in collect elements to copy text to clipboard. Defaults to 'false'
+  cardMetadata: Skyflow.CardMetadata, // Optional, metadata to control card number element behavior. (only applicable for CARD_NUMBER ElementType).
 )
 ```
 
@@ -405,7 +406,25 @@ Skyflow.CollectElementOptions(
 
 - `translation`: A hashmap of key/value pairs, where the key is a character that appears in `format` and the value is a regex pattern of acceptable inputs for that character. Each key can only appear once. Only applicable for `INPUT_FIELD` elements.
 
-`enableCopy`: Indicates whether to enable the copy icon in collect elements to copy text to clipboard.
+- `enableCopy`: Indicates whether to enable the copy icon in collect elements to copy text to clipboard.
+
+- `cardMetadata`: An object of metadata keys to control card number element behavior. It supports an optional key called `scheme`, which accepts an array of Skyflow-supported card types and determines which brands display in the card number element's card brand choice dropdown. `Skyflow.CardType` is an enum with all Skyflow-supported card schemes.
+
+```kotlin
+class CardMetadata(var scheme: Array<CardType>) {}
+```
+
+#### Supported card types by Skyflow.CardType :
+- `VISA`
+- `MASTERCARD`
+- `AMEX`
+- `DINERS_CLUB`
+- `DISCOVER`
+- `JCB`
+- `MAESTRO`
+- `UNIONPAY`
+- `HIPERCARD`
+- `CARTES_BANCAIRES`
 
 Accepted values by element type:
 
@@ -770,15 +789,17 @@ The handler ```(state: JSONObject) -> Unit``` is a callback function you provide
 ```kt
 val state = {
   "elementType": Skyflow.ElementType,
-  "isEmpty": Bool,
-  "isRequired": Bool,
-  "isFocused": Bool,
-  "isValid": Bool,
-  "value": String 
+  "isEmpty": Boolean,
+  "isRequired": Boolean,
+  "isFocused": Boolean,
+  "isValid": Boolean,
+  "value": String,
+  "selectedCardScheme": Skyflow.CardType,
 }
 ```
-`Note:`
-values of SkyflowElements will be returned in element state object only when `env` is `DEV`, else it is empty string i.e, '', but in case of CARD_NUMBER type element when the `env` is `PROD` for all the card types except AMEX, it will return first eight digits, for AMEX it will return first six digits and rest all digits in masked format.
+`Notes:`
+- values of SkyflowElements will be returned in element state object only when `env` is `DEV`, else it is empty string i.e, '', but in case of CARD_NUMBER type element when the `env` is `PROD` for all the card types except AMEX, it will return first eight digits, for AMEX it will return first six digits and rest all digits in masked format.
+- `selectedCardScheme` is only populated for the `CARD_NUMBER` element states when a user chooses a card brand. By default, `selectedCardScheme` is an empty string.
 
 ##### Sample code snippet for using listeners
 ```kt
@@ -883,7 +904,6 @@ cardNumber.setError("custom error")
 
 //reset custom error
 cardNumber.resetError()
-}
 ```
 
 
