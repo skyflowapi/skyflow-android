@@ -84,6 +84,7 @@ class TextField @JvmOverloads constructor(
 
     internal var cardType = CardType.EMPTY
     internal var isCustomCardBrandSelected = false
+    private var isCardMetadataUpdated = false
     private var dAWidth = 0
     private var cIWidth = 0
 
@@ -282,6 +283,14 @@ class TextField @JvmOverloads constructor(
         }
     }
 
+    private fun invokeUserOnChangeListener() {
+        if (userOnchangeListener !== null) {
+            userOnchangeListener?.let {
+                it((state as StateforText).getState(optionsForLogging.env))
+            }
+        }
+    }
+
     fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
         when (eventName) {
             EventName.CHANGE -> this.userOnchangeListener = handler
@@ -307,8 +316,12 @@ class TextField @JvmOverloads constructor(
     }
 
     fun update(updateCollectOptions: CollectElementOptions) {
+        isCardMetadataUpdated = true
         this.options.cardMetadata = updateCollectOptions.cardMetadata
         this.setupField(this.collectInput, this.options)
+        if (updateCollectOptions.cardMetadata.scheme.size < 2) {
+            invokeUserOnChangeListener()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -358,12 +371,7 @@ class TextField @JvmOverloads constructor(
                 } else if (options.enableCopy) {
                     removeIcon()
                 }
-
-                if (userOnchangeListener !== null) {
-                    userOnchangeListener?.let {
-                        it((state as StateforText).getState(optionsForLogging.env))
-                    }
-                }
+                invokeUserOnChangeListener()
                 onBeginEditing?.invoke()
             }
 
@@ -412,7 +420,7 @@ class TextField @JvmOverloads constructor(
 
         var icons = arrayOf(cardImage)
         var layerDrawable = LayerDrawable(icons)
-        if (options.cardMetadata.scheme.size > 1) {
+        if (isCardMetadataUpdated && options.cardMetadata.scheme.size > 1) {
             icons = arrayOf(cardImage, dropdownArrow)
             layerDrawable = LayerDrawable(icons)
             layerDrawable.setLayerInset(0, 0, 0, dAWidth, 0)
@@ -443,6 +451,7 @@ class TextField @JvmOverloads constructor(
             updateCardChoice(selectedCardType, true)
             changeCardIcon(selectedCardType)
             inputField.setSelection(inputField.length())
+            invokeUserOnChangeListener()
             true
         }
 

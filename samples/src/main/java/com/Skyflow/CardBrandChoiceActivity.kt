@@ -103,16 +103,16 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         val cvv = collectContainer.create(this, cvvInput)
 
         cardNumber.on(EventName.FOCUS) { state ->
-            Log.d(TAG, "focus: sate $state")
+            Log.d(TAG, "focus: state $state")
         }
 
         cardNumber.on(EventName.BLUR) { state ->
-            Log.d(TAG, "blur: sate $state")
+            Log.d(TAG, "blur: state $state")
         }
 
         var calledUpdate = false
         cardNumber.on(EventName.CHANGE) { state ->
-            Log.d(TAG, "change: sate $state")
+            Log.d(TAG, "change: state $state")
             val value = state.getString("value")
             if (value.length < 8 && calledUpdate) {
                 calledUpdate = false
@@ -138,7 +138,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         }
 
         cardNumber.on(EventName.READY) { state ->
-            Log.d(TAG, "ready: sate $state")
+            Log.d(TAG, "ready: state $state")
         }
 
         val parent = findViewById<LinearLayout>(R.id.parent)
