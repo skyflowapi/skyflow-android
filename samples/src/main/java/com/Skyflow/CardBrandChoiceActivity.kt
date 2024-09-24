@@ -110,19 +110,17 @@ class CardBrandChoiceActivity : AppCompatActivity() {
             Log.d(TAG, "blur: state $state")
         }
 
-        var calledUpdate = false
+        var scheme = arrayOf<CardType>()
         cardNumber.on(EventName.CHANGE) { state ->
             Log.d(TAG, "change: state $state")
             val value = state.getString("value")
-            if (value.length < 8 && calledUpdate) {
-                calledUpdate = false
-                cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(arrayOf())))
-            } else if (value.length >= 8 && !calledUpdate) {
-                calledUpdate = true
+            if (value.length < 8 && scheme.isNotEmpty()) {
+                scheme = arrayOf()
+                cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(scheme)))
+            } else if (value.length >= 8 && scheme.isEmpty()) {
                 binLookup(value, object : Callback {
                     override fun onSuccess(responseBody: Any) {
-                        println(responseBody as JSONArray)
-                        val scheme = getCardSchemes(responseBody)
+                        scheme = getCardSchemes(responseBody as JSONArray)
                         runOnUiThread(kotlinx.coroutines.Runnable {
                             cardNumber.update(
                                 CollectElementOptions(cardMetadata = CardMetadata(scheme))
