@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.24.1] - 2024-09-09
+## [1.25.1] - 2025-01-09
+### Fixed
+- Fixed `onChange` listener not firing in card brand choice dropdown selection.
+
+## [1.25.0] - 2024-09-11
 ### Added
-- Fixed element state for card brand choice 
+- Updated error messages for various scenarios.
+
+## [1.24.1] - 2024-09-09
+### Fixed
+- Fixed element state for card brand choice.
 
 ## [1.24.0] - 2024-09-03
 ### Added
