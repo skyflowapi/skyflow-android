@@ -34,7 +34,7 @@ jobs:
           echo "latest stable tag is $tag"
 
       - name: Cache Gradle and wrapper
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
