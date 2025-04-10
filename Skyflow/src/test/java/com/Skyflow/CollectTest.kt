@@ -1584,10 +1584,16 @@ class CollectTest {
         val cardNumber = container.create(activity, collectInput, options)
         cardNumber.onAttachedToWindow()
 
+        var scheme = arrayOf<CardType>()
         cardNumber.on(EventName.CHANGE) { state ->
-            val value = state.get("value")
-            val cards = getCardSchemes(value.toString().length)
-            cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(cards)))
+            val value = state.getString("value")
+            if (value.length < 8 && scheme.isNotEmpty()) {
+                scheme = arrayOf(CardType.CARTES_BANCAIRES)
+                cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(scheme)))
+            } else if (value.length >= 8 && scheme.isEmpty()) {
+                scheme = getCardSchemes(value.length)
+                cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(scheme)))
+            }
         }
 
         var state = StateforText(cardNumber)
@@ -1598,7 +1604,7 @@ class CollectTest {
         state = StateforText(cardNumber)
         Assert.assertTrue(state.getInternalState().getBoolean("isRequired"))
         Assert.assertNotNull(cardNumber.inputField.compoundDrawablesRelative[2])
-        Assert.assertEquals(CardType.MASTERCARD, cardNumber.cardType)
+        Assert.assertEquals(CardType.CARTES_BANCAIRES, cardNumber.cardType)
     }
 }
 
