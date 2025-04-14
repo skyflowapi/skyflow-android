@@ -162,6 +162,7 @@ class TextField @JvmOverloads constructor(
                         null
                     )
                     drawableIcon = copyIcon
+                    drawableRight = drawableIcon
                 }, 2000) // 2000 milliseconds = 2 seconds
             }
         }
@@ -319,9 +320,13 @@ class TextField @JvmOverloads constructor(
         isCardMetadataUpdated = true
         this.options.cardMetadata = updateCollectOptions.cardMetadata
         this.setupField(this.collectInput, this.options)
-        if (updateCollectOptions.cardMetadata.scheme.size < 2) {
-            invokeUserOnChangeListener()
-        }
+
+        val defaultCardType = if (this.options.cardMetadata.scheme.size > 1)
+            this.options.cardMetadata.scheme[0]
+        else cardType
+        updateCardChoice(defaultCardType, true)
+        changeCardIcon(defaultCardType)
+        invokeUserOnChangeListener()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)

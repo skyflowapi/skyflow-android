@@ -111,13 +111,15 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         }
 
         var scheme = arrayOf<CardType>()
+        var calledUpdate = false
         cardNumber.on(EventName.CHANGE) { state ->
             Log.d(TAG, "change: state $state")
             val value = state.getString("value")
             if (value.length < 8 && scheme.isNotEmpty()) {
                 scheme = arrayOf()
                 cardNumber.update(CollectElementOptions(cardMetadata = CardMetadata(scheme)))
-            } else if (value.length >= 8 && scheme.isEmpty()) {
+                calledUpdate = false
+            } else if (value.length >= 8 && scheme.isEmpty() && !calledUpdate) {
                 binLookup(value, object : Callback {
                     override fun onSuccess(responseBody: Any) {
                         scheme = getCardSchemes(responseBody as JSONArray)
@@ -132,6 +134,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
                         println(exception)
                     }
                 })
+                calledUpdate = true
             }
         }
 
