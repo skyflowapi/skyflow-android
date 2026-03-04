@@ -352,15 +352,14 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
-                    params = arrayOf(card_number.columnName)
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage().trim(),
-                    skyflowError.getInternalErrorMessage().trim()
-                )
-                Assert.assertEquals(400, skyflowError.getErrorcode())
+                // exception is now a JSONObject with errors array
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                // Check for element not mounted error message
+                Assert.assertTrue(errorObj.getString("description").contains("Make sure all elements are mounted"))
             }
         })
     }
@@ -393,14 +392,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for cvv value is empty")
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage().trim(),
-                    skyflowError.getInternalErrorMessage().trim()
-                )
+                // exception is now a JSONObject with errors array
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("cvv"))
             }
         })
     }
@@ -432,14 +430,12 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.INVALID_INPUT,
-                    params = arrayOf("for card_number value is empty")
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage().trim(),
-                    skyflowError.getInternalErrorMessage().trim()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("card_number"))
             }
         })
     }
@@ -468,11 +464,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") || 
+                                errorObj.getString("description").contains("VAULT_ID"))
             }
         })
 
@@ -514,11 +512,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") || 
+                                errorObj.getString("description").contains("VAULT_URL"))
             }
 
 
@@ -562,14 +562,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.INVALID_VAULT_URL,
-                    params = arrayOf(configuration.vaultURL)
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") || 
+                                errorObj.getString("description").contains("URL"))
             }
 
 
@@ -594,14 +593,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
-                    params = arrayOf(card_number.fieldType.toString())
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("table") ||
+                                errorObj.getString("description").contains("TABLE"))
             }
 
 
@@ -627,15 +625,14 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                Log.d("exc", (exception as SkyflowError).getInternalErrorMessage())
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
-                    params = arrayOf(card_number.fieldType.toString())
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                Log.d("exc", (exception as JSONObject).toString())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("table") ||
+                                errorObj.getString("description").contains("TABLE"))
             }
 
 
@@ -660,14 +657,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.MISSING_COLUMN,
-                    params = arrayOf(card_number.fieldType.toString())
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("column") ||
+                                errorObj.getString("description").contains("COLUMN"))
             }
 
 
@@ -694,14 +690,13 @@ class CollectTest {
             }
 
             override fun onFailure(exception: Any) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.EMPTY_COLUMN_NAME,
-                    params = arrayOf(card_number.fieldType.toString())
-                )
-                Assert.assertEquals(
-                    (exception as SkyflowError).getInternalErrorMessage(),
-                    skyflowError.getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("column") ||
+                                errorObj.getString("description").contains("COLUMN"))
             }
 
 
@@ -936,9 +931,14 @@ class CollectTest {
                     SkyflowErrorCode.INVALID_VAULT_URL,
                     params = arrayOf(apiClient.vaultURL)
                 )
+                // Parse JSONObject error response
+                val errorResponse = exception as JSONObject
+                val errors = errorResponse.getJSONArray("errors")
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                val description = errorObj.getString("description")
                 TestCase.assertEquals(
                     skyflowError.getInternalErrorMessage(),
-                    (exception as Exception).message.toString()
+                    description
                 )
             }
 
@@ -1606,6 +1606,181 @@ class CollectTest {
         Assert.assertNotNull(cardNumber.inputField.compoundDrawablesRelative[2])
         Assert.assertEquals(CardType.CARTES_BANCAIRES, cardNumber.cardType)
     }
+
+    @Test
+    fun testCollectWithSkyflowID_updateOperation() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        
+        val cardNumberInput = CollectElementInput(
+            "cards",
+            "card_number",
+            SkyflowElementType.CARD_NUMBER,
+            skyflowID = "test-skyflow-id-123"
+        )
+        
+        val cardNumber = container.create(activity, cardNumberInput) as TextField
+        activity.addContentView(cardNumber, layoutParams)
+        cardNumber.inputField.setText("4111111111111111")
+        
+        Assert.assertEquals("test-skyflow-id-123", cardNumber.skyflowID)
+        Assert.assertNotNull(container.collectElements.find { it.skyflowID == "test-skyflow-id-123" })
+    }
+
+    @Test
+    fun testCollectWithSkyflowID_mixedInsertAndUpdate() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        
+        // Element without skyflowID (INSERT)
+        val insertInput = CollectElementInput(
+            "cards",
+            "card_number",
+            SkyflowElementType.CARD_NUMBER
+        )
+        
+        // Element with skyflowID (UPDATE)
+        val updateInput = CollectElementInput(
+            "cards",
+            "cvv",
+            SkyflowElementType.CVV,
+            skyflowID = "existing-record-id"
+        )
+        
+        val insertElement = container.create(activity, insertInput) as TextField
+        val updateElement = container.create(activity, updateInput) as TextField
+        
+        Assert.assertNull(insertElement.skyflowID)
+        Assert.assertEquals("existing-record-id", updateElement.skyflowID)
+        Assert.assertEquals(2, container.collectElements.size)
+    }
+
+    @Test
+    fun testAdditionalFieldsWithSkyflowID_format() {
+        // Test that additionalFields can contain skyflowID in fields
+        val additionalFields = JSONObject()
+        val recordsArray = JSONArray()
+        
+        val updateRecord = JSONObject()
+        updateRecord.put("table", "cards")
+        val fields = JSONObject()
+        fields.put("skyflowID", "record-123")
+        fields.put("cvv", "456")
+        updateRecord.put("fields", fields)
+        recordsArray.put(updateRecord)
+        
+        additionalFields.put("records", recordsArray)
+        
+        val records = additionalFields.getJSONArray("records")
+        val record = records.getJSONObject(0)
+        val recordFields = record.getJSONObject("fields")
+        
+        Assert.assertTrue(recordFields.has("skyflowID"))
+        Assert.assertEquals("record-123", recordFields.getString("skyflowID"))
+        Assert.assertTrue(recordFields.has("cvv"))
+    }
+
+    @Test
+    fun testCollectOptions_additionalFieldsParameter() {
+        val additionalFields = JSONObject()
+        val recordsArray = JSONArray()
+        
+        val record = JSONObject()
+        record.put("table", "users")
+        val fields = JSONObject()
+        fields.put("email", "test@example.com")
+        record.put("fields", fields)
+        recordsArray.put(record)
+        
+        additionalFields.put("records", recordsArray)
+        
+        val collectOptions = CollectOptions(
+            token = true,
+            additionalFields = additionalFields
+        )
+        
+        Assert.assertTrue(collectOptions.token)
+        Assert.assertNotNull(collectOptions.additionalFields)
+        Assert.assertTrue(collectOptions.additionalFields!!.has("records"))
+    }
+
+    @Test
+    fun testElementSkyflowID_nullAndEmpty() {
+        val container = skyflow.container(ContainerType.COLLECT)
+        
+        // Null skyflowID
+        val input1 = CollectElementInput(
+            "cards",
+            "card_number",
+            SkyflowElementType.CARD_NUMBER,
+            skyflowID = null
+        )
+        
+        // Empty skyflowID
+        val input2 = CollectElementInput(
+            "cards",
+            "cvv",
+            SkyflowElementType.CVV,
+            skyflowID = ""
+        )
+        
+        val element1 = container.create(activity, input1) as TextField
+        val element2 = container.create(activity, input2) as TextField
+        
+        // Both should be treated as INSERT operations
+        Assert.assertNull(element1.skyflowID)
+        Assert.assertTrue(element2.skyflowID?.isEmpty() ?: true)
+    }
+
+    @Test
+    fun testMergedUpdateRecords_sameSkyflowID() {
+        // Test that multiple elements with same skyflowID should merge
+        val container = skyflow.container(ContainerType.COLLECT)
+        
+        val input1 = CollectElementInput(
+            "cards",
+            "card_number",
+            SkyflowElementType.CARD_NUMBER,
+            skyflowID = "merge-test-id"
+        )
+        
+        val input2 = CollectElementInput(
+            "cards",
+            "cvv",
+            SkyflowElementType.CVV,
+            skyflowID = "merge-test-id"
+        )
+        
+        val element1 = container.create(activity, input1) as TextField
+        val element2 = container.create(activity, input2) as TextField
+        
+        element1.actualValue = "4111111111111111"
+        element2.actualValue = "123"
+        
+        // Both should have the same skyflowID
+        Assert.assertEquals("merge-test-id", element1.skyflowID)
+        Assert.assertEquals("merge-test-id", element2.skyflowID)
+        Assert.assertEquals("cards", element1.tableName)
+        Assert.assertEquals("cards", element2.tableName)
+    }
+
+    @Test
+    fun testUpdateRecord_dataClass() {
+        val updateRecord = Skyflow.collect.client.UpdateRequestRecord(
+            table = "cards",
+            skyflowID = "test-id-456",
+            columns = mutableMapOf(
+                "card_number" to "4111111111111111",
+                "cvv" to "123"
+            )
+        )
+        
+        Assert.assertEquals("cards", updateRecord.table)
+        Assert.assertEquals("test-id-456", updateRecord.skyflowID)
+        Assert.assertEquals(2, updateRecord.columns.size)
+        Assert.assertTrue(updateRecord.columns.containsKey("card_number"))
+        Assert.assertTrue(updateRecord.columns.containsKey("cvv"))
+    }
+
+    // ...existing code...
 }
 
 

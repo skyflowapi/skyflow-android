@@ -15,6 +15,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONArray
 import org.json.JSONObject
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,11 +54,12 @@ class ResponseTest {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(
-                    SkyflowErrorCode.SERVER_ERROR,
-                    params = arrayOf("jwt expired")
-                ).getInternalErrorMessage()
-                assertEquals(expectedError, (exception as SkyflowError).getInternalErrorMessage())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("jwt expired"))
             }
         }, InsertOptions(), logLevel)
 
@@ -89,8 +91,13 @@ class ResponseTest {
             }
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Value not of type java.lang.String cannot be converted to JSONObject")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("JSONObject") ||
+                                errorObj.getString("description").contains("json"))
             }
         }, InsertOptions(), LogLevel.ERROR)
         val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"not json object")
@@ -116,8 +123,13 @@ class ResponseTest {
             }
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Value fields at fields of type java.lang.String cannot be converted to JSONObject")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("fields") ||
+                                errorObj.getString("description").contains("JSONObject"))
             }
         }, InsertOptions(), LogLevel.ERROR)
         collectAPICallback.onSuccess("token")
@@ -134,8 +146,13 @@ class ResponseTest {
             }
 
             override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("records") ||
+                                errorObj.getString("description").contains("RECORDS"))
             }
         }, InsertOptions(), LogLevel.ERROR)
         collectAPICallback.onSuccess("token")

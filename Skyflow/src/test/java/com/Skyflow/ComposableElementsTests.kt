@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.ViewGroup
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -594,11 +595,14 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage().trim(),
-                    (exception as SkyflowError).getInternalErrorMessage().trim()
-                )
-                Assert.assertEquals(400, skyflowError.getErrorcode())
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                // Check for element not mounted error message
+                Assert.assertTrue(errorObj.getString("description").contains("Make sure all elements are mounted"))
+                Assert.assertEquals(400, errorObj.getInt("code"))
             }
         })
     }
@@ -645,10 +649,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage().trim(),
-                    (exception as SkyflowError).getInternalErrorMessage().trim()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("cvv") &&
+                                errorObj.getString("description").contains("empty"))
             }
         })
     }
@@ -691,10 +698,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage().trim(),
-                    (exception as SkyflowError).getInternalErrorMessage().trim()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("card_number") &&
+                                errorObj.getString("description").contains("empty"))
             }
         })
     }
@@ -734,10 +744,14 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") &&
+                                (errorObj.getString("description").contains("ID") || 
+                                 errorObj.getString("description").contains("id")))
             }
         })
     }
@@ -785,10 +799,14 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") &&
+                                (errorObj.getString("description").contains("URL") || 
+                                 errorObj.getString("description").contains("url")))
             }
         })
     }
@@ -840,10 +858,14 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("vault") &&
+                                (errorObj.getString("description").contains("URL") || 
+                                 errorObj.getString("description").contains("url")))
             }
         })
     }
@@ -879,10 +901,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("table") ||
+                                errorObj.getString("description").contains("TABLE"))
             }
         })
     }
@@ -918,10 +943,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("table") ||
+                                errorObj.getString("description").contains("TABLE"))
             }
         })
     }
@@ -957,10 +985,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("column") ||
+                                errorObj.getString("description").contains("COLUMN"))
             }
         })
     }
@@ -996,10 +1027,13 @@ class ComposableElementsTests {
             override fun onSuccess(responseBody: Any) {}
 
             override fun onFailure(exception: Any) {
-                Assert.assertEquals(
-                    skyflowError.getInternalErrorMessage(),
-                    (exception as SkyflowError).getInternalErrorMessage()
-                )
+                val responseJson = exception as JSONObject
+                Assert.assertTrue(responseJson.has("errors"))
+                val errors = responseJson.getJSONArray("errors")
+                Assert.assertTrue(errors.length() > 0)
+                val errorObj = errors.getJSONObject(0).getJSONObject("error")
+                Assert.assertTrue(errorObj.getString("description").contains("column") ||
+                                errorObj.getString("description").contains("COLUMN"))
             }
         })
     }

@@ -108,6 +108,35 @@ internal class APIClient(
         }
     }
 
+    fun postWithUpdate(
+        insertRecords: JSONObject?,
+        updateRecords: MutableList<Skyflow.collect.client.UpdateRequestRecord>,
+        callback: Callback,
+        options: InsertOptions
+    ) {
+        try {
+            val mixedCallback = Skyflow.collect.client.MixedAPICallback(
+                this,
+                insertRecords,
+                updateRecords,
+                callback,
+                options,
+                logLevel
+            )
+            this.getAccessToken(object : Callback {
+                override fun onSuccess(responseBody: Any) {
+                    mixedCallback.executeInsertAndUpdate(responseBody.toString())
+                }
+
+                override fun onFailure(exception: Any) {
+                    callback.onFailure(exception)
+                }
+            })
+        } catch (e: Exception) {
+            callback.onFailure(e)
+        }
+    }
+
     fun get(records: JSONObject, callback: Callback) {
 
         try {

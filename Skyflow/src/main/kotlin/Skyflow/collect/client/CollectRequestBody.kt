@@ -8,6 +8,100 @@ import org.json.JSONObject
 internal class CollectRequestBody {
     companion object {
         private val tag = CollectRequestBody::class.qualifiedName
+        
+        internal fun separateInsertAndUpdateRecords(
+            elements: MutableList<TextField>,
+            additionalFields: JSONObject?,
+            logLevel: LogLevel
+        ): Triple<MutableList<TextField>, JSONObject?, MutableList<UpdateRequestRecord>> {
+            val insertElements = mutableListOf<TextField>()
+            val updateRecordsMap = mutableMapOf<String, UpdateRequestRecord>()
+            
+            // Process elements first
+            for (element in elements) {
+                if (element.skyflowID != null && element.skyflowID!!.isNotEmpty()) {
+                    // This is an update record
+                    val key = "${element.tableName}_${element.skyflowID}"
+                    if (updateRecordsMap.containsKey(key)) {
+                        // Add column to existing update record
+                        updateRecordsMap[key]!!.columns[element.columnName] = element.getValue()
+                    } else {
+                        // Create new update record
+                        val columns = mutableMapOf<String, Any>(element.columnName to element.getValue())
+                        updateRecordsMap[key] = UpdateRequestRecord(
+                            table = element.tableName,
+                            skyflowID = element.skyflowID!!,
+                            columns = columns
+                        )
+                    }
+                } else {
+                    // This is an insert record
+                    insertElements.add(element)
+                }
+            }
+            
+            // Process additionalFields if present
+            var insertAdditionalFieldsRecords: JSONArray? = null
+            if (additionalFields != null && additionalFields.has("records")) {
+                val records = additionalFields.getJSONArray("records")
+                val insertRecords = JSONArray()
+                
+                for (i in 0 until records.length()) {
+                    val record = records.getJSONObject(i)
+                    val fields = record.getJSONObject("fields")
+                    
+                    // Check if fields contain skyflowID
+                    if (fields.has("skyflowID") && fields.getString("skyflowID").isNotEmpty()) {
+                        // This is an update record from additionalFields
+                        val table = record.getString("table")
+                        val skyflowID = fields.getString("skyflowID")
+                        val key = "${table}_${skyflowID}"
+                        
+                        // Remove skyflowID from fields as it's not a column to update
+                        fields.remove("skyflowID")
+                        
+                        if (updateRecordsMap.containsKey(key)) {
+                            // Merge with existing update record (from elements or previous additionalFields)
+                            val fieldKeys = fields.keys()
+                            while (fieldKeys.hasNext()) {
+                                val fieldKey = fieldKeys.next()
+                                updateRecordsMap[key]!!.columns[fieldKey] = fields.get(fieldKey)
+                            }
+                        } else {
+                            // Create new update record
+                            val columns = mutableMapOf<String, Any>()
+                            val fieldKeys = fields.keys()
+                            while (fieldKeys.hasNext()) {
+                                val fieldKey = fieldKeys.next()
+                                columns[fieldKey] = fields.get(fieldKey)
+                            }
+                            updateRecordsMap[key] = UpdateRequestRecord(
+                                table = table,
+                                skyflowID = skyflowID,
+                                columns = columns
+                            )
+                        }
+                    } else {
+                        // This is an insert record from additionalFields
+                        insertRecords.put(record)
+                    }
+                }
+                
+                // Create insertAdditionalFields object if there are insert records
+                if (insertRecords.length() > 0) {
+                    insertAdditionalFieldsRecords = insertRecords
+                }
+            }
+            
+            val insertAdditionalFieldsJson = if (insertAdditionalFieldsRecords != null) {
+                JSONObject().put("records", insertAdditionalFieldsRecords)
+            } else {
+                null
+            }
+            
+            return Triple(insertElements, insertAdditionalFieldsJson, updateRecordsMap.values.toMutableList())
+        }
+        
         internal fun createRequestBody(
             elements: MutableList<TextField>,
             additionalFields: JSONObject?,
