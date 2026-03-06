@@ -99,7 +99,7 @@ fun Container<ComposableContainer>.collect(
         validateElements()
         post(callback, options)
     } catch (e: Exception) {
-        callback.onFailure(e)
+        callback.onFailure(Utils.constructErrorResponse(e))
     }
 }
 
@@ -175,13 +175,44 @@ private fun Container<ComposableContainer>.validateElement(
 }
 
 private fun Container<ComposableContainer>.post(callback: Callback, options: CollectOptions?) {
-    val records = CollectRequestBody.createRequestBody(
+    // Separate insert and update elements/records (including additionalFields)
+    val (insertElements, insertAdditionalFields, updateRecords) = CollectRequestBody.separateInsertAndUpdateRecords(
         this.collectElements,
-        options!!.additionalFields,
+        options?.additionalFields,
         configuration.options.logLevel
     )
-    val insertOptions = InsertOptions(options.token, options.upsert)
-    this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+    
+    val hasInsertData = insertElements.isNotEmpty() || insertAdditionalFields != null
+    val hasUpdateRecords = updateRecords.isNotEmpty()
+    
+    if (hasInsertData && hasUpdateRecords) {
+        // Mixed case: both insert and update
+        val insertRecordsJson = if (insertElements.isNotEmpty()) {
+            JSONObject(CollectRequestBody.createRequestBody(
+                insertElements, 
+                insertAdditionalFields, 
+                configuration.options.logLevel
+            ))
+        } else {
+            insertAdditionalFields
+        }
+        
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.postWithUpdate(insertRecordsJson, updateRecords, callback, insertOptions)
+    } else if (hasUpdateRecords) {
+        // Only update records
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.postWithUpdate(null, updateRecords, callback, insertOptions)
+    } else {
+        // Only insert records
+        val records = CollectRequestBody.createRequestBody(
+            this.collectElements, 
+            insertAdditionalFields, 
+            configuration.options.logLevel
+        )
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+    }
 }
 
 private fun Container<ComposableContainer>.addViewsToComposableLayout() {

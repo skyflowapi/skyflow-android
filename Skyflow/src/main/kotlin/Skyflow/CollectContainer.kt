@@ -49,7 +49,7 @@ fun Container<CollectContainer>.collect(callback: Callback, options: CollectOpti
     }
     catch (e:Exception)
     {
-        callback.onFailure(e)
+        callback.onFailure(Utils.constructErrorResponse(e))
     }
 }
 internal fun Container<CollectContainer>.validateElements() {
@@ -109,8 +109,43 @@ internal fun Container<CollectContainer>.validateElement(element: TextField,err:
 }
 internal fun Container<CollectContainer>.post(callback:Callback,options: CollectOptions?)
 {
-    val records = CollectRequestBody.createRequestBody(this.collectElements, options!!.additionalFields, configuration.options.logLevel)
-    val insertOptions = InsertOptions(options.token,options.upsert)
-    this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+    // Separate insert and update elements/records
+    val (insertElements, insertAdditionalFields, updateRecords) = Skyflow.collect.client.CollectRequestBody.separateInsertAndUpdateRecords(
+        this.collectElements,
+        options?.additionalFields,
+        configuration.options.logLevel
+    )
+    
+    val hasInsertData = insertElements.isNotEmpty() || insertAdditionalFields != null
+    val hasUpdateRecords = updateRecords.isNotEmpty()
+    
+    if (hasInsertData && hasUpdateRecords) {
+        // Mixed case: both insert and update
+        val insertRecordsJson = if (insertElements.isNotEmpty()) {
+            JSONObject(Skyflow.collect.client.CollectRequestBody.createRequestBody(
+                insertElements, 
+                insertAdditionalFields, 
+                configuration.options.logLevel
+            ))
+        } else {
+            insertAdditionalFields
+        }
+        
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.postWithUpdate(insertRecordsJson, updateRecords, callback, insertOptions)
+    } else if (hasUpdateRecords) {
+        // Only update records
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.postWithUpdate(null, updateRecords, callback, insertOptions)
+    } else {
+        // Only insert records
+        val records = Skyflow.collect.client.CollectRequestBody.createRequestBody(
+            this.collectElements, 
+            insertAdditionalFields, 
+            configuration.options.logLevel
+        )
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+    }
 }
 

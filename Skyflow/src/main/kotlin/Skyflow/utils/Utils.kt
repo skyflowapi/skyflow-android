@@ -245,13 +245,51 @@ public class Utils {
             else SkyflowError(params = arrayOf(e.message))
 
             skyflowError.setErrorCode(code)
-            val finalError = JSONObject()
+            
+            val errorWrapper = JSONObject()
+            errorWrapper.put("error", skyflowError)
+            
             val errors = JSONArray()
-            val error = JSONObject()
-            error.put("error", skyflowError)
-            errors.put(error)
+            errors.put(errorWrapper)
+            
+            val finalError = JSONObject()
             finalError.put("errors", errors)
             return finalError
+        }
+
+        fun constructErrorResponse(code: Int, description: String): JSONObject {
+            val errorResponse = JSONObject()
+            val errorsArray = JSONArray()
+            val errorObject = JSONObject()
+            val errorDetails = JSONObject()
+            
+            errorDetails.put("code", code)
+            errorDetails.put("description", description)
+            errorDetails.put("type", "$code")
+            
+            errorObject.put("error", errorDetails)
+            errorsArray.put(errorObject)
+            errorResponse.put("errors", errorsArray)
+            
+            return errorResponse
+        }
+
+        fun constructErrorResponse(e: Exception, defaultCode: Int = 400): JSONObject {
+            val code = if (e is SkyflowError) e.getErrorcode() else defaultCode
+            val description = e.message ?: "An error occurred"
+            return constructErrorResponse(code, description)
+        }
+
+        fun constructErrorObject(code: Int, description: String): JSONObject {
+            val errorObject = JSONObject()
+            val errorDetails = JSONObject()
+            
+            errorDetails.put("code", code)
+            errorDetails.put("description", description)
+            errorDetails.put("type", "$code")
+            
+            errorObject.put("error", errorDetails)
+            return errorObject
         }
 
         fun findMatches(regex: String, text: String): MutableList<String> {
