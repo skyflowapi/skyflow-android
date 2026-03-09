@@ -13,21 +13,22 @@ import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.LengthMatchRule
 import com.Skyflow.collect.elements.validations.ValidationSet
 import com.Skyflow.utils.CustomStyles
-import kotlinx.android.synthetic.main.activity_collect.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import com.Skyflow.databinding.ActivityCollectBinding
 
 class CardBrandChoiceActivity : AppCompatActivity() {
 
     private val TAG = CollectActivity::class.qualifiedName
-
+    private lateinit var binding: ActivityCollectBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_collect)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
             "<VAULT_ID>",
@@ -158,7 +159,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         parent.addView(expirationDate)
         parent.addView(cvv)
 
-        submit.setOnClickListener {
+        binding.submit.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -175,7 +176,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
             }, CollectOptions(true))
         }
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             clearFields(mutableListOf(cardNumber, cvv, name, expirationDate))
         }
 

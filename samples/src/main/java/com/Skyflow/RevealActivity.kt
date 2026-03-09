@@ -10,14 +10,17 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_reveal.*
 import org.json.JSONArray
 import org.json.JSONObject
+import com.Skyflow.databinding.ActivityRevealBinding
 
 class RevealActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityRevealBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_reveal)
+        binding = ActivityRevealBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val cardNumberToken = intent.getStringExtra("cardNumber")
         val expiryDateToken = intent.getStringExtra("expiryDate")
@@ -112,7 +115,7 @@ class RevealActivity : AppCompatActivity() {
         linearParent.addView(expiry)
         linearParent.addView(cvv)
 
-        reveal.setOnClickListener {
+        binding.reveal.setOnClickListener {
             getByIds()
             detokenize()
             get()
@@ -141,6 +144,7 @@ class RevealActivity : AppCompatActivity() {
             "VAULT_URL",
             CollectActivity.DemoTokenProvider()
         )
+
         val skyflowClient = init(skyflowConfiguration)
         val recordsArray = JSONArray()
         val record = JSONObject()

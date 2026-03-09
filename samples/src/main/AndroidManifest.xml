@@ -22,6 +22,7 @@
             android:name=".CustomValidationsActivity"
             android:exported="true" />
         <activity android:name=".CollectActivity" />
+        <activity android:name=".UpdateCollectActivity" />
         <activity android:name=".RevealActivity" />
         <activity
             android:name=".InputFormattingCollect"
@@ -30,6 +31,7 @@
             android:name=".InputFormattingReveal"
             android:label="@string/input_formatting_demo" />
         <activity android:name=".ComposableActivity" />
+        <activity android:name=".UpdateComposableActivity" />
         <activity android:name=".CardBrandChoiceActivity" />
         <activity
             android:name=".MainActivity"

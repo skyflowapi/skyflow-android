@@ -11,15 +11,17 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import kotlinx.android.synthetic.main.activity_reveal.*
+import com.Skyflow.databinding.ActivityCollectBinding
+import com.Skyflow.databinding.ActivityRevealBinding
 
 class InputFormattingReveal : AppCompatActivity() {
 
     private val TAG = InputFormattingReveal::class.qualifiedName
-
+    private lateinit var binding: ActivityRevealBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_reveal)
+        binding = ActivityRevealBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val cardNumberToken = intent.getStringExtra("cardNumber")
         val yearToken = intent.getStringExtra("expiryYear")
@@ -191,7 +193,7 @@ class InputFormattingReveal : AppCompatActivity() {
         val responseView = TextView(this)
         responseView.tag = "response_view"
 
-        reveal.setOnClickListener {
+        binding.reveal.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()

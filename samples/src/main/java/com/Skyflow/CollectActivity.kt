@@ -15,20 +15,21 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.LengthMatchRule
 import com.Skyflow.collect.elements.validations.ValidationSet
-import kotlinx.android.synthetic.main.activity_collect.*
 import okhttp3.OkHttpClient
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import com.Skyflow.databinding.ActivityCollectBinding
 
 class CollectActivity : AppCompatActivity() {
 
     private val TAG = CollectActivity::class.qualifiedName
-
+    private lateinit var binding: ActivityCollectBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_collect)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val tokenProvider = DemoTokenProvider()
         val skyflowConfiguration = Configuration(
             "VAULT_ID",
@@ -159,7 +160,7 @@ class CollectActivity : AppCompatActivity() {
         parent.addView(expirationDate)
         parent.addView(cvv)
 
-        submit.setOnClickListener {
+        binding.submit.setOnClickListener {
             pureInsert()
             val additionalFields = JSONObject()
             val recordsArray = JSONArray()
@@ -197,8 +198,13 @@ class CollectActivity : AppCompatActivity() {
             }, CollectOptions(true))
         }
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             clearFields(mutableListOf(cardNumber, cvv, name, expirationDate))
+        }
+
+        binding.updateSample.setOnClickListener {
+            val intent = Intent(this, UpdateCollectActivity::class.java)
+            startActivity(intent)
         }
 
     }
@@ -248,7 +254,6 @@ class CollectActivity : AppCompatActivity() {
             element.unmount()
         }
     }
-
 
     class DemoTokenProvider : TokenProvider {
         override fun getBearerToken(callback: Callback) {

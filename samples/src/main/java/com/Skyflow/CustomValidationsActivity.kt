@@ -10,12 +10,15 @@ import android.widget.LinearLayout
 import com.Skyflow.collect.elements.validations.LengthMatchRule
 import com.Skyflow.collect.elements.validations.RegexMatchRule
 import com.Skyflow.collect.elements.validations.ValidationSet
-import kotlinx.android.synthetic.main.activity_custom_validations.*
+import com.Skyflow.databinding.ActivityCollectBinding
 
 class CustomValidationsActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityCollectBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_custom_validations)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val skyflowConfiguration = Skyflow.Configuration(
             "VAULT_ID",
             "VAULT_URL",
