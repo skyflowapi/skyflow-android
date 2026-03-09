@@ -43,5 +43,8 @@ class SkyflowError(val skyflowErrorCode: SkyflowErrorCode = SkyflowErrorCode.UNK
     fun getXml(): String {
         return xmlBody
     }
-}
 
+    override fun toString(): String {
+        return this.message
+    }
+}

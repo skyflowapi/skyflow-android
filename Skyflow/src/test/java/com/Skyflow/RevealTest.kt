@@ -863,7 +863,7 @@ class RevealTest {
 
             override fun onFailure(exception: Any) {
                 TestCase.assertEquals(
-                    "{\"errors\":[{\"error\":\"Skyflow.SkyflowError: Value string of type java.lang.String cannot be converted to JSONObject\"}]}",
+                    "{\"errors\":[{\"error\":\"Value string of type java.lang.String cannot be converted to JSONObject\"}]}",
                     exception.toString()
                 )
             }

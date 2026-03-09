@@ -124,19 +124,24 @@ internal class UpdateAPICallback(
                         val recordObject = JSONObject()
                         recordObject.put("table", updateRecord.table)
                         
-                        val fieldsObject = JSONObject()
-                        fieldsObject.put("skyflow_id", responseJson.getString("skyflow_id"))
-                        
-                        if (options.tokens && responseJson.has("tokens")) {
-                            val tokens = responseJson.getJSONObject("tokens")
-                            val tokenKeys = tokens.keys()
-                            while (tokenKeys.hasNext()) {
-                                val key = tokenKeys.next()
-                                fieldsObject.put(key, tokens.getString(key))
+                        if (options.tokens) {
+                            val fieldsObject = JSONObject()
+                            fieldsObject.put("skyflow_id", responseJson.getString("skyflow_id"))
+                            
+                            if (responseJson.has("tokens")) {
+                                val tokens = responseJson.getJSONObject("tokens")
+                                val tokenKeys = tokens.keys()
+                                while (tokenKeys.hasNext()) {
+                                    val key = tokenKeys.next()
+                                    fieldsObject.put(key, tokens.getString(key))
+                                }
                             }
+                            
+                            recordObject.put("fields", fieldsObject)
+                        } else {
+                            recordObject.put("skyflow_id", responseJson.getString("skyflow_id"))
                         }
                         
-                        recordObject.put("fields", fieldsObject)
                         responses.add(recordObject)
                     } else {
                         errors.add(Utils.constructErrorObject(response.code, "Bad request"))

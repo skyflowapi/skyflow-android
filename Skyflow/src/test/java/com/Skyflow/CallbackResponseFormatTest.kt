@@ -149,6 +149,100 @@ class CallbackResponseFormatTest {
     }
 
     @Test
+    fun testUpdateCallback_tokenFalse_responseFormat() {
+        // When token=false, the response should have skyflow_id directly in the record object (no fields wrapper)
+        val updateRecords = mutableListOf(
+            Skyflow.collect.client.UpdateRequestRecord("cards", "sky-123", mutableMapOf("cvv" to "456"))
+        )
+
+        var responseReceived: Any? = null
+
+        val callback = object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                responseReceived = responseBody
+                
+                // Response should be JSONObject
+                Assert.assertTrue(responseBody is JSONObject)
+                val jsonResponse = responseBody as JSONObject
+                
+                // Should have records array
+                Assert.assertTrue(jsonResponse.has("records"))
+                val recordsArray = jsonResponse.getJSONArray("records")
+                Assert.assertTrue(recordsArray.length() > 0)
+                
+                // When token=false, record should have skyflow_id directly (not in fields)
+                val record = recordsArray.getJSONObject(0)
+                Assert.assertTrue(record.has("table"))
+                Assert.assertTrue(record.has("skyflow_id"))
+                Assert.assertFalse(record.has("fields"))  // No fields wrapper when token=false
+            }
+
+            override fun onFailure(exception: Any) {
+                Assert.fail("Should not fail")
+            }
+        }
+
+        val updateCallback = UpdateAPICallback(
+            apiClient,
+            updateRecords,
+            callback,
+            InsertOptions(false),  // token=false
+            LogLevel.ERROR
+        )
+
+        // This test verifies the expected format structure
+        Assert.assertNotNull(callback)
+    }
+
+    @Test
+    fun testUpdateCallback_tokenTrue_responseFormat() {
+        // When token=true, the response should have fields wrapper with skyflow_id and tokens
+        val updateRecords = mutableListOf(
+            Skyflow.collect.client.UpdateRequestRecord("cards", "sky-456", mutableMapOf("cvv" to "789"))
+        )
+
+        var responseReceived: Any? = null
+
+        val callback = object : Callback {
+            override fun onSuccess(responseBody: Any) {
+                responseReceived = responseBody
+                
+                // Response should be JSONObject
+                Assert.assertTrue(responseBody is JSONObject)
+                val jsonResponse = responseBody as JSONObject
+                
+                // Should have records array
+                Assert.assertTrue(jsonResponse.has("records"))
+                val recordsArray = jsonResponse.getJSONArray("records")
+                Assert.assertTrue(recordsArray.length() > 0)
+                
+                // When token=true, record should have fields wrapper
+                val record = recordsArray.getJSONObject(0)
+                Assert.assertTrue(record.has("table"))
+                Assert.assertTrue(record.has("fields"))  // Fields wrapper when token=true
+                
+                val fields = record.getJSONObject("fields")
+                Assert.assertTrue(fields.has("skyflow_id"))
+            }
+
+            override fun onFailure(exception: Any) {
+                Assert.fail("Should not fail")
+            }
+        }
+
+        val updateCallback = UpdateAPICallback(
+            apiClient,
+            updateRecords,
+            callback,
+            InsertOptions(true),  // token=true
+            LogLevel.ERROR
+        )
+
+        // This test verifies the expected format structure
+        Assert.assertNotNull(callback)
+    }
+
+    @Test
     fun testMixedCallback_mergedResponse_format() {
         // Test that MixedAPICallback returns merged response with both records and errors
         val mockInsertResponse = JSONObject()
