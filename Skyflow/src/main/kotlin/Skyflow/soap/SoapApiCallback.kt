@@ -97,7 +97,7 @@ internal class SoapApiCallback(
                     if(e is SkyflowError)
                         callback.onFailure(e)
                     else
-                    callback.onFailure(exception)
+                        callback.onFailure(exception)
                 }
             }
 
