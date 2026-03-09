@@ -11,16 +11,18 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_input_formatting.*
+import com.Skyflow.databinding.ActivityCollectBinding
+import com.Skyflow.databinding.ActivityRevealBinding
 import org.json.JSONObject
 
 class InputFormattingCollect : AppCompatActivity() {
 
     private val TAG = InputFormattingCollect::class.qualifiedName
-
+    private lateinit var binding: ActivityCollectBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_input_formatting)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
@@ -183,7 +185,7 @@ class InputFormattingCollect : AppCompatActivity() {
         parent.addView(expirationDate, index++)
         parent.addView(inputField, index)
 
-        submit.setOnClickListener {
+        binding.submit.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -217,7 +219,7 @@ class InputFormattingCollect : AppCompatActivity() {
             })
         }
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             clearFields(mutableListOf(cardNumber, expirationYear, expirationDate, inputField))
         }
     }

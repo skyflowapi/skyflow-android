@@ -5,6 +5,7 @@ import Skyflow.collect.elements.validations.ElementValueMatchRule
 import Skyflow.composable.*
 import Skyflow.utils.EventName
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -12,21 +13,22 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.Skyflow.collect.elements.validations.ValidationSet
-import kotlinx.android.synthetic.main.activity_collect.*
 import org.json.JSONArray
 import org.json.JSONObject
+import com.Skyflow.databinding.ActivityCollectBinding
 
 class ComposableActivity : AppCompatActivity() {
     private val TAG = ComposableActivity::class.qualifiedName
-
+    private lateinit var binding: ActivityCollectBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_collect)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "<VAULT_ID>",
+            "<VAULT_URL>",
             tokenProvider,
             Options(LogLevel.ERROR, Env.PROD)
         )
@@ -262,7 +264,7 @@ class ComposableActivity : AppCompatActivity() {
 
         upsertArray.put(upsertColumn)
 
-        submit.setOnClickListener {
+        binding.submit.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -279,10 +281,15 @@ class ComposableActivity : AppCompatActivity() {
             }, CollectOptions(true, additionalFields, upsertArray))
         }
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             for (element in elements) {
                 element.unmount()
             }
+        }
+
+        binding.updateSample.setOnClickListener {
+            val intent = Intent(this, UpdateComposableActivity::class.java)
+            startActivity(intent)
         }
     }
 }

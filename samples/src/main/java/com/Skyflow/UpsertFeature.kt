@@ -11,21 +11,23 @@ import android.graphics.Color
 import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_collect.*
+import com.Skyflow.databinding.ActivityCollectBinding
 import org.json.JSONArray
 import org.json.JSONObject
 
 class UpsertFeature : AppCompatActivity() {
 
     private val TAG = UpsertFeature::class.qualifiedName
+    private lateinit var binding: ActivityCollectBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_collect)
+        binding = ActivityCollectBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            BuildConfig.VAULT_ID,
-            BuildConfig.VAULT_URL,
+            "<VAULT_ID>",
+            "<VAULT_URL>",
             tokenProvider,
             Options(LogLevel.ERROR, Env.PROD)
         )
@@ -93,7 +95,7 @@ class UpsertFeature : AppCompatActivity() {
         parent.addView(expirationDate)
         parent.addView(cvv)
 
-        submit.setOnClickListener {
+        binding.submit.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
@@ -127,7 +129,7 @@ class UpsertFeature : AppCompatActivity() {
             }, CollectOptions(true, upsert =  upsertArray))
         }
 
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             clearFields(mutableListOf(cardNumber, cvv, name, expirationDate))
         }
 
