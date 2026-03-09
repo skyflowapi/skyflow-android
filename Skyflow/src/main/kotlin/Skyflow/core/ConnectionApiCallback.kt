@@ -347,9 +347,9 @@ internal class ConnectionApiCallback(
                 if(headers.getString(i).lowercase(Locale.getDefault()).equals("content-type")) {
                     if(connectionConfig.requestHeader.get(headers.getString(i)) is ContentType) {
                         setContentType((connectionConfig.requestHeader.get(headers.getString(i)) as ContentType).type)
+                    } else {
+                        setContentType(connectionConfig.requestHeader.getString(headers.getString(i)))
                     }
-                    else
-                    setContentType(connectionConfig.requestHeader.getString(headers.getString(i)))
                     headerMap.put(headers.getString(i),connectionConfig.requestHeader.getString(headers.getString(i)))
                 }
                 else if(connectionConfig.requestHeader.get(headers.getString(i)) is String || connectionConfig.requestHeader.get(headers.getString(i)) is Number
@@ -577,8 +577,8 @@ internal class ConnectionApiCallback(
                     if(e is SkyflowError)
                         throw e
                     else
-                    throw SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
-                        Utils.tag, logLevel, arrayOf(keys.getString(j)))
+                        throw SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
+                            Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
             } }
         connectionResponse.put("success",responseFromConnection)

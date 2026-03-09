@@ -30,18 +30,7 @@ internal class CollectAPICallback(
             val request = buildRequest(responseBody)
             sendRequest(request)
         } catch (e: Exception) {
-            if (e is SkyflowError)
-                callback.onFailure(e)
-            else {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.UNKNOWN_ERROR,
-                    tag = tag,
-                    logLevel = apiClient.logLevel,
-                    arrayOf(e.message.toString())
-                )
-                skyflowError.setErrorCode(400)
-                callback.onFailure(skyflowError)
-            }
+            callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 
@@ -99,8 +88,7 @@ internal class CollectAPICallback(
     fun sendRequest(request: Request) {
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: IOException) {
-                val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
-                (this@CollectAPICallback).onFailure(skyflowError)
+                (this@CollectAPICallback).onFailure(Utils.constructErrorResponse(e, 500))
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -122,34 +110,18 @@ internal class CollectAPICallback(
                     }
 
                     val requestId = response.headers.get("x-request-id").toString()
-                    val skyflowError = SkyflowError(
-                        SkyflowErrorCode.SERVER_ERROR,
-                        tag = tag,
-                        logLevel = apiClient.logLevel,
-                        arrayOf(Utils.appendRequestId(message, requestId))
-                    )
-                    skyflowError.setErrorCode(response.code)
-                    callback.onFailure(skyflowError)
+                    callback.onFailure(Utils.constructErrorResponse(
+                        response.code, 
+                        Utils.appendRequestId(message, requestId)
+                    ))
                 } else if (response.isSuccessful && response.body != null) {
                     val responsebody = response.body!!.string()
                     callback.onSuccess(buildResponse(JSONObject(responsebody)["responses"] as JSONArray))
                 } else {
-                    val skyflowError = SkyflowError(
-                        SkyflowErrorCode.BAD_REQUEST,
-                        tag = tag,
-                        logLevel = apiClient.logLevel
-                    )
-                    skyflowError.setErrorCode(response.code)
-                    callback.onFailure(skyflowError)
+                    callback.onFailure(Utils.constructErrorResponse(response.code, "Bad request"))
                 }
             } catch (e: Exception) {
-                val skyflowError = SkyflowError(
-                    SkyflowErrorCode.UNKNOWN_ERROR,
-                    tag = tag,
-                    logLevel = apiClient.logLevel,
-                    arrayOf(e.message.toString())
-                )
-                callback.onFailure(skyflowError)
+                callback.onFailure(Utils.constructErrorResponse(e, 500))
             }
         }
     }

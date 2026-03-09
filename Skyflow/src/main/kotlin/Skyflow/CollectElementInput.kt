@@ -10,7 +10,8 @@ class CollectElementInput(
     internal var errorTextStyles: Styles = Styles(),
     internal var label: String = "",
     internal var placeholder: String = "",
-    internal var validations: ValidationSet = ValidationSet()
+    internal var validations: ValidationSet = ValidationSet(),
+    internal var skyflowID: String? = null
 ) {
 
     internal lateinit var type: SkyflowElementType
@@ -31,7 +32,8 @@ class CollectElementInput(
         label: String = "",
         placeholder: String = "",
         altText: String = "",
-        validations: ValidationSet = ValidationSet()
+        validations: ValidationSet = ValidationSet(),
+        skyflowID: String? = null
     ) : this(
         table,
         column,
@@ -40,7 +42,8 @@ class CollectElementInput(
         errorTextStyles,
         label,
         placeholder,
-        validations
+        validations,
+        skyflowID
     ) {
         this.type = type
         this.altText = altText
