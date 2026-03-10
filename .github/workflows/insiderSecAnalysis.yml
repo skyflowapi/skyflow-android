@@ -1,0 +1,22 @@
+name: insiderAnalysis
+on:
+  pull_request:
+    branches: [main]
+  push: 
+    branches: [main,'*']
+jobs:
+  insider:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Run Insider
+        uses: insidersec/insider-action@v0
+        with:
+            technology: android
+            # Relative path under $GITHUB_WORKSPACE to use as a target
+            # In this example, will use $GITHUB_WORKSPACE/src as a target
+            target: Skyflow
