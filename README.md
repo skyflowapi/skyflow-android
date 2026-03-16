@@ -109,7 +109,7 @@ val config = Skyflow.Configuration(
     tokenProvider = demoTokenProvider,
     options: Skyflow.Options(
       logLevel : Skyflow.LogLevel, // optional, if not specified loglevel is ERROR.
-        env: SKyflow.Env //optiuona, if not specified env is PROD.
+        env: Skyflow.Env // optional, if not specified env is PROD.
        ) 
 )
 
@@ -537,7 +537,7 @@ record.put("fields", fields)
 recordsArray.put(record)
 nonPCIRecords.put("records", recordsArray)
 
-val options = Skyflow.CollectOptions(tokens = true, additonalFields = nonPCIRecords)
+val options = Skyflow.CollectOptions(tokens = true, additionalFields = nonPCIRecords)
 val insertCallback = InsertCallback() //Custom callback - implementation of Skyflow.callback
 container.collect(options, insertCallback)
 ```
@@ -676,7 +676,7 @@ val nameInput = Skyflow.CollectElementInput(
        placeholder = "enter your name",
 )
 val cardNumberElement = container.create(context = Context,cardNumberInput, options)
-val nameElement = container.create(context = Context,namerInput, options)
+val nameElement = container.create(context = Context,nameInput, options)
 
 //Upsert options
 val upsertArray = JSONArray()
@@ -961,7 +961,7 @@ skyflow-android provides two types of validations on Collect Elements
 #### 1. Default Validations:
 Every Collect Element except of type `INPUT_FIELD` has a set of default validations listed below:
 - `CARD_NUMBER`: Card number validation with checkSum algorithm(Luhn algorithm), available card lengths for defined card types
-- `CARD_HOLDER_NAME`: Name, should be 2 or more symbols, valid characters shold match pattern `^([a-zA-Z\\ \\,\\.\\-\\']{2,})$`
+- `CARD_HOLDER_NAME`: Name, should be 2 or more symbols, valid characters should match pattern `^([a-zA-Z\\ \\,\\.\\-\\']{2,})$`
 - `CVV`: Card CVV can have 3-4 digits
 - `EXPIRATION_DATE`: Any date starting from current month. By default valid expiration date should be in short year format - `MM/YY`
 - `PIN`: Can have 4-12 digits
@@ -1115,7 +1115,7 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
 
 Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
 
-`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
+`setError(error : String)` method is used to set the error text for the element, when this method is triggered, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is triggered on the same element.
 
 `resetError()` method is used to clear the custom error message that is set using `setError`.
 
@@ -1174,7 +1174,7 @@ val cardNumberInput = Skyflow.CollectElementInput(
   type = Skyflow.ElementType.CARD_NUMBER,
 )
 val cardNumber = container.create(input = cardNumberInput)
-//Set a value programatically
+//Set a value programmatically
 cardNumber.setValue("4111111111111111")
 //Clear the value
 cardNumber.clearValue()
@@ -1473,7 +1473,7 @@ upsertColumn.put("column", "card_number")
 
 upsertArray.put(upsertColumn)
 
-val options = Skyflow.CollectOptions(tokens = true, additonalFields = nonPCIRecords, upsert = upsertArray)
+val options = Skyflow.CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertArray)
 val insertCallback = InsertCallback() //Custom callback - implementation of Skyflow.callback
 container.collect(options, insertCallback)
 ```
@@ -2306,7 +2306,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
           "table": String,                      // name of table from where records are to be fetched
           "redaction": Skyflow.RedactionType,   // redaction to be applied to retrieved data
           "columnName": String,                 // a unique column name
-          "colunmnValues": JSONArray()  // Array of Column Values of the records to be fetched
+          "columnValues": JSONArray()  // Array of Column Values of the records to be fetched
         }
       ]
     }
@@ -2612,7 +2612,7 @@ container.reveal(callback = revealCallback)
 
 Helps to display custom error messages on the Skyflow Elements through the methods `setError` and `resetError` on the elements.
 
-`setError(error : String)` method is used to set the error text for the element, when this method is trigerred, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is trigerred on the same element.
+`setError(error : String)` method is used to set the error text for the element, when this method is triggered, all the current errors present on the element will be overridden with the custom error message passed. This error will be displayed on the element until `resetError()` is triggered on the same element.
 
 `resetError()` method is used to clear the custom error message that is set using `setError`.
 
@@ -2718,7 +2718,7 @@ The response below shows that some tokens assigned to the reveal elements get re
 }
 ```
 ## Limitation
-Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
+Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programmatically.
 
 
 
