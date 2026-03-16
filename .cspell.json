@@ -178,7 +178,8 @@
     "httpsm",
     "jvmargs",
     "Dfile",
-    "fqcn"
+    "fqcn",
+    "organisation"
   ],
   "languageSettings": [
     {
