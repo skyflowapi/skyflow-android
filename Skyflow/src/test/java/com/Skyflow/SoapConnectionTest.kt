@@ -439,7 +439,7 @@ class SoapConnectionTest {
     }
 
     @Test
-    fun testCheckifMapIsSubSet() {
+    fun testCheckIfMapIsSubSet() {
         val soapConfiguration =
             SoapConnectionConfig(connectionUrl, httpHeaders, requestBody, responseBody)
         val callback = SoapValueCallback(skyflow, soapConfiguration, DemoCallback(), LogLevel.ERROR)
@@ -451,7 +451,7 @@ class SoapConnectionTest {
     }
 
     @Test
-    fun testCheckifMapIsSubSet2() {
+    fun testCheckIfMapIsSubSet2() {
         val soapConfiguration =
             SoapConnectionConfig(connectionUrl, httpHeaders, requestBody, responseBody)
         val callback = SoapValueCallback(skyflow, soapConfiguration, DemoCallback(), LogLevel.ERROR)

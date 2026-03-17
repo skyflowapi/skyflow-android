@@ -3,7 +3,7 @@ Test the SDK by adding `VAULT-ID`, `VAULT-URL`, and `SERVICE-ACCOUNT` details in
 
 
 ## Prerequisites
-- A Skylow account. If you don't have one, register for one on the [Try Skyflow](https://skyflow.com/try-skyflow) page.
+- A Skyflow account. If you don't have one, register for one on the [Try Skyflow](https://skyflow.com/try-skyflow) page.
 - [Node.js](https://nodejs.org/en/) version 10 or above
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) version 6.x.x
 - [express.js](http://expressjs.com/en/starter/hello-world.html)
@@ -98,7 +98,7 @@ This sample demonstrates how to use Skyflow Elements to collect sensitive user i
 3. Update `TOKEN_URL` with `http://localhost:3000/`
 
 ### Custom Validation
-This sample demonstrates how to use custom validation with Skylow elements.
+This sample demonstrates how to use custom validation with Skyflow elements.
 #### Configure
 1. Update `VAULT_ID` with the above created vault.
 2. Update `VAULT_URL` with the above created vault.

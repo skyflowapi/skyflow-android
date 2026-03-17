@@ -97,7 +97,7 @@ class CustomValidationsActivity : AppCompatActivity() {
         pinValidationSet.add(ElementValueMatchRule(pin,"value not matched"))
         val confirmPinInput = Skyflow.CollectElementInput(
             "cards",
-            "confim_pin",
+            "confirm_pin",
             SkyflowElementType.PIN,
             styles,
             labelStyles,
