@@ -39,7 +39,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.21.0] - 2023-10-06
 ### Added
-- Ability to customise Copy behaviour for Collect and Reveal Elements.
+- Ability to customize copy behavior for Collect and Reveal Elements.
 
 ## [1.20.1] - 2023-09-28
 ### Added
@@ -215,7 +215,7 @@ Detecting card type and displaying icon in the card number element
 
 - `logLevel` option to allow different levels of logging
 - event listeners for collect element
-- `env` option for accessibilty of value in event listners
+- `env` option for accessibility of value in event listeners
 
 ### Changed
 - Standardized error information for easier debugging.

@@ -671,7 +671,7 @@ class RevealTest {
     //end revealapicallback
 
 
-    //revealbyid callback
+    // reveal by ID callback
 
     @Test
     fun testRevealByIdCallback() {
@@ -679,7 +679,7 @@ class RevealTest {
         records.add(GetByIdRecord(arrayListOf("1234"), "cards", RedactionType.REDACTED.toString()))
         val apiClient =
             APIClient("1234", "https://vaulturl.com", AccessTokenProvider(), LogLevel.ERROR)
-        val revealByidCallback = RevealByIdCallback(
+        val revealByIdCallback = RevealByIdCallback(
             object : Callback {
                 override fun onSuccess(responseBody: Any) {
 
@@ -695,7 +695,7 @@ class RevealTest {
             }, apiClient, records = records
         )
 
-        revealByidCallback.onSuccess("token")
+        revealByIdCallback.onSuccess("token")
     }
 
     @Test
@@ -704,7 +704,7 @@ class RevealTest {
         records.add(GetByIdRecord(arrayListOf("1234"), "cards", RedactionType.REDACTED.toString()))
         val apiClient =
             APIClient("1234", "https://vaulturl.com", AccessTokenProvider(), LogLevel.ERROR)
-        val revealByidCallback = RevealByIdCallback(
+        val revealByIdCallback = RevealByIdCallback(
             object : Callback {
                 override fun onSuccess(responseBody: Any) {
 
@@ -717,7 +717,7 @@ class RevealTest {
             }, apiClient, records = records
         )
 
-        revealByidCallback.onFailure("failed")
+        revealByIdCallback.onFailure("failed")
 
         RevealByIdCallback(
             object : Callback {
@@ -736,7 +736,7 @@ class RevealTest {
         ).onFailure(Exception("failed"))
     }
 
-    //end revealbyid callback
+    // end reveal by ID callback
 
 
     //revealValueCallback

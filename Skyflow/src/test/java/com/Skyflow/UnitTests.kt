@@ -1470,7 +1470,7 @@ class UnitTests {
 //    }
 
     @Test
-    fun testOnFocucChangeListener() {
+    fun testOnFocusChangeListener() {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
@@ -1490,7 +1490,7 @@ class UnitTests {
     }
 
     @Test
-    fun testOnBlurChangeListner() {
+    fun testOnBlurChangeListener() {
         val container = skyflow.container(ContainerType.COLLECT)
         val options = CollectElementOptions(false)
         val collectInput = CollectElementInput(
@@ -1670,7 +1670,7 @@ class UnitTests {
     }
 
     @Test
-    fun testConverQueryString() {
+    fun testConvertQueryString() {
         val json = JSONObject()
         json.put("type", "card")
         val card = HashMap<String, String>()
@@ -1688,7 +1688,7 @@ class UnitTests {
     }
 
     @Test
-    fun testConverQueryStringWithArray() {
+    fun testConvertQueryStringWithArray() {
         val json = JSONObject()
         val card = JSONObject()
         card.put("number", JSONArray().put("123"))
