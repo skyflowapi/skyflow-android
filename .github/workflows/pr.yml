@@ -28,7 +28,7 @@ jobs:
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
     - name: Run Android Linter
-      run: ./gradlew lint
+      run: ./gradlew :Skyflow:lint
   build:
 
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
     - name: Build SDK
-      run: ./gradlew build
+      run: ./gradlew :Skyflow:build
     - name: Run Tests
       id: tests
-      run: ./gradlew test
+      run: ./gradlew :Skyflow:test
