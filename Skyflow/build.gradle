@@ -15,6 +15,7 @@ ext {
 
 }
 android {
+    namespace "com.skyflow_android"
     compileSdk 35
 
     defaultConfig {
@@ -32,6 +33,10 @@ android {
             returnDefaultValues = true
         }
 
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     buildTypes {
@@ -52,17 +57,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
 }
 
 def isBeta = project.hasProperty('beta') ? project.getProperty('beta') : false
@@ -78,7 +83,6 @@ afterEvaluate {
                     version mVersionName
 
                     from components.release
-                    artifact androidSourcesJar
 
                     pom {
                         name = mLibraryName
@@ -92,7 +96,6 @@ afterEvaluate {
                     version mVersionName
 
                     from components.release
-                    artifact androidSourcesJar
 
                     pom {
                         name = mLibraryName
@@ -106,7 +109,6 @@ afterEvaluate {
                     version mVersionName
 
                     from components.release
-                    artifact androidSourcesJar
 
                     pom {
                         name = mLibraryName
