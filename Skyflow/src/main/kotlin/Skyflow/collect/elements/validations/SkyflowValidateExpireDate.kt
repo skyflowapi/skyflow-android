@@ -36,7 +36,7 @@ internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override va
 
         var monthString = ""
         var yearString = ""
-        if(format.toLowerCase().startsWith("m")) {
+        if(format.lowercase().startsWith("m")) {
              monthString = text.substring(0, monthChars)
              yearString = text.substring(text.length - yearChars, text.length)
         }

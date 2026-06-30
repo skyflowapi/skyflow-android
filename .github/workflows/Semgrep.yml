@@ -13,7 +13,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Semgrep and jq
         run: |
@@ -33,7 +33,7 @@ jobs:
          cat pretty-results.json
          
       - name: Add comment on PR if findings are found
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             // Ensure the context has a pull_request

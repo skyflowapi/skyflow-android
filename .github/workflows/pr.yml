@@ -19,29 +19,31 @@ jobs:
   check-code-quality:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: set up JDK
-      uses: actions/setup-java@v1
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
       with:
-        java-version: 12
+        distribution: 'temurin'
+        java-version: '17'
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
     - name: Run Android Linter
-      run: ./gradlew lint
+      run: ./gradlew :Skyflow:lint
   build:
-    
+
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: set up JDK
-      uses: actions/setup-java@v1
+    - uses: actions/checkout@v4
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
       with:
-        java-version: 12
+        distribution: 'temurin'
+        java-version: '17'
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
     - name: Build SDK
-      run: ./gradlew build
+      run: ./gradlew :Skyflow:build
     - name: Run Tests
       id: tests
-      run: ./gradlew test
+      run: ./gradlew :Skyflow:test
