@@ -253,8 +253,8 @@ class TextField @JvmOverloads constructor(
     private fun changeExpireDateValidations() {
         validationRules.rules.clear()
         val expireDateList = mutableListOf("mm/yy", "mm/yyyy", "yy/mm", "yyyy/mm")
-        if (expireDateList.contains(options.format.toLowerCase())) {
-            expiryDateFormat = options.format.toLowerCase()
+        if (expireDateList.contains(options.format.lowercase())) {
+            expiryDateFormat = options.format.lowercase()
             validationRules.add(SkyflowValidateExpireDate(format = expiryDateFormat))
         } else {
             Logger.warn(tag, "invalid format for EXPIRATION_DATE", optionsForLogging.logLevel)
@@ -270,8 +270,8 @@ class TextField @JvmOverloads constructor(
     private fun changeYearValidations() {
         validationRules.rules.clear()
         val yearList = mutableListOf("yy", "yyyy")
-        if (yearList.contains(options.format.toLowerCase())) {
-            yearFormat = options.format.toLowerCase()
+        if (yearList.contains(options.format.lowercase())) {
+            yearFormat = options.format.lowercase()
             validationRules.add(SkyflowValidateYear(format = yearFormat))
         } else {
             Logger.warn(tag, "invalid format for EXPIRATION_YEAR", optionsForLogging.logLevel)
