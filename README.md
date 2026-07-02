@@ -19,10 +19,10 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 
 ## Requirements
 - Android 5.0 (API level 21) and above
-- compileSdk 35 or higher
-- Android Gradle Plugin 8.6.0 or higher
-- JDK 17 or higher
-- Kotlin 2.x or higher
+- compileSdk 35 and above
+- Android Gradle Plugin 8.6.0 and above
+- JDK 17 and above
+- Kotlin 2.x and above
 
 ## Configuration
 ### Step 1: Generate a Personal Access Token for GitHub
