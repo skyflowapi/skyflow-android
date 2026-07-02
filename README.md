@@ -18,8 +18,9 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 # Installation
 
 ## Requirements
-- Android Gradle plugin 4.2.0 and above
 - Android 5.0 (API level 21) and above
+- compileSdk 35 and above
+- Android Gradle Plugin 8.6.0 and above
 
 ## Configuration
 ### Step 1: Generate a Personal Access Token for GitHub
@@ -63,7 +64,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 - Add the dependency to your application's build.gradle file
 
   ```java
-  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.24.0'
+  implementation 'com.skyflowapi.android:skyflow-android-sdk:1.27.0'
   ```
 
 #### Using maven
@@ -91,7 +92,7 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 <dependency>
    <groupId>com.skyflowapi.android</groupId>
    <artifactId>skyflow-android-sdk</artifactId>
-   <version>1.24.0</version>
+   <version>1.27.0</version>
 </dependency>
 ```
 
