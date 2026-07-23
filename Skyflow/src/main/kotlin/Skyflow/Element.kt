@@ -35,8 +35,6 @@ open class Element @JvmOverloads constructor(
             tableName = this.collectInput.table!!
         if(!this.collectInput.column.equals(null))
             columnName = this.collectInput.column!!
-        if(!this.collectInput.skyflowID.equals(null))
-            skyflowID = this.collectInput.skyflowID
         isRequired = this.options.required
         state = State(columnName,isRequired)
     }

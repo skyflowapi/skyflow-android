@@ -5,7 +5,6 @@ import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
 import org.json.JSONObject
-import java.lang.Exception
 
 @Suppress("DEPRECATION")
 internal class RevealValueCallback(
@@ -22,8 +21,7 @@ internal class RevealValueCallback(
             constructElementMap()
             val responseJSON = JSONObject(responseBody.toString())
             revealSuccessRecords(responseJSON)
-            val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
-            callback.onSuccess(revealResponse)
+            callback.onSuccess(responseJSON.toString())
         } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
@@ -37,8 +35,7 @@ internal class RevealValueCallback(
                 revealSuccessRecords(responseJSON)
             }
             revealErrors(responseJSON)
-            val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
-            callback.onFailure(revealResponse)
+            callback.onFailure(responseJSON.toString())
         } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
@@ -63,25 +60,24 @@ internal class RevealValueCallback(
                     }
                 }
             }
-            recordObj.remove("value")
         }
     }
 
     private fun revealErrors(responseJSON: JSONObject) {
         val errorArray = responseJSON.getJSONArray("errors")
-
         var i = 0
         while (i < errorArray.length()) {
             val recordObj = errorArray[i] as JSONObject
-            val tokenId = recordObj.get("token").toString()
-            Handler(Looper.getMainLooper()).post {
-                for (element in elementsList) {
-                    if (element.first == tokenId) {
-                        Utils.setErrorForLabel(element.second)
+            val tokenId = recordObj.optString("token", "")
+            if (tokenId.isNotEmpty()) {
+                Handler(Looper.getMainLooper()).post {
+                    for (element in elementsList) {
+                        if (element.first == tokenId) {
+                            Utils.setErrorForLabel(element.second)
+                        }
                     }
                 }
             }
-
             i++
         }
     }

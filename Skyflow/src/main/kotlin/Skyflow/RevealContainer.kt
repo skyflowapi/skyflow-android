@@ -5,7 +5,7 @@ import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
-import Skyflow.reveal.RevealRequestBody
+import Skyflow.reveal.FlowDBRevealRequestBody
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
@@ -45,7 +45,6 @@ fun Container<RevealContainer>.reveal(
     options: RevealOptions? = RevealOptions()
 ) {
     try {
-        Utils.checkVaultDetails(client.configuration)
         validateElements()
         Logger.info(
             tag,
@@ -91,6 +90,9 @@ internal fun Container<RevealContainer>.get(callback: Callback, options: RevealO
         this.revealElements,
         configuration.options.logLevel
     )
-    val records = RevealRequestBody.createRequestBody(this.revealElements)
-    this.client.apiClient.get(records, revealValueCallback)
+    val requestBody = FlowDBRevealRequestBody.buildRequestBody(
+        configuration.vaultID,
+        this.revealElements
+    )
+    this.client.apiClient.get(requestBody, revealValueCallback)
 }
