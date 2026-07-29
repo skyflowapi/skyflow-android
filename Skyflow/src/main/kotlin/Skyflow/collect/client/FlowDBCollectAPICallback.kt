@@ -131,7 +131,7 @@ internal class FlowDBCollectAPICallback(
             val resultRecord = JSONObject()
                 .put("tableName", tableName)
                 .put("skyflowId", skyflowId)
-                .put("fields", fieldsObject)
+                .put("tokens", fieldsObject)
                 .put("httpCode", httpCode)
             val hashedData = record.optJSONObject("hashedData")
             if (hashedData != null) resultRecord.put("hashedData", hashedData)

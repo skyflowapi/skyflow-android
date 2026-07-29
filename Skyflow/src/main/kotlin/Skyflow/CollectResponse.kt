@@ -30,7 +30,7 @@ data class CollectResponse(val records: List<CollectRecord> = emptyList()) {
                                 httpCode = httpCode
                             )
                         } else {
-                            val fieldsObj = r.optJSONObject("fields")
+                            val fieldsObj = r.optJSONObject("tokens")
                             val tokens: Map<String, Any?>? = fieldsObj?.let { obj ->
                                 val map = mutableMapOf<String, Any?>()
                                 val keys = obj.keys()
