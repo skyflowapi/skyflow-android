@@ -487,18 +487,6 @@ container.collect(object : CollectCallback {
 }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let nonPCIRecords = Skyflow.AdditionalFields(records: [
-    Skyflow.AdditionalFieldsRecord(table: "persons", fields: ["gender": "MALE"])
-])
-let options = Skyflow.CollectOptions(additionalFields: nonPCIRecords)
-let insertCallback = Skyflow.CollectCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-)
-container?.collect(callback: insertCallback, options: options)
-```
 
 #### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/CollectActivity.kt)
 
@@ -597,17 +585,6 @@ container.collect(object : CollectCallback {
 }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let nonPCIRecords = Skyflow.AdditionalFields(records: [
-    Skyflow.AdditionalFieldsRecord(table: "persons", fields: ["gender": "MALE"], skyflowId: "<SKYFLOW_ID>")
-])
-let options = Skyflow.CollectOptions(additionalFields: nonPCIRecords)
-container?.collect(callback: Skyflow.CollectCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-), options: options)
-```
 
 **Note:** `skyflowId` is required to update an existing record. Without it, a new record is inserted.
 
@@ -1122,16 +1099,6 @@ composableContainer.collect(object : CollectCallback {
 }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let options = Skyflow.CollectOptions(additionalFields: Skyflow.AdditionalFields(records: [
-    Skyflow.AdditionalFieldsRecord(table: "persons", fields: ["gender": "MALE"])
-]))
-container?.collect(callback: Skyflow.CollectCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-), options: options)
-```
 
 ## Using Skyflow Composable Elements to update data
 
@@ -1250,16 +1217,6 @@ composableContainer.collect(object : CollectCallback {
 }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let options = Skyflow.CollectOptions(additionalFields: Skyflow.AdditionalFields(records: [
-    Skyflow.AdditionalFieldsRecord(table: "persons", fields: ["gender": "MALE"], skyflowId: "<SKYFLOW_ID>")
-]))
-container?.collect(callback: Skyflow.CollectCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-), options: options)
-```
 
 **Note:** `skyflowId` is required to update an existing record. Without it, a new record is inserted.
 
@@ -1556,17 +1513,6 @@ val revealElementInput = RevealElementInput(
 )
 ```
 
-**iOS (Swift):**
-```swift
-let revealElementInput = Skyflow.RevealElementInput(
-    token: "<TOKEN>",
-    inputStyles: Skyflow.Styles(),
-    labelStyles: Skyflow.Styles(),
-    errorTextStyles: Skyflow.Styles(),
-    label: "Card Number",
-    altText: "•••• •••• •••• ••••"
-)
-```
 
 **Note:** Redaction is not set on individual reveal elements. To apply a redaction to a token group, use `tokenGroupRedactions` on `RevealOptions` passed to `reveal()`. See [Reveal with typed callbacks](#reveal-with-typed-callbacks).
 
@@ -1669,24 +1615,6 @@ revealContainer.reveal(object : RevealCallback {
 })
 ```
 
-**iOS (Swift):**
-```swift
-let revealCallback = Skyflow.RevealCallback(
-    onSuccess: { (response: Skyflow.RevealResponse) in
-        for record in response.records {
-            if let error = record.error {
-                print("partial error [\(record.httpCode)]:", error)
-            } else {
-                print("revealed:", record.token ?? "", record.tokenGroupName ?? "")
-            }
-        }
-    },
-    onFailure: { (error: Skyflow.SkyflowError) in
-        print("reveal failed:", error.message)
-    }
-)
-container?.reveal(callback: revealCallback)
-```
 
 To apply redaction per token group, pass `RevealOptions`:
 
@@ -1700,13 +1628,6 @@ val options = RevealOptions(
 revealContainer.reveal(object : RevealCallback { ... }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let options = Skyflow.RevealOptions(
-    tokenGroupRedactions: [Skyflow.TokenGroupRedaction(tokenGroupName: "<TOKEN_GROUP_NAME>", redaction: "<REDACTION_TYPE>")]
-)
-container?.reveal(callback: revealCallback, options: options)
-```
 
 ### UI Error for Reveal Elements
 
@@ -1861,14 +1782,6 @@ container.collect(object : CollectCallback {
 })
 ```
 
-**iOS (Swift):**
-```swift
-let insertCallback = Skyflow.CollectCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-)
-container?.collect(callback: insertCallback)
-```
 
 ### CollectOptions
 
@@ -1890,16 +1803,6 @@ val options = CollectOptions(
 container.collect(object : CollectCallback { ... }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let upsertOptions = [Skyflow.UpsertOption(
-    table: "<TABLE_NAME>",
-    uniqueColumns: ["<UNIQUE_COLUMN>"],
-    updateType: .UPDATE
-)]
-let options = Skyflow.CollectOptions(upsert: upsertOptions)
-container?.collect(callback: insertCallback, options: options)
-```
 
 #### Additional fields (non-PCI data)
 
@@ -1921,18 +1824,6 @@ val options = CollectOptions(
 container.collect(object : CollectCallback { ... }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let nonPCIRecords = Skyflow.AdditionalFields(records: [
-    Skyflow.AdditionalFieldsRecord(
-        table: "<TABLE_NAME>",
-        fields: ["<COLUMN>": "<VALUE>"]
-        // skyflowId: "<SKYFLOW_ID>"  // set this to update an existing record
-    )
-])
-let options = Skyflow.CollectOptions(additionalFields: nonPCIRecords)
-container?.collect(callback: insertCallback, options: options)
-```
 
 **Note:** Set `skyflowId` on `AdditionalFieldsRecord` to update an existing record. Without it, a new record is inserted.
 
@@ -1998,18 +1889,6 @@ override fun onFailure(error: SkyflowError) {
 }
 ```
 
-**iOS (Swift):**
-```swift
-onFailure: { (skyflowError: Skyflow.SkyflowError) in
-    print(
-        skyflowError.httpCode as Any,
-        skyflowError.message as Any,
-        skyflowError.grpcCode as Any,
-        skyflowError.httpStatus as Any,
-        skyflowError.details as Any
-    )
-}
-```
 
 #### Sample Code:
 [CollectActivity.kt](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/CollectActivity.kt)
@@ -2040,14 +1919,6 @@ revealContainer.reveal(object : RevealCallback {
 })
 ```
 
-**iOS (Swift):**
-```swift
-let revealCallback = Skyflow.RevealCallback(
-    onSuccess: { response in print(response) },
-    onFailure: { error in print(error) }
-)
-container.reveal(callback: revealCallback)
-```
 
 ### RevealOptions
 
@@ -2066,15 +1937,6 @@ val options = RevealOptions(
 revealContainer.reveal(object : RevealCallback { ... }, options)
 ```
 
-**iOS (Swift):**
-```swift
-let revealOptions = Skyflow.RevealOptions(
-    tokenGroupRedactions: [
-        Skyflow.TokenGroupRedaction(tokenGroupName: "<TOKEN_GROUP_NAME>", redaction: "MASKED")
-    ]
-)
-container.reveal(callback: revealCallback, options: revealOptions)
-```
 
 ### RevealResponse
 
