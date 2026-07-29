@@ -1861,14 +1861,16 @@ data class CollectRecord(
             "httpCode": 200
         },
         {
-            "error": "Invalid request. Table name table not present for record.",
+            "tableName": "persons",
+            "error": "Invalid request. Required field ssn is missing.",
             "skyflowId": null,
-            "tableName": "",
             "httpCode": 400
         }
     ]
 }
 ```
+
+The SDK populates `tableName` on error records from the original request, so `CollectRecord.tableName` is never empty in the delivered response.
 
 #### If the entire request fails, `onFailure` delivers a `SkyflowError`:
 

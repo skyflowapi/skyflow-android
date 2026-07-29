@@ -89,15 +89,20 @@ internal class FlowDBCollectAPICallback(
         val records = responseJson.optJSONArray("records") ?: JSONArray()
         val allRecords = JSONArray()
         val requestRecords = requestBody.optJSONArray("records")
-        // update bodies have top-level tableName; insert bodies have it per-record
         val topLevelTableName = requestBody.optString("tableName", "")
+        val requestTableNames: List<String> = if (topLevelTableName.isNotEmpty()) {
+            // All records in this request belong to one table
+            List(requestRecords?.length() ?: 1) { topLevelTableName }
+        } else {
+            (0 until (requestRecords?.length() ?: 0)).map { i ->
+                requestRecords?.optJSONObject(i)?.optString("tableName", "") ?: ""
+            }
+        }
 
         for (i in 0 until records.length()) {
             val record = records.getJSONObject(i)
             val httpCode = record.optInt("httpCode", 200)
-            val fallbackTableName = topLevelTableName.ifEmpty {
-                requestRecords?.optJSONObject(i)?.optString("tableName", "") ?: ""
-            }
+            val fallbackTableName = requestTableNames.getOrElse(i) { "" }
             val tableName = record.optString("tableName", "").ifEmpty { fallbackTableName }
 
             if (httpCode != 200) {
