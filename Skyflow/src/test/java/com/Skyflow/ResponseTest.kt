@@ -15,7 +15,7 @@ class ResponseTest {
 
     @Test
     fun `CollectResponse fromJson parses success record`() {
-        val json = """{"records":[{"tableName":"cards","skyflowId":"id1","fields":{"card_number":"tok1"},"httpCode":200}]}"""
+        val json = """{"records":[{"tableName":"cards","skyflowId":"id1","tokens":{"card_number":[{"token":"tok1","tokenGroupName":"group1"}]},"httpCode":200}]}"""
         val response = CollectResponse.fromJson(json)
         assertEquals(1, response.records.size)
         val record = response.records[0]
@@ -24,7 +24,9 @@ class ResponseTest {
         assertEquals(200, record.httpCode)
         assertNull(record.error)
         assertNotNull(record.tokens)
-        assertEquals("tok1", record.tokens?.get("card_number"))
+        @Suppress("UNCHECKED_CAST")
+        val tokenList = record.tokens?.get("card_number") as? List<Map<String, Any?>>
+        assertEquals("tok1", tokenList?.firstOrNull()?.get("token"))
     }
 
     @Test
