@@ -467,7 +467,6 @@ fun clearFields(elements: List<TextField>) {
 
 Call `collect(callback, options)` on the container. `CollectOptions` accepts optional `additionalFields` (non-PCI data) and `upsert` parameters.
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     additionalFields = AdditionalFields(records = listOf(
@@ -561,7 +560,6 @@ When the form is ready to submit, call the `collect(options?)` method on the con
 - `additionalFields`: Non-PCI data to update or insert alongside element values, as an `AdditionalFields` object.
 - `upsert`: To support upsert operations, pass a list of `UpsertOptions` specifying the table, update type, and unique columns.
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     additionalFields = AdditionalFields(records = listOf(
@@ -1081,7 +1079,6 @@ When the form is ready to be submitted, call the `collect(callback: CollectCallb
 - `additionalFields`: Non-PCI data to be inserted alongside element values. See [Additional fields](#additional-fields-non-pci-data).
 - `upsert`: To support upsert operations, the table and a unique column. See [Upsert support](#upsert-support).
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     additionalFields = AdditionalFields(records = listOf(
@@ -1195,7 +1192,6 @@ The options parameter takes a `CollectOptions` object with the following optiona
 - `additionalFields`: Non-PCI data to insert alongside element values, as an `AdditionalFields` object.
 - `upsert`: To support upsert operations, pass a list of `UpsertOptions` specifying the table, update type, and unique columns.
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     additionalFields = AdditionalFields(records = listOf(
@@ -1501,7 +1497,6 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.REVEAL)
 ### Step 2: Create a reveal Element
 Next, define a `RevealElementInput` for each element to reveal:
 
-**Android (Kotlin):**
 ```kotlin
 val revealElementInput = RevealElementInput(
     token = "<TOKEN>",                   // token of the data to reveal
@@ -1597,7 +1592,6 @@ Elements used for revealing data are mounted to the screen the same way as Eleme
 ### Step 4: Reveal data
 When the sensitive data is ready to be retrieved and revealed, call the `reveal()` method on the container with a typed `RevealCallback`:
 
-**Android (Kotlin):**
 ```kotlin
 revealContainer.reveal(object : RevealCallback {
     override fun onSuccess(response: RevealResponse) {
@@ -1618,7 +1612,6 @@ revealContainer.reveal(object : RevealCallback {
 
 To apply redaction per token group, pass `RevealOptions`:
 
-**Android (Kotlin):**
 ```kotlin
 val options = RevealOptions(
     tokenGroupRedactions = listOf(
@@ -1764,7 +1757,6 @@ The SDK provides typed callbacks and typed response objects for collect and reve
 
 Implement `CollectCallback` to receive typed collect results:
 
-**Android (Kotlin):**
 ```kotlin
 container.collect(object : CollectCallback {
     override fun onSuccess(response: CollectResponse) {
@@ -1789,7 +1781,6 @@ container.collect(object : CollectCallback {
 
 Pass `CollectOptions` with `upsert` to insert-or-update based on a unique column:
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     upsert = listOf(
@@ -1808,7 +1799,6 @@ container.collect(object : CollectCallback { ... }, options)
 
 Pass non-PCI data alongside element values using `AdditionalFields`:
 
-**Android (Kotlin):**
 ```kotlin
 val options = CollectOptions(
     additionalFields = AdditionalFields(
@@ -1882,7 +1872,6 @@ data class CollectRecord(
 
 #### If the entire request fails, `onFailure` delivers a `SkyflowError`:
 
-**Android (Kotlin):**
 ```kotlin
 override fun onFailure(error: SkyflowError) {
     Log.d(TAG, "httpCode=${error.httpCode}, message=${error.message}")
@@ -1901,7 +1890,6 @@ override fun onFailure(error: SkyflowError) {
 
 Implement `RevealCallback` to receive typed reveal results:
 
-**Android (Kotlin):**
 ```kotlin
 revealContainer.reveal(object : RevealCallback {
     override fun onSuccess(response: RevealResponse) {
@@ -1924,7 +1912,6 @@ revealContainer.reveal(object : RevealCallback {
 
 Apply a redaction to an entire token group using `RevealOptions.tokenGroupRedactions`. This is a request-level setting — the redaction applies to every token in the named group, not to individual reveal elements.
 
-**Android (Kotlin):**
 ```kotlin
 val options = RevealOptions(
     tokenGroupRedactions = listOf(
