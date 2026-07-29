@@ -1843,7 +1843,7 @@ Both success and partial-error records are delivered as `CollectRecord` in the s
             "skyflowId": "f1714ef8-8deb-489a-a18d-77e0e007f403",
             "tokens": {
                 "cardNumber": [
-                    {"token": "f3907186-e7e2-466f-91e5-48e12c2bcbc1", "tokenGroupName": "deterministic_string", "path": "cardNumber"}
+                    {"token": "f3907186-e7e2-466f-91e5-48e12c2bcbc1", "tokenGroupName": "deterministic_string"}
                 ]
             },
             "httpCode": 200
