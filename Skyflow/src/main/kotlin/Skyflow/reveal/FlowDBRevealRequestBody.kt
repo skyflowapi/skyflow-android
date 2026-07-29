@@ -1,35 +1,36 @@
 package Skyflow.reveal
 
 import Skyflow.Label
+import Skyflow.RevealOptions
 import org.json.JSONArray
 import org.json.JSONObject
 
 internal class FlowDBRevealRequestBody {
     companion object {
-        internal fun buildRequestBody(vaultID: String, elements: MutableList<Label>): JSONObject {
+        internal fun buildRequestBody(
+            vaultID: String,
+            elements: MutableList<Label>,
+            options: RevealOptions? = null
+        ): JSONObject {
             val tokensArray = JSONArray()
-            val tokenGroupRedactionsMap = LinkedHashMap<String, String?>()
-
             for (element in elements) {
-                val input = element.revealInput
-                val token = input.token ?: continue
+                val token = element.revealInput.token ?: continue
                 tokensArray.put(token)
-                val tokenGroupName = input.tokenGroupName
-                if (!tokenGroupName.isNullOrEmpty() && !tokenGroupRedactionsMap.containsKey(tokenGroupName)) {
-                    tokenGroupRedactionsMap[tokenGroupName] = input.redaction
-                }
             }
 
             val body = JSONObject()
                 .put("vaultID", vaultID)
                 .put("tokens", tokensArray)
 
-            if (tokenGroupRedactionsMap.isNotEmpty()) {
+            val redactions = options?.tokenGroupRedactions
+            if (!redactions.isNullOrEmpty()) {
                 val tokenGroupRedactions = JSONArray()
-                for ((tokenGroupName, redaction) in tokenGroupRedactionsMap) {
-                    val entry = JSONObject().put("tokenGroupName", tokenGroupName)
-                    if (redaction != null) entry.put("redaction", redaction)
-                    tokenGroupRedactions.put(entry)
+                for (tgr in redactions) {
+                    tokenGroupRedactions.put(
+                        JSONObject()
+                            .put("tokenGroupName", tgr.tokenGroupName)
+                            .put("redaction", tgr.redaction)
+                    )
                 }
                 body.put("tokenGroupRedactions", tokenGroupRedactions)
             }

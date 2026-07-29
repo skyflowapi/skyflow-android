@@ -87,8 +87,7 @@ internal class FlowDBRevealApiCallback(
 
     private fun parseAndDispatch(responseJson: JSONObject) {
         val responseArray = responseJson.optJSONArray("response") ?: JSONArray()
-        val successRecords = JSONArray()
-        val errorRecords = JSONArray()
+        val allRecords = JSONArray()
 
         for (i in 0 until responseArray.length()) {
             val entry = responseArray.getJSONObject(i)
@@ -96,7 +95,7 @@ internal class FlowDBRevealApiCallback(
             val originalToken = entry.optString("token")
 
             if (httpCode == 200) {
-                successRecords.put(
+                allRecords.put(
                     JSONObject()
                         .put("token", originalToken)
                         .put("value", entry.optString("value"))
@@ -105,7 +104,7 @@ internal class FlowDBRevealApiCallback(
                         .put("metadata", entry.optJSONObject("metadata"))
                 )
             } else {
-                errorRecords.put(
+                allRecords.put(
                     JSONObject()
                         .put("token", originalToken)
                         .put("error", entry.optString("error", "Detokenize failed"))
@@ -114,21 +113,6 @@ internal class FlowDBRevealApiCallback(
             }
         }
 
-        val result = JSONObject()
-        when {
-            errorRecords.length() == 0 -> {
-                result.put("records", successRecords)
-                callback.onSuccess(result)
-            }
-            successRecords.length() == 0 -> {
-                result.put("errors", errorRecords)
-                callback.onFailure(result)
-            }
-            else -> {
-                result.put("records", successRecords)
-                result.put("errors", errorRecords)
-                callback.onFailure(result)
-            }
-        }
+        callback.onSuccess(JSONObject().put("records", allRecords))
     }
 }

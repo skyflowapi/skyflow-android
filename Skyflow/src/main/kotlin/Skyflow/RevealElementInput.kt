@@ -2,8 +2,6 @@ package Skyflow
 
 class RevealElementInput(
     internal var token: String? = null,
-    internal var tokenGroupName: String? = null,
-    internal var redaction: String? = null,
     internal var inputStyles: Styles = Styles(),
     internal var labelStyles: Styles = Styles(),
     internal var errorTextStyles: Styles = Styles(),

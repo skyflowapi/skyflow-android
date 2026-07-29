@@ -18,6 +18,12 @@ internal class FlowDBCollectRequestBody {
             val tableMap = groupByTable(elements, logLevel)
             val upsertByTable = options.upsert?.associateBy { it.tableName } ?: emptyMap()
 
+            // Merge additionalFields insert records into tableMap
+            options.additionalFields?.records?.forEach { rec ->
+                val existing = tableMap.getOrPut(rec.tableName) { mutableListOf() }
+                rec.data.forEach { (k, v) -> existing.add(CollectRequestRecord(k, v.toString())) }
+            }
+
             val recordsArray = JSONArray()
             for ((tableName, columns) in tableMap) {
                 val dataObject = JSONObject()
@@ -55,6 +61,20 @@ internal class FlowDBCollectRequestBody {
                 .put("records", JSONArray().put(JSONObject().put("skyflowID", skyflowID).put("data", dataObject)))
         }
 
+        internal fun buildUpdateRequestBodyFromMap(
+            vaultID: String,
+            tableName: String,
+            data: Map<String, Any>,
+            skyflowID: String
+        ): JSONObject {
+            val dataObject = JSONObject()
+            data.forEach { (k, v) -> dataObject.put(k, v) }
+            return JSONObject()
+                .put("vaultID", vaultID)
+                .put("tableName", tableName)
+                .put("records", JSONArray().put(JSONObject().put("skyflowID", skyflowID).put("data", dataObject)))
+        }
+
         private fun groupByTable(
             elements: MutableList<TextField>,
             logLevel: LogLevel
@@ -73,7 +93,7 @@ internal class FlowDBCollectRequestBody {
                             }
                         }
                         if (!hasElementValueMatchRule)
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.DUPLICATE_COLUMN_FOUND, tag, logLevel,
                                 arrayOf(tableName, element.columnName)
                             )

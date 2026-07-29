@@ -28,7 +28,7 @@ internal class FlowDBAPIClient(
                     override fun onSuccess(responseBody: Any) {
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         if (!isValidToken(responseBody.toString())) {
-                            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel))
+                            callback.onFailure(SkyflowInternalError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel))
                         } else {
                             token = "Bearer $responseBody"
                             callback.onSuccess(token)
@@ -37,14 +37,14 @@ internal class FlowDBAPIClient(
 
                     override fun onFailure(exception: Any) {
                         Logger.error(tag, Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(), logLevel)
-                        callback.onFailure(SkyflowError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel))
+                        callback.onFailure(SkyflowInternalError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel))
                     }
                 })
             } else {
                 callback.onSuccess(token)
             }
         } catch (e: Exception) {
-            callback.onFailure(SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel))
+            callback.onFailure(SkyflowInternalError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel))
         }
     }
 
@@ -61,7 +61,7 @@ internal class FlowDBAPIClient(
         try {
             val tokensArray = requestBody.optJSONArray("tokens")
             if (tokensArray == null || tokensArray.length() == 0) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
             }
             val revealApiCallback = FlowDBRevealApiCallback(callback, this, requestBody)
             this.getAccessToken(revealApiCallback)

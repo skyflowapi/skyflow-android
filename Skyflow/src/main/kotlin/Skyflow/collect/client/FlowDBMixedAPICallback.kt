@@ -9,21 +9,20 @@ import org.json.JSONObject
 
 internal class FlowDBMixedAPICallback(
     private val apiClient: FlowDBAPIClient,
-    private val updateBodies: List<JSONObject>,
+    private val updateBody: JSONObject?,
     private val insertBody: JSONObject?,
     private val finalCallback: Callback,
     private val options: CollectOptions,
     val logLevel: LogLevel
 ) : Callback {
 
-    private val totalCalls = updateBodies.size + if (insertBody != null) 1 else 0
+    private val totalCalls = (if (updateBody != null) 1 else 0) + (if (insertBody != null) 1 else 0)
     private var completedCalls = 0
     private val allRecords = JSONArray()
-    private val allErrors = JSONArray()
 
     override fun onSuccess(responseBody: Any) {
         val token = responseBody.toString()
-        for (body in updateBodies) {
+        updateBody?.let { body ->
             FlowDBCollectAPICallback(apiClient, body, makeSubCallback(), options, logLevel, "update")
                 .onSuccess(token)
         }
@@ -48,17 +47,7 @@ internal class FlowDBMixedAPICallback(
         }
 
         override fun onFailure(exception: Any) {
-            synchronized(this@FlowDBMixedAPICallback) {
-                try {
-                    val json = JSONObject(exception.toString())
-                    mergeInto(allRecords, json.optJSONArray("records"))
-                    mergeInto(allErrors, json.optJSONArray("errors"))
-                } catch (e: Exception) {
-                    allErrors.put(JSONObject().put("error", exception.toString()))
-                }
-                completedCalls++
-                if (completedCalls == totalCalls) dispatch()
-            }
+            finalCallback.onFailure(exception)
         }
     }
 
@@ -68,10 +57,6 @@ internal class FlowDBMixedAPICallback(
     }
 
     private fun dispatch() {
-        val result = JSONObject()
-        if (allRecords.length() > 0) result.put("records", allRecords)
-        if (allErrors.length() > 0) result.put("errors", allErrors)
-        if (allErrors.length() > 0) finalCallback.onFailure(result)
-        else finalCallback.onSuccess(result)
+        finalCallback.onSuccess(JSONObject().put("records", allRecords))
     }
 }

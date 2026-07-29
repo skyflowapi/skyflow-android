@@ -14,6 +14,9 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 * [Securely collecting data client-side](#securely-collecting-data-client-side)
 * [Securely collecting data client-side using composable elements](#securely-collecting-data-client-side-using-composable-elements)
 * [Securely revealing data client-side](#securely-revealing-data-client-side)
+* [Typed callbacks and response handling](#typed-callbacks-and-response-handling)
+  * [Collect with typed callbacks](#collect-with-typed-callbacks)
+  * [Reveal with typed callbacks](#reveal-with-typed-callbacks)
 
 # Installation
 
@@ -2718,6 +2721,311 @@ The response below shows that some tokens assigned to the reveal elements get re
   ]
 }
 ```
+---
+
+# Typed callbacks and response handling
+
+The SDK provides typed callbacks and typed response objects for collect and reveal operations. Both successes and partial errors are returned in the same `records` list — each record carries its own `httpCode`, so you can handle mixed results without exceptions.
+
+---
+
+## Collect with typed callbacks
+
+### CollectCallback
+
+Implement `CollectCallback` to receive typed collect results:
+
+**Android (Kotlin):**
+```kotlin
+container.collect(object : CollectCallback {
+    override fun onSuccess(response: CollectResponse) {
+        response.records.forEach { record ->
+            if (record.httpCode == 200) {
+                Log.d(TAG, "insert success: ${record.tokens}")
+            } else {
+                Log.d(TAG, "insert error [${record.httpCode}]: ${record.error}")
+            }
+        }
+    }
+    override fun onFailure(error: SkyflowError) {
+        Log.d(TAG, "collect failure: code=${error.httpCode}, message=${error.message}")
+    }
+})
+```
+
+**iOS (Swift):**
+```swift
+let insertCallback = Skyflow.CollectCallback(
+    onSuccess: { response in print(response) },
+    onFailure: { error in print(error) }
+)
+container?.collect(callback: insertCallback)
+```
+
+### CollectOptions
+
+#### Upsert support
+
+Pass `CollectOptions` with `upsert` to insert-or-update based on a unique column:
+
+**Android (Kotlin):**
+```kotlin
+val options = CollectOptions(
+    upsert = listOf(
+        UpsertOptions(
+            tableName = "<TABLE_NAME>",
+            updateType = UpdateType.UPDATE,
+            uniqueColumns = listOf("<UNIQUE_COLUMN>")
+        )
+    )
+)
+container.collect(object : CollectCallback { ... }, options)
+```
+
+**iOS (Swift):**
+```swift
+let upsertOptions = [Skyflow.UpsertOption(
+    table: "<TABLE_NAME>",
+    uniqueColumns: ["<UNIQUE_COLUMN>"],
+    updateType: .UPDATE
+)]
+let options = Skyflow.CollectOptions(upsert: upsertOptions)
+container?.collect(callback: insertCallback, options: options)
+```
+
+#### Additional fields (non-PCI data)
+
+Pass non-PCI data alongside element values using `AdditionalFields`:
+
+**Android (Kotlin):**
+```kotlin
+val options = CollectOptions(
+    additionalFields = AdditionalFields(
+        records = listOf(
+            AdditionalFieldsRecord(
+                tableName = "<TABLE_NAME>",
+                data = mapOf("<COLUMN>" to "<VALUE>")
+                // skyflowId = "<SKYFLOW_ID>"  // set this to update an existing record
+            )
+        )
+    )
+)
+container.collect(object : CollectCallback { ... }, options)
+```
+
+**iOS (Swift):**
+```swift
+let nonPCIRecords = Skyflow.AdditionalFields(records: [
+    Skyflow.AdditionalFieldsRecord(
+        table: "<TABLE_NAME>",
+        fields: ["<COLUMN>": "<VALUE>"]
+        // skyflowId: "<SKYFLOW_ID>"  // set this to update an existing record
+    )
+])
+let options = Skyflow.CollectOptions(additionalFields: nonPCIRecords)
+container?.collect(callback: insertCallback, options: options)
+```
+
+**Note:** Set `skyflowId` on `AdditionalFieldsRecord` to update an existing record. Without it, a new record is inserted.
+
+### CollectResponse
+
+`CollectResponse.records` is a flat list of `CollectRecord` objects. Both successes and partial errors are included in the same list.
+
+```kotlin
+data class CollectRecord(
+    val tableName: String?,
+    val skyflowId: String?,
+    val tokens: Map<String, Any?>?,    // column → token(s)
+    val hashedData: Map<String, Any?>?,
+    val error: String?,
+    val httpCode: Int
+)
+```
+
+#### Sample success response:
+```json
+{
+    "records": [
+        {
+            "tableName": "cards",
+            "skyflowId": "f1714ef8-8deb-489a-a18d-77e0e007f403",
+            "fields": {
+                "cardNumber": [{"token": "f3907186-e7e2-466f-91e5-48e12c2bcbc1", "tokenGroupName": "deterministic_string"}]
+            },
+            "httpCode": 200
+        }
+    ]
+}
+```
+
+#### Sample partial error response:
+```json
+{
+    "records": [
+        {
+            "tableName": "cards",
+            "skyflowId": "f1714ef8-8deb-489a-a18d-77e0e007f403",
+            "fields": {
+                "cardNumber": [{"token": "f3907186-e7e2-466f-91e5-48e12c2bcbc1", "tokenGroupName": "deterministic_string"}]
+            },
+            "httpCode": 200
+        },
+        {
+            "error": "Invalid request. Table name table not present for record.",
+            "skyflowId": null,
+            "tableName": "",
+            "httpCode": 400
+        }
+    ]
+}
+```
+
+#### If the entire request fails, `onFailure` delivers a `SkyflowError`:
+
+**Android (Kotlin):**
+```kotlin
+override fun onFailure(error: SkyflowError) {
+    Log.d(TAG, "httpCode=${error.httpCode}, message=${error.message}")
+}
+```
+
+**iOS (Swift):**
+```swift
+onFailure: { (skyflowError: Skyflow.SkyflowError) in
+    print(
+        skyflowError.httpCode as Any,
+        skyflowError.message as Any,
+        skyflowError.grpcCode as Any,
+        skyflowError.httpStatus as Any,
+        skyflowError.details as Any
+    )
+}
+```
+
+#### Sample Code:
+[CollectActivity.kt](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/CollectActivity.kt)
+
+---
+
+## Reveal with typed callbacks
+
+### RevealCallback
+
+Implement `RevealCallback` to receive typed reveal results:
+
+**Android (Kotlin):**
+```kotlin
+revealContainer.reveal(object : RevealCallback {
+    override fun onSuccess(response: RevealResponse) {
+        response.records.forEach { record ->
+            if (record.httpCode == 200) {
+                Log.d(TAG, "reveal success: token=${record.token}")
+            } else {
+                Log.d(TAG, "reveal error [${record.httpCode}]: ${record.error}")
+            }
+        }
+    }
+    override fun onFailure(error: SkyflowError) {
+        Log.d(TAG, "reveal failure: code=${error.httpCode}, message=${error.message}")
+    }
+})
+```
+
+**iOS (Swift):**
+```swift
+let revealCallback = Skyflow.RevealCallback(
+    onSuccess: { response in print(response) },
+    onFailure: { error in print(error) }
+)
+container.reveal(callback: revealCallback)
+```
+
+### RevealOptions
+
+Apply a redaction to an entire token group using `RevealOptions.tokenGroupRedactions`. This is a request-level setting — the redaction applies to every token in the named group, not to individual reveal elements.
+
+**Android (Kotlin):**
+```kotlin
+val options = RevealOptions(
+    tokenGroupRedactions = listOf(
+        TokenGroupRedaction(
+            tokenGroupName = "<TOKEN_GROUP_NAME>",
+            redaction = "<REDACTION_TYPE>"   // e.g. "PLAIN_TEXT", "MASKED", "REDACTED", "DEFAULT"
+        )
+    )
+)
+revealContainer.reveal(object : RevealCallback { ... }, options)
+```
+
+**iOS (Swift):**
+```swift
+let revealOptions = Skyflow.RevealOptions(
+    tokenGroupRedactions: [
+        Skyflow.TokenGroupRedaction(tokenGroupName: "<TOKEN_GROUP_NAME>", redaction: "MASKED")
+    ]
+)
+container.reveal(callback: revealCallback, options: revealOptions)
+```
+
+### RevealResponse
+
+`RevealResponse.records` is a flat list of `RevealRecord` objects. Both successes and partial errors are included in the same list.
+
+```kotlin
+data class RevealRecord(
+    val token: String,
+    val tokenGroupName: String?,
+    val metadata: Map<String, Any?>?,   // includes skyflowId, tableName
+    val error: String?,
+    val httpCode: Int
+)
+```
+
+#### Sample success response:
+```json
+{
+    "records": [
+        {
+            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "tokenGroupName": "deterministic_string",
+            "metadata": {
+                "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
+                "tableName": "cards"
+            },
+            "httpCode": 200
+        }
+    ]
+}
+```
+
+#### Sample partial error response:
+```json
+{
+    "records": [
+        {
+            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "tokenGroupName": "deterministic_string",
+            "metadata": {
+                "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
+                "tableName": "cards"
+            },
+            "httpCode": 200
+        },
+        {
+            "token": "a4b24714-6a26-4256-b9d4-55ad69aa4047",
+            "error": "Tokens not found for a4b24714-6a26-4256-b9d4-55ad69aa4047",
+            "httpCode": 404
+        }
+    ]
+}
+```
+
+#### Sample Code:
+[RevealActivity.kt](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/RevealActivity.kt)
+
+---
+
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
 

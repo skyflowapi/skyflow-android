@@ -5,7 +5,6 @@ import Skyflow.collect.elements.validations.ElementValueMatchRule
 import Skyflow.composable.*
 import Skyflow.utils.EventName
 import android.app.AlertDialog
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -13,8 +12,6 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.Skyflow.collect.elements.validations.ValidationSet
-import org.json.JSONArray
-import org.json.JSONObject
 import com.Skyflow.databinding.ActivityCollectBinding
 
 class ComposableActivity : AppCompatActivity() {
@@ -240,45 +237,24 @@ class ComposableActivity : AppCompatActivity() {
             println(e)
         }
 
-        // Non-PCI use case fields
-        val additionalFields = JSONObject()
-        val recordsArray = JSONArray()
-
-        val record = JSONObject()
-        record.put("table", "persons")
-
-        val fieldsInAdditionalObject = JSONObject()
-        fieldsInAdditionalObject.put("gender", "MALE")
-
-        record.put("fields", fieldsInAdditionalObject)
-        recordsArray.put(record)
-
-        additionalFields.put("records", recordsArray)
-
-        // Upsert options
-        val upsertArray = JSONArray()
-
-        val upsertColumn = JSONObject()
-        upsertColumn.put("table", "cards")
-        upsertColumn.put("column", "cardNumber")
-
-        upsertArray.put(upsertColumn)
-
         binding.submit.setOnClickListener {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            composableContainer.collect(object : Callback {
-                override fun onSuccess(responseBody: Any) {
+            composableContainer.collect(object : CollectCallback {
+                override fun onSuccess(response: CollectResponse) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect success: $responseBody")
+                    response.records.forEach { record ->
+                        if (record.httpCode == 200) Log.d(TAG, "collect success: ${record.tokens}")
+                        else Log.d(TAG, "collect error [${record.httpCode}]: ${record.error}")
+                    }
                 }
 
-                override fun onFailure(exception: Any) {
-                    Log.d(TAG, "collect failure: ${(exception as Exception).message}")
+                override fun onFailure(error: SkyflowError) {
+                    Log.d(TAG, "collect failure: ${error.message}")
                     dialog.dismiss()
                 }
-            }, CollectOptions(true, additionalFields, upsertArray))
+            }, CollectOptions())
         }
 
         binding.clear.setOnClickListener {
@@ -287,9 +263,5 @@ class ComposableActivity : AppCompatActivity() {
             }
         }
 
-        binding.updateSample.setOnClickListener {
-            val intent = Intent(this, UpdateComposableActivity::class.java)
-            startActivity(intent)
-        }
     }
 }

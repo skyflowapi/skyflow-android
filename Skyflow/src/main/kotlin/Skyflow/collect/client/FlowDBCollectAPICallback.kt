@@ -87,61 +87,52 @@ internal class FlowDBCollectAPICallback(
     private fun dispatchResponse(bodyStr: String) {
         val responseJson = JSONObject(bodyStr)
         val records = responseJson.optJSONArray("records") ?: JSONArray()
-        val successRecords = JSONArray()
-        val errorRecords = JSONArray()
+        val allRecords = JSONArray()
+        val requestRecords = requestBody.optJSONArray("records")
+        // update bodies have top-level tableName; insert bodies have it per-record
+        val topLevelTableName = requestBody.optString("tableName", "")
 
         for (i in 0 until records.length()) {
             val record = records.getJSONObject(i)
             val httpCode = record.optInt("httpCode", 200)
+            val fallbackTableName = topLevelTableName.ifEmpty {
+                requestRecords?.optJSONObject(i)?.optString("tableName", "") ?: ""
+            }
+            val tableName = record.optString("tableName", "").ifEmpty { fallbackTableName }
+
             if (httpCode != 200) {
-                errorRecords.put(
+                allRecords.put(
                     JSONObject()
                         .put("error", record.optString("error", ""))
-                        .put("skyflowID", record.opt("skyflowID"))
-                        .put("tableName", record.optString("tableName", ""))
+                        .put("skyflowId", record.opt("skyflowID") ?: record.opt("skyflowId"))
+                        .put("tableName", tableName)
                         .put("httpCode", httpCode)
                 )
                 continue
             }
-            val skyflowID = record.optString("skyflowID", "")
-            val tableName = record.optString("tableName", "")
-            val fieldsObject = JSONObject().put("skyflow_id", skyflowID)
 
-            if (options.tokens) {
-                val tokensObj = record.optJSONObject("tokens")
-                if (tokensObj != null) {
-                    val fieldNames = tokensObj.keys()
-                    while (fieldNames.hasNext()) {
-                        val fieldName = fieldNames.next()
-                        fieldsObject.put(fieldName, tokensObj.getJSONArray(fieldName))
-                    }
+            val skyflowId = record.optString("skyflowID", "").ifEmpty { record.optString("skyflowId", "") }
+            val fieldsObject = JSONObject()
+
+            val tokensObj = record.optJSONObject("tokens")
+            if (tokensObj != null) {
+                val fieldNames = tokensObj.keys()
+                while (fieldNames.hasNext()) {
+                    val fieldName = fieldNames.next()
+                    fieldsObject.put(fieldName, tokensObj.getJSONArray(fieldName))
                 }
             }
 
             val resultRecord = JSONObject()
-                .put("table", tableName)
+                .put("tableName", tableName)
+                .put("skyflowId", skyflowId)
                 .put("fields", fieldsObject)
                 .put("httpCode", httpCode)
             val hashedData = record.optJSONObject("hashedData")
             if (hashedData != null) resultRecord.put("hashedData", hashedData)
-            successRecords.put(resultRecord)
+            allRecords.put(resultRecord)
         }
 
-        val result = JSONObject()
-        when {
-            errorRecords.length() == 0 -> {
-                result.put("records", successRecords)
-                callback.onSuccess(result)
-            }
-            successRecords.length() == 0 -> {
-                result.put("errors", errorRecords)
-                callback.onFailure(result)
-            }
-            else -> {
-                result.put("records", successRecords)
-                result.put("errors", errorRecords)
-                callback.onFailure(result)
-            }
-        }
+        callback.onSuccess(JSONObject().put("records", allRecords))
     }
 }

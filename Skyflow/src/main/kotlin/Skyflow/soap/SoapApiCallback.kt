@@ -40,7 +40,7 @@ internal class SoapApiCallback(
             if(e is SkyflowError)
                 callback.onFailure(e)
             else {
-                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString()))
+                val skyflowError = SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString()))
                 skyflowError.setErrorCode(400)
                 callback.onFailure(skyflowError)
             }
@@ -75,7 +75,7 @@ internal class SoapApiCallback(
                     if(e is SkyflowError)
                         callback.onFailure(e)
                     else {
-                        callback.onFailure((SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                        callback.onFailure((SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
                     }
                 }
             }
@@ -91,7 +91,7 @@ internal class SoapApiCallback(
                         else
                             tokens = error.getString("token")
                     }
-                    callback.onFailure(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens)))
+                    callback.onFailure(SkyflowInternalError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens)))
                 }
                 catch (e:Exception){
                     if(e is SkyflowError)
@@ -139,7 +139,7 @@ internal class SoapApiCallback(
     fun sendRequest(requestBuild: Request) {
         okHttpClient.newCall(requestBuild).enqueue(object : okhttp3.Callback{
             override fun onFailure(call: Call, e: IOException) {
-                val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                val skyflowError = SkyflowInternalError(params = arrayOf(e.message.toString()))
                 (this@SoapApiCallback).onFailure(skyflowError)
             }
 
@@ -156,7 +156,7 @@ internal class SoapApiCallback(
                 if (!response.isSuccessful && response.body != null)
                 {
                     val res = response.body!!.string()
-                    val skyflowError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
+                    val skyflowError = SkyflowInternalError(SkyflowErrorCode.SERVER_ERROR, tag = tag, logLevel = logLevel,
                         arrayOf(res))
                     skyflowError.setXml(res)
                     callback.onFailure(skyflowError)
@@ -167,13 +167,13 @@ internal class SoapApiCallback(
                     callback.onSuccess(res)
                 }
                 else {
-                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                    val skyflowError = SkyflowInternalError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
                     callback.onFailure(skyflowError)
                 }
             }
             catch (e:Exception)
             {
-                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel,
+                val skyflowError = SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel,
                     arrayOf(e.message.toString()))
                 callback.onFailure(skyflowError)
             }
@@ -188,19 +188,19 @@ internal class SoapApiCallback(
             temp = temp.substring(9,temp.length-10)
             if(temp.trim().isEmpty()){
                 //id is empty in request xml
-                throw SkyflowError(SkyflowErrorCode.EMPTY_ID_IN_REQUEST_XML,tag,logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_ID_IN_REQUEST_XML,tag,logLevel)
             }
             val value = client.elementMap[temp.trim()]
             if(value != null) {
                 if (value is TextField) {
                     if (!Utils.checkIfElementsMounted(value)) {
-                       throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+                       throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
                             tag, logLevel, arrayOf(value.label.text.toString()))
                     }
                     else if(value.validate().isNotEmpty())
                     {
                         //invalid textfield
-                        throw SkyflowError(SkyflowErrorCode.INVALID_INPUT,tag,logLevel, params = arrayOf("invalid element - "+value.validate()))
+                        throw SkyflowInternalError(SkyflowErrorCode.INVALID_INPUT,tag,logLevel, params = arrayOf("invalid element - "+value.validate()))
                     }
                     else {
                         tempXML = tempXML.replace(it,value.getValue())
@@ -210,13 +210,13 @@ internal class SoapApiCallback(
                         tempXML = tempXML.replace(it,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
                     } else {
                         //element not mounted
-                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(value.label.text.toString()))
+                        throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(value.label.text.toString()))
                     }
                 }
             }
             else {
                 // id not present in elementMap
-                throw SkyflowError(SkyflowErrorCode.INVALID_ID_IN_REQUEST_XML,tag,logLevel,params = arrayOf(temp.trim()))
+                throw SkyflowInternalError(SkyflowErrorCode.INVALID_ID_IN_REQUEST_XML,tag,logLevel,params = arrayOf(temp.trim()))
             }
         }
         return tempXML

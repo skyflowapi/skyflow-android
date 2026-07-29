@@ -1,7 +1,6 @@
 package Skyflow
 
-class CollectOptions(
-    val tokens: Boolean = true,
+data class CollectOptions(
     val upsert: List<UpsertOptions>? = null,
-    val skyflowIds: Map<String, String>? = null
+    val additionalFields: AdditionalFields? = null
 )

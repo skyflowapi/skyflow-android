@@ -26,7 +26,6 @@ object JWTUtils {
             val split = JWTEncoded.split(".").toTypedArray()
             JSONObject(getJson(split[1]))
         } catch (e: UnsupportedEncodingException) {
-            println(e.toString())
             JSONObject()
         }
     }
@@ -70,7 +69,7 @@ internal class APIClient(
                         Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
                         if (!isValidToken(responseBody.toString())) {
                             val error =
-                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
+                                SkyflowInternalError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
                             callback.onFailure(error)
                         } else {
                             token = "Bearer $responseBody"
@@ -85,7 +84,7 @@ internal class APIClient(
                             logLevel
                         )
                         val error =
-                            SkyflowError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel)
+                            SkyflowInternalError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel)
                         callback.onFailure(error)
                     }
                 })
@@ -93,7 +92,7 @@ internal class APIClient(
                 callback.onSuccess(token)
             }
         } catch (e: Exception) {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
+            val error = SkyflowInternalError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
             callback.onFailure(error)
         }
     }
@@ -181,13 +180,13 @@ internal class APIClient(
 
     fun constructBodyForDetokenize(records: JSONObject): MutableList<RevealRequestRecord> {
         if (!records.has("records")) {
-            throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+            throw SkyflowInternalError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
         }
         if (records.get("records") !is JSONArray) {
-            throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
+            throw SkyflowInternalError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
         }
         if (records.getJSONArray("records").length() == 0) {
-            throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+            throw SkyflowInternalError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
         }
         val jsonArray = records.getJSONArray("records")
         val list = mutableListOf<RevealRequestRecord>()
@@ -195,21 +194,21 @@ internal class APIClient(
         while (i < jsonArray.length()) {
             val recordObject = jsonArray.getJSONObject(i)
             if (!recordObject.has("token")) {
-                throw SkyflowError(
+                throw SkyflowInternalError(
                     SkyflowErrorCode.TOKEN_KEY_NOT_FOUND, tag, logLevel, arrayOf("$i")
                 )
             } else if (recordObject.get("token").toString().isEmpty()) {
-                throw SkyflowError(
+                throw SkyflowInternalError(
                     SkyflowErrorCode.EMPTY_TOKEN, tag, logLevel, arrayOf("$i")
                 )
             } else if (recordObject.has("redaction")) {
                 val redaction = recordObject.get("redaction")
                 if (redaction.toString().isEmpty()) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.EMPTY_REDACTION_VALUE, tag, logLevel, arrayOf("$i")
                     )
                 } else if (redaction !is RedactionType) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, logLevel, arrayOf("$i")
                     )
                 } else {
