@@ -531,7 +531,7 @@ val collectElementInput = Skyflow.CollectElementInput(
     placeholder: String,             // optional placeholder for the form element
     altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
     validations: ValidationSet,      // optional set of validations for the input element
-    skyflowID: String                // The skyflow_id of the record to be updated
+    skyflowId: String                // The skyflow_id of the record to be updated
 )
 ```
 
@@ -539,7 +539,6 @@ The `table` and `column` fields indicate which table and column in the vault the
 
 **Note:**
 - Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
-- `table` and `column` are optional only if the element is being used in invokeConnection()
 
 Along with `CollectElementInput`, you can define other options in the `CollectElementOptions` object as described in the [collect section](#step-2-create-a-collect-element).
 
@@ -571,9 +570,8 @@ fun clearFieldsOnSubmit(elements: List<TextField>) {
 
 When the form is ready to submit, call the `collect(options?)` method on the container object. The `options` parameter takes an object of optional parameters as shown below:
 
-- `tokens`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
-- `additionalFields`: Non-PCI elements data to update or insert into the vault which should be in the records object format.
-- `upsert`: To support upsert operations while collecting data from Skyflow elements, pass the table and column marked as unique in the table.
+- `additionalFields`: Non-PCI data to update or insert alongside element values, as an `AdditionalFields` object.
+- `upsert`: To support upsert operations, pass a list of `UpsertOptions` specifying the table, update type, and unique columns.
 
 **Android (Kotlin):**
 ```kotlin
@@ -1100,7 +1098,7 @@ fun clearFieldsOnSubmit(elements: List<TextField>) {
 ```
 ### Step 4: Collect data from elements
 
-When the form is ready to be submitted, call the `collect(options: Skyflow.CollectOptions? = CollectOptions(), callback: Skyflow.Callback)` method on the container object. The options parameter takes `Skyflow.CollectOptions` object.
+When the form is ready to be submitted, call the `collect(callback: CollectCallback, options: CollectOptions? = null)` method on the container object. The options parameter takes a `CollectOptions` object.
 
 `Skyflow.CollectOptions` takes two optional fields
 - `additionalFields`: Non-PCI data to be inserted alongside element values. See [Additional fields](#additional-fields-non-pci-data).
@@ -1171,7 +1169,7 @@ val composableElementInput = Skyflow.CollectElementInput(
     placeholder: String,             // optional placeholder for the form element
     altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
     validations: ValidationSet,      // optional set of validations for the input element
-    skyflowID: String                // The skyflow_id of the record to be updated
+    skyflowId: String                // The skyflow_id of the record to be updated
 )
 ```
 
@@ -1223,13 +1221,12 @@ fun clearFieldsOnSubmit(elements: List<TextField>) {
 
 ### Step 4: Update data from Elements
 
-When you submit the form, call the `collect(options: Skyflow.CollectOptions? = null, callback: Skyflow.Callback)` method on the container object.
+When you submit the form, call the `collect(callback: CollectCallback, options: CollectOptions? = null)` method on the container object.
 
-The options parameter takes a `Skyflow.CollectOptions` object as shown below:
+The options parameter takes a `CollectOptions` object with the following optional fields:
 
-- `tokens`: Whether or not tokens for the collected data are returned. Defaults to 'true'
-- `additionalFields`: Non-PCI elements data to insert into the vault, specified in the records object format.
-- `upsert`: To support upsert operations, the table containing the data and a column marked as unique in that table.
+- `additionalFields`: Non-PCI data to insert alongside element values, as an `AdditionalFields` object.
+- `upsert`: To support upsert operations, pass a list of `UpsertOptions` specifying the table, update type, and unique columns.
 
 **Android (Kotlin):**
 ```kotlin
@@ -1545,23 +1542,33 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.REVEAL)
 ```
 
 ### Step 2: Create a reveal Element
-Next, define a Skyflow Element to reveal data as shown below:
-```kt
-val revealElementInput = Skyflow.RevealElementInput(
-        token = "string",
-        redaction = Skyflow.RedactionType,   // optional. Redaction to apply for retrieved data. E.g. RedactionType.MASKED   
-        inputStyles = Skyflow.Styles(),      //optional, styles to be applied to the element
-        labelStyles = Skyflow.Styles(),      //optional, styles to be applied to the label of the reveal element
-        errorTextStyles = Skyflow.Styles(),  //optional styles that will be applied to the errorText of the reveal element
-        label = "cardNumber"                 //optional, label for the element,
-        altText = "XXXX XXXX XXXX XXXX"      //optional, string that is shown before reveal, will show token if altText is not provided 
-    )
+Next, define a `RevealElementInput` for each element to reveal:
 
+**Android (Kotlin):**
+```kotlin
+val revealElementInput = RevealElementInput(
+    token = "<TOKEN>",                   // token of the data to reveal
+    inputStyles = Skyflow.Styles(),      // optional styles for the element
+    labelStyles = Skyflow.Styles(),      // optional styles for the label
+    errorTextStyles = Skyflow.Styles(),  // optional styles for the error text
+    label = "Card Number",               // optional label
+    altText = "•••• •••• •••• ••••"     // optional placeholder shown before reveal
+)
 ```
 
-`Notes`: 
-- `token` is optional only if it is being used in invokeConnection()
-- `redaction` defaults to [`RedactionType.PLAIN_TEXT`](#redaction-types)
+**iOS (Swift):**
+```swift
+let revealElementInput = Skyflow.RevealElementInput(
+    token: "<TOKEN>",
+    inputStyles: Skyflow.Styles(),
+    labelStyles: Skyflow.Styles(),
+    errorTextStyles: Skyflow.Styles(),
+    label: "Card Number",
+    altText: "•••• •••• •••• ••••"
+)
+```
+
+**Note:** Redaction is not set on individual reveal elements. To apply a redaction to a token group, use `tokenGroupRedactions` on `RevealOptions` passed to `reveal()`. See [Reveal with typed callbacks](#reveal-with-typed-callbacks).
 
 The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
 
@@ -1642,10 +1649,63 @@ translation: hashmapOf('X' to "[0-9]")
 Elements used for revealing data are mounted to the screen the same way as Elements used for collecting data. Refer to Step 3 of the [section above](#step-3-mount-elements-to-the-screen).
 
 ### Step 4: Reveal data
-When the sensitive data is ready to be retrieved and revealed, call the `reveal()` method on the container as shown below:
-```kt
-val revealCallback = RevealCallback()  //Custom callback - implementation of Skyflow.Callback
-container.reveal(callback = revealCallback)
+When the sensitive data is ready to be retrieved and revealed, call the `reveal()` method on the container with a typed `RevealCallback`:
+
+**Android (Kotlin):**
+```kotlin
+revealContainer.reveal(object : RevealCallback {
+    override fun onSuccess(response: RevealResponse) {
+        response.records.forEach { record ->
+            if (record.httpCode == 200) {
+                Log.d(TAG, "revealed: token=${record.token}, group=${record.tokenGroupName}")
+            } else {
+                Log.e(TAG, "partial error [${record.httpCode}]: ${record.error}")
+            }
+        }
+    }
+    override fun onFailure(error: SkyflowError) {
+        Log.e(TAG, "reveal failed: ${error.message}")
+    }
+})
+```
+
+**iOS (Swift):**
+```swift
+let revealCallback = Skyflow.RevealCallback(
+    onSuccess: { (response: Skyflow.RevealResponse) in
+        for record in response.records {
+            if let error = record.error {
+                print("partial error [\(record.httpCode)]:", error)
+            } else {
+                print("revealed:", record.token ?? "", record.tokenGroupName ?? "")
+            }
+        }
+    },
+    onFailure: { (error: Skyflow.SkyflowError) in
+        print("reveal failed:", error.message)
+    }
+)
+container?.reveal(callback: revealCallback)
+```
+
+To apply redaction per token group, pass `RevealOptions`:
+
+**Android (Kotlin):**
+```kotlin
+val options = RevealOptions(
+    tokenGroupRedactions = listOf(
+        TokenGroupRedaction(tokenGroupName = "<TOKEN_GROUP_NAME>", redaction = "<REDACTION_TYPE>")
+    )
+)
+revealContainer.reveal(object : RevealCallback { ... }, options)
+```
+
+**iOS (Swift):**
+```swift
+let options = Skyflow.RevealOptions(
+    tokenGroupRedactions: [Skyflow.TokenGroupRedaction(tokenGroupName: "<TOKEN_GROUP_NAME>", redaction: "<REDACTION_TYPE>")]
+)
+container?.reveal(callback: revealCallback, options: options)
 ```
 
 ### UI Error for Reveal Elements
@@ -1666,95 +1726,107 @@ The `setAltText(value: String)` method can be used to set the altText of the Rev
 
 ### End to end example of revealing data with Skyflow Elements
 #### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/src/main/java/com/Skyflow/RevealActivity.kt):
-```kt
-//Initialize skyflow configuration
-val config = Skyflow.Configuration(vaultId = <VAULT_ID>, vaultURL = <VAULT_URL>, tokenProvider = demoTokenProvider)
-
-//Initialize skyflow client
-val skyflowClient = Skyflow.initialize(config)
-
-//Create a Reveal Container
-val container = skyflowClient.container(type = Skyflow.ContainerType.REVEAL)
-
-
-//Create Skyflow.Styles with individual Skyflow.Style variants
-val baseStyle = Skyflow.Style(borderColor = Color.BLUE)
-val baseTextStyle = Skyflow.Style(textColor = Color.BLACK)
-val inputStyles = Skyflow.Styles(base = baseStyle)
-val labelStyles = Skyflow.Styles(base = baseTextStyle)
-val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
-
-//Create Reveal Elements
-val cardNumberInput = Skyflow.RevealElementInput(
-        token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
-        redaction = RedactionType.MASKED,
-        inputStyles = inputStyles,
-        labelStyles = labelStyles,
-        errorTextStyles = errorTextStyles,
-        label = "cardnumber",
-        altText = "XXXX XXXX XXXX XXXX"
+```kotlin
+// Initialize skyflow configuration
+val config = Configuration(
+    vaultID = "<VAULT_ID>",
+    vaultURL = "<VAULT_URL>",
+    tokenProvider = demoTokenProvider
 )
 
-val cardNumberElement = container.create(context = Context, input = cardNumberInput)
+// Initialize skyflow client
+val skyflowClient = init(config)
 
-val nameInput = Skyflow.RevealElementInput(
-        token = "89024714-6a26-4256-b9d4-55ad69aa4047",
-        redaction = RedactionType.DEFAULT,
-        inputStyles = inputStyles,
-        labelStyles = labelStyles,
-        errorTextStyles = errorTextStyles,
-        label = "fullname",
-        altText = "XXX"
+// Create a Reveal Container
+val container = skyflowClient.container(ContainerType.REVEAL)
+
+// Create Skyflow.Styles with individual Skyflow.Style variants
+val baseStyle = Style(borderColor = Color.BLUE)
+val baseTextStyle = Style(textColor = Color.BLACK)
+val inputStyles = Styles(base = baseStyle)
+val labelStyles = Styles(base = baseTextStyle)
+val errorTextStyles = Styles(base = baseTextStyle)
+
+// Create Reveal Elements — no redaction on individual elements
+val cardNumberInput = RevealElementInput(
+    token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+    inputStyles = inputStyles,
+    labelStyles = labelStyles,
+    errorTextStyles = errorTextStyles,
+    label = "Card Number",
+    altText = "XXXX XXXX XXXX XXXX"
 )
 
-val nameElement = container.create(context = Context,input = nameInput)
+val cardNumberElement = container.create(context = this, input = cardNumberInput)
 
-//set error to the element
+val nameInput = RevealElementInput(
+    token = "89024714-6a26-4256-b9d4-55ad69aa4047",
+    inputStyles = inputStyles,
+    labelStyles = labelStyles,
+    errorTextStyles = errorTextStyles,
+    label = "Full Name",
+    altText = "XXX"
+)
+
+val nameElement = container.create(context = this, input = nameInput)
+
+// Optionally set/reset custom error text on an element
 nameElement.setError("custom error")
-
-//reset error to the element
 nameElement.resetError()
 
-//Can interact with these objects as a normal UIView Object and add to View
+// Mount elements to the screen
+parent.addView(cardNumberElement)
+parent.addView(nameElement)
 
-
-//Implement a custom Skyflow.Callback to be called on Reveal success/failure
-public class RevealCallback: Skyflow.Callback {
-    override fun onSuccess(responseBody: Any) {
-        print(responseBody)
+// Call reveal with typed RevealCallback
+container.reveal(object : RevealCallback {
+    override fun onSuccess(response: RevealResponse) {
+        response.records.forEach { record ->
+            if (record.httpCode == 200) {
+                Log.d(TAG, "revealed: token=${record.token}")
+            } else {
+                Log.e(TAG, "partial error [${record.httpCode}]: ${record.error}")
+            }
+        }
     }
-    override fun onFailure(exception: Exception) {
-        print(exception)
+    override fun onFailure(error: SkyflowError) {
+        Log.e(TAG, "reveal failed: ${error.message}")
     }
-}
-
-//Initialize custom Skyflow.Callback
-val revealCallback = RevealCallback()
-
-//Call reveal method on RevealContainer
-container.reveal(callback = revealCallback)
-
+})
 ```
-The response below shows that some tokens assigned to the reveal elements get revealed successfully, while others fail and remain unrevealed.
 
+The `records` list contains both successful and failed tokens. Each record carries its own `httpCode` so you can handle mixed results in a single pass.
 
-#### Sample Response:Callback
+#### Sample Response
 ```json
 {
-  "success": [
-    {
-      "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75"
-    }
-  ],
- "errors": [
-    {
-       "id": "89024714-6a26-4256-b9d4-55ad69aa4047",
-       "error": {
-         "code": 404,
-         "description": "Tokens not found for 89024714-6a26-4256-b9d4-55ad69aa4047"
-       }
-   }
-  ]
+    "records": [
+        {
+            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "tokenGroupName": "deterministic_string",
+            "metadata": {
+                "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
+                "tableName": "cards"
+            },
+            "httpCode": 200
+        },
+        {
+            "token": "89024714-6a26-4256-b9d4-55ad69aa4047",
+            "error": "Detokenize failed. Token 89024714-6a26-4256-b9d4-55ad69aa4047 is invalid. Specify a valid token.",
+            "httpCode": 404
+        }
+    ]
+}
+```
+
+A whole-request failure (e.g. auth error) skips `onSuccess` and delivers a `SkyflowError` to `onFailure`:
+```json
+{
+    "grpcCode": 13,
+    "httpCode": 500,
+    "message": "Skyflow services experienced an internal error.",
+    "httpStatus": "Internal Server Error",
+    "details": []
 }
 ```
 ---
