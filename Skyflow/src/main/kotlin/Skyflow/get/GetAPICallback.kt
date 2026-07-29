@@ -3,6 +3,7 @@ package Skyflow.get
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.SkyflowInternalError
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
 import okhttp3.Call
@@ -39,7 +40,7 @@ internal class GetAPICallback(
     private fun buildRequest(responseBody: Any, record: GetRecord): Request {
         val url = "${apiClient.vaultURL}${apiClient.vaultId}/${record.table}"
         val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
-            ?: throw SkyflowError(
+            ?: throw SkyflowInternalError(
                 SkyflowErrorCode.INVALID_VAULT_URL, tag, apiClient.logLevel,
                 arrayOf(apiClient.vaultURL)
             )
@@ -74,7 +75,7 @@ internal class GetAPICallback(
     private fun sendRequest(request: Request, record: GetRecord) {
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: IOException) {
-                val skyflowError = SkyflowError(
+                val skyflowError = SkyflowInternalError(
                     SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = apiClient.logLevel,
                     params = arrayOf(e.message.toString())
                 )
@@ -96,7 +97,7 @@ internal class GetAPICallback(
                     try {
                         val responseErrorBody = JSONObject(responseBody)
                         val requestId = response.headers["x-request-id"].toString()
-                        val skyflowError = SkyflowError(
+                        val skyflowError = SkyflowInternalError(
                             SkyflowErrorCode.SERVER_ERROR, tag, apiClient.logLevel,
                             arrayOf(
                                 Utils.appendRequestId(
@@ -109,7 +110,7 @@ internal class GetAPICallback(
                         val responseObject = constructErrorResponseForGet(record, skyflowError)
                         getResponse.insertResponse(JSONArray().put(responseObject), false)
                     } catch (e: Exception) {
-                        val skyflowError = SkyflowError(
+                        val skyflowError = SkyflowInternalError(
                             SkyflowErrorCode.SERVER_ERROR, tag, apiClient.logLevel,
                             arrayOf(responseBody)
                         )
@@ -132,14 +133,14 @@ internal class GetAPICallback(
                     }
                     getResponse.insertResponse(newJsonArray, true)
                 } else {
-                    val skyflowError = SkyflowError(
+                    val skyflowError = SkyflowInternalError(
                         SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel
                     )
                     val responseObject = constructErrorResponseForGet(record, skyflowError)
                     getResponse.insertResponse(JSONArray().put(responseObject), false)
                 }
             } catch (e: Exception) {
-                val skyflowError = SkyflowError(
+                val skyflowError = SkyflowInternalError(
                     SkyflowErrorCode.UNKNOWN_ERROR, tag, apiClient.logLevel,
                     arrayOf(e.message.toString())
                 )
@@ -152,7 +153,7 @@ internal class GetAPICallback(
 
     private fun constructErrorResponseForGet(
         record: GetRecord,
-        skyflowError: SkyflowError
+        skyflowError: SkyflowInternalError
     ): JSONObject {
         val responseObject = JSONObject()
         responseObject.put("error", skyflowError)

@@ -12,7 +12,6 @@ internal class RevealRequestBody {
             for (element in elements) {
                 val entry = JSONObject()
                 entry.put("token", element.revealInput.token)
-                entry.put("redaction", element.revealInput.redaction)
                 payload.put(entry)
             }
             val result = JSONObject()

@@ -47,36 +47,36 @@ public class Utils {
             val postPayload: MutableList<Any> = mutableListOf()
             val insertTokenPayload: MutableList<Any> = mutableListOf()
             if (records == {}) {
-                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
             } else if (!records.has("records")) {
-                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
             } else if (records.get("records").toString().isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
             } else if (records.get("records") !is JSONArray) {
-                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
             } else {
                 val obj1 = records.getJSONArray("records")
                 var i = 0
                 while (i < obj1.length()) {
                     val jsonObj = obj1.getJSONObject(i)
                     if (!jsonObj.has("table")) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.TABLE_KEY_NOY_FOUND, tag, logLevel, arrayOf("$i")
                         )
                     } else if (jsonObj.get("table") !is String) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_TABLE_NAME, tag, logLevel, arrayOf("$i")
                         )
                     } else if (jsonObj.get("table").toString().isEmpty()) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_TABLE_KEY, tag, logLevel, arrayOf("$i")
                         )
                     } else if (!jsonObj.has("fields")) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.FIELDS_KEY_NOT_FOUND, tag, logLevel, arrayOf("$i")
                         )
                     } else if (jsonObj.getJSONObject("fields").toString().equals("{}")) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_FIELDS, tag, logLevel, arrayOf("$i")
                         )
                     }
@@ -94,7 +94,7 @@ public class Utils {
                     while (keys.hasNext()) {
                         val key = keys.next()
                         if (key.isEmpty()) {
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.EMPTY_FIELD_IN_FIELDS, tag, logLevel,
                                 params = arrayOf("$i")
                             )
@@ -133,7 +133,7 @@ public class Utils {
             }
             if (errors != "") {
                 val error =
-                    SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
+                    SkyflowInternalError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
                 callback.onFailure(constructError(error))
                 return false
             }
@@ -143,7 +143,7 @@ public class Utils {
         fun getUpsertColumn(tableName: String, options: JSONArray?, logLevel: LogLevel): String {
             if (options != null) {
                 if (options.length() == 0) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.EMPTY_UPSERT_OPTIONS_ARRAY,
                         tag,
                         logLevel
@@ -151,19 +151,19 @@ public class Utils {
                 }
                 for (index in 0..options.length() - 1) {
                     if (options.get(index) !is JSONObject) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.ALLOW_JSON_OBJECT_IN_UPSERT, tag, logLevel,
                             arrayOf("$index")
                         )
                     }
                     if (!options.getJSONObject(index).has("table")) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.NO_TABLE_KEY_IN_UPSERT, tag, logLevel,
                             arrayOf(index.toString())
                         )
                     }
                     if (!options.getJSONObject(index).has("column")) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.NO_COLUMN_KEY_IN_UPSERT, tag, logLevel,
                             arrayOf(index.toString())
                         )
@@ -172,7 +172,7 @@ public class Utils {
                             .get("table") !is String || options.getJSONObject(index).get("table")
                             .toString().isEmpty()
                     ) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_TABLE_IN_UPSERT_OPTION, tag, logLevel,
                             arrayOf(index.toString())
                         )
@@ -181,7 +181,7 @@ public class Utils {
                             .get("column") !is String || options.getJSONObject(index).get("column")
                             .toString().isEmpty()
                     ) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_COLUMN_IN_UPSERT_OPTION, tag, logLevel,
                             arrayOf(index.toString())
                         )
@@ -241,8 +241,8 @@ public class Utils {
         }
 
         fun constructError(e: Exception, code: Int = 400): JSONObject {
-            val skyflowError = if (e is SkyflowError) e
-            else SkyflowError(params = arrayOf(e.message))
+            val skyflowError = if (e is SkyflowInternalError) e
+            else SkyflowInternalError(params = arrayOf(e.message))
 
             skyflowError.setErrorCode(code)
             
@@ -275,7 +275,7 @@ public class Utils {
         }
 
         fun constructErrorResponse(e: Exception, defaultCode: Int = 400): JSONObject {
-            val code = if (e is SkyflowError) e.getErrorcode() else defaultCode
+            val code = if (e is SkyflowInternalError) e.getErrorcode() else defaultCode
             val description = e.message ?: "An error occurred"
             return constructErrorResponse(code, description)
         }
@@ -426,21 +426,21 @@ public class Utils {
 
         internal fun checkVaultDetails(configuration: Configuration) {
             if (configuration.vaultURL.isEmpty() || configuration.vaultURL == "/v1/vaults/") {
-                throw SkyflowError(
+                throw SkyflowInternalError(
                     SkyflowErrorCode.EMPTY_VAULT_URL,
                     tag,
                     configuration.options.logLevel
                 )
             }
             if (configuration.vaultID.isEmpty()) {
-                throw SkyflowError(
+                throw SkyflowInternalError(
                     SkyflowErrorCode.EMPTY_VAULT_ID,
                     tag,
                     configuration.options.logLevel
                 )
             }
             if (!checkUrl(configuration.vaultURL)) {
-                throw SkyflowError(
+                throw SkyflowInternalError(
                     SkyflowErrorCode.INVALID_VAULT_URL,
                     tag,
                     configuration.options.logLevel,
@@ -574,11 +574,11 @@ public class Utils {
             logLevel: LogLevel
         ) {
             if (!records.has("records")) {
-                throw SkyflowError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.RECORDS_KEY_NOT_FOUND, tag, logLevel)
             } else if (records.get("records").toString().isEmpty()) {
-                throw SkyflowError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
             } else if (records.get("records") !is JSONArray) {
-                throw SkyflowError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
+                throw SkyflowInternalError(SkyflowErrorCode.INVALID_RECORDS, tag, logLevel)
             }
 
             val recordsArray = records.getJSONArray("records")
@@ -589,22 +589,22 @@ public class Utils {
                 var hasRedaction = false
 
                 if (!recordObject.keys().hasNext()) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.EMPTY_RECORD_OBJECT, tag, logLevel, arrayOf(it.toString())
                     )
                 }
 
                 // checking for table
                 if (!recordObject.has("table")) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.TABLE_KEY_NOY_FOUND, tag, logLevel, arrayOf(it.toString())
                     )
                 } else if (recordObject.get("table") !is String) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.INVALID_TABLE_NAME, tag, logLevel, arrayOf(it.toString())
                     )
                 } else if (recordObject.get("table").toString().isEmpty()) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.EMPTY_TABLE_KEY, tag, logLevel, arrayOf(it.toString())
                     )
                 }
@@ -613,23 +613,23 @@ public class Utils {
                 if (recordObject.has("ids")) {
                     val ids = recordObject.get("ids")
                     if (ids !is JSONArray) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_IDS, tag, logLevel, arrayOf(it.toString())
                         )
                     } else if (ids.length() == 0) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_RECORD_IDS, tag, logLevel, arrayOf(it.toString())
                         )
                     } else {
                         hasIds = true
                         for (i in 0 until ids.length()) {
                             if (ids[i] !is String) {
-                                throw SkyflowError(
+                                throw SkyflowInternalError(
                                     SkyflowErrorCode.INVALID_ID_IN_RECORD_IDS, tag, logLevel,
                                     arrayOf(it.toString())
                                 )
                             } else if (ids[i].toString().isEmpty()) {
-                                throw SkyflowError(
+                                throw SkyflowInternalError(
                                     SkyflowErrorCode.EMPTY_ID_IN_RECORD_IDS, tag, logLevel,
                                     arrayOf(it.toString())
                                 )
@@ -645,26 +645,26 @@ public class Utils {
                 val hasColumnValues = recordObject.has("columnValues")
 
                 if (options?.tokens == true && hasRedaction) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.REDACTION_WITH_TOKENS_NOT_SUPPORTED, tag, logLevel
                     )
                 } else if (options?.tokens == true && hasColumnName && hasColumnValues) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.TOKENS_NOT_SUPPORTED_WITH_COLUMN_DETAILS, tag, logLevel
                     )
                 } else if (options?.tokens == false) {
                     if (!hasRedaction) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.REDACTION_KEY_NOT_FOUND, tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else if (recordObject.get("redaction").toString().isEmpty()) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_REDACTION_VALUE, tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else if (recordObject.get("redaction") !is RedactionType) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_REDACTION_TYPE, tag, logLevel,
                             arrayOf(it.toString())
                         )
@@ -673,18 +673,18 @@ public class Utils {
 
                 // checking for column name and column values
                 if (!hasColumnName && hasColumnValues) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.MISSING_RECORD_COLUMN_NAME, tag, logLevel,
                         arrayOf(it.toString())
                     )
                 } else if (hasColumnName && !hasColumnValues) {
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.MISSING_RECORD_COLUMN_VALUES, tag, logLevel,
                         arrayOf(it.toString())
                     )
                 } else if (hasColumnName && hasColumnValues) {
                     if (hasIds) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.BOTH_IDS_AND_COLUMN_DETAILS_SPECIFIED, tag, logLevel,
                             arrayOf(it.toString())
                         )
@@ -694,35 +694,35 @@ public class Utils {
                     val columnValues = recordObject.get("columnValues")
 
                     if (columnName !is String) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_RECORD_COLUMN_NAME_TYPE, tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else if (columnName.toString().isEmpty()) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_RECORD_COLUMN_NAME, tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else if (columnValues !is JSONArray) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.INVALID_RECORD_COLUMN_VALUES_TYPE,
                             tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else if (columnValues.length() == 0) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.EMPTY_RECORD_COLUMN_VALUES, tag, logLevel,
                             arrayOf(it.toString())
                         )
                     } else {
                         for (i in 0 until columnValues.length()) {
                             if (columnValues[i] !is String) {
-                                throw SkyflowError(
+                                throw SkyflowInternalError(
                                     SkyflowErrorCode.INVALID_COLUMN_VALUE_TYPE, tag, logLevel,
                                     arrayOf(it.toString())
                                 )
                             } else if (columnValues[i].toString().isEmpty()) {
-                                throw SkyflowError(
+                                throw SkyflowInternalError(
                                     SkyflowErrorCode.EMPTY_COLUMN_VALUE, tag, logLevel,
                                     arrayOf(it.toString())
                                 )
@@ -731,7 +731,7 @@ public class Utils {
                     }
                 } else {
                     if (!hasIds) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.NEITHER_IDS_NOR_COLUMN_DETAILS_SPECIFIED,
                             tag, logLevel, arrayOf(it.toString())
                         )

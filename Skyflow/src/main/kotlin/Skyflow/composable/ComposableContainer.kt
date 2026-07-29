@@ -1,7 +1,9 @@
 package Skyflow.composable
 
 import Skyflow.*
-import Skyflow.collect.client.CollectRequestBody
+import Skyflow.collect.client.FlowDBCollectRequestBody
+import Skyflow.collect.client.FlowDBMixedAPICallback
+import org.json.JSONArray
 import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
@@ -75,7 +77,7 @@ fun Container<ComposableContainer>.on(eventName: EventName, handler: (() -> Unit
 
 fun Container<ComposableContainer>.getComposableLayout(): LinearLayout {
     if (collectElements.size != totalComposableElements) {
-        throw SkyflowError(
+        throw SkyflowInternalError(
             SkyflowErrorCode.MISMATCH_ELEMENT_COUNT_LAYOUT_SUM,
             tag,
             configuration.options.logLevel
@@ -90,7 +92,7 @@ fun Container<ComposableContainer>.collect(
     options: CollectOptions? = CollectOptions()
 ) {
     try {
-        Utils.checkVaultDetails(client.configuration)
+        validateVaultConfig()
         Logger.info(
             tag,
             Messages.VALIDATE_COLLECT_RECORDS.getMessage(),
@@ -103,13 +105,37 @@ fun Container<ComposableContainer>.collect(
     }
 }
 
+fun Container<ComposableContainer>.collect(callback: CollectCallback, options: CollectOptions? = CollectOptions()) {
+    val adapter = object : Callback {
+        override fun onSuccess(responseBody: Any) {
+            callback.onSuccess(CollectResponse.fromJson(responseBody.toString()))
+        }
+        override fun onFailure(exception: Any) {
+            callback.onFailure(SkyflowError.fromJson(exception.toString()))
+        }
+    }
+    collect(adapter, options)
+}
+
+private fun Container<ComposableContainer>.validateVaultConfig() {
+    if (configuration.vaultID.isEmpty()) {
+        throw SkyflowInternalError(SkyflowErrorCode.EMPTY_VAULT_ID, tag, configuration.options.logLevel)
+    }
+    if (configuration.vaultURL.isEmpty()) {
+        throw SkyflowInternalError(SkyflowErrorCode.EMPTY_VAULT_URL, tag, configuration.options.logLevel)
+    }
+    if (!Utils.checkUrl(configuration.vaultURL)) {
+        throw SkyflowInternalError(SkyflowErrorCode.INVALID_VAULT_URL, tag, configuration.options.logLevel)
+    }
+}
+
 private fun Container<ComposableContainer>.validateElements() {
     var errors = ""
     for (element in this.collectElements) {
         errors = validateElement(element, errors)
     }
     if (errors != "") {
-        throw SkyflowError(
+        throw SkyflowInternalError(
             SkyflowErrorCode.INVALID_INPUT,
             tag, configuration.options.logLevel, arrayOf(errors)
         )
@@ -122,7 +148,7 @@ private fun Container<ComposableContainer>.validateElement(
 ): String {
     var errorOnElement = err
     if (!element.isAttachedToWindow) {
-        throw SkyflowError(
+        throw SkyflowInternalError(
             SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
             tag,
             configuration.options.logLevel,
@@ -131,7 +157,7 @@ private fun Container<ComposableContainer>.validateElement(
     }
     when {
         element.collectInput.table.equals(null) -> {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
                 tag,
                 configuration.options.logLevel,
@@ -139,7 +165,7 @@ private fun Container<ComposableContainer>.validateElement(
             )
         }
         element.collectInput.column.equals(null) -> {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.MISSING_COLUMN,
                 tag,
                 configuration.options.logLevel,
@@ -147,7 +173,7 @@ private fun Container<ComposableContainer>.validateElement(
             )
         }
         element.collectInput.table!!.isEmpty() -> {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
                 tag,
                 configuration.options.logLevel,
@@ -155,7 +181,7 @@ private fun Container<ComposableContainer>.validateElement(
             )
         }
         element.collectInput.column!!.isEmpty() -> {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.EMPTY_COLUMN_NAME,
                 tag,
                 configuration.options.logLevel,
@@ -175,43 +201,87 @@ private fun Container<ComposableContainer>.validateElement(
 }
 
 private fun Container<ComposableContainer>.post(callback: Callback, options: CollectOptions?) {
-    // Separate insert and update elements/records (including additionalFields)
-    val (insertElements, insertAdditionalFields, updateRecords) = CollectRequestBody.separateInsertAndUpdateRecords(
-        this.collectElements,
-        options?.additionalFields,
-        configuration.options.logLevel
-    )
-    
-    val hasInsertData = insertElements.isNotEmpty() || insertAdditionalFields != null
-    val hasUpdateRecords = updateRecords.isNotEmpty()
-    
-    if (hasInsertData && hasUpdateRecords) {
-        // Mixed case: both insert and update
-        val insertRecordsJson = if (insertElements.isNotEmpty()) {
-            JSONObject(CollectRequestBody.createRequestBody(
-                insertElements, 
-                insertAdditionalFields, 
-                configuration.options.logLevel
-            ))
-        } else {
-            insertAdditionalFields
+    val collectOptions = options ?: CollectOptions()
+    val updateElements = collectElements.filter { !it.skyflowId.isNullOrEmpty() }
+    val insertElements = collectElements.filter { it.skyflowId.isNullOrEmpty() }
+
+    val additionalUpdates = collectOptions.additionalFields?.records
+        ?.filter { !it.skyflowId.isNullOrEmpty() } ?: emptyList()
+    val additionalInserts = collectOptions.additionalFields?.records
+        ?.filter { it.skyflowId.isNullOrEmpty() } ?: emptyList()
+
+    if (updateElements.isNotEmpty() || additionalUpdates.isNotEmpty()) {
+        val updateRecordsArray = org.json.JSONArray()
+
+        updateElements.groupBy { it.skyflowId }.forEach { (_, elements) ->
+            val tableName = elements.first().tableName
+            val skyflowID = elements.first().skyflowId!!
+            val singleBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
+                configuration.vaultID, tableName, elements.toMutableList(),
+                skyflowID, configuration.options.logLevel
+            )
+            val rec = singleBody.getJSONArray("records").getJSONObject(0)
+            rec.put("tableName", tableName)
+            updateRecordsArray.put(rec)
         }
-        
-        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
-        this.client.apiClient.postWithUpdate(insertRecordsJson, updateRecords, callback, insertOptions)
-    } else if (hasUpdateRecords) {
-        // Only update records
-        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
-        this.client.apiClient.postWithUpdate(null, updateRecords, callback, insertOptions)
-    } else {
-        // Only insert records
-        val records = CollectRequestBody.createRequestBody(
-            this.collectElements, 
-            insertAdditionalFields, 
+
+        additionalUpdates.groupBy { it.skyflowId }.forEach { (_, records) ->
+            val merged = records.fold(mutableMapOf<String, Any>()) { acc, r -> acc.also { it.putAll(r.data) } }
+            val dataObj = org.json.JSONObject().apply { merged.forEach { (k, v) -> put(k, v) } }
+            updateRecordsArray.put(
+                org.json.JSONObject()
+                    .put("skyflowID", records.first().skyflowId!!)
+                    .put("data", dataObj)
+                    .put("tableName", records.first().tableName)
+            )
+        }
+
+        val combinedUpdateBody = JSONObject()
+            .put("vaultID", configuration.vaultID)
+            .put("records", updateRecordsArray)
+
+        val insertBody: JSONObject? = if (insertElements.isNotEmpty() || additionalInserts.isNotEmpty()) {
+            val insertOptions = CollectOptions(
+                upsert = collectOptions.upsert?.filter { opt -> insertElements.any { it.tableName == opt.tableName } },
+                additionalFields = if (additionalInserts.isEmpty()) null else AdditionalFields(additionalInserts)
+            )
+            FlowDBCollectRequestBody.buildRequestBody(
+                configuration.vaultID, insertElements.toMutableList(),
+                insertOptions, configuration.options.logLevel
+            )
+        } else null
+
+        val mixedCallback = FlowDBMixedAPICallback(
+            client.apiClient, combinedUpdateBody, insertBody, callback, collectOptions,
             configuration.options.logLevel
         )
-        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
-        this.client.apiClient.post(JSONObject(records), callback, insertOptions)
+        client.apiClient.getAccessToken(mixedCallback)
+        return
+    }
+
+    val insertOptions = CollectOptions(
+        upsert = collectOptions.upsert,
+        additionalFields = if (additionalInserts.isEmpty()) null else AdditionalFields(additionalInserts)
+    )
+    val requestBody = FlowDBCollectRequestBody.buildRequestBody(
+        configuration.vaultID,
+        this.collectElements,
+        insertOptions,
+        configuration.options.logLevel
+    )
+    this.client.apiClient.post(requestBody, callback, collectOptions)
+}
+
+fun Container<ComposableContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
+    try {
+        validateVaultConfig()
+        val requestBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
+            configuration.vaultID, tableName, this.collectElements, skyflowID,
+            configuration.options.logLevel
+        )
+        this.client.apiClient.post(requestBody, callback, options, "update")
+    } catch (e: Exception) {
+        callback.onFailure(Utils.constructErrorResponse(e))
     }
 }
 

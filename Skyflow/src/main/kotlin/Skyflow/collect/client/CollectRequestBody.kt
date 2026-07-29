@@ -19,9 +19,9 @@ internal class CollectRequestBody {
             
             // Process elements first
             for (element in elements) {
-                if (element.skyflowID != null && element.skyflowID!!.isNotEmpty()) {
+                if (element.skyflowId != null && element.skyflowId!!.isNotEmpty()) {
                     // This is an update record
-                    val key = "${element.tableName}_${element.skyflowID}"
+                    val key = "${element.tableName}_${element.skyflowId}"
                     if (updateRecordsMap.containsKey(key)) {
                         // Add column to existing update record
                         updateRecordsMap[key]!!.columns[element.columnName] = element.getValue()
@@ -30,7 +30,7 @@ internal class CollectRequestBody {
                         val columns = mutableMapOf<String, Any>(element.columnName to element.getValue())
                         updateRecordsMap[key] = UpdateRequestRecord(
                             table = element.tableName,
-                            skyflowID = element.skyflowID!!,
+                            skyflowID = element.skyflowId!!,
                             columns = columns
                         )
                     }
@@ -120,7 +120,7 @@ internal class CollectRequestBody {
                             }
                         }
                         if (!hasElementValueMatchRule)
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.DUPLICATE_COLUMN_FOUND, tag, logLevel,
                                 arrayOf(element.tableName, element.columnName)
                             )
@@ -141,12 +141,12 @@ internal class CollectRequestBody {
             if (additionalFields != null) {
                 if (additionalFields.has("records")) {
                     if (additionalFields.get("records") !is JSONArray)
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.ADDITIONAL_FIELDS_INVALID_RECORDS, tag, logLevel
                         )
                     val records = additionalFields.getJSONArray("records")
                     if (records.length() == 0) {
-                        throw SkyflowError(
+                        throw SkyflowInternalError(
                             SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_RECORDS, tag, logLevel
                         )
                     }
@@ -154,28 +154,28 @@ internal class CollectRequestBody {
                     while (i < records.length()) {
                         val jsonobj = records.getJSONObject(i)
                         if (!jsonobj.has("table"))
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.ADDITIONAL_FIELDS_TABLE_KEY_NOT_FOUND,
                                 tag, logLevel, arrayOf("$i")
                             )
                         else if (!jsonobj.has("fields"))
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.ADDITIONAL_FIELDS_FIELDS_KEY_NOT_FOUND,
                                 tag, logLevel, arrayOf("$i")
                             )
                         else if (jsonobj.getJSONObject("fields").toString() == "{}")
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_FIELDS, tag, logLevel,
                                 arrayOf("$i")
                             )
                         val tableName = jsonobj.get("table")
                         if (tableName !is String)
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.ADDITIONAL_FIELDS_INVALID_TABLE_NAME,
                                 tag, logLevel, arrayOf("$i")
                             )
                         if (tableName.isEmpty())
-                            throw SkyflowError(
+                            throw SkyflowInternalError(
                                 SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_TABLE_KEY, tag, logLevel,
                                 arrayOf("$i")
                             )
@@ -185,7 +185,7 @@ internal class CollectRequestBody {
                             val fieldList = mutableListOf<CollectRequestRecord>()
                             for (j in 0 until keys!!.length()) {
                                 if (keys.getString(j).isEmpty()) {
-                                    throw SkyflowError(
+                                    throw SkyflowInternalError(
                                         SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, logLevel
                                     )
                                 }
@@ -197,7 +197,7 @@ internal class CollectRequestBody {
                             if (tableMap[tableName] != null) {
                                 for (k in 0 until fieldList.size) {
                                     if (tableWithColumn.contains(tableName + fieldList[k].columnName))
-                                        throw SkyflowError(
+                                        throw SkyflowInternalError(
                                             SkyflowErrorCode.DUPLICATE_COLUMN_FOUND, tag, logLevel,
                                             arrayOf(tableName, fieldList[k].columnName)
                                         )
@@ -210,7 +210,7 @@ internal class CollectRequestBody {
                                 val tempArray = mutableListOf<CollectRequestRecord>()
                                 for (k in 0 until fieldList.size) {
                                     if (tableWithColumn.contains(tableName + fieldList[k].columnName))
-                                        throw SkyflowError(
+                                        throw SkyflowInternalError(
                                             SkyflowErrorCode.DUPLICATE_COLUMN_FOUND,
                                             tag,
                                             logLevel,
@@ -226,7 +226,7 @@ internal class CollectRequestBody {
                         i++
                     }
                 } else
-                    throw SkyflowError(
+                    throw SkyflowInternalError(
                         SkyflowErrorCode.ADDITIONAL_FIELDS_RECORDS_KEY_NOT_FOUND, tag, logLevel
                     )
             }

@@ -50,12 +50,12 @@ class UtilsTest {
 
     @Test
     fun testConstructErrorResponse_withSkyflowError() {
-        val skyflowError = SkyflowError(
+        val skyflowError = SkyflowInternalError(
             SkyflowErrorCode.INVALID_INPUT,
             params = arrayOf("test field")
         )
         skyflowError.setErrorCode(422)
-        
+
         val result = Utils.constructErrorResponse(skyflowError)
         
         Assert.assertTrue(result.has("errors"))
@@ -139,10 +139,7 @@ class UtilsTest {
         
         val errors = result.getJSONArray("errors")
         val errorObj = errors.getJSONObject(0)
-        // constructError returns OLD format with SkyflowError object, not JSONObject
-        val error = errorObj.get("error") as SkyflowError
-        
-        // The SkyflowError inside has setErrorCode called, check the code
+        val error = errorObj.get("error") as SkyflowInternalError
         Assert.assertEquals(503, error.getErrorcode())
         Assert.assertEquals("Custom code error", error.getInternalErrorMessage())
     }

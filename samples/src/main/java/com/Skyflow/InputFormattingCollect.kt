@@ -12,8 +12,6 @@ import android.util.Log
 import android.view.Gravity
 import android.widget.LinearLayout
 import com.Skyflow.databinding.ActivityCollectBinding
-import com.Skyflow.databinding.ActivityRevealBinding
-import org.json.JSONObject
 
 class InputFormattingCollect : AppCompatActivity() {
 
@@ -189,32 +187,26 @@ class InputFormattingCollect : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            collectContainer.collect(object : Callback {
-                override fun onSuccess(responseBody: Any) {
+            collectContainer.collect(object : CollectCallback {
+                override fun onSuccess(response: CollectResponse) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect success: $responseBody")
-
-                    val jsonObject = JSONObject(responseBody.toString())
-                        .getJSONArray("records")
-                        .getJSONObject(0)
-                    val fields = jsonObject.getJSONObject("fields")
-
-                    val intent = Intent(
-                        this@InputFormattingCollect,
-                        InputFormattingReveal::class.java
-                    )
-
-                    intent.putExtra("cardNumber", fields["card_number"].toString())
-                    intent.putExtra("expiryYear", fields["expiry_year"].toString())
-                    intent.putExtra("expiryDate", fields["expiry_date"].toString())
-                    intent.putExtra("inputField", fields["input_field"].toString())
-
-                    startActivity(intent)
+                    val record = response.records.firstOrNull() ?: return
+                    if (record.httpCode == 200) {
+                        Log.d(TAG, "collect success: ${record.tokens}")
+                        val intent = Intent(this@InputFormattingCollect, InputFormattingReveal::class.java)
+                        intent.putExtra("cardNumber", record.tokens?.get("card_number")?.toString() ?: "")
+                        intent.putExtra("expiryYear", record.tokens?.get("expiry_year")?.toString() ?: "")
+                        intent.putExtra("expiryDate", record.tokens?.get("expiry_date")?.toString() ?: "")
+                        intent.putExtra("inputField", record.tokens?.get("input_field")?.toString() ?: "")
+                        startActivity(intent)
+                    } else {
+                        Log.d(TAG, "collect error [${record.httpCode}]: ${record.error}")
+                    }
                 }
 
-                override fun onFailure(exception: Any) {
+                override fun onFailure(error: SkyflowError) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect failure: ${(exception as Exception).message}")
+                    Log.d(TAG, "collect failure: ${error.message}")
                 }
             })
         }

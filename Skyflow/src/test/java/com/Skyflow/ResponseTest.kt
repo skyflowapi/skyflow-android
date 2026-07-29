@@ -1,350 +1,121 @@
 package com.Skyflow
 
 import Skyflow.*
-import Skyflow.Callback
-import Skyflow.collect.client.CollectAPICallback
-import Skyflow.core.APIClient
-import Skyflow.core.ConnectionApiCallback
-import Skyflow.reveal.GetByIdRecord
-import Skyflow.reveal.RevealApiCallback
-import Skyflow.reveal.RevealByIdCallback
-import Skyflow.reveal.RevealRequestRecord
-import junit.framework.Assert.assertEquals
-
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import org.json.JSONArray
-import org.json.JSONObject
-import org.junit.Assert
-import org.junit.Before
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ResponseTest {
-    lateinit var skyflow: Client
-    lateinit var logLevel: LogLevel
-    lateinit var request: Request
-    internal lateinit var apiClient: APIClient
 
-    @Before
-    fun setup() {
-        val configuration = Configuration(
-            "b359c43f1b844ff4bea0f098d2c09",
-            "https://vaulturl.com",
-            AccessTokenProvider()
-        )
-        skyflow = Client(configuration)
-        logLevel = LogLevel.ERROR
-        request = Request.Builder().url("https://www.url.com").build()
-        apiClient = APIClient(
-            "b359c43f1b84f098d2c09193",
-            "https://vaulturl.com/v1/vaults",
-            AccessTokenProvider(),
-            LogLevel.ERROR
-        )
-    }
+    // CollectResponse
 
-    //fail
     @Test
-    fun testVerifyResponseNotSuccessForCollectCallback() {
-        val records = JSONObject()
-        val collectAPICallback = CollectAPICallback(apiClient, records, object : Callback {
-            override fun onSuccess(responseBody: Any) {}
-
-            override fun onFailure(exception: Any) {
-                val responseJson = exception as JSONObject
-                Assert.assertTrue(responseJson.has("errors"))
-                val errors = responseJson.getJSONArray("errors")
-                Assert.assertTrue(errors.length() > 0)
-                val errorObj = errors.getJSONObject(0).getJSONObject("error")
-                Assert.assertTrue(errorObj.getString("description").contains("jwt expired"))
-            }
-        }, InsertOptions(), logLevel)
-
-        val contentObject = JSONObject()
-        val messageObject = JSONObject()
-        messageObject.put("message", "jwt expired")
-        contentObject.put("error", messageObject)
-
-        val responseBody = ResponseBody.create(
-            "application/json".toMediaTypeOrNull(),
-            contentObject.toString()
-        )
-
-        val res = Response.Builder()
-            .code(401).message("not found").protocol(Protocol.HTTP_2)
-            .request(request).body(responseBody).build()
-        collectAPICallback.verifyResponse(res)
+    fun `CollectResponse fromJson parses success record`() {
+        val json = """{"records":[{"tableName":"cards","skyflowId":"id1","tokens":{"card_number":[{"token":"tok1","tokenGroupName":"group1"}]},"httpCode":200}]}"""
+        val response = CollectResponse.fromJson(json)
+        assertEquals(1, response.records.size)
+        val record = response.records[0]
+        assertEquals("cards", record.tableName)
+        assertEquals("id1", record.skyflowId)
+        assertEquals(200, record.httpCode)
+        assertNull(record.error)
+        assertNotNull(record.tokens)
+        @Suppress("UNCHECKED_CAST")
+        val tokenList = record.tokens?.get("card_number") as? List<Map<String, Any?>>
+        assertEquals("tok1", tokenList?.firstOrNull()?.get("token"))
     }
 
     @Test
-    fun testVerifyResponseSuccess() //failed because response is not json object
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = JSONObject()
-        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val responseJson = exception as JSONObject
-                Assert.assertTrue(responseJson.has("errors"))
-                val errors = responseJson.getJSONArray("errors")
-                Assert.assertTrue(errors.length() > 0)
-                val errorObj = errors.getJSONObject(0).getJSONObject("error")
-                Assert.assertTrue(errorObj.getString("description").contains("JSONObject") ||
-                                errorObj.getString("description").contains("json"))
-            }
-        }, InsertOptions(), LogLevel.ERROR)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"not json object")
-        val res = Response.Builder().code(200).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        collectAPICallback.verifyResponse(res)
+    fun `CollectResponse fromJson parses error record`() {
+        val json = """{"records":[{"tableName":"cards","error":"not found","httpCode":404}]}"""
+        val response = CollectResponse.fromJson(json)
+        assertEquals(1, response.records.size)
+        val record = response.records[0]
+        assertEquals(404, record.httpCode)
+        assertEquals("not found", record.error)
+        assertNull(record.tokens)
     }
 
     @Test
-    fun testOnSuccessFailedForCollectCallback() //failed because fields is not json object
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = JSONObject()
-        val recordsArray = JSONArray()
-        val record = JSONObject()
-        record.put("table", "cards")
-        record.put("fields", "fields")
-        recordsArray.put(record)
-        records.put("records", recordsArray)
-        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-
-            override fun onFailure(exception: Any) {
-                val responseJson = exception as JSONObject
-                Assert.assertTrue(responseJson.has("errors"))
-                val errors = responseJson.getJSONArray("errors")
-                Assert.assertTrue(errors.length() > 0)
-                val errorObj = errors.getJSONObject(0).getJSONObject("error")
-                Assert.assertTrue(errorObj.getString("description").contains("fields") ||
-                                errorObj.getString("description").contains("JSONObject"))
-            }
-        }, InsertOptions(), LogLevel.ERROR)
-        collectAPICallback.onSuccess("token")
+    fun `CollectResponse fromJson returns empty on invalid json`() {
+        val response = CollectResponse.fromJson("not-json")
+        assertEquals(0, response.records.size)
     }
-    @Test
-    fun testOnSuccessFailedForCollectCallback1() //records missing
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = JSONObject()
-        val collectAPICallback = CollectAPICallback(apiClient,records,object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
 
-            override fun onFailure(exception: Any) {
-                val responseJson = exception as JSONObject
-                Assert.assertTrue(responseJson.has("errors"))
-                val errors = responseJson.getJSONArray("errors")
-                Assert.assertTrue(errors.length() > 0)
-                val errorObj = errors.getJSONObject(0).getJSONObject("error")
-                Assert.assertTrue(errorObj.getString("description").contains("records") ||
-                                errorObj.getString("description").contains("RECORDS"))
-            }
-        }, InsertOptions(), LogLevel.ERROR)
-        collectAPICallback.onSuccess("token")
+    // RevealResponse
+
+    @Test
+    fun `RevealResponse fromJson parses success record`() {
+        val json = """{"records":[{"token":"tok1","tokenGroupName":"group1","httpCode":200}]}"""
+        val response = RevealResponse.fromJson(json)
+        assertEquals(1, response.records.size)
+        val record = response.records[0]
+        assertEquals("tok1", record.token)
+        assertEquals("group1", record.tokenGroupName)
+        assertEquals(200, record.httpCode)
+        assertNull(record.error)
     }
 
     @Test
-    fun testVerifyResponseNotSuccessForRevealCallback()
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<RevealRequestRecord>()
-        records.add(RevealRequestRecord("token"))
-        val revealAPICallback = RevealApiCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, params =  arrayOf("jwt expired")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
-            }
-        }, apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"jwt expired")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealAPICallback.verifyResponse(res,records[0])
-
+    fun `RevealResponse fromJson parses error record`() {
+        val json = """{"records":[{"token":"tok1","error":"token expired","httpCode":400}]}"""
+        val response = RevealResponse.fromJson(json)
+        val record = response.records[0]
+        assertEquals("tok1", record.token)
+        assertEquals("token expired", record.error)
+        assertEquals(400, record.httpCode)
     }
 
     @Test
-    fun testVerifyResponseNotSuccessForRevealCallback1()
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<RevealRequestRecord>()
-        records.add(RevealRequestRecord("token"))
-        val revealApiCallback = RevealApiCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, params =  arrayOf("not found")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
-            }
-        }, apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{ error : {message:'not found' }}")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealApiCallback.verifyResponse(res,records[0])
-
+    fun `RevealResponse fromJson returns empty on invalid json`() {
+        val response = RevealResponse.fromJson("{}")
+        assertEquals(0, response.records.size)
     }
+
+    // SkyflowError
+
     @Test
-    fun testVerifyResponseSuccessForRevealCallback()
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<RevealRequestRecord>()
-        records.add(RevealRequestRecord("token"))
-        val revealApiCallback = RevealApiCallback(ApiCallback(), apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{'records': [ ] }")
-        val res = Response.Builder().code(200).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealApiCallback.verifyResponse(res,records[0])
+    fun `SkyflowError fromJson parses flat format`() {
+        val json = """{"grpcCode":13,"httpCode":500,"message":"internal error","httpStatus":"INTERNAL"}"""
+        val error = SkyflowError.fromJson(json)
+        assertEquals(13, error.grpcCode)
+        assertEquals(500, error.httpCode)
+        assertEquals("internal error", error.message)
+        assertEquals("INTERNAL", error.httpStatus)
     }
 
     @Test
-    fun testVerifyResponseNotSuccessForRevealByIdCallback()
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<GetByIdRecord>()
-        records.add(GetByIdRecord(ArrayList(),"table","redaction"))
-        val revealByIdCallback = RevealByIdCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, params =  arrayOf("jwt expired")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
-            }
-        }, apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"jwt expired")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealByIdCallback.verifyResponse(res,records[0])
+    fun `SkyflowError fromJson parses wrapped error format`() {
+        val json = """{"error":{"httpCode":404,"message":"not found"}}"""
+        val error = SkyflowError.fromJson(json)
+        assertEquals(404, error.httpCode)
+        assertEquals("not found", error.message)
+    }
+
+    // Data class equality
+
+    @Test
+    fun `CollectOptions equality works as data class`() {
+        val a = CollectOptions(upsert = null, additionalFields = null)
+        val b = CollectOptions(upsert = null, additionalFields = null)
+        assertEquals(a, b)
     }
 
     @Test
-    fun testVerifyResponseNotSuccessForRevealByIdCallback1()
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<GetByIdRecord>()
-        records.add(GetByIdRecord(ArrayList(),"table","redaction"))
-        val revealByIdCallback = RevealByIdCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.SERVER_ERROR, params =  arrayOf("not found")).getInternalErrorMessage()
-                assertEquals(expectedError,(exception as SkyflowError).getInternalErrorMessage())
-            }
-        }, apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{ error : {message:'not found' }}")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealByIdCallback.verifyResponse(res,records[0])
+    fun `RevealOptions equality works as data class`() {
+        val a = RevealOptions(tokenGroupRedactions = null)
+        val b = RevealOptions(tokenGroupRedactions = null)
+        assertEquals(a, b)
     }
 
     @Test
-    fun testBuildRequestNotSuccessForRevealByIdCallback() //invalid vault url
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<GetByIdRecord>()
-        records.add(GetByIdRecord(ArrayList(),"table","redaction"))
-        val revealByIdAPICallback = RevealByIdCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.INVALID_VAULT_URL, params =  arrayOf("vaulturl.com/v1/vaults")).getInternalErrorMessage()
-                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject, true))
-            }
-        }, apiClient,records)
-        revealByIdAPICallback.onSuccess("token")
-    }
-    @Test
-    fun testVerifyResponseSuccessForRevealByIdCallback() //success but fields is not json object
-    {
-        val apiClient = APIClient("b359c43f1b84f098d2c09193","https://vaulturl.com/v1/vaults",AccessTokenProvider(),
-            LogLevel.ERROR)
-        val records = mutableListOf<GetByIdRecord>()
-        records.add(GetByIdRecord(ArrayList(),"table","redaction"))
-        val revealByIdCallback = RevealByIdCallback(object : Callback
-        {
-            override fun onSuccess(responseBody: Any) {
-            }
-            override fun onFailure(exception: Any) {
-                val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Value not json at fields of type java.lang.String cannot be converted to JSONObject")).getInternalErrorMessage()
-                assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject))
-            }
-        }, apiClient,records)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{'records': [ { 'fields':{ 'name':'xyz'} } , { 'fields': 'not json' } ] }")
-        val res = Response.Builder().code(200).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        revealByIdCallback.verifyResponse(res,records[0])
-    }
-
-
-    @Test
-    fun testVerifyResponseNotSuccessForConnectionCallback()
-    {
-        val connectionConfiguration = ConnectionConfig("https://www.google.com",
-            RequestMethod.POST)
-        val callback = ConnectionApiCallback(connectionConfiguration,
-                object : Callback {
-                override fun onSuccess(responseBody: Any) {
-                }
-                override fun onFailure(exception: Any) {
-                    val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("{error:{message:'not found'}}")).getInternalErrorMessage().trim()
-                    assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject).trim())
-                }
-            }, logLevel = logLevel,skyflow)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{error:{message:'not found'}}")
-        val res = Response.Builder().code(401).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        callback.verifyResponse(res)
-
-    }
-
-    @Test
-    fun testVerifyResponseTextSuccessForConnectionCallback() // response from api cannot converted to json
-    {
-        val connectionConfiguration = ConnectionConfig("https://www.google.com",
-            RequestMethod.POST)
-        val callback = ConnectionApiCallback(connectionConfiguration,
-            object : Callback {
-                override fun onSuccess(responseBody: Any) {
-                }
-                override fun onFailure(exception: Any) {
-                    val expectedError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, params =  arrayOf("Value text of type java.lang.String cannot be converted to JSONObject")).getInternalErrorMessage().trim()
-                    assertEquals(expectedError,UnitTests.getErrorMessage(exception as JSONObject).trim())
-                }
-            }, logLevel = logLevel,skyflow)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"text response")
-        val res = Response.Builder().code(200).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        callback.verifyResponse(res)
-
-    }
-
-    @Test
-    fun testVerifyResponseSuccessForConnectionCallback()
-    {
-        val connectionConfiguration = ConnectionConfig("https://www.google.com",
-            RequestMethod.POST)
-        val callback = ConnectionApiCallback(connectionConfiguration,ApiCallback(), logLevel = logLevel,skyflow)
-        val responseBody = ResponseBody.create("application/json".toMediaTypeOrNull(),"{ records : {name:'xyz' }}")
-        val res = Response.Builder().code(200).message("not found").protocol(Protocol.HTTP_2).request(request).body(responseBody).build()
-        callback.verifyResponse(res)
-
+    fun `TokenGroupRedaction stores values correctly`() {
+        val tgr = TokenGroupRedaction(tokenGroupName = "group1", redaction = "PLAIN_TEXT")
+        assertEquals("group1", tgr.tokenGroupName)
+        assertEquals("PLAIN_TEXT", tgr.redaction)
     }
 }

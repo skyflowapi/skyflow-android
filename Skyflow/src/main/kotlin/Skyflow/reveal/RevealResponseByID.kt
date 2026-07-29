@@ -3,6 +3,7 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.SkyflowInternalError
 import Skyflow.LogLevel
 import Skyflow.utils.Utils
 import org.json.JSONArray
@@ -39,7 +40,7 @@ internal class RevealResponseByID(var size: Int, var callback: Callback, val log
 
         if(successResponses + failureResponses  + emptyResponses == size) {
             if (successResponses + failureResponses == 0) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
+                val skyflowError = SkyflowInternalError(SkyflowErrorCode.FAILED_TO_REVEAL, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
                 if(failureResponses==0) {
