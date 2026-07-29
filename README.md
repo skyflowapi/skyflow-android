@@ -1825,7 +1825,7 @@ container.collect(object : CollectCallback { ... }, options)
 data class CollectRecord(
     val tableName: String?,
     val skyflowId: String?,
-    val tokens: Map<String, Any?>?,    // column → token(s)
+    val tokens: Map<String, Any?>?,
     val hashedData: Map<String, Any?>?,
     val error: String?,
     val httpCode: Int
@@ -1917,7 +1917,7 @@ val options = RevealOptions(
     tokenGroupRedactions = listOf(
         TokenGroupRedaction(
             tokenGroupName = "<TOKEN_GROUP_NAME>",
-            redaction = "<REDACTION_TYPE>"   // e.g. "PLAIN_TEXT", "MASKED", "REDACTED", "DEFAULT"
+            redaction = "<REDACTION_TYPE>"
         )
     )
 )
