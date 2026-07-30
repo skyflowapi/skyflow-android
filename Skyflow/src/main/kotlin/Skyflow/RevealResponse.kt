@@ -1,5 +1,6 @@
 package Skyflow
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 data class RevealRecord(
@@ -11,6 +12,22 @@ data class RevealRecord(
 )
 
 data class RevealResponse(val records: List<RevealRecord> = emptyList()) {
+    fun toJson(): JSONObject {
+        val arr = JSONArray()
+        records.forEach { r ->
+            val obj = JSONObject().put("token", r.token).put("httpCode", r.httpCode)
+            r.tokenGroupName?.let { obj.put("tokenGroupName", it) }
+            r.error?.let { obj.put("error", it) }
+            r.metadata?.let { m ->
+                val meta = JSONObject()
+                m.forEach { (k, v) -> meta.put(k, v) }
+                obj.put("metadata", meta)
+            }
+            arr.put(obj)
+        }
+        return JSONObject().put("records", arr)
+    }
+
     companion object {
         fun fromJson(json: String): RevealResponse {
             return try {

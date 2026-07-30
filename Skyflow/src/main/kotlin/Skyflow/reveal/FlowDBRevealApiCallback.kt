@@ -95,13 +95,22 @@ internal class FlowDBRevealApiCallback(
             val originalToken = entry.optString("token")
 
             if (httpCode == 200) {
+                val rawMeta = entry.optJSONObject("metadata")
+                val normalizedMeta = rawMeta?.let { m ->
+                    JSONObject().also { out ->
+                        m.keys().asSequence().forEach { k ->
+                            val normalizedKey = if (k == "skyflowID") "skyflowId" else k
+                            out.put(normalizedKey, m.opt(k))
+                        }
+                    }
+                }
                 allRecords.put(
                     JSONObject()
                         .put("token", originalToken)
                         .put("value", entry.optString("value"))
                         .put("tokenGroupName", entry.optString("tokenGroupName"))
                         .put("httpCode", httpCode)
-                        .put("metadata", entry.optJSONObject("metadata"))
+                        .put("metadata", normalizedMeta)
                 )
             } else {
                 allRecords.put(

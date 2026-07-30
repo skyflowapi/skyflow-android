@@ -1695,13 +1695,7 @@ parent.addView(nameElement)
 // Call reveal with typed RevealCallback
 container.reveal(object : RevealCallback {
     override fun onSuccess(response: RevealResponse) {
-        response.records.forEach { record ->
-            if (record.httpCode == 200) {
-                Log.d(TAG, "revealed: token=${record.token}")
-            } else {
-                Log.e(TAG, "partial error [${record.httpCode}]: ${record.error}")
-            }
-        }
+        Log.d(TAG, response.toJson().toString())
     }
     override fun onFailure(error: SkyflowError) {
         Log.e(TAG, "reveal failed: ${error.message}")
@@ -1760,13 +1754,7 @@ Implement `CollectCallback` to receive typed collect results:
 ```kotlin
 container.collect(object : CollectCallback {
     override fun onSuccess(response: CollectResponse) {
-        response.records.forEach { record ->
-            if (record.httpCode == 200) {
-                Log.d(TAG, "insert success: ${record.tokens}")
-            } else {
-                Log.d(TAG, "insert error [${record.httpCode}]: ${record.error}")
-            }
-        }
+        Log.d(TAG, response.toJson().toString())
     }
     override fun onFailure(error: SkyflowError) {
         Log.d(TAG, "collect failure: code=${error.httpCode}, message=${error.message}")
@@ -1774,6 +1762,23 @@ container.collect(object : CollectCallback {
 })
 ```
 
+#### Sample Response
+```json
+{
+    "records": [
+        {
+            "tableName": "pii_fields",
+            "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
+            "tokens": {
+                "card_number": [
+                    { "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75", "tokenGroupName": "deterministic_string" }
+                ]
+            },
+            "httpCode": 200
+        }
+    ]
+}
+```
 
 ### CollectOptions
 

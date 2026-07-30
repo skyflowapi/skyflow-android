@@ -1,5 +1,6 @@
 package Skyflow
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 data class CollectRecord(
@@ -12,6 +13,41 @@ data class CollectRecord(
 )
 
 data class CollectResponse(val records: List<CollectRecord> = emptyList()) {
+    fun toJson(): JSONObject {
+        val arr = JSONArray()
+        records.forEach { r ->
+            val obj = JSONObject().put("httpCode", r.httpCode)
+            r.tableName?.let { obj.put("tableName", it) }
+            r.skyflowId?.let { obj.put("skyflowId", it) }
+            r.error?.let { obj.put("error", it) }
+            r.tokens?.let { tokens ->
+                val tokObj = JSONObject()
+                tokens.forEach { (col, v) ->
+                    when (v) {
+                        is List<*> -> {
+                            val tokenArr = JSONArray()
+                            v.filterIsInstance<Map<*, *>>().forEach { entry ->
+                                val e = JSONObject()
+                                entry.forEach { (k, ev) -> e.put(k.toString(), ev) }
+                                tokenArr.put(e)
+                            }
+                            tokObj.put(col, tokenArr)
+                        }
+                        else -> tokObj.put(col, v)
+                    }
+                }
+                obj.put("tokens", tokObj)
+            }
+            r.hashedData?.let { hd ->
+                val hdObj = JSONObject()
+                hd.forEach { (k, v) -> hdObj.put(k, v) }
+                obj.put("hashedData", hdObj)
+            }
+            arr.put(obj)
+        }
+        return JSONObject().put("records", arr)
+    }
+
     companion object {
         fun fromJson(json: String): CollectResponse {
             return try {
