@@ -88,7 +88,7 @@ fun Container<ComposableContainer>.getComposableLayout(): LinearLayout {
     return composableLayout
 }
 
-fun Container<ComposableContainer>.collect(
+internal fun Container<ComposableContainer>.collect(
     callback: Callback,
     options: CollectOptions? = CollectOptions()
 ) {
@@ -273,7 +273,7 @@ private fun Container<ComposableContainer>.post(callback: Callback, options: Col
     this.client.apiClient.post(requestBody, callback, collectOptions, cvvMap = CVVMap.capture(this.collectElements))
 }
 
-fun Container<ComposableContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
+internal fun Container<ComposableContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
     try {
         validateVaultConfig()
         val requestBody = FlowDBCollectRequestBody.buildUpdateRequestBody(

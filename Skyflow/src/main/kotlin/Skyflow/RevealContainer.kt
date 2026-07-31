@@ -40,7 +40,7 @@ fun Container<RevealContainer>.create(
     return revealElement
 }
 
-fun Container<RevealContainer>.reveal(
+internal fun Container<RevealContainer>.reveal(
     callback: Callback,
     options: RevealOptions? = RevealOptions()
 ) {
