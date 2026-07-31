@@ -414,7 +414,7 @@ the `context` param takes android `Context` object as described below:
 
 ```kotlin
 val collectElementInput =  Skyflow.CollectElementInput(
-        table = "string",            //the table this data belongs to
+        tableName = "string",            //the table this data belongs to
         column = "string",           //the column into which this data should be inserted
         type = Skyflow.ElementType.CARD_NUMBER,   //Skyflow.ElementType enum
         inputStyles = Skyflow.Styles(),     /*optional styles that should be applied to the form element*/
@@ -683,12 +683,12 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-    table = "cards",
+    tableName = "cards",
     column = "cardNumber",
     type = Skyflow.ElementType.CARD_NUMBER,
 )
 val cardHolderNameInput = Skyflow.CollectElementInput(
-    table = "cards",
+    tableName = "cards",
     column = "cardHolderName",
     type = Skyflow.ElementType.CARDHOLDER_NAME,
 )
@@ -763,7 +763,7 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-    table = "cards",
+    tableName = "cards",
     column = "cardNumber",
     type = Skyflow.ElementType.CARD_NUMBER,
 )
@@ -801,7 +801,7 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardNumber",
   type = Skyflow.ElementType.CARD_NUMBER,
 )
@@ -1272,13 +1272,13 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardNumber",
   type = Skyflow.ElementType.CARD_NUMBER,
 )
 
 val cardHolderNameInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardHolderName",
   type = Skyflow.ElementType.CARDHOLDER_NAME,
 )    
@@ -1391,13 +1391,13 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardNumber",
   type = Skyflow.ElementType.CARD_NUMBER,
 )
 
 val cardHolderNameInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardHolderName",
   type = Skyflow.ElementType.CARDHOLDER_NAME,
 )    
@@ -1414,7 +1414,7 @@ try {
 
 // Update table, column, inputStyles properties on cardNumber.
 cardNumber.update(update = CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardHolderName",
   inputStyles = Skyflow.Styles(base: Style(borderColor: UIColor.red))
 ))
@@ -1458,7 +1458,7 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 
 // Create a CollectElementInput
 val cardNumberInput = Skyflow.CollectElementInput(
-  table = "cards",
+  tableName = "cards",
   column = "cardNumber",
   type = Skyflow.ElementType.CARD_NUMBER,
 )

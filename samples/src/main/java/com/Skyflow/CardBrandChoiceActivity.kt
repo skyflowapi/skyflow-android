@@ -47,7 +47,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         validationSet.add(LengthMatchRule(2, 20, "not valid"))
 
         val cardNumberInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.CARD_NUMBER,
             inputStyles = styles,
@@ -58,7 +58,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val expiryDateInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.EXPIRATION_DATE,
             inputStyles = styles,
@@ -69,7 +69,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val nameInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.CARDHOLDER_NAME,
             inputStyles = styles,
@@ -81,7 +81,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val cvvInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.CVV,
             inputStyles = styles,

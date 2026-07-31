@@ -59,7 +59,7 @@ class ComposableElementsTests {
             ContainerOptions(layout = arrayOf(1))
         )
         val collectInput = CollectElementInput(
-            table = "cards", column = "card_number",
+            tableName = "cards", column = "card_number",
             type = SkyflowElementType.CARD_NUMBER,
             placeholder = "card number"
         )

@@ -1,5 +1,6 @@
 package Skyflow
 
+import Skyflow.collect.client.CVVMap
 import Skyflow.collect.client.FlowDBCollectRequestBody
 import Skyflow.collect.client.FlowDBMixedAPICallback
 import org.json.JSONObject
@@ -72,13 +73,13 @@ internal fun Container<CollectContainer>.validateElement(element: TextField, err
         throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.columnName))
     }
     when {
-        element.collectInput.table.equals(null) -> {
+        element.collectInput.tableName.equals(null) -> {
             throw SkyflowInternalError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
         element.collectInput.column.equals(null) -> {
             throw SkyflowInternalError(SkyflowErrorCode.MISSING_COLUMN, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
-        element.collectInput.table!!.isEmpty() -> {
+        element.collectInput.tableName!!.isEmpty() -> {
             throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
         element.collectInput.column!!.isEmpty() -> {
@@ -150,7 +151,7 @@ internal fun Container<CollectContainer>.post(callback: Callback, options: Colle
 
         val mixedCallback = FlowDBMixedAPICallback(
             client.apiClient, combinedUpdateBody, insertBody, callback, collectOptions,
-            configuration.options.logLevel
+            configuration.options.logLevel, CVVMap.capture(collectElements)
         )
         client.apiClient.getAccessToken(mixedCallback)
         return
@@ -166,7 +167,7 @@ internal fun Container<CollectContainer>.post(callback: Callback, options: Colle
         insertOptions,
         configuration.options.logLevel
     )
-    this.client.apiClient.post(requestBody, callback, collectOptions)
+    this.client.apiClient.post(requestBody, callback, collectOptions, cvvMap = CVVMap.capture(this.collectElements))
 }
 
 fun Container<CollectContainer>.collect(callback: CollectCallback, options: CollectOptions? = CollectOptions()) {
@@ -191,7 +192,8 @@ fun Container<CollectContainer>.update(tableName: String, skyflowID: String, cal
             skyflowID,
             configuration.options.logLevel
         )
-        this.client.apiClient.post(requestBody, callback, options, "update")
+        this.client.apiClient.post(requestBody, callback, options, "update",
+            CVVMap.captureForUpdate(this.collectElements, skyflowID))
     } catch (e: Exception) {
         callback.onFailure(Utils.constructErrorResponse(e))
     }

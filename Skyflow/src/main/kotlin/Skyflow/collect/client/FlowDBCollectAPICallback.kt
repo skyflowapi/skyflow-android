@@ -21,7 +21,8 @@ internal class FlowDBCollectAPICallback(
     val callback: Skyflow.Callback,
     private val options: CollectOptions,
     val logLevel: LogLevel,
-    private val endpoint: String = "insert"
+    private val endpoint: String = "insert",
+    private val cvvMap: CVVMap = CVVMap.EMPTY
 ) : Skyflow.Callback {
     private val okHttpClient = apiClient.okHttpClient
     private val tag = FlowDBCollectAPICallback::class.qualifiedName
@@ -127,6 +128,10 @@ internal class FlowDBCollectAPICallback(
                     fieldsObject.put(fieldName, tokensObj.getJSONArray(fieldName))
                 }
             }
+
+            // Swap real CVV tokens for mock placeholders before returning to the app. The entered
+            // value still went to the vault unchanged; only the token in the response is replaced.
+            replaceCVVTokensInRecord(fieldsObject, tableName, skyflowId, cvvMap)
 
             val resultRecord = JSONObject()
                 .put("tableName", tableName)

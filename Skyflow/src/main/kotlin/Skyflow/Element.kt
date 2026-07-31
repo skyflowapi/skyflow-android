@@ -31,8 +31,8 @@ open class Element @JvmOverloads constructor(
         this.collectInput = collectInput
         this.options = options
         this.fieldType = this.collectInput.type
-        if(!this.collectInput.table.equals(null))
-            tableName = this.collectInput.table!!
+        if(!this.collectInput.tableName.equals(null))
+            tableName = this.collectInput.tableName!!
         if(!this.collectInput.column.equals(null))
             columnName = this.collectInput.column!!
         isRequired = this.options.required

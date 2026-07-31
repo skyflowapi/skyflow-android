@@ -305,7 +305,7 @@ class TextField @JvmOverloads constructor(
     }
 
     fun update(updateCollectInput: CollectElementInput) {
-        this.collectInput.table = updateCollectInput.table
+        this.collectInput.tableName = updateCollectInput.tableName
         this.collectInput.column = updateCollectInput.column
         this.collectInput.label = updateCollectInput.label
         this.collectInput.placeholder = updateCollectInput.placeholder

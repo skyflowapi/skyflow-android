@@ -13,7 +13,8 @@ internal class FlowDBMixedAPICallback(
     private val insertBody: JSONObject?,
     private val finalCallback: Callback,
     private val options: CollectOptions,
-    val logLevel: LogLevel
+    val logLevel: LogLevel,
+    private val cvvMap: CVVMap = CVVMap.EMPTY
 ) : Callback {
 
     private val totalCalls = (if (updateBody != null) 1 else 0) + (if (insertBody != null) 1 else 0)
@@ -23,11 +24,11 @@ internal class FlowDBMixedAPICallback(
     override fun onSuccess(responseBody: Any) {
         val token = responseBody.toString()
         updateBody?.let { body ->
-            FlowDBCollectAPICallback(apiClient, body, makeSubCallback(), options, logLevel, "update")
+            FlowDBCollectAPICallback(apiClient, body, makeSubCallback(), options, logLevel, "update", cvvMap)
                 .onSuccess(token)
         }
         insertBody?.let { body ->
-            FlowDBCollectAPICallback(apiClient, body, makeSubCallback(), options, logLevel, "insert")
+            FlowDBCollectAPICallback(apiClient, body, makeSubCallback(), options, logLevel, "insert", cvvMap)
                 .onSuccess(token)
         }
     }

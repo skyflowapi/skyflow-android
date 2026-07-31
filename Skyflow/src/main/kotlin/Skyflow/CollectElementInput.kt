@@ -3,7 +3,7 @@ package Skyflow
 import com.Skyflow.collect.elements.validations.ValidationSet
 
 class CollectElementInput(
-    internal var table: String? = null,
+    internal var tableName: String? = null,
     internal var column: String? = null,
     internal var inputStyles: Styles = Styles(),
     internal var labelStyles: Styles = Styles(),
@@ -23,7 +23,7 @@ class CollectElementInput(
     internal lateinit var altText: String
 
     constructor(
-        table: String? = null,
+        tableName: String? = null,
         column: String? = null,
         type: SkyflowElementType,
         inputStyles: Styles = Styles(),
@@ -35,7 +35,7 @@ class CollectElementInput(
         validations: ValidationSet = ValidationSet(),
         skyflowId: String? = null
     ) : this(
-        table,
+        tableName,
         column,
         inputStyles,
         labelStyles,
