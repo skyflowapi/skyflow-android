@@ -7,16 +7,37 @@
 Skyflow’s android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data.
 
 # Table of Contents
-* [Installation](#installation)
-  * [Requirements](#requirements)
-  * [Configuration](#configuration)
-* [Initializing Skyflow-android](#initializing-skyflow-android)
-* [Securely collecting data client-side](#securely-collecting-data-client-side)
-* [Securely collecting data client-side using composable elements](#securely-collecting-data-client-side-using-composable-elements)
-* [Securely revealing data client-side](#securely-revealing-data-client-side)
-* [Typed callbacks and response handling](#typed-callbacks-and-response-handling)
-  * [Collect with typed callbacks](#collect-with-typed-callbacks)
-  * [Reveal with typed callbacks](#reveal-with-typed-callbacks)
+
+1. [**Installation**](#installation)
+   1. [Requirements](#requirements)
+   2. [Configuration](#configuration)
+2. [**Quick Start**](#quick-start)
+   1. [Collect data](#collect-data)
+   2. [Reveal data](#reveal-data)
+3. [**Initializing skyflow-android**](#initializing-skyflow-android)
+4. [**Securely collecting data client-side**](#securely-collecting-data-client-side)
+   1. [Using Skyflow Elements to collect data](#using-skyflow-elements-to-collect-data)
+   2. [Using Skyflow Elements to update data](#using-skyflow-elements-to-update-data)
+   3. [Validations](#validations)
+   4. [Event Listener on Collect Elements](#event-listener-on-collect-elements)
+   5. [UI Error for Collect Elements](#ui-error-for-collect-elements)
+   6. [Set and Clear value for Collect Elements (DEV ENV ONLY)](#set-and-clear-value-for-collect-elements-dev-env-only)
+5. [**Securely collecting data client-side using composable elements**](#securely-collecting-data-client-side-using-composable-elements)
+   1. [Using Skyflow Composable Elements to collect data](#using-skyflow-composable-elements-to-collect-data)
+   2. [Using Skyflow Composable Elements to update data](#using-skyflow-composable-elements-to-update-data)
+   3. [Event Listeners on Composable Elements](#event-listeners-on-composable-elements)
+   4. [Update Composable Elements](#update-composable-elements)
+   5. [Event Listeners on Composable Container](#event-listeners-on-composable-container)
+6. [**Securely revealing data client-side**](#securely-revealing-data-client-side)
+   1. [Using Skyflow Elements to reveal data](#using-skyflow-elements-to-reveal-data)
+   2. [UI Error for Reveal Elements](#ui-error-for-reveal-elements)
+   3. [Set token for Reveal Elements](#set-token-for-reveal-elements)
+   4. [Set and Clear altText for Reveal Elements](#set-and-clear-alttext-for-reveal-elements)
+7. [**Typed callbacks and response handling**](#typed-callbacks-and-response-handling)
+   1. [Collect with typed callbacks](#collect-with-typed-callbacks)
+   2. [Reveal with typed callbacks](#reveal-with-typed-callbacks)
+8. [**Limitation**](#limitation)
+9. [**Reporting a Vulnerability**](#reporting-a-vulnerability)
 
 # Installation
 
@@ -26,19 +47,22 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 - Android Gradle Plugin 8.6.0 and above
 
 ## Configuration
+---
+> **Note:** The Android SDK is distributed through GitHub Package Registry (not Maven Central), so adding it as a dependency requires GitHub authentication — even for public packages. This is why the steps below include generating a Personal Access Token. The iOS and JS SDKs don't require this step.
+
 ### Step 1: Generate a Personal Access Token for GitHub
-- Inside you GitHub account:
+- Inside your GitHub account:
 - Settings -> Developer Settings -> Personal Access Tokens -> Generate new token
 - Make sure you select the following scopes (“read:packages”) and Generate a token
 - After Generating make sure to copy your new personal access token. You cannot see it again! The only option is to generate a new key.
 
 ### Step 2: Store your GitHub — Personal Access Token details
 - Create a github.properties file within your root Android project
-- In case of a public repository make sure you add this file to .gitignore for keep the token private
+- In case of a public repository make sure you add this file to .gitignore to keep the token private
 - Add properties gpr.usr=GITHUB_USER_NAME and gpr.key=PERSONAL_ACCESS_TOKEN
 - Replace GITHUB_USER_NAME with personal / organisation Github user NAME and PERSONAL_ACCESS_TOKEN with the token generated in [Step 1](#step-1-generate-a-personal-access-token-for-github)
 
-Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your environment variables on you local machine or build server to avoid creating a github properties file
+Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your environment variables on your local machine or build server to avoid creating a github properties file
 
 ### Step 3: Adding the dependency to the project
 
@@ -100,6 +124,71 @@ Alternatively you can also add the GPR_USER_NAME and GPR_PAT values to your envi
 ```
 
 
+# Quick Start
+
+### Collect data
+
+Collect a card number and get back a token:
+
+```kotlin
+// 1. Configure and initialize the client
+val config = Skyflow.Configuration(
+    vaultID = "<VAULT_ID>",
+    vaultURL = "<VAULT_URL>",
+    tokenProvider = myTokenProvider // your Skyflow.TokenProvider implementation — see below
+)
+val skyflowClient = Skyflow.init(config)
+
+// 2. Create a container and a Collect Element for the card number
+val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+val cardNumberInput = Skyflow.CollectElementInput(
+    tableName = "cards",
+    column = "card_number",
+    type = Skyflow.ElementType.CARD_NUMBER
+)
+val cardNumberElement = container.create(context = this, input = cardNumberInput)
+parent.addView(cardNumberElement) // it's a View — mount it like any other
+
+// 3. Collect the value and get back a token
+container.collect(object : CollectCallback {
+    override fun onSuccess(response: CollectResponse) {
+        println(response.records)
+    }
+    override fun onFailure(error: SkyflowError) {
+        println(error.message)
+    }
+})
+```
+
+### Reveal data
+
+Reveal a token back to its real value (using the same `skyflowClient` from above):
+
+```kotlin
+// 1. Create a container and a Reveal Element for the token
+val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
+val cardNumberReveal = Skyflow.RevealElementInput(
+    token = "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
+    label = "Card Number"
+)
+val revealElement = revealContainer.create(context = this, input = cardNumberReveal)
+parent.addView(revealElement) // shows the real value once revealed
+
+// 2. Reveal it
+revealContainer.reveal(object : RevealCallback {
+    override fun onSuccess(response: RevealResponse) {
+        println(response.records)
+    }
+    override fun onFailure(error: SkyflowError) {
+        println(error.message)
+    }
+})
+```
+
+That's the whole round trip — no card data ever touches your app code on the way in, and it's only ever displayed, never returned to your code, on the way out. Everything below covers this in depth: `TokenProvider`, styling, validation, updates, upsert, and more.
+
+---
+
 # Initializing skyflow-android
 ----
 Use the ```init()``` method to initialize a Skyflow client as shown below.
@@ -111,15 +200,15 @@ val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
     vaultURL = <VAULT_URL>,
     tokenProvider = demoTokenProvider,
-    options: Skyflow.Options(
-      logLevel : Skyflow.LogLevel, // optional, if not specified loglevel is ERROR.
-        env: SKyflow.Env //optiuona, if not specified env is PROD.
-       ) 
+    options = Skyflow.Options(
+        logLevel = Skyflow.LogLevel.INFO, // optional, if not specified logLevel is ERROR
+        env = Skyflow.Env.PROD            // optional, if not specified env is PROD
+    )
 )
 
 val skyflowClient = Skyflow.init(config)
 ```
-For the tokenProvider parameter, pass in an implementation of the Skyflow.TokenProvider interface that declares a getAccessToken method which retrieves a Skyflow bearer token from your backend. This function will be invoked when the SDK needs to insert or retrieve data from the vault.
+For the tokenProvider parameter, pass in an implementation of the Skyflow.TokenProvider interface that declares a getBearerToken method which retrieves a Skyflow bearer token from your backend. This function will be invoked when the SDK needs to insert or retrieve data from the vault.
 
 For example, if the response of the consumer tokenAPI is in the below format
 
@@ -228,8 +317,8 @@ To create a collect element, we must first construct `Skyflow.CollectElementInpu
 
 ```kt
 Skyflow.CollectElementInput(
-   table : String,            //the table this data belongs to
-   column : String,           //the column into which this data should be inserted
+   tableName: String,            // required, the table this data belongs to
+   column: String,           // required, the column into which this data should be inserted
    type: Skyflow.ElementType   //Skyflow.ElementType enum
    inputStyles: Skyflow.Styles,     //optional styles that should be applied to the form element
    labelStyles: Skyflow.Styles, //optional styles that will be applied to the label of the collect element
@@ -240,7 +329,7 @@ Skyflow.CollectElementInput(
    validations: ValidationSet // optional set of validations for collect element
 )
 ```
-The `table` and `column` parameters indicate which table and column in the vault the Element corresponds to.
+The `tableName` and `column` fields indicate which table and column in the vault the Element corresponds to.
 Note: Use dot delimited strings to specify columns nested inside JSON fields (e.g. address.street.line1).
 
 The `inputStyles` field accepts a Skyflow.Styles object which consists of multiple `Skyflow.Style` objects which should be applied to the form element in the following states:
@@ -316,7 +405,7 @@ The parameters in `Skyflow.Style` object that are respected for `label` and `err
 
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
 
-Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 5 types:
+Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 8 types:
 - `INPUT_FIELD`
 - `CARDHOLDER_NAME`
 - `CARD_NUMBER`
@@ -386,10 +475,10 @@ Collect Element Options examples for INPUT_FIELD
 Example 1
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "+91 XXXX-XX-XXXX",
-  translation: hashmapOf('X' to "[0-9]")
+  required = true,
+  enableCardIcon = true,
+  format = "+91 XXXX-XX-XXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 User input: "1234121234"
@@ -399,10 +488,10 @@ Value displayed in INPUT_FIELD: "+91 1234-12-1234"
 Example 2
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "AY XX-XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+  required = true,
+  enableCardIcon = true,
+  format = "AY XX-XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
 )
 ```
 User input: "B1234121234"
@@ -422,17 +511,17 @@ val collectElementInput =  Skyflow.CollectElementInput(
         errorTextStyles = Skyflow.Styles(),  //optional styles that will be applied to the errorText of the collect element
         label = "string",            //optional label for the form element
         placeholder = "string",      //optional placeholder for the form element
-        altText: String,                 //(DEPRECATED) optional string that acts as an initial value for the collect element
+        altText = "string",              //(DEPRECATED) optional string that acts as an initial value for the collect element
         validations = ValidationSet()       // optional set of validations for the input element
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
         required = false,  //indicates whether the field is marked as required. Defaults to 'false'
-        enableCardIcon = true //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)  
+        enableCardIcon = true, //indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
         format = "mm/yy" //Format for the element (only applies currently for EXPIRATION_DATE element type)
 )  
 
-const element = container.create(context = Context, collectElementInput, collectElementOptions)
+const element = container.create(context = this, collectElementInput, collectElementOptions)
 ```
 
 
@@ -508,8 +597,8 @@ To create a collect Element, construct a `Skyflow.CollectElementInput` object as
 
 ```kt
 val collectElementInput = Skyflow.CollectElementInput(
-    table: String,                  // optional, the table this data belongs to
-    column: String,                 // optional, the column into which this data should be inserted
+    tableName: String,                  // required, the table this data belongs to
+    column: String,                 // required, the column into which this data should be inserted
     type: Skyflow.ElementType,      // Skyflow.ElementType enum
     inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
     labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
@@ -522,7 +611,7 @@ val collectElementInput = Skyflow.CollectElementInput(
 )
 ```
 
-The `table` and `column` fields indicate which table and column in the vault the Element corresponds to.
+The `tableName` and `column` fields indicate which table and column in the vault the Element corresponds to.
 
 **Note:**
 - Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
@@ -677,7 +766,7 @@ val state = {
 //create skyflow client with loglevel:"DEBUG"
 val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
 
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
@@ -693,8 +782,8 @@ val cardHolderNameInput = Skyflow.CollectElementInput(
     type = Skyflow.ElementType.CARDHOLDER_NAME,
 )
 
-val cardNumber = container.create(context = Context, input = cardNumberInput)
-val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
+val cardHolderName = container.create(context = this, input = cardHolderNameInput)
 
 //subscribing to CHANGE event, which gets triggered when element changes
 cardNumber.on(eventName = Skyflow.EventName.CHANGE) { state ->
@@ -757,7 +846,7 @@ Helps to display custom error messages on the Skyflow Elements through the metho
 //create skyflow client with loglevel:"DEBUG"
 val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
 
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
@@ -796,7 +885,7 @@ val config = Skyflow.Configuration(
   tokenProvider = demoTokenProvider,
   options = Skyflow.Options(env = Skyflow.Env.DEV)
 )
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
@@ -856,8 +945,8 @@ Composable Elements use the following schema:
 
 ```kotlin
 val composableElementInput = Skyflow.CollectElementInput(
-  table: String,                   // optional, the table this data belongs to
-  column: String,                  // optional, the column into which this data should be inserted
+  tableName: String,                   // required, the table this data belongs to
+  column: String,                  // required, the column into which this data should be inserted
   inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
   labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
   errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
@@ -868,7 +957,7 @@ val composableElementInput = Skyflow.CollectElementInput(
   type: Skyflow.ElementType,       // Skyflow.ElementType enum
 )
 ```
-The `table` and `column` fields indicate which table and column in the vault the Element correspond to.
+The `tableName` and `column` fields indicate which table and column in the vault the Element corresponds to.
 
 **Note**: 
 - Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
@@ -1001,10 +1090,10 @@ Collect Element Options examples for INPUT_FIELD
 Example 1
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "+91 XXXX-XX-XXXX",
-  translation: hashmapOf('X' to "[0-9]")
+  required = true,
+  enableCardIcon = true,
+  format = "+91 XXXX-XX-XXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 User input: "1234121234"
@@ -1014,10 +1103,10 @@ Value displayed in INPUT_FIELD: "+91 1234-12-1234"
 Example 2
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "AY XX-XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+  required = true,
+  enableCardIcon = true,
+  format = "AY XX-XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
 )
 ```
 User input: "B1234121234"
@@ -1028,8 +1117,8 @@ Once the `Skyflow.CollectElementInput` and `Skyflow.CollectElementOptions` objec
  
 ```kotlin
 val composableElementInput = Skyflow.CollectElementInput(
-  table: String,                  // the table this data belongs to
-  column: String,                 // the column into which this data should be inserted
+  tableName: String,                  // required, the table this data belongs to
+  column: String,                 // required, the column into which this data should be inserted
   inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
   labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
   errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
@@ -1041,12 +1130,12 @@ val composableElementInput = Skyflow.CollectElementInput(
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
-  required: false,  // indicates whether the field is marked as required. Defaults to 'false',
-  enableCardIcon: true, // indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
-  format: "mm/yy" // Format for the element
+  required = false, // indicates whether the field is marked as required. Defaults to 'false'
+  enableCardIcon = true, // indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
+  format = "mm/yy" // Format for the element
 )
 
-val element = container.create(context = Context, input: composableElementInput, options: collectElementOptions)
+val element = container.create(context = this, input: composableElementInput, options: collectElementOptions)
 ```
 ### Step 3: Mount Elements to the Screen
 
@@ -1123,8 +1212,8 @@ Composable Elements use the following schema:
 
 ```kt
 val composableElementInput = Skyflow.CollectElementInput(
-    table: String,                  // optional, the table this data belongs to
-    column: String,                 // optional, the column into which this data should be updated
+    tableName: String,                  // required, the table this data belongs to
+    column: String,                 // required, the column into which this data should be updated
     type: Skyflow.ElementType,      // Skyflow.ElementType enum
     inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
     labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
@@ -1137,7 +1226,7 @@ val composableElementInput = Skyflow.CollectElementInput(
 )
 ```
 
-The `table` and `column` fields indicate which table and column in the vault the Element corresponds to.
+The `tableName` and `column` fields indicate which table and column in the vault the Element corresponds to.
 
 **Note:**
 - Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
@@ -1256,7 +1345,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -1283,8 +1372,8 @@ val cardHolderNameInput = Skyflow.CollectElementInput(
   type = Skyflow.ElementType.CARDHOLDER_NAME,
 )    
 
-val cardNumber = container.create(context = Context, input = cardNumberInput)
-val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
+val cardHolderName = container.create(context = this, input = cardHolderNameInput)
 
 try {
   val composableLayout = container.getComposableLayout()
@@ -1349,7 +1438,7 @@ You can update composable element properties with the `update` interface.
 The `update` interface takes the below object:
 ```kotlin
 val updateElement =  Skyflow.CollectElementInput(
-  table: String,                   // optional the table this data belongs to
+  tableName: String,                   // optional the table this data belongs to
   column: String,                  // optional the column into which this data should be inserted
   inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
   labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
@@ -1375,7 +1464,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -1402,8 +1491,8 @@ val cardHolderNameInput = Skyflow.CollectElementInput(
   type = Skyflow.ElementType.CARDHOLDER_NAME,
 )    
 
-val cardNumber = container.create(context = Context, input = cardNumberInput)
-val cardHolderName = container.create(context = Context, input = cardHolderNameInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
+val cardHolderName = container.create(context = this, input = cardHolderNameInput)
 
 try {
   val composableLayout = container.getComposableLayout()
@@ -1442,7 +1531,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -1463,7 +1552,7 @@ val cardNumberInput = Skyflow.CollectElementInput(
   type = Skyflow.ElementType.CARD_NUMBER,
 )
 
-val cardNumber = container.create(context = Context, input = cardNumberInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
 
 try {
   val composableLayout = container.getComposableLayout()
@@ -1556,10 +1645,9 @@ Reveal Element Options examples:
 
 Example 1:
 ```kotlin
-let element = container.create(input: revealElementInput)
-Skyflow.RevealElementOptions(
-  format: "(XXX) XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]") 
+val options = Skyflow.RevealElementOptions(
+  format = "(XXX) XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 Value from vault: "1234121234"
@@ -1568,9 +1656,9 @@ Value displayed in element: "(123) 412-1234"
 
 Example 2:
 ```kotlin
-Skyflow.RevealElementOptions(
-  format: "XXXX-XXXXXX-XXXXX",
-  translation: hashmapOf('X' to "[0-9]") 
+val options = Skyflow.RevealElementOptions(
+  format = "XXXX-XXXXXX-XXXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 Value from vault: "374200000000004"
@@ -1580,9 +1668,13 @@ Value displayed in element: "3742-000000-00004"
 Once you've defined a `Skyflow.RevealElementInput` object and `Skyflow.RevealElementOptions`, you can use the `create()` method of the container to create the Element as shown below:
 
 ```kotlin
-let element = container.create(input: revealElementInput, options: Skyflow.RevealElementOptions(format: "XXXX-XXXXXX-XXXXX",
-translation: hashmapOf('X' to "[0-9]")
-))
+val element = container.create(
+  input = revealElementInput,
+  options = Skyflow.RevealElementOptions(
+    format = "XXXX-XXXXXX-XXXXX",
+    translation = hashmapOf('X' to "[0-9]")
+  )
+)
 ```
 
 ### Step 3: Mount Elements to the Screen
@@ -1800,6 +1892,28 @@ container.collect(object : CollectCallback { ... }, options)
 ```
 
 
+#### Full-row overwrite with `UpdateType.REPLACE`
+
+`UpdateType` controls how a matched record is written:
+
+- `UpdateType.UPDATE` (used above) merges the fields in this request into the matched record — every other column on that record is left untouched.
+- `UpdateType.REPLACE` overwrites the entire matched record — any column not included in this request (element values plus `additionalFields`) is cleared, not just left alone.
+
+Use `REPLACE` when a stale value from a previous write must not survive: the matched record ends up as exactly what this request contains, rather than layered on top of whatever was already there.
+
+```kotlin
+val options = CollectOptions(
+    upsert = listOf(
+        UpsertOptions(
+            tableName = "<TABLE_NAME>",
+            updateType = UpdateType.REPLACE,
+            uniqueColumns = listOf("<UNIQUE_COLUMN>")
+        )
+    )
+)
+container.collect(object : CollectCallback { ... }, options)
+```
+
 #### Additional fields (non-PCI data)
 
 Pass non-PCI data alongside element values using `AdditionalFields`:
@@ -1980,6 +2094,10 @@ data class RevealRecord(
 
 ## Limitation
 Currently the skyflow collect elements and reveal elements can't be used in the XML layout definition, we have to add them to the views programatically.
+
+## Reporting a Vulnerability
+
+If you discover a potential security issue in this project, please reach out to us at security@skyflow.com. Please do not create public GitHub issues or Pull Requests, as malicious actors could potentially view them.
 
 
 
