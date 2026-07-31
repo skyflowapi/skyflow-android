@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.utils.EventName
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -72,6 +73,19 @@ class CollectActivity : AppCompatActivity() {
         expiry.layoutParams = lp
         parent.addView(cardNumber)
         parent.addView(expiry)
+
+        cardNumber.on(EventName.FOCUS) { state ->
+            Log.d(TAG, "focus: state $state")
+        }
+        cardNumber.on(EventName.BLUR) { state ->
+            Log.d(TAG, "blur: state $state")
+        }
+        cardNumber.on(EventName.CHANGE) { state ->
+            Log.d(TAG, "change: state $state")
+        }
+        cardNumber.on(EventName.READY) { state ->
+            Log.d(TAG, "ready: state $state")
+        }
 
         binding.submit.setOnClickListener {
             container.collect(object : CollectCallback {
