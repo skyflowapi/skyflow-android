@@ -42,56 +42,56 @@ class InputFormattingTest {
     private fun createCollectElements() {
 
         nameInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "Name",
             SkyflowElementType.CARDHOLDER_NAME,
             placeholder = "name",
         )
 
         cardNumberInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "card_number",
             SkyflowElementType.CARD_NUMBER,
             placeholder = "card number",
         )
 
         cvvInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "CVV",
             SkyflowElementType.CVV,
             placeholder = "cvv",
         )
 
         pinInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "PIN",
             SkyflowElementType.PIN,
             placeholder = "pin",
         )
 
         monthInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "exp_month",
             SkyflowElementType.EXPIRATION_MONTH,
             placeholder = "expiry month",
         )
 
         yearInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "exp_year",
             SkyflowElementType.EXPIRATION_YEAR,
             placeholder = "yyyy",
         )
 
         dateInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "exp_date",
             SkyflowElementType.EXPIRATION_DATE,
             placeholder = "mm/yy",
         )
 
         phoneInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "Phone Number",
             SkyflowElementType.INPUT_FIELD,
             placeholder = "phone number",

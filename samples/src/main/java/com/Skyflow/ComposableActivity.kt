@@ -140,7 +140,7 @@ class ComposableActivity : AppCompatActivity() {
         val options = CollectElementOptions(true)
 
         val nameInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "cardholder_name",
             type = SkyflowElementType.CARDHOLDER_NAME,
             inputStyles = styles,
@@ -152,7 +152,7 @@ class ComposableActivity : AppCompatActivity() {
         val name = composableContainer.create(this, nameInput, options)
 
         val cardNumberInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "card_number",
             type = SkyflowElementType.CARD_NUMBER,
             inputStyles = cardNumberStyles,
@@ -168,7 +168,7 @@ class ComposableActivity : AppCompatActivity() {
         )
 
         val expiryMonthInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "exp_month",
             type = SkyflowElementType.EXPIRATION_MONTH,
             inputStyles = expDateStyles,
@@ -180,7 +180,7 @@ class ComposableActivity : AppCompatActivity() {
         val expMonth = composableContainer.create(this, expiryMonthInput, options)
 
         val cvvInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "cvv",
             type = SkyflowElementType.CVV,
             inputStyles = cvvStyles,
@@ -192,7 +192,7 @@ class ComposableActivity : AppCompatActivity() {
         val cvv = composableContainer.create(this, cvvInput, options)
 
         val pinInput = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "pin",
             type = SkyflowElementType.PIN,
             inputStyles = cvvStyles,

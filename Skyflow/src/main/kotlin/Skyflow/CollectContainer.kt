@@ -73,13 +73,13 @@ internal fun Container<CollectContainer>.validateElement(element: TextField, err
         throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, configuration.options.logLevel, arrayOf(element.columnName))
     }
     when {
-        element.collectInput.table.equals(null) -> {
+        element.collectInput.tableName.equals(null) -> {
             throw SkyflowInternalError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
         element.collectInput.column.equals(null) -> {
             throw SkyflowInternalError(SkyflowErrorCode.MISSING_COLUMN, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
-        element.collectInput.table!!.isEmpty() -> {
+        element.collectInput.tableName!!.isEmpty() -> {
             throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME, tag, configuration.options.logLevel, arrayOf(element.fieldType.toString()))
         }
         element.collectInput.column!!.isEmpty() -> {

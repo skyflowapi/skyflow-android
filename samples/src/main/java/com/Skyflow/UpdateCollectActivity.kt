@@ -50,7 +50,7 @@ class UpdateCollectActivity : AppCompatActivity() {
         val skyflowId = "<SKYFLOW_ID>"
 
         val cardNumberInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.CARD_NUMBER,
             inputStyles = inputStyles,
@@ -60,7 +60,7 @@ class UpdateCollectActivity : AppCompatActivity() {
             skyflowId = skyflowId
         )
         val nameInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.CARDHOLDER_NAME,
             inputStyles = inputStyles,
@@ -70,7 +70,7 @@ class UpdateCollectActivity : AppCompatActivity() {
             skyflowId = skyflowId
         )
         val expiryInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.EXPIRATION_DATE,
             inputStyles = inputStyles,

@@ -157,7 +157,7 @@ private fun Container<ComposableContainer>.validateElement(
         )
     }
     when {
-        element.collectInput.table.equals(null) -> {
+        element.collectInput.tableName.equals(null) -> {
             throw SkyflowInternalError(
                 SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
                 tag,
@@ -173,7 +173,7 @@ private fun Container<ComposableContainer>.validateElement(
                 arrayOf(element.fieldType.toString())
             )
         }
-        element.collectInput.table!!.isEmpty() -> {
+        element.collectInput.tableName!!.isEmpty() -> {
             throw SkyflowInternalError(
                 SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
                 tag,

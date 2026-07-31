@@ -21,7 +21,7 @@ internal class FlowDBCollectRequestBody {
             // Merge additionalFields insert records into tableMap
             options.additionalFields?.records?.forEach { rec ->
                 val existing = tableMap.getOrPut(rec.tableName) { mutableListOf() }
-                rec.data.forEach { (k, v) -> existing.add(CollectRequestRecord(k, v.toString())) }
+                rec.data.forEach { (k, v) -> existing.add(CollectRequestRecord(k, anyToJsonValue(v))) }
             }
 
             val recordsArray = JSONArray()
@@ -107,6 +107,15 @@ internal class FlowDBCollectRequestBody {
                 }
             }
             return tableMap
+        }
+
+        private fun anyToJsonValue(v: Any?): Any {
+            if (v is Map<*, *>) {
+                val obj = JSONObject()
+                v.forEach { (mk, mv) -> obj.put(mk.toString(), anyToJsonValue(mv)) }
+                return obj
+            }
+            return v ?: JSONObject.NULL
         }
 
         private fun createJSONKey(obj: JSONObject, columnName: String, value: Any) {

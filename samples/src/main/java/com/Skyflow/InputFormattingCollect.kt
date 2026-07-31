@@ -130,7 +130,7 @@ class InputFormattingCollect : AppCompatActivity() {
         )
 
         val input = CollectElementInput(
-            table = "cards",
+            tableName = "cards",
             column = "zip_code",
             type = SkyflowElementType.INPUT_FIELD,
             styles,

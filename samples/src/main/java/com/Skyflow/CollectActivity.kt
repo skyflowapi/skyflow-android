@@ -41,7 +41,7 @@ class CollectActivity : AppCompatActivity() {
         val errorStyles = Styles(errorStyle)
 
         val cardNumberInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.CARD_NUMBER,
             inputStyles = styles,
@@ -50,7 +50,7 @@ class CollectActivity : AppCompatActivity() {
             placeholder = "Card Number"
         )
         val expiryInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<EXPIRY_COLUMN>",
             type = SkyflowElementType.EXPIRATION_DATE,
             inputStyles = styles,

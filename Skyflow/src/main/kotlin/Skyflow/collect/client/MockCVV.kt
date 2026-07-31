@@ -34,7 +34,6 @@ internal class CVVMap(
             for (element in elements) {
                 if (element.fieldType != SkyflowElementType.CVV) continue
                 val value = element.getValue()
-                if (value.isEmpty()) continue
                 val skyflowId = element.skyflowId
                 if (!skyflowId.isNullOrEmpty()) {
                     byRecordId.getOrPut(skyflowId) { LinkedHashMap() }[element.columnName] = value
@@ -53,9 +52,7 @@ internal class CVVMap(
             val columns = LinkedHashMap<String, String>()
             for (element in elements) {
                 if (element.fieldType != SkyflowElementType.CVV) continue
-                val value = element.getValue()
-                if (value.isEmpty()) continue
-                columns[element.columnName] = value
+                columns[element.columnName] = element.getValue()
             }
             return if (columns.isEmpty()) EMPTY else CVVMap(emptyMap(), mapOf(skyflowId to columns))
         }
@@ -86,9 +83,15 @@ internal fun generateMockCVV(length: Int, actualValue: String): String {
  * Replaces the token value of every captured CVV column in [tokens] with a freshly generated mock
  * placeholder that matches the entered length and never equals that element's own entered value.
  *
- * The vault returns each column as a list of `{ token, tokenGroupName }` entries, so one mock is
- * generated per column and applied to every entry for that column. Updates are matched by record id
- * first, then inserts by table name. Non-CVV columns and hashed data are left untouched.
+ * tokens is keyed only by the TOP-LEVEL column name. Nested sub-fields appear as separate entries
+ * in that column's list, each carrying a dotted "path" field. The replacement rule:
+ *   - Flat column (no dot in column name): replace entries that have NO "path" field.
+ *   - Nested column (e.g. "address.city.street"): split at first dot → topKey="address",
+ *     nestedPath="city.street"; replace ONLY the entry whose "path" is EXACTLY "city.street".
+ *     Exact equality prevents "city" from matching "city.street" or "city.ward".
+ *
+ * One mock is generated per column (same value applied to all matching entries). Updates are matched
+ * by record id first, then inserts by table name. Non-CVV columns and hashed data are untouched.
  *
  * Cross-element collision is intentionally ignored: a mock may coincidentally equal a *different*
  * element's entered value, but entered values never leave the device to the app, so there is no
@@ -105,11 +108,17 @@ internal fun replaceCVVTokensInRecord(
         ?: (if (tableName.isNotEmpty()) cvvMap.byTable[tableName] else null)
         ?: return
     for ((column, enteredValue) in columns) {
-        val entries = tokens.optJSONArray(column) ?: continue
-        val mock = generateMockCVV(enteredValue.length, enteredValue)
+        val dotIndex = column.indexOf('.')
+        val topKey = if (dotIndex == -1) column else column.substring(0, dotIndex)
+        val nestedPath = if (dotIndex == -1) null else column.substring(dotIndex + 1)
+
+        val entries = tokens.optJSONArray(topKey) ?: continue
+        val mock = if (enteredValue.isEmpty()) "" else generateMockCVV(enteredValue.length, enteredValue)
         for (i in 0 until entries.length()) {
             val entry = entries.optJSONObject(i) ?: continue
-            if (entry.has("token")) {
+            val entryPath = if (entry.has("path")) entry.optString("path") else null
+            val matches = if (nestedPath == null) entryPath == null else entryPath == nestedPath
+            if (matches && entry.has("token")) {
                 entry.put("token", mock)
             }
         }
