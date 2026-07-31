@@ -73,7 +73,7 @@ internal class ConnectionApiCallback(
                     sendRequest(requestBuild)
                 }
                 catch (e:Exception){
-                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
+                    callback.onFailure(Utils.constructError(SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag, logLevel, params = arrayOf(e.message))))
                 }
             }
             override fun onFailure(exception: Any) {
@@ -88,7 +88,7 @@ internal class ConnectionApiCallback(
                         else
                             tokens = error.getString("token")
                     }
-                    callback.onFailure(Utils.constructError(SkyflowError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens))))
+                    callback.onFailure(Utils.constructError(SkyflowInternalError(SkyflowErrorCode.NOT_VALID_TOKENS, tag, logLevel, params = arrayOf(tokens))))
                 }
                 catch (e:Exception){
                     callback.onFailure(exception)
@@ -139,7 +139,7 @@ internal class ConnectionApiCallback(
     fun getRequestBuild(responseBody: Any, requestBody: JSONObject): Request? { //create requestBuild
         val requestUrlBuilder = connectionUrl.toHttpUrlOrNull()?.newBuilder()
         if(requestUrlBuilder == null){
-            val error = SkyflowError(SkyflowErrorCode.INVALID_CONNECTION_URL,
+            val error = SkyflowInternalError(SkyflowErrorCode.INVALID_CONNECTION_URL,
                 tag, logLevel, arrayOf(connectionConfig.connectionURL))
             callback.onFailure(Utils.constructError(error))
             return null
@@ -203,13 +203,13 @@ internal class ConnectionApiCallback(
                 }
                 else
                 {
-                    val skyflowError = SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
+                    val skyflowError = SkyflowInternalError(SkyflowErrorCode.BAD_REQUEST, tag = tag, logLevel = logLevel)
                     callback.onFailure(Utils.constructError(skyflowError, response.code))
                 }
             }
             catch (e:Exception)
             {
-                val skyflowError = SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
+                val skyflowError = SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = logLevel, arrayOf(e.message.toString()))
                 skyflowError.setErrorCode(400)
                 callback.onFailure(Utils.constructError(skyflowError, response.code))
             }
@@ -223,23 +223,23 @@ internal class ConnectionApiCallback(
             for (j in 0 until keys.length()) {
                 if(keys.getString(j).isEmpty())
                 {
-                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_BODY,
+                    throw SkyflowInternalError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_BODY,
                         tag, logLevel)
                 }
                 var value: Any
                 if (records.get(keys.getString(j)) is Element) {
                     val element = (records.get(keys.getString(j)) as Element)
                     if(!Utils.checkIfElementsMounted(element))
-                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                        throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                     checkForValidElement(element)
                     value = (records.get(keys.getString(j)) as Element).getValue()
                 } else if (records.get(keys.getString(j)) is Label) {
                     if(!Utils.checkIfElementsMounted(records.get(keys.getString(j)) as Label))
-                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                        throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                     else if ((records.get(keys.getString(j)) as Label).isTokenNull) 
-                       throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN_IN_CONNECTION_REQUEST, tag, logLevel, arrayOf(keys.getString(j)))
+                       throw SkyflowInternalError(SkyflowErrorCode.MISSING_TOKEN_IN_CONNECTION_REQUEST, tag, logLevel, arrayOf(keys.getString(j)))
                      else if ((records.get(keys.getString(j)) as Label).revealInput.token!!.isEmpty()) 
-                        throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                        throw SkyflowInternalError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                     value = Utils.getValueForLabel(records.get(keys.getString(j)) as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                 } else if (records.get(keys.getString(j)) is JSONObject) {
                     constructRequestBodyForConnection(records.get(keys.getString(j)) as JSONObject)
@@ -258,18 +258,18 @@ internal class ConnectionApiCallback(
                         {
                             val element = (arrayValue.get(k) as Element)
                             if(!Utils.checkIfElementsMounted(element))
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             checkForValidElement(element)
                             value = (arrayValue.get(k)  as Element).getValue()
                         }
                         else if(arrayValue.get(k) is Label)
                         {
                             if(!Utils.checkIfElementsMounted(arrayValue.get(k) as Label))
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             else if ((arrayValue.get(k) as Label).isTokenNull) 
-                                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                                throw SkyflowInternalError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                                 else if ((arrayValue.get(k) as Label).revealInput.token!!.isEmpty()) 
-                                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                             value = Utils.getValueForLabel(arrayValue.get(k) as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                         }
                         else if(arrayValue.get(k) is JSONObject)
@@ -280,7 +280,7 @@ internal class ConnectionApiCallback(
                         else if(arrayValue.get(k) is String || arrayValue.get(k) is Number || arrayValue.get(k) is Boolean)
                             value = arrayValue.get(k) .toString()
                         else
-                            throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
+                            throw SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
                         arrayValue.put(k,value)
                     }
                     value = arrayValue
@@ -294,7 +294,7 @@ internal class ConnectionApiCallback(
                         {
                             val element = (arrayValue[k] as Element)
                             if(!Utils.checkIfElementsMounted(element))
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             checkForValidElement(element)
                             value = (arrayValue[k] as Element).getValue()
                         }
@@ -302,11 +302,11 @@ internal class ConnectionApiCallback(
                         {
                             if(!Utils.checkIfElementsMounted(arrayValue[k] as Label))
                             
-                                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             else if ((arrayValue[k] as Label).isTokenNull) 
-                                throw SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                                throw SkyflowInternalError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                               else if ((arrayValue[k] as Label).revealInput.token!!.isEmpty()) 
-                                throw SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                             else
                                 value = Utils.getValueForLabel(arrayValue[k] as Label,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel)
                         }
@@ -318,7 +318,7 @@ internal class ConnectionApiCallback(
                         else if(arrayValue[k] is String || arrayValue[k] is Number || arrayValue[k] is Boolean)
                             value = arrayValue[k].toString()
                         else
-                            throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
+                            throw SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
                         arrayInRequestBody.put(k,value)
                     }
                     value = arrayInRequestBody
@@ -327,7 +327,7 @@ internal class ConnectionApiCallback(
                 else if (records.get(keys.getString(j)) is String || records.get(keys.getString(j)) is Number || records.get(keys.getString(j)) is Boolean)
                     value = records.get(keys.getString(j)).toString()
                 else {
-                    throw SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
+                    throw SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_BODY, tag, logLevel, arrayOf(keys.getString(j)))
                 }
                 records.put(keys.getString(j), value)
             } }
@@ -342,7 +342,7 @@ internal class ConnectionApiCallback(
 
                 if(headers.getString(i).isEmpty())
                 {
-                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS) //empty key
+                    throw SkyflowInternalError(SkyflowErrorCode.EMPTY_KEY_IN_REQUEST_HEADER_PARAMS) //empty key
                 }
                 if(headers.getString(i).lowercase(Locale.getDefault()).equals("content-type")) {
                     if(connectionConfig.requestHeader.get(headers.getString(i)) is ContentType) {
@@ -358,7 +358,7 @@ internal class ConnectionApiCallback(
                 else
                 {
                     //callback.onFailure(Exception("invalid field \"${headers.getString(i)}\" present in requestHeader"))
-                    val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS, tag, logLevel, arrayOf(headers.getString(i)))
+                    val skyflowError = SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_REQUEST_HEADER_PARAMS, tag, logLevel, arrayOf(headers.getString(i)))
                     throw skyflowError
                 }
             }
@@ -371,7 +371,7 @@ internal class ConnectionApiCallback(
             for (i in 0 until queryParams.length()) {
                 if(queryParams.getString(i).isEmpty())
                 {
-                    throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_QUERY_PARAMS)//empty key
+                    throw SkyflowInternalError(SkyflowErrorCode.EMPTY_KEY_IN_QUERY_PARAMS)//empty key
                 }
                 val value = connectionConfig.queryParams.get(queryParams.getString(i))
                 if(value is Array<*>)
@@ -396,7 +396,7 @@ internal class ConnectionApiCallback(
         {
             if(!Utils.checkIfElementsMounted(value))
             {
-                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(key))
+                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(key))
             }
             checkForValidElement(value)
             queryMap.put(key, value.getValue())
@@ -405,13 +405,13 @@ internal class ConnectionApiCallback(
         {
             if(!Utils.checkIfElementsMounted(value))
             {
-                throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(key))
+                throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(key))
             }
             else if (value.isTokenNull) {
-                val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                val error = SkyflowInternalError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                throw  error
             }  else if (value.revealInput.token!!.isEmpty()) {
-                val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                val error = SkyflowInternalError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                 throw error
             }
             queryMap.put(key,Utils.getValueForLabel(value,tokenValueMap,tokenIdMap,tokenLabelMap,tag,logLevel))
@@ -422,7 +422,7 @@ internal class ConnectionApiCallback(
         }
         else {
             //callback.onFailure(Exception("invalid field \"${key}\" present in queryParams"))
-            val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS, tag, logLevel, arrayOf(key))
+            val skyflowError = SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_QUERY_PARAMS, tag, logLevel, arrayOf(key))
             throw skyflowError
         }
     }
@@ -436,14 +436,14 @@ internal class ConnectionApiCallback(
                 for (j in 0 until keys.length()) {
                     if(keys.getString(j).isEmpty())
                     {
-                       throw SkyflowError(SkyflowErrorCode.EMPTY_KEY_IN_PATH_PARAMS, tag, logLevel) //empty key
+                       throw SkyflowInternalError(SkyflowErrorCode.EMPTY_KEY_IN_PATH_PARAMS, tag, logLevel) //empty key
                     }
                     var value = params.get(keys.getString(j))
                     if (value is Element) {
                         val element = value
                         if(!Utils.checkIfElementsMounted(element))
                         {
-                            val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            val error = SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             throw error
                         }
                         checkForValidElement(element)
@@ -451,14 +451,14 @@ internal class ConnectionApiCallback(
                     } else if (value is Label) {
                         if(!Utils.checkIfElementsMounted(value))
                         {
-                            val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
+                            val error = SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, tag, logLevel, arrayOf(keys.getString(j)))
                             throw error
                         }
                         else if (value.isTokenNull) {
-                            val error = SkyflowError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
+                            val error = SkyflowInternalError(SkyflowErrorCode.MISSING_TOKEN, tag, logLevel)
                             throw error
                         }  else if (value.revealInput.token!!.isEmpty()) {
-                            val error = SkyflowError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
+                            val error = SkyflowInternalError(SkyflowErrorCode.EMPTY_TOKEN_ID, tag, logLevel)
                             throw error
                         }
                         else
@@ -468,7 +468,7 @@ internal class ConnectionApiCallback(
                         value = value.toString()
                         newURL = newURL.replace("{" + keys.getString(j) + "}", value)
                     } else {
-                        val skyflowError = SkyflowError(SkyflowErrorCode.INVALID_FIELD_IN_PATH_PARAMS, tag, logLevel, arrayOf(keys.getString(j)))
+                        val skyflowError = SkyflowInternalError(SkyflowErrorCode.INVALID_FIELD_IN_PATH_PARAMS, tag, logLevel, arrayOf(keys.getString(j)))
                         throw skyflowError
                     }
                 }
@@ -492,7 +492,7 @@ internal class ConnectionApiCallback(
             errors = "for " + labelName + " " + (state["validationError"] as String) + "\n"
         }
         if (errors != "") {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
+            val error = SkyflowInternalError(SkyflowErrorCode.INVALID_INPUT, tag, logLevel, arrayOf(errors))
             throw error
         }
     }
@@ -510,13 +510,13 @@ internal class ConnectionApiCallback(
                 {
                     val element = (responseBody.get(keys.getString(j))) as Element
                     if(!Utils.checkIfElementsMounted(element))
-                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
+                        throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
                 else if(responseBody.get(keys.getString(j)) is Label)
                 {
                     val element = (responseBody.get(keys.getString(j))) as Label
                     if(!Utils.checkIfElementsMounted(element))
-                        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
+                        throw SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED, Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
                 else if (responseBody.get(keys.getString(j)) is JSONObject) {
                     validateResponseBody(responseBody.get(keys.getString(j)) as JSONObject, elementList)
@@ -524,7 +524,7 @@ internal class ConnectionApiCallback(
                     throw Exception("invalid field " + keys.getString(j) + " present in response body")
                 if (responseBody.get(keys.getString(j)) is Element || responseBody.get(keys.getString(j)) is Label) {
                     if (elementList.contains(responseBody.get(keys.getString(j)).hashCode().toString()))
-                        throw SkyflowError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND, Utils.tag,logLevel)
+                        throw SkyflowInternalError(SkyflowErrorCode.DUPLICATE_ELEMENT_FOUND, Utils.tag,logLevel)
                     else
                         elementList.add(responseBody.get(keys.getString(j)).hashCode().toString())
                 }
@@ -577,7 +577,7 @@ internal class ConnectionApiCallback(
                     if(e is SkyflowError)
                         throw e
                     else
-                        throw SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
+                        throw SkyflowInternalError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE,
                             Utils.tag, logLevel, arrayOf(keys.getString(j)))
                 }
             } }

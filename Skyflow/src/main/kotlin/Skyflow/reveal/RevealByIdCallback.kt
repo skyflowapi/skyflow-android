@@ -3,6 +3,7 @@ package Skyflow.reveal
 import Skyflow.Callback
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.SkyflowInternalError
 import Skyflow.core.APIClient
 import Skyflow.utils.Utils
 import okhttp3.*
@@ -37,7 +38,7 @@ internal class RevealByIdCallback(
         okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: IOException) {
                 val resObj = JSONObject()
-                val skyflowError = SkyflowError(params = arrayOf(e.message.toString()))
+                val skyflowError = SkyflowInternalError(params = arrayOf(e.message.toString()))
                 resObj.put("error", skyflowError)
                 resObj.put("ids", record.skyflow_ids)
                 revealResponse.insertResponse(JSONArray().put(resObj), false)
@@ -53,7 +54,7 @@ internal class RevealByIdCallback(
         val url = apiClient.vaultURL + apiClient.vaultId + "/" + record.table
         val requestUrlBuilder = url.toHttpUrlOrNull()?.newBuilder()
         if (requestUrlBuilder == null) {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.INVALID_VAULT_URL,
                 tag,
                 apiClient.logLevel,
@@ -83,7 +84,7 @@ internal class RevealByIdCallback(
                         val resObj = JSONObject()
                         val responseErrorBody = JSONObject(responsebody)
                         val requestId = response.headers.get("x-request-id").toString()
-                        val skyflowError = SkyflowError(
+                        val skyflowError = SkyflowInternalError(
                             SkyflowErrorCode.SERVER_ERROR,
                             tag = tag,
                             logLevel = apiClient.logLevel,
@@ -100,7 +101,7 @@ internal class RevealByIdCallback(
                         revealResponse.insertResponse(JSONArray().put(resObj), false)
                     } catch (e: Exception) {
                         val resObj = JSONObject()
-                        val skyflowError = SkyflowError(
+                        val skyflowError = SkyflowInternalError(
                             SkyflowErrorCode.SERVER_ERROR,
                             tag = tag,
                             logLevel = apiClient.logLevel,
@@ -132,14 +133,14 @@ internal class RevealByIdCallback(
                 } else {
                     val resObj = JSONObject()
                     val skyflowError =
-                        SkyflowError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
+                        SkyflowInternalError(SkyflowErrorCode.BAD_REQUEST, tag, apiClient.logLevel)
                     resObj.put("error", skyflowError)
                     resObj.put("ids", record.skyflow_ids)
                     revealResponse.insertResponse(JSONArray().put(resObj), false)
                 }
             } catch (e: Exception) {
                 val resObj = JSONObject()
-                val skyflowError = SkyflowError(
+                val skyflowError = SkyflowInternalError(
                     SkyflowErrorCode.UNKNOWN_ERROR,
                     tag = tag,
                     logLevel = apiClient.logLevel,

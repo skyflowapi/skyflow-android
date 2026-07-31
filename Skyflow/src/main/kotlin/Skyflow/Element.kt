@@ -13,7 +13,7 @@ open class Element @JvmOverloads constructor(
     internal var isRequired: Boolean = false
     internal var columnName: String  = ""
     internal var tableName: String = ""
-    internal var skyflowID: String? = null
+    internal var skyflowId: String? = null
     internal lateinit var collectInput : CollectElementInput
     internal lateinit var options : Skyflow.CollectElementOptions
     internal lateinit var fieldType: SkyflowElementType
@@ -31,13 +31,12 @@ open class Element @JvmOverloads constructor(
         this.collectInput = collectInput
         this.options = options
         this.fieldType = this.collectInput.type
-        if(!this.collectInput.table.equals(null))
-            tableName = this.collectInput.table!!
+        if(!this.collectInput.tableName.equals(null))
+            tableName = this.collectInput.tableName!!
         if(!this.collectInput.column.equals(null))
             columnName = this.collectInput.column!!
-        if(!this.collectInput.skyflowID.equals(null))
-            skyflowID = this.collectInput.skyflowID
         isRequired = this.options.required
+        skyflowId = this.collectInput.skyflowId
         state = State(columnName,isRequired)
     }
 

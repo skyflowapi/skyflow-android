@@ -5,7 +5,6 @@ import Skyflow.utils.Utils
 import android.os.Handler
 import android.os.Looper
 import org.json.JSONObject
-import java.lang.Exception
 
 @Suppress("DEPRECATION")
 internal class RevealValueCallback(
@@ -21,27 +20,15 @@ internal class RevealValueCallback(
         try {
             constructElementMap()
             val responseJSON = JSONObject(responseBody.toString())
-            revealSuccessRecords(responseJSON)
-            val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
-            callback.onSuccess(revealResponse)
+            applyRecordsToElements(responseJSON)
+            callback.onSuccess(responseJSON.toString())
         } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
         }
     }
 
     override fun onFailure(exception: Any) {
-        try {
-            constructElementMap()
-            val responseJSON = JSONObject(exception.toString())
-            if (responseJSON.has("records")) {
-                revealSuccessRecords(responseJSON)
-            }
-            revealErrors(responseJSON)
-            val revealResponse = responseJSON.toString().replace("\"records\":", "\"success\":")
-            callback.onFailure(revealResponse)
-        } catch (e: Exception) {
-            callback.onFailure(Utils.constructError(e))
-        }
+        callback.onFailure(exception)
     }
 
     private fun constructElementMap() {
@@ -50,39 +37,26 @@ internal class RevealValueCallback(
         }
     }
 
-    private fun revealSuccessRecords(responseJSON: JSONObject) {
-        val recordsArray = responseJSON.getJSONArray("records")
-        for (i in 0 until recordsArray.length()) {
-            val recordObj = recordsArray[i] as JSONObject
-            val tokenId = recordObj.get("token")
-            val value = recordObj.getString("value")
-            Handler(Looper.getMainLooper()).post {
-                for (element in elementsList) {
-                    if (element.first == tokenId) {
-                        Utils.setValueForLabel(element.second, value)
+    private fun applyRecordsToElements(responseJSON: JSONObject) {
+        val records = responseJSON.optJSONArray("records") ?: return
+        for (i in 0 until records.length()) {
+            val record = records.optJSONObject(i) ?: continue
+            val token = record.optString("token")
+            val httpCode = record.optInt("httpCode", 200)
+            if (httpCode == 200) {
+                val value = record.optString("value")
+                Handler(Looper.getMainLooper()).post {
+                    for (element in elementsList) {
+                        if (element.first == token) Utils.setValueForLabel(element.second, value)
+                    }
+                }
+            } else {
+                Handler(Looper.getMainLooper()).post {
+                    for (element in elementsList) {
+                        if (element.first == token) Utils.setErrorForLabel(element.second)
                     }
                 }
             }
-            recordObj.remove("value")
-        }
-    }
-
-    private fun revealErrors(responseJSON: JSONObject) {
-        val errorArray = responseJSON.getJSONArray("errors")
-
-        var i = 0
-        while (i < errorArray.length()) {
-            val recordObj = errorArray[i] as JSONObject
-            val tokenId = recordObj.get("token").toString()
-            Handler(Looper.getMainLooper()).post {
-                for (element in elementsList) {
-                    if (element.first == tokenId) {
-                        Utils.setErrorForLabel(element.second)
-                    }
-                }
-            }
-
-            i++
         }
     }
 }

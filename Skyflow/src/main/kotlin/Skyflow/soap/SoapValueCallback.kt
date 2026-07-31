@@ -39,7 +39,7 @@ internal class SoapValueCallback(
 			if(e is SkyflowError)
 				callback.onFailure(e)
 			else
-				callback.onFailure(SkyflowError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString())))
+				callback.onFailure(SkyflowInternalError(SkyflowErrorCode.UNKNOWN_ERROR, tag = tag, logLevel = this.logLevel, arrayOf(e.message.toString())))
 		}
 	}
 
@@ -99,7 +99,7 @@ internal class SoapValueCallback(
 				val singleRecord = entries.get(index) as HashMap<String,Any>
 				val isFound = singleRecord["isFound"] as Boolean
 				if(!isFound) {
-						val error = SkyflowError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE_XML,
+						val error = SkyflowInternalError(SkyflowErrorCode.NOT_FOUND_IN_RESPONSE_XML,
 							tag, logLevel, arrayOf(it.key))
 						throw error
 				}
@@ -108,18 +108,18 @@ internal class SoapValueCallback(
 		actualValues.forEach {
 			val element = client.elementMap[it.key.trim()]
 			if (element == null) {
-				val error = SkyflowError(SkyflowErrorCode.INVALID_ID_IN_RESPONSE_XML,
+				val error = SkyflowInternalError(SkyflowErrorCode.INVALID_ID_IN_RESPONSE_XML,
 					tag, logLevel, arrayOf(it.key.trim()))
 				throw error
 			} else if (element is TextField) {
 				if (!Utils.checkIfElementsMounted(element)) {
-					val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+					val error = SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
 						tag, logLevel, arrayOf(element.label.text.toString()))
 					throw error
 				}
 			} else if (element is Label) {
 				if (!Utils.checkIfElementsMounted(element)) {
-					val error = SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+					val error = SkyflowInternalError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
 						tag, logLevel, arrayOf(element.label.text.toString()))
 					throw error
 				}
@@ -402,7 +402,7 @@ internal class SoapValueCallback(
 					}
 				}
 				else {
-					throw SkyflowError(SkyflowErrorCode.AMBIGUOUS_ELEMENT_FOUND_IN_RESPONSE_XML,tag, logLevel)
+					throw SkyflowInternalError(SkyflowErrorCode.AMBIGUOUS_ELEMENT_FOUND_IN_RESPONSE_XML,tag, logLevel)
 				}
 			}
 		}

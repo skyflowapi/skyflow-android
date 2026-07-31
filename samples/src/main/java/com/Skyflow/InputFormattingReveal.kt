@@ -11,7 +11,6 @@ import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import com.Skyflow.databinding.ActivityCollectBinding
 import com.Skyflow.databinding.ActivityRevealBinding
 
 class InputFormattingReveal : AppCompatActivity() {
@@ -104,7 +103,6 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val cardNumberInput = RevealElementInput(
             token = cardNumberToken,
-            redaction = RedactionType.PLAIN_TEXT,
             inputStyles = styles,
             labelStyles = labelStyles,
             errorTextStyles = errorStyles,
@@ -114,7 +112,6 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val expiryYearInput = RevealElementInput(
             token = yearToken,
-            redaction = RedactionType.PLAIN_TEXT,
             inputStyles = styles,
             labelStyles = labelStyles,
             errorTextStyles = errorStyles,
@@ -124,7 +121,6 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val expiryDateInput = RevealElementInput(
             token = dateToken,
-            redaction = RedactionType.PLAIN_TEXT,
             inputStyles = styles,
             labelStyles = labelStyles,
             errorTextStyles = errorStyles,
@@ -134,7 +130,6 @@ class InputFormattingReveal : AppCompatActivity() {
 
         val input = RevealElementInput(
             token = inputFieldToken,
-            redaction = RedactionType.PLAIN_TEXT,
             inputStyles = styles,
             labelStyles = labelStyles,
             errorTextStyles = errorStyles,
@@ -197,16 +192,18 @@ class InputFormattingReveal : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            revealContainer.reveal(object : Callback {
-                override fun onSuccess(responseBody: Any) {
+            revealContainer.reveal(object : RevealCallback {
+                override fun onSuccess(response: RevealResponse) {
                     dialog.dismiss()
-                    Log.d(TAG, "reveal success: $responseBody")
+                    response.records.forEach { record ->
+                        if (record.httpCode == 200) Log.d(TAG, "reveal success: token=${record.token}")
+                        else Log.d(TAG, "reveal error [${record.httpCode}]: ${record.error}")
+                    }
                 }
 
-                override fun onFailure(exception: Any) {
+                override fun onFailure(error: SkyflowError) {
                     dialog.dismiss()
-                    Log.d(TAG, "reveal failure: $exception")
-
+                    Log.d(TAG, "reveal failure: ${error.message}")
                 }
             })
         }

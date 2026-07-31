@@ -61,26 +61,18 @@ internal class CollectAPICallback(
         val inputRecords = this.records["records"] as JSONArray
         val recordsArray = JSONArray()
         val responseObject = JSONObject()
-        if (this.options.tokens) {
-            for (i in responseJson.length() / 2 until responseJson.length()) {
-                val skyflowIDsObject =
-                    JSONObject(responseJson[i - (responseJson.length() - responseJson.length() / 2)].toString())
-                val skyflowIDs = skyflowIDsObject.getJSONArray("records")
-                val skyflowID = JSONObject(skyflowIDs[0].toString()).get("skyflow_id")
-                val record = JSONObject(responseJson[i].toString())
-                val inputRecord = inputRecords.get(i - responseJson.length() / 2) as JSONObject
-                record.put("table", inputRecord["table"])
-                val fields = JSONObject(record.get("fields").toString())
-                fields.put("skyflow_id", skyflowID)
-                record.put("fields", fields)
-                recordsArray.put(record)
-            }
-        } else {
-            for (i in 0 until responseJson.length()) {
-                val inputRecord = inputRecords.get(i) as JSONObject
-                val record = (responseJson[i] as JSONObject)["records"] as JSONArray
-                recordsArray.put((record.get(0) as JSONObject).put("table", inputRecord["table"]))
-            }
+        for (i in responseJson.length() / 2 until responseJson.length()) {
+            val skyflowIDsObject =
+                JSONObject(responseJson[i - (responseJson.length() - responseJson.length() / 2)].toString())
+            val skyflowIDs = skyflowIDsObject.getJSONArray("records")
+            val skyflowID = JSONObject(skyflowIDs[0].toString()).get("skyflow_id")
+            val record = JSONObject(responseJson[i].toString())
+            val inputRecord = inputRecords.get(i - responseJson.length() / 2) as JSONObject
+            record.put("table", inputRecord["table"])
+            val fields = JSONObject(record.get("fields").toString())
+            fields.put("skyflow_id", skyflowID)
+            record.put("fields", fields)
+            recordsArray.put(record)
         }
         return responseObject.put("records", recordsArray)
     }

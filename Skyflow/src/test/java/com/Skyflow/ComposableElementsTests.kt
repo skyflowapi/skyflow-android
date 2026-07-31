@@ -59,7 +59,7 @@ class ComposableElementsTests {
             ContainerOptions(layout = arrayOf(1))
         )
         val collectInput = CollectElementInput(
-            table = "cards", column = "card_number",
+            tableName = "cards", column = "card_number",
             type = SkyflowElementType.CARD_NUMBER,
             placeholder = "card number"
         )
@@ -522,7 +522,7 @@ class ComposableElementsTests {
         )
         val cardNumber = container.create(activity, collectInput, options)
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.MISMATCH_ELEMENT_COUNT_LAYOUT_SUM)
+        val skyflowError = SkyflowInternalError(SkyflowErrorCode.MISMATCH_ELEMENT_COUNT_LAYOUT_SUM)
 
         try {
             val composableLayout = container.getComposableLayout()
@@ -530,7 +530,7 @@ class ComposableElementsTests {
         } catch (e: Exception) {
             Assert.assertEquals(
                 skyflowError.getInternalErrorMessage(),
-                (e as SkyflowError).getInternalErrorMessage()
+                (e as SkyflowInternalError).getInternalErrorMessage()
             )
         }
     }
@@ -586,11 +586,6 @@ class ComposableElementsTests {
         }
 
 
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
-            params = arrayOf(cardNumber.columnName)
-        )
-
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
 
@@ -640,11 +635,6 @@ class ComposableElementsTests {
         cardNumber.state.show()
         cvv.state = StateforText(cvv)
 
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.INVALID_INPUT,
-            params = arrayOf("for cvv value is empty")
-        )
-
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
 
@@ -688,11 +678,6 @@ class ComposableElementsTests {
             Log.e("COMPOSABLE LAYOUT", e.message.toString())
             Assert.fail()
         }
-
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.INVALID_INPUT,
-            params = arrayOf("for card_number value is empty")
-        )
 
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
@@ -738,7 +723,7 @@ class ComposableElementsTests {
             Assert.fail()
         }
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_ID)
+        val skyflowError = SkyflowInternalError(SkyflowErrorCode.EMPTY_VAULT_ID)
 
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
@@ -793,7 +778,7 @@ class ComposableElementsTests {
             Assert.fail()
         }
 
-        val skyflowError = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL)
+        val skyflowError = SkyflowInternalError(SkyflowErrorCode.EMPTY_VAULT_URL)
 
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
@@ -849,11 +834,6 @@ class ComposableElementsTests {
             Assert.fail()
         }
 
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.INVALID_VAULT_URL,
-            params = arrayOf(configuration.vaultURL)
-        )
-
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
 
@@ -892,11 +872,6 @@ class ComposableElementsTests {
             Assert.fail()
         }
 
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
-            params = arrayOf(cardNumber.fieldType.toString())
-        )
-
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
 
@@ -933,11 +908,6 @@ class ComposableElementsTests {
             Log.e("COMPOSABLE LAYOUT", e.message.toString())
             Assert.fail()
         }
-
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
-            params = arrayOf(cardNumber.fieldType.toString())
-        )
 
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
@@ -976,11 +946,6 @@ class ComposableElementsTests {
             Assert.fail()
         }
 
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.MISSING_COLUMN,
-            params = arrayOf(cardNumber.fieldType.toString())
-        )
-
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}
 
@@ -1017,11 +982,6 @@ class ComposableElementsTests {
             Log.e("COMPOSABLE LAYOUT", e.message.toString())
             Assert.fail()
         }
-
-        val skyflowError = SkyflowError(
-            SkyflowErrorCode.EMPTY_COLUMN_NAME,
-            params = arrayOf(cardNumber.fieldType.toString())
-        )
 
         container.collect(object : Callback {
             override fun onSuccess(responseBody: Any) {}

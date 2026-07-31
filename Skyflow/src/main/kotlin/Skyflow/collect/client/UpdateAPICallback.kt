@@ -39,7 +39,7 @@ internal class UpdateAPICallback(
             if (e is SkyflowError)
                 callback.onFailure(e)
             else {
-                val skyflowError = SkyflowError(
+                val skyflowError = SkyflowInternalError(
                     SkyflowErrorCode.UNKNOWN_ERROR,
                     tag = tag,
                     logLevel = apiClient.logLevel,
@@ -65,7 +65,7 @@ internal class UpdateAPICallback(
         
         val requestBody = JSONObject()
         requestBody.put("record", recordObject)
-        requestBody.put("tokenization", options.tokens)
+        requestBody.put("tokenization", true)
 
         val body: RequestBody = requestBody.toString().toRequestBody("application/json".toMediaTypeOrNull())
 
@@ -124,23 +124,17 @@ internal class UpdateAPICallback(
                         val recordObject = JSONObject()
                         recordObject.put("table", updateRecord.table)
                         
-                        if (options.tokens) {
-                            val fieldsObject = JSONObject()
-                            fieldsObject.put("skyflow_id", responseJson.getString("skyflow_id"))
-                            
-                            if (responseJson.has("tokens")) {
-                                val tokens = responseJson.getJSONObject("tokens")
-                                val tokenKeys = tokens.keys()
-                                while (tokenKeys.hasNext()) {
-                                    val key = tokenKeys.next()
-                                    fieldsObject.put(key, tokens.getString(key))
-                                }
+                        val fieldsObject = JSONObject()
+                        fieldsObject.put("skyflow_id", responseJson.getString("skyflow_id"))
+                        if (responseJson.has("tokens")) {
+                            val tokens = responseJson.getJSONObject("tokens")
+                            val tokenKeys = tokens.keys()
+                            while (tokenKeys.hasNext()) {
+                                val key = tokenKeys.next()
+                                fieldsObject.put(key, tokens.getString(key))
                             }
-                            
-                            recordObject.put("fields", fieldsObject)
-                        } else {
-                            recordObject.put("skyflow_id", responseJson.getString("skyflow_id"))
                         }
+                        recordObject.put("fields", fieldsObject)
                         
                         responses.add(recordObject)
                     } else {

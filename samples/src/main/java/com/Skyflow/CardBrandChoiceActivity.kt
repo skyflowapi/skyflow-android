@@ -47,7 +47,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         validationSet.add(LengthMatchRule(2, 20, "not valid"))
 
         val cardNumberInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.CARD_NUMBER,
             inputStyles = styles,
@@ -58,7 +58,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val expiryDateInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.EXPIRATION_DATE,
             inputStyles = styles,
@@ -69,7 +69,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val nameInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             SkyflowElementType.CARDHOLDER_NAME,
             inputStyles = styles,
@@ -81,7 +81,7 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val cvvInput = CollectElementInput(
-            table = "<TABLE_NAME>",
+            tableName = "<TABLE_NAME>",
             column = "<COLUMN_NAME>",
             type = SkyflowElementType.CVV,
             inputStyles = styles,
@@ -131,8 +131,8 @@ class CardBrandChoiceActivity : AppCompatActivity() {
                         })
                     }
 
-                    override fun onFailure(exception: Any) {
-                        println(exception)
+                    override fun onFailure(error: Any) {
+                        Log.d(TAG, "binLookup failure: $error")
                     }
                 })
                 calledUpdate = true
@@ -163,17 +163,23 @@ class CardBrandChoiceActivity : AppCompatActivity() {
             val dialog = AlertDialog.Builder(this).create()
             dialog.setMessage("please wait..")
             dialog.show()
-            collectContainer.collect(object : Callback {
-                override fun onSuccess(responseBody: Any) {
+            collectContainer.collect(object : CollectCallback {
+                override fun onSuccess(response: CollectResponse) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect success: $responseBody")
+                    response.records.forEach { record ->
+                        if (record.httpCode == 200) {
+                            Log.d(TAG, "collect success: ${record.tokens}")
+                        } else {
+                            Log.d(TAG, "collect error [${record.httpCode}]: ${record.error}")
+                        }
+                    }
                 }
 
-                override fun onFailure(exception: Any) {
+                override fun onFailure(error: SkyflowError) {
                     dialog.dismiss()
-                    Log.d(TAG, "collect failure: ${(exception as Exception).message}")
+                    Log.d(TAG, "collect failure: ${error.message}")
                 }
-            }, CollectOptions(true))
+            })
         }
 
         binding.clear.setOnClickListener {

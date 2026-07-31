@@ -4,6 +4,7 @@ import Skyflow.Callback
 import Skyflow.LogLevel
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
+import Skyflow.SkyflowInternalError
 import Skyflow.utils.Utils
 import org.json.JSONArray
 import org.json.JSONObject
@@ -39,7 +40,7 @@ internal class GetResponse(
 
         if (successResponses + failureResponses + emptyResponses == size) {
             if (successResponses + failureResponses == 0) {
-                val skyflowError = SkyflowError(SkyflowErrorCode.FAILED_TO_GET, tag, logLevel)
+                val skyflowError = SkyflowInternalError(SkyflowErrorCode.FAILED_TO_GET, tag, logLevel)
                 callback.onFailure(Utils.constructError(skyflowError))
             } else {
                 if (failureResponses == 0) {

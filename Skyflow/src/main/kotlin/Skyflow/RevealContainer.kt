@@ -5,7 +5,7 @@ import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import android.content.Context
 import com.Skyflow.core.container.ContainerProtocol
-import Skyflow.reveal.RevealRequestBody
+import Skyflow.reveal.FlowDBRevealRequestBody
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
 import Skyflow.utils.Utils.Companion.checkIfElementsMounted
@@ -45,7 +45,6 @@ fun Container<RevealContainer>.reveal(
     options: RevealOptions? = RevealOptions()
 ) {
     try {
-        Utils.checkVaultDetails(client.configuration)
         validateElements()
         Logger.info(
             tag,
@@ -62,27 +61,39 @@ internal fun Container<RevealContainer>.validateElements() {
     for (element in this.revealElements) {
         val token = element.revealInput.token
         if (!checkIfElementsMounted(element)) {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.ELEMENT_NOT_MOUNTED_REVEAL, tag, configuration.options.logLevel,
                 arrayOf(element.revealInput.label)
             )
         }
 
         if (element.isTokenNull) {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.TOKEN_KEY_NOT_FOUND_REVEAL, tag, configuration.options.logLevel,
             )
         } else if (token!!.isEmpty()) {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.EMPTY_TOKEN_REVEAL, tag, configuration.options.logLevel
             )
         } else if (element.isError) {
-            throw SkyflowError(
+            throw SkyflowInternalError(
                 SkyflowErrorCode.ERROR_STATE_REVEAL, tag, configuration.options.logLevel,
                 arrayOf("${element.error.text}")
             )
         }
     }
+}
+
+fun Container<RevealContainer>.reveal(callback: RevealCallback, options: RevealOptions? = RevealOptions()) {
+    val adapter = object : Callback {
+        override fun onSuccess(responseBody: Any) {
+            callback.onSuccess(RevealResponse.fromJson(responseBody.toString()))
+        }
+        override fun onFailure(exception: Any) {
+            callback.onFailure(SkyflowError.fromJson(exception.toString()))
+        }
+    }
+    reveal(adapter, options)
 }
 
 internal fun Container<RevealContainer>.get(callback: Callback, options: RevealOptions?) {
@@ -91,6 +102,10 @@ internal fun Container<RevealContainer>.get(callback: Callback, options: RevealO
         this.revealElements,
         configuration.options.logLevel
     )
-    val records = RevealRequestBody.createRequestBody(this.revealElements)
-    this.client.apiClient.get(records, revealValueCallback)
+    val requestBody = FlowDBRevealRequestBody.buildRequestBody(
+        configuration.vaultID,
+        this.revealElements,
+        options
+    )
+    this.client.apiClient.get(requestBody, revealValueCallback)
 }
