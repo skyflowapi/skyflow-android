@@ -1,6 +1,7 @@
 package Skyflow.core
 
 import Skyflow.*
+import Skyflow.collect.client.CVVMap
 import Skyflow.collect.client.FlowDBCollectAPICallback
 import Skyflow.reveal.FlowDBRevealApiCallback
 import Skyflow.utils.Utils
@@ -48,9 +49,9 @@ internal class FlowDBAPIClient(
         }
     }
 
-    fun post(requestBody: JSONObject, callback: Callback, options: CollectOptions, endpoint: String = "insert") {
+    fun post(requestBody: JSONObject, callback: Callback, options: CollectOptions, endpoint: String = "insert", cvvMap: CVVMap = CVVMap.EMPTY) {
         try {
-            val collectApiCallback = FlowDBCollectAPICallback(this, requestBody, callback, options, logLevel, endpoint)
+            val collectApiCallback = FlowDBCollectAPICallback(this, requestBody, callback, options, logLevel, endpoint, cvvMap)
             this.getAccessToken(collectApiCallback)
         } catch (e: Exception) {
             callback.onFailure(Utils.constructError(e))
