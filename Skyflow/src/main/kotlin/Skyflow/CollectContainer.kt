@@ -34,7 +34,7 @@ fun Container<CollectContainer>.create(
     return collectElement
 }
 
-fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()) {
+internal fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()) {
     try {
         validateVaultConfig()
         Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
@@ -182,7 +182,7 @@ fun Container<CollectContainer>.collect(callback: CollectCallback, options: Coll
     collect(adapter, options)
 }
 
-fun Container<CollectContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
+internal fun Container<CollectContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
     try {
         validateVaultConfig()
         val requestBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
