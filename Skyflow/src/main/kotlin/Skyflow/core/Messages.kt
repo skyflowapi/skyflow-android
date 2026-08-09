@@ -196,7 +196,9 @@ enum class Messages(val message: String) {
     INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
     EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s"),
 
-    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers.")
+    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers."),
+
+    BETA_BUILD_WARNING("$SDK_NAME_VERSION - This is a beta/pre-release build of the Skyflow SDK. Beta builds are intended for acceptance testing only - you appear to be connecting to a Production vault. Contact your Skyflow representative before using this build in Production.")
 }
 
 fun Messages.getMessage(vararg values: String?): String {

@@ -240,6 +240,24 @@ public class Utils {
             return String.format(message, *values)
         }
 
+        // Beta/dev builds are published as <major>.<minor>.<patch>-beta.<n> or
+        // -dev.<sha>; a plain public release has no suffix.
+        fun isNonGaVersion(version: String?): Boolean {
+            return version.isNullOrEmpty() || !Regex("^\\d+\\.\\d+\\.\\d+$").matches(version)
+        }
+
+        // options.env has no effect on which domain this SDK talks to (it's a decorative
+        // DEV/PROD toggle only used to suppress a couple of setValue()/clearValue()
+        // warnings), so it can't be trusted to tell us whether a vault is Production.
+        // vaultURL is the one thing the customer sets that actually points at their real
+        // vault - if it doesn't carry one of the non-prod domain markers, treat it as
+        // pointed at Production, the same conservative "default to prod" every server
+        // SDK's own Env-to-domain mapping uses.
+        fun isNonProdVaultUrl(vaultURL: String?): Boolean {
+            if (vaultURL.isNullOrEmpty()) return false
+            return Regex("(-preview|\\.dev|\\.tech)").containsMatchIn(vaultURL)
+        }
+
         fun constructError(e: Exception, code: Int = 400): JSONObject {
             val skyflowError = if (e is SkyflowError) e
             else SkyflowError(params = arrayOf(e.message))
