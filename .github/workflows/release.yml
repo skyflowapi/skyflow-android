@@ -36,6 +36,7 @@ jobs:
            git config user.name ${{ github.actor }}
            git config user.email ${{ github.actor }}@users.noreply.gihub.com
            git add Skyflow/build.gradle
+           git add README.md
            git commit -m "[AUTOMATED] Public Release ${{ steps.previoustag.outputs.tag }}"
            git push origin
 

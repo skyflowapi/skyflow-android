@@ -7,7 +7,8 @@ then
 	echo "Bumping package version to $1"
 
 	sed -E "s/mVersionName = .+/mVersionName = \"$SEMVER\"/g" Skyflow/build.gradle > tempfile && cat tempfile > Skyflow/build.gradle && rm -f tempfile
-	
+	./scripts/toggle_beta_banner.sh README.md "$SEMVER"
+
 	echo --------------------------
 	echo "Done, Package now at $1"
 else
