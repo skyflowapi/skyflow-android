@@ -169,4 +169,59 @@ class UtilsTest {
         Assert.assertTrue(error2.has("description"))
         Assert.assertTrue(error2.has("type"))
     }
+
+    // SK-2963: beta-build-in-prod warning
+
+    @Test
+    fun testIsNonGaVersion_plainSemverIsGa() {
+        Assert.assertFalse(Utils.isNonGaVersion("1.27.0"))
+        Assert.assertFalse(Utils.isNonGaVersion("2.11.3"))
+    }
+
+    @Test
+    fun testIsNonGaVersion_betaSuffixIsNonGa() {
+        Assert.assertTrue(Utils.isNonGaVersion("1.28.0-beta.1"))
+    }
+
+    @Test
+    fun testIsNonGaVersion_devSuffixIsNonGa() {
+        Assert.assertTrue(Utils.isNonGaVersion("1.28.0-dev.abc1234"))
+    }
+
+    @Test
+    fun testIsNonGaVersion_nullOrEmptyIsNonGa() {
+        Assert.assertTrue(Utils.isNonGaVersion(null))
+        Assert.assertTrue(Utils.isNonGaVersion(""))
+    }
+
+    @Test
+    fun testIsNonGaVersion_garbageIsNonGa() {
+        Assert.assertTrue(Utils.isNonGaVersion("not-a-version"))
+    }
+
+    @Test
+    fun testIsNonProdVaultUrl_plainDomainLooksProd() {
+        Assert.assertFalse(Utils.isNonProdVaultUrl("https://abc123.vault.skyflowapis.com/v1/vaults/"))
+    }
+
+    @Test
+    fun testIsNonProdVaultUrl_nullOrEmptyLooksProd() {
+        Assert.assertFalse(Utils.isNonProdVaultUrl(null))
+        Assert.assertFalse(Utils.isNonProdVaultUrl(""))
+    }
+
+    @Test
+    fun testIsNonProdVaultUrl_previewDomainIsNonProd() {
+        Assert.assertTrue(Utils.isNonProdVaultUrl("https://abc123.vault.skyflowapis-preview.com/v1/vaults/"))
+    }
+
+    @Test
+    fun testIsNonProdVaultUrl_devDomainIsNonProd() {
+        Assert.assertTrue(Utils.isNonProdVaultUrl("https://abc123.vault.skyflowapis.dev/v1/vaults/"))
+    }
+
+    @Test
+    fun testIsNonProdVaultUrl_stageDomainIsNonProd() {
+        Assert.assertTrue(Utils.isNonProdVaultUrl("https://abc123.vault.skyflowapis.tech/v1/vaults/"))
+    }
 }
