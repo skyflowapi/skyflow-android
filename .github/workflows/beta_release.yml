@@ -50,8 +50,9 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.gihub.com
           git branch -f ${{ steps.check_step.outputs.branch }} origin/${{ steps.check_step.outputs.branch }}
-          git checkout ${{ steps.check_step.outputs.branch }}  
+          git checkout ${{ steps.check_step.outputs.branch }}
           git add Skyflow/build.gradle
+          git add README.md
           git commit -m "[AUTOMATED] Public Beta Release ${{ steps.previoustag.outputs.tag }}"
           git push origin
 
