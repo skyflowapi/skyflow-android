@@ -1,17 +1,17 @@
-name: Internal Release
+name: FlowVault Internal Release
 on:
   push:
     tags-ignore:
       - "*"
     paths-ignore:
-      - "skyvault/build.gradle"
+      - "flowvault/build.gradle"
       - "*.md"
     branches:
-      - release/*
+      - flowvault-release/*
 
 jobs:
   publish:
-    name: Internal Release
+    name: FlowVault Internal Release
     runs-on: ubuntu-latest
 
     steps:
@@ -30,9 +30,12 @@ jobs:
         id: previoustag
         run: |
           git fetch --tags
-          tag=$(git describe --tags --abbrev=0 origin/main)
+          # Latest FlowVault stable tag (namespaced flowvault/x.y.z); strip the prefix.
+          rawtag=$(git tag --list 'flowvault/[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          tag="${rawtag#flowvault/}"
+          if [ -z "$tag" ]; then tag="1.0.0"; fi
           echo "::set-output name=tag::$tag"
-          echo "latest stable tag is $tag"
+          echo "latest FlowVault stable tag is $tag"
 
       - name: Cache Gradle and wrapper
         uses: actions/cache@v4
@@ -45,14 +48,14 @@ jobs:
       - name: Bump Version
         run: |
           chmod +x ./scripts/bump_version.sh
-          ./scripts/bump_version.sh legacy "${{ steps.previoustag.outputs.tag }}" "$(git rev-parse --short "$GITHUB_SHA")"
+          ./scripts/bump_version.sh flowvault "${{ steps.previoustag.outputs.tag }}" "$(git rev-parse --short "$GITHUB_SHA")"
 
       - name: Commit changes
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.gihub.com
-          git add skyvault/build.gradle
-          git commit -m "[AUTOMATED] Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
+          git add flowvault/build.gradle
+          git commit -m "[AUTOMATED] FlowVault Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
           git push origin
 
       - name: Validate Gradle wrapper
@@ -60,7 +63,7 @@ jobs:
       - name: Publish package
         run: |
           chmod +x gradlew
-          ./gradlew :skyvault:publish -Pdev=true
+          ./gradlew :flowvault:publish -Pdev=true
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,4 +12,7 @@ open class BaseConfiguration(
     var vaultURL: String = "",
     val tokenProvider: TokenProvider,
     val options: Options = Options(),
+    // Neutral superset field: the FlowVault (v2) API client injects a custom OkHttpClient; the
+    // legacy (v1) client ignores it and uses the default. Kept here so core stays contract-free.
+    val okHttpClient: okhttp3.OkHttpClient = okhttp3.OkHttpClient(),
 )

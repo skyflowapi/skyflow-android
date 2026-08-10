@@ -1,8 +1,8 @@
-name: Public Beta Release
+name: FlowVault Public Beta Release
 
 on:
   push:
-    tags: "*.*.*-beta.*"
+    tags: "flowvault/*-beta.*"
 
 jobs:
   build-sdk:
@@ -34,16 +34,18 @@ jobs:
           echo gpr.user=${{ github.actor }} >> local.properties
           echo gpr.key=${{ secrets.PAT_ACTIONS }} >> local.properties
 
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 1.0.0
+      - name: Derive version from tag
+        id: version
+        run: |
+          # Tag looks like "flowvault/1.0.0-beta.1" — strip the namespace prefix.
+          version="${GITHUB_REF_NAME#flowvault/}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "FlowVault beta release version is $version"
 
       - name: Bump Version
         run: |
           chmod +x ./scripts/bump_version.sh
-          ./scripts/bump_version.sh legacy "${{ steps.previoustag.outputs.tag }}"
+          ./scripts/bump_version.sh flowvault "${{ steps.version.outputs.version }}"
 
       - name: Commit changes
         run: |
@@ -51,8 +53,8 @@ jobs:
           git config user.email ${{ github.actor }}@users.noreply.gihub.com
           git branch -f ${{ steps.check_step.outputs.branch }} origin/${{ steps.check_step.outputs.branch }}
           git checkout ${{ steps.check_step.outputs.branch }}
-          git add skyvault/build.gradle
-          git commit -m "[AUTOMATED] Public Beta Release ${{ steps.previoustag.outputs.tag }}"
+          git add flowvault/build.gradle
+          git commit -m "[AUTOMATED] FlowVault Public Beta Release ${{ steps.version.outputs.version }}"
           git push origin
 
       - name: Validate Gradle wrapper
@@ -60,7 +62,7 @@ jobs:
       - name: Publish package
         run: |
           chmod +x gradlew
-          ./gradlew :skyvault:publish -Pbeta=true
+          ./gradlew :flowvault:publish -Pbeta=true
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}

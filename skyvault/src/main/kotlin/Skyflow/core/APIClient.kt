@@ -20,31 +20,7 @@ import java.io.UnsupportedEncodingException
 import java.nio.charset.Charset
 import java.util.*
 
-object JWTUtils {
-    @Throws(java.lang.Exception::class)
-    fun decoded(JWTEncoded: String): JSONObject {
-        return try {
-            val split = JWTEncoded.split(".").toTypedArray()
-            JSONObject(getJson(split[1]))
-        } catch (e: UnsupportedEncodingException) {
-            println(e.toString())
-            JSONObject()
-        }
-    }
-
-    fun isExpired(JWTEncoded: String): Boolean {
-        val expireTime = decoded(JWTEncoded).getString("exp")
-        val cal = Calendar.getInstance()
-        val currentTime = ((cal.timeInMillis / 1000)).toString()
-        return currentTime > expireTime
-    }
-
-    @Throws(UnsupportedEncodingException::class)
-    private fun getJson(strEncoded: String): String {
-        val decodedBytes: ByteArray = Base64.decode(strEncoded, Base64.URL_SAFE)
-        return String(decodedBytes, Charset.forName("UTF-8"))
-    }
-}
+// JWTUtils moved to common (Skyflow.core.JWTUtils) — shared by the legacy and FlowVault API clients.
 
 internal class APIClient(
     val vaultId: String,

@@ -1,6 +1,6 @@
 # Splitting `skyflow-android` into Legacy + FlowVault SDKs — Architecture & Migration Plan
 
-**Status:** Proposed
+**Status:** Implemented on `saileshwar/SK-3053-package-split`. Both modules build, assemble, and publish; skyvault v1 suite and flowvault v2 suite are green.
 **Scope:** Split the single `skyflow-android` codebase into two independently publishable Android (AAR) SDKs that share one common core, with the FlowVault SDK built by *extending* the shared core.
 **Sources:** Legacy (v1) baseline restored from `main` (1.27.0); FlowVault (v2) deltas taken from the `1.28.0-beta.1` tag / `beta-release/26.7.0`.
 **Integration branch:** `saileshwar/SK-3053-package-split`, cut from `origin/main`.
@@ -36,7 +36,7 @@ Kotlin `internal` is scoped to a **compilation module**. The container extension
 - Instead, **`common/` is a plain source folder added to both modules' source sets.** It compiles *into* each module, so:
   - Kotlin `internal` works natively → common internals are visible to that module's contract layer, invisible to apps. This is the Kotlin "split-package / internal-friend" mechanism.
   - Each AAR is self-contained; an app installs exactly one; the import stays `Skyflow.*` — drop-in identical for both SDKs.
-  - **Boundary is enforced by construction:** a `common/` file that references a legacy-only symbol fails to compile in the FlowVault module (the symbol is absent there), and vice-versa. A `Konsist` unit test adds an explicit guard.
+  - **Boundary is enforced by construction:** `common/` and each layer share the `Skyflow` package, so a leak is not an *import* (nothing to grep) but an unqualified reference resolved at compile time. The guard is therefore the **dual-module compile itself**: a `common/` file that references a legacy-only symbol fails to compile in the FlowVault module (the symbol is absent there), and a FlowVault-only reference fails in skyvault. Because PR CI builds *both* modules (`runOnGitHub`), any boundary violation breaks the build. (A `Konsist` AST test could add a second, redundant guard; it is not required for correctness and is left as a future enhancement rather than a network dependency in this branch.)
 
 Trade-off (accepted): common is compiled twice (once per module). This mirrors the JS reference's "core is a folder, not a package" decision and its accepted duplication.
 
@@ -71,12 +71,15 @@ Each module's `build.gradle` folds in `common/` (both keep `namespace "com.skyfl
 android {
   namespace "com.skyflow_android"
   sourceSets.main {
-    java.srcDirs += "$rootDir/common/src/main/kotlin"
-    res.srcDirs  += "$rootDir/common/src/main/res"
+    kotlin.srcDirs += "$rootDir/common/src/main/kotlin"   // kotlin.srcDirs, NOT java.srcDirs —
+    res.srcDirs    += "$rootDir/common/src/main/res"       // java.srcDirs double-compiles the .kt
   }
-  sourceSets.test { java.srcDirs += "$rootDir/common/src/test/kotlin" }
 }
 ```
+
+> **Only `kotlin.srcDirs`.** Adding `common` under `java.srcDirs` as well makes the Kotlin compiler pick the files up twice → "conflicting overloads" errors. Use `kotlin.srcDirs` alone.
+>
+> **Tests are per-module, not a shared `common/src/test`.** Each layer's tests construct that layer's public types (`CollectElementInput(table=…)` for v1 vs `CollectElementInput(tableName=…)` for v2) and assert that layer's wire keys, so they are not byte-identical and cannot be a single shared source set. skyvault keeps `main`'s v1 suites; flowvault carries the beta v2 suites. The overlapping *neutral* suites (`ValidationTests`, `InputFormattingTest`, `UtilsTest`, `ComposableElementsTests`) exist in each module compiled against that layer's types, so both products get that coverage.
 
 ---
 
@@ -110,15 +113,19 @@ android {
 
 ## 5. SPLIT-NEEDED decomposition
 
-- **Bearer-token lifecycle.** `JWTUtils` + `getAccessToken` are duplicated in `APIClient` and `FlowDBAPIClient`. Extract one core `internal` token client both layers reuse.
+- **Bearer-token lifecycle.** `JWTUtils` (JWT decode + expiry check) was promoted to a single shared `common/src/main/kotlin/Skyflow/core/JWTUtils.kt` (`object JWTUtils`), so both `APIClient` (legacy) and `FlowDBAPIClient` (FlowVault) reuse it instead of each declaring its own. The thin `getAccessToken` wrapper stays inside each api client (it references that client's `token`/`logLevel` state); only the contract-agnostic `JWTUtils` moved to common.
 - **`Client.kt` → base-client pattern.** Core defines an abstract **`BaseSkyflowClient`** holding the neutral shell: `configuration`, `elementMap`, and the two `container(...)` factories. Each product's concrete `Client` extends it:
   - legacy `Client : BaseSkyflowClient` wires the v1 `APIClient` and keeps the v1 client methods (`insert`/`get`/`getById`/`detokenize` + the deprecated connection calls);
   - FlowVault `Client : BaseSkyflowClient` wires `FlowDBAPIClient` and has **no standalone client methods** (only the inherited `container(...)`).
   `Container.client` is typed as `BaseSkyflowClient`; each layer's container extensions reach their contract-specific api client via the concrete `Client` (e.g. `(client as Client).apiClient`). The public type name `Client` is unchanged in each package (no v1 breaking change).
-- **Divergent request/input types → base + extend (not a superset).** Types whose *shape* differs across contracts follow the same base/subclass pattern instead of forking or supersetting: core holds the neutral base (the shared field, e.g. `column`), and each package extends it with its own field name — legacy adds `table`, FlowVault adds `tableName`. Applied to the collect-element input in Phase 2 when the v2 `tableName` shape is introduced.
+- **Divergent request/input types → base + extend (not a superset).** Types whose *shape* differs across contracts follow the base/subclass pattern instead of forking or supersetting: core holds the neutral base, and each package extends it with its own public constructor param names mapped onto neutral storage. Implemented as:
+  - `BaseCollectElementInput` (neutral `tableName`/`skyflowId`/`column`/styles/…) → legacy `CollectElementInput(table=…, skyflowID=…)` (with `internal val table`/`skyflowID` read aliases) and FlowVault `CollectElementInput(tableName=…, skyflowId=…)`.
+  - `BaseRevealElementInput` (neutral `token`/styles/label) → legacy `RevealElementInput(redaction=…)` (adds per-token redaction) and FlowVault `RevealElementInput` (no redaction — moved to `RevealOptions.tokenGroupRedactions`).
+  - `BaseConfiguration` (neutral `vaultID`/`vaultURL`/`tokenProvider`/`options` **plus a neutral superset `okHttpClient`** the v2 client injects and v1 ignores) → legacy `Configuration` (its `init{}` appends `/v1/vaults/`) and FlowVault `Configuration` (no suffix; `/v2/…` applied inside `FlowDBAPIClient`).
+  - The shared `Element` reads `skyflowID`; a read-only `internal val skyflowId get() = skyflowID` alias lets v2 call sites use the lowercase spelling without forking `Element`.
 - **Containers.** `create(...)`, `validateVaultConfig()`/`checkVaultDetails`, `validateElements()`/`validateElement()`, and the neutral orchestration skeleton → **core**. The contract-specific `post()`/`get()`, typed `collect(CollectCallback)` / `reveal(RevealCallback)`, `update(...)`, and the untyped `collect(Callback)` / `reveal(Callback)` → **each layer** (legacy restores `main`'s v1 versions; FlowVault keeps the beta v2 byte-for-byte).
 - **`utils/Utils.kt`.** Neutral helpers (`constructError`, `constructErrorResponse`, `checkUrl`, `checkInputFormatOptions`, `checkIfElementsMounted`, element/regex/uuid, `checkVaultDetails`) → **core**; v1 helpers (`constructBatchRequestBody`, `constructRequestBodyForGet` → `get.GetRecord`, `validateGetInputAndOptions`) → **legacy**.
-- **`Configuration.kt`.** Keep neutral in core (no URL mutation). Move `main`'s `init{}` `v1/vaults/` suffixing into the **legacy** api client (v2 already suffixes `/v2/…` in its client). This keeps the shared config type contract-free.
+- **`Configuration.kt`.** Neutral base (`BaseConfiguration`) in core with no URL mutation; the legacy `Configuration` subclass keeps `main`'s `init{}` `/v1/vaults/` suffix (base+extend, above) so the 81 v1 tests that assert `configuration.vaultURL` stay green, and the v2 client suffixes `/v2/…` itself.
 
 ---
 
@@ -161,7 +168,7 @@ Each layer's `init()` stamps `SdkInfo.name`/`version` from its own `BuildConfig.
 
 ## 9. CI / CD
 
-- **PR CI (`pr.yml`)** builds + tests BOTH modules in one command — root aggregate task `runOnGitHub` depending on `:skyflow-android-sdk:{lint,test,build}` and `:skyflow-flowvault-android-sdk:{lint,test,build}`.
+- **PR CI (`pr.yml`)** builds + tests BOTH modules — it runs `:skyvault:build :flowvault:build` and the root aggregate task `runOnGitHub`, which depends on `:skyvault:{lint,test}` and `:flowvault:{lint,test}`. (Task paths use the Gradle **module** names `:skyvault` / `:flowvault`; the *published artifact ids* remain `skyflow-android-sdk` / `skyflow-flowvault-android-sdk`.)
 - **Legacy release** (existing workflows, retargeted to the legacy module): `release.yml` (tag `[0-9]+.[0-9]+.[0-9]+`), `beta_release.yml` (tag `*.*.*-beta.*`), `internal_release.yml` (push `release/*`) → build/publish **legacy only**.
 - **FlowVault release** (new, mirrored): `flowvault_release.yml` (tag `flowvault/[0-9]+.[0-9]+.[0-9]+`), `flowvault_beta_release.yml` (tag `flowvault/*-beta.*`), `flowvault_internal_release.yml` (push `flowvault-release/*`) → build/publish **flowvault only**, mirroring the private/dev channel.
 - Each release workflow passes the product argument to `bump_version.sh`.
@@ -170,12 +177,12 @@ Each layer's `init()` stamps `SdkInfo.name`/`version` from its own `BuildConfig.
 
 ## 10. Tests
 
-Classify test files like source:
-- **Shared** UI/validation (`ValidationTests`, `ComposableElementsTests`, `InputFormattingTest`, `UtilsTest`) → `common/src/test`, run under **both** modules.
-- **FlowVault** (`MockCVVTest`, v2 `ResponseTest`, FlowDB assertions) → flowvault module.
-- **Legacy** (restored from `main`): `DetokenizeTests`, `GetTests`, `RevealTest`, `CollectTest`, `CollectRequestBodyTest`, `CallbackResponseFormatTest`, `UpdateBySkyflowIdTest`, `InvokeConnectionTest`, `SoapConnectionTest`, `UnitTests`, and the v1 half of `ResponseTest`.
+Tests live **per module** (see §3 — they construct layer-specific public types and assert layer-specific wire keys, so they are not a single shared source set):
 
-All suites must pass under both modules (Robolectric). Backward-compat rule from §6 applies when a test encodes beta-era wire keys.
+- **skyvault (v1, from `main`):** `DetokenizeTests`, `GetTests`, `RevealTest`, `CollectTest`, `CollectRequestBodyTest`, `CallbackResponseFormatTest`, `UpdateBySkyflowIdTest`, `InvokeConnectionTest`, `SoapConnectionTest`, `UnitTests`, `ResponseTest`, plus the neutral `ValidationTests` / `InputFormattingTest` / `UtilsTest` / `ComposableElementsTests`. Green.
+- **flowvault (v2, from beta):** the beta test tree. Beta had already **emptied** its v1-flow placeholder files (`CollectTest`, `RevealTest`, `GetTests`, `DetokenizeTests`, `CollectRequestBodyTest`, `CallbackResponseFormatTest`, `UpdateBySkyflowIdTest` — 0 bytes, no `@Test`); those were dropped rather than carried as empty files. The live v2 suite is **93 tests**: `MockCVVTest` (14), `ResponseTest` (11, v2 shapes), `ComposableElementsTests` (27), `InputFormattingTest` (25), `UtilsTest` (9), `ValidationTests` (6), `ExampleUnitTest` (1). All green.
+
+Both suites run under Robolectric. Backward-compat rule from §6 applies where a test would encode beta-era wire keys on the legacy side.
 
 ---
 
@@ -183,18 +190,18 @@ All suites must pass under both modules (Robolectric). Backward-compat rule from
 
 - **Phase 0 — Branch.** Cut `SK-3041/package-split` from `origin/main`. Use `git mv` throughout to preserve blame/history. *(done)*
 - **Phase 1 — `common/` + legacy module (from main).** Create `common/` + `skyvault/`; `git mv` neutral files → `common/`, v1 files → the legacy module; wire the shared source set; split `Utils`; extract the token client; neutralize `Configuration`; add `SdkInfo` + stamp in legacy `init()`. Legacy builds and all restored v1 tests pass; public surface unchanged.
-- **Phase 2 — FlowVault module (from beta).** Create `flowvault/`; bring `FlowDB*` + v2 types from `1.28.0-beta.1` as core extensions; per-layer options/responses; stamp `SdkInfo` in flowvault `init()`; add v2 tests. Both modules build.
-- **Phase 3 — Versioning + CI.** Bump-script product arg; per-module versions; PR-builds-both; per-product release workflows keyed to tag namespaces (+ mirrored internal channel).
-- **Phase 4 — Samples + docs.** Point sample(s) at each published SDK; finalize this document.
+- **Phase 2 — FlowVault module (from beta).** Create `flowvault/`; bring `FlowDB*` + v2 types from `1.28.0-beta.1` as core extensions; per-layer options/responses; stamp `SdkInfo` in flowvault `init()`; add v2 tests. Both modules build. *(done)*
+- **Phase 3 — Versioning + CI.** Bump-script product arg; per-module versions; PR-builds-both; per-product release workflows keyed to tag namespaces (+ mirrored internal channel). *(done)*
+- **Phase 4 — Samples + docs.** Verify per-SDK publish (`publishToMavenLocal`) and finalize this document. *(done)*
 
 ---
 
 ## 12. Verification
 
-1. **Build both:** `./gradlew :skyflow-android-sdk:assembleRelease :skyflow-flowvault-android-sdk:assembleRelease` — zero errors.
-2. **Test both:** `./gradlew runOnGitHub` — all suites green (restored legacy + FlowVault + shared).
-3. **Boundary:** the Konsist guard passes; a deliberate legacy-symbol import inside `common/` fails the FlowVault build.
-4. **Visibility:** an app cannot resolve a core `internal` symbol (e.g. `Container.client`) — compile error.
-5. **Real package manager (per SDK):** `publishToMavenLocal` each module, then build a sample depending on `com.skyflowapi.android:skyflow-android-sdk:<v>` and another on `…:skyflow-flowvault-android-sdk:1.0.0` (both from mavenLocal) — each compiles with `import Skyflow.*` and the correct per-contract API; shared `res/` (card-brand drawables, error animation) resolves in each.
-6. **Release routing:** a plain-semver / `*-beta.*` tag triggers only legacy publish; a `flowvault/*` tag triggers only flowvault publish.
-7. **Backward-compat smoke:** the legacy sample uses v1 signatures (`insert`, untyped `collect(Callback)`, `RevealElementInput(redaction=…)`, `CollectOptions(token=…)`) and compiles unchanged against `skyflow-android-sdk`.
+1. **Build both:** `./gradlew :skyvault:assembleRelease :flowvault:assembleRelease` — zero errors. ✅
+2. **Test both:** `./gradlew runOnGitHub` — skyvault v1 suite + flowvault 93-test v2 suite green. ✅
+3. **Boundary (by construction):** both modules compile in CI; because `common/` is compiled into *each*, a common reference to a symbol that lives only in one layer breaks the other module's build. Proven while building: the flowvault module compiles with `common` + v2 source only (no skyvault source present), confirming `common` is self-contained. ✅
+4. **Visibility:** an app cannot resolve a core `internal` symbol (e.g. `Container.client`) — compile error (Kotlin `internal` is module-scoped; common is folded into the AAR, not re-exported).
+5. **Real package manager (per SDK):** `publishToMavenLocal` produced `com.skyflowapi.android:skyflow-android-sdk:1.27.0` and `com.skyflowapi.android:skyflow-flowvault-android-sdk:1.0.0`; the flowvault POM lists only external deps (kotlin-stdlib, core-ktx, material, okhttp) with **no `common` module dependency** — the shared source is compiled into the AAR, so a consumer resolves one self-contained artifact with `import Skyflow.*`. ✅
+6. **Release routing:** a plain-semver / `*.*.*-beta.*` tag triggers only legacy publish (`release.yml` / `beta_release.yml` → `:skyvault:publish`); a `flowvault/*` tag triggers only flowvault publish (`flowvault_release.yml` / `flowvault_beta_release.yml` → `:flowvault:publish`). Internal channels: `release/*` → skyvault dev, `flowvault-release/*` → flowvault dev.
+7. **Backward-compat smoke:** the legacy `samples/` app (standalone reference, `implementation project(':skyvault')` — matching how `main` referenced `:Skyflow`; not part of the Gradle build's `settings.gradle`, same as on `main`) uses v1 signatures (`insert`, untyped `collect(Callback)`, `RevealElementInput(redaction=…)`, `CollectOptions(token=…)`) against the legacy artifact.

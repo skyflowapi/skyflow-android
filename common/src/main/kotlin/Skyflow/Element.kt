@@ -14,6 +14,9 @@ open class Element @JvmOverloads constructor(
     internal var columnName: String  = ""
     internal var tableName: String = ""
     internal var skyflowID: String? = null
+    // v2/FlowVault call sites read `element.skyflowId` (lowercase d); legacy reads `skyflowID`.
+    // Both name the same value — this alias keeps the shared Element neutral to either spelling.
+    internal val skyflowId: String? get() = skyflowID
     internal lateinit var collectInput : BaseCollectElementInput
     internal lateinit var options : Skyflow.CollectElementOptions
     internal lateinit var fieldType: SkyflowElementType
