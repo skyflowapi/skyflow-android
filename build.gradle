@@ -9,6 +9,6 @@ task clean(type: Delete) {
 }
 
 tasks.register("runOnGitHub") { // 1
-    dependsOn(":Skyflow:lint", ":Skyflow:test")  // 2 ==> CUSTOMIZE THIS LINE
+    dependsOn(":skyvault:lint", ":skyvault:test")  // 2 ==> CUSTOMIZE THIS LINE
     group = "custom"      // 3
 }

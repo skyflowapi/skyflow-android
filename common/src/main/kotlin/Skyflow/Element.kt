@@ -1,0 +1,56 @@
+package Skyflow
+
+import android.content.Context
+import android.util.AttributeSet
+import android.widget.LinearLayout
+import com.Skyflow.collect.elements.validations.SkyflowValidationError
+import org.json.JSONObject
+
+open class Element @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
+) : LinearLayout(context, attrs, defStyleAttr)   {
+
+    internal var isRequired: Boolean = false
+    internal var columnName: String  = ""
+    internal var tableName: String = ""
+    internal var skyflowID: String? = null
+    internal lateinit var collectInput : BaseCollectElementInput
+    internal lateinit var options : Skyflow.CollectElementOptions
+    internal lateinit var fieldType: SkyflowElementType
+    internal open var uuid = ""
+    /// Describes `SkyflowElement` input   State`
+    internal open var state: State = State(columnName,isRequired)
+
+
+    internal open fun getState() : JSONObject
+    {
+        return state.getInternalState()
+    }
+    /// Field Configuration
+    internal open fun setupField(collectInput: BaseCollectElementInput, options: Skyflow.CollectElementOptions) {
+        this.collectInput = collectInput
+        this.options = options
+        this.fieldType = this.collectInput.type
+        if(!this.collectInput.tableName.equals(null))
+            tableName = this.collectInput.tableName!!
+        if(!this.collectInput.column.equals(null))
+            columnName = this.collectInput.column!!
+        if(!this.collectInput.skyflowId.equals(null))
+            skyflowID = this.collectInput.skyflowId
+        isRequired = this.options.required
+        state = State(columnName,isRequired)
+    }
+
+    internal open fun validate() : SkyflowValidationError {
+        return ""
+    }
+
+    internal open fun getValue() : String {
+        return ""
+    }
+
+    fun getID() : String {
+        return uuid
+    }
+
+}

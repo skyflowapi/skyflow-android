@@ -1,0 +1,149 @@
+package Skyflow
+
+import Skyflow.collect.client.CollectRequestBody
+import Skyflow.core.Logger
+import Skyflow.core.Messages
+import Skyflow.core.getMessage
+import Skyflow.utils.Utils
+import android.content.Context
+import com.Skyflow.core.container.ContainerProtocol
+import org.json.JSONObject
+import java.util.*
+
+// CollectContainer (marker class) lives in core; these are the legacy (v1) container operations.
+private val tag = CollectContainer::class.qualifiedName
+
+fun Container<CollectContainer>.create(
+    context: Context,
+    input: CollectElementInput,
+    options: CollectElementOptions = CollectElementOptions()
+): TextField {
+    Utils.checkInputFormatOptions(input.type, options, configuration.options.logLevel)
+    Logger.info(
+        tag,
+        Messages.VALIDATE_INPUT_FORMAT_OPTIONS.getMessage(input.label),
+        configuration.options.logLevel
+    )
+    Logger.info(
+        tag,
+        Messages.CREATED_COLLECT_ELEMENT.getMessage(input.label),
+        configuration.options.logLevel
+    )
+    val collectElement = TextField(context, configuration.options, collectElements.size)
+    collectElement.setupField(input, options)
+    collectElements.add(collectElement)
+    val uuid = UUID.randomUUID().toString()
+    client.elementMap[uuid] = collectElement
+    collectElement.uuid = uuid
+    return collectElement
+}
+
+fun Container<CollectContainer>.collect(callback: Callback, options: CollectOptions? = CollectOptions()){
+    try {
+        Utils.checkVaultDetails(client.configuration)
+        Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
+        validateElements()
+        post(callback,options)
+    }
+    catch (e:Exception)
+    {
+        callback.onFailure(Utils.constructErrorResponse(e))
+    }
+}
+internal fun Container<CollectContainer>.validateElements() {
+    var errors = ""
+    for (element in this.collectElements) {
+        errors = validateElement(element,errors)
+    }
+    if (errors != "") {
+        throw SkyflowError(SkyflowErrorCode.INVALID_INPUT, tag, configuration.options.logLevel, arrayOf(errors))
+    }
+}
+
+internal fun Container<CollectContainer>.validateElement(element: TextField,err:String) : String
+{
+    var errorOnElement = err
+    if (!element.isAttachedToWindow()) {
+        throw SkyflowError(SkyflowErrorCode.ELEMENT_NOT_MOUNTED,
+            tag,
+            configuration.options.logLevel,
+            arrayOf(element.columnName))
+    }
+    when {
+        element.collectInput.tableName.equals(null) -> {
+            throw SkyflowError(SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.column.equals(null) -> {
+            throw SkyflowError(SkyflowErrorCode.MISSING_COLUMN,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.tableName!!.isEmpty() -> {
+            throw SkyflowError(SkyflowErrorCode.ELEMENT_EMPTY_TABLE_NAME,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        element.collectInput.column!!.isEmpty() -> {
+            throw SkyflowError(SkyflowErrorCode.EMPTY_COLUMN_NAME,
+                tag,
+                configuration.options.logLevel,
+                arrayOf(element.fieldType.toString()))
+        }
+        else -> {
+            val state = element.getState()
+            val error = state["validationError"]
+            if (!(state["isValid"] as Boolean)) {
+                element.invalidTextField()
+                errorOnElement += "for " + element.columnName + " " + (error as String) + "\n"
+            }
+        }
+    }
+    return errorOnElement
+}
+internal fun Container<CollectContainer>.post(callback:Callback,options: CollectOptions?)
+{
+    // Separate insert and update elements/records
+    val (insertElements, insertAdditionalFields, updateRecords) = Skyflow.collect.client.CollectRequestBody.separateInsertAndUpdateRecords(
+        this.collectElements,
+        options?.additionalFields,
+        configuration.options.logLevel
+    )
+    
+    val hasInsertData = insertElements.isNotEmpty() || insertAdditionalFields != null
+    val hasUpdateRecords = updateRecords.isNotEmpty()
+    
+    if (hasInsertData && hasUpdateRecords) {
+        // Mixed case: both insert and update
+        val insertRecordsJson = if (insertElements.isNotEmpty()) {
+            JSONObject(Skyflow.collect.client.CollectRequestBody.createRequestBody(
+                insertElements, 
+                insertAdditionalFields, 
+                configuration.options.logLevel
+            ))
+        } else {
+            insertAdditionalFields
+        }
+        
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        (this.client as Client).apiClient.postWithUpdate(insertRecordsJson, updateRecords, callback, insertOptions)
+    } else if (hasUpdateRecords) {
+        // Only update records
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        (this.client as Client).apiClient.postWithUpdate(null, updateRecords, callback, insertOptions)
+    } else {
+        // Only insert records
+        val records = Skyflow.collect.client.CollectRequestBody.createRequestBody(
+            this.collectElements, 
+            insertAdditionalFields, 
+            configuration.options.logLevel
+        )
+        val insertOptions = InsertOptions(options?.token ?: true, options?.upsert)
+        (this.client as Client).apiClient.post(JSONObject(records), callback, insertOptions)
+    }
+}
+
