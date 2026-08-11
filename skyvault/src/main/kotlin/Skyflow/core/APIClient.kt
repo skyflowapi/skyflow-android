@@ -23,57 +23,13 @@ import java.util.*
 // JWTUtils moved to common (Skyflow.core.JWTUtils) — shared by the legacy and FlowVault API clients.
 
 internal class APIClient(
-    val vaultId: String,
-    val vaultURL: String,
-    private val tokenProvider: TokenProvider,
-    val logLevel: LogLevel,
-    private var token: String = ""
-) {
-    private val tag = APIClient::class.qualifiedName
-    private fun isValidToken(token: String?): Boolean {
-        return if (token != "") {
-            !JWTUtils.isExpired(token!!)
-        } else {
-            false
-        }
-    }
-
-    fun getAccessToken(callback: Callback) {
-        try {
-            if (!isValidToken(token)) {
-                Logger.info(tag, Messages.RETRIEVING_BEARER_TOKEN.getMessage(), logLevel)
-                tokenProvider.getBearerToken(object : Callback {
-                    override fun onSuccess(responseBody: Any) {
-                        Logger.info(tag, Messages.BEARER_TOKEN_RECEIVED.getMessage(), logLevel)
-                        if (!isValidToken(responseBody.toString())) {
-                            val error =
-                                SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
-                            callback.onFailure(error)
-                        } else {
-                            token = "Bearer $responseBody"
-                            callback.onSuccess(token)
-                        }
-                    }
-
-                    override fun onFailure(exception: Any) {
-                        Logger.error(
-                            tag,
-                            Messages.RETRIEVING_BEARER_TOKEN_FAILED.getMessage(),
-                            logLevel
-                        )
-                        val error =
-                            SkyflowError(SkyflowErrorCode.BEARER_TOKEN_REJECTED, tag, logLevel)
-                        callback.onFailure(error)
-                    }
-                })
-            } else {
-                callback.onSuccess(token)
-            }
-        } catch (e: Exception) {
-            val error = SkyflowError(SkyflowErrorCode.INVALID_BEARER_TOKEN, tag, logLevel)
-            callback.onFailure(error)
-        }
-    }
+    vaultId: String,
+    vaultURL: String,
+    tokenProvider: TokenProvider,
+    logLevel: LogLevel,
+    token: String = ""
+) : BaseApiClient(vaultId, vaultURL, tokenProvider, logLevel, token) {
+    // Bearer-token lifecycle (isValidToken / getAccessToken) is inherited from BaseApiClient.
 
     fun post(records: JSONObject, callback: Callback, options: InsertOptions) {
         try {
