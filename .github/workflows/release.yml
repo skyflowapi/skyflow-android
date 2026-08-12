@@ -1,9 +1,14 @@
 name: Public Release
 
+# One workflow for both SDKs. The tag namespace decides which one is released:
+#   x.y.z            -> legacy  (skyvault  / skyflow-android-sdk)
+#   flowvault/x.y.z  -> flowvault (skyflow-flowvault-android-sdk)
 on:
   push:
-    tags: '[0-9]+.[0-9]+.[0-9]+'
-      
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - 'flowvault/[0-9]+.[0-9]+.[0-9]+'
+
 jobs:
   build-sdk:
     runs-on: ubuntu-latest
@@ -20,31 +25,43 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 1.0.0
+      - name: Determine product from tag
+        id: prod
+        run: |
+          ref="${GITHUB_REF_NAME}"
+          if [[ "$ref" == flowvault/* ]]; then
+            product=flowvault; module=flowvault; version="${ref#flowvault/}"; gradle_file=flowvault/build.gradle; label="FlowVault Public"
+          else
+            product=legacy;    module=skyvault;  version="$ref";            gradle_file=skyvault/build.gradle;  label="Public"
+          fi
+          {
+            echo "product=$product"
+            echo "module=$module"
+            echo "version=$version"
+            echo "gradle_file=$gradle_file"
+            echo "label=$label"
+          } >> "$GITHUB_OUTPUT"
+          echo "Releasing tag '$ref' as product=$product version=$version"
 
       - name: Bump Version
         run: |
-           chmod +x ./scripts/bump_version.sh
-           ./scripts/bump_version.sh legacy "${{ steps.previoustag.outputs.tag }}"
+          chmod +x ./scripts/bump_version.sh
+          ./scripts/bump_version.sh ${{ steps.prod.outputs.product }} "${{ steps.prod.outputs.version }}"
 
       - name: Commit changes
         run: |
-           git config user.name ${{ github.actor }}
-           git config user.email ${{ github.actor }}@users.noreply.gihub.com
-           git add skyvault/build.gradle
-           git commit -m "[AUTOMATED] Public Release ${{ steps.previoustag.outputs.tag }}"
-           git push origin
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.gihub.com
+          git add ${{ steps.prod.outputs.gradle_file }}
+          git commit -m "[AUTOMATED] ${{ steps.prod.outputs.label }} Release ${{ steps.prod.outputs.version }}"
+          git push origin
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v3
       - name: Publish package
         run: |
-           chmod +x gradlew
-           ./gradlew :skyvault:publish
+          chmod +x gradlew
+          ./gradlew :${{ steps.prod.outputs.module }}:publish
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
