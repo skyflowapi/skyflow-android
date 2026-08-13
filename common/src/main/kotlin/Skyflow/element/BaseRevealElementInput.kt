@@ -6,7 +6,7 @@ package Skyflow
  * per-product subclass — the legacy `RevealElementInput` adds `redaction` (per-token redaction);
  * the FlowVault one has none (redaction moved to `RevealOptions.tokenGroupRedactions`).
  */
-open class BaseRevealElementInput {
+abstract class BaseRevealElementInput {
     internal var token: String? = null
     internal var inputStyles: Styles = Styles()
     internal var labelStyles: Styles = Styles()

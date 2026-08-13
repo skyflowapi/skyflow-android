@@ -24,11 +24,11 @@ import kotlin.reflect.KClass
  */
 abstract class BaseSkyflowClient internal constructor(
     val configuration: BaseConfiguration,
-) {
+) : ISkyflowClient {
     internal val tag = this::class.qualifiedName
     internal val elementMap = HashMap<String, Any>()
 
-    fun <T : ContainerProtocol> container(type: KClass<T>): Container<T> {
+    override fun <T : ContainerProtocol> container(type: KClass<T>): Container<T> {
         if (type == ContainerType.COLLECT) {
             Logger.info(tag, Messages.COLLECT_CONTAINER_CREATED.getMessage(), configuration.options.logLevel)
         } else if (type == ContainerType.REVEAL) {
@@ -37,7 +37,7 @@ abstract class BaseSkyflowClient internal constructor(
         return Container(configuration, this)
     }
 
-    fun <T : ContainerProtocol> container(
+    override fun <T : ContainerProtocol> container(
         type: KClass<T>,
         context: Context,
         options: ContainerOptions

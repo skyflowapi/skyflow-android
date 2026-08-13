@@ -10,7 +10,7 @@ import com.Skyflow.collect.elements.validations.ValidationSet
  *  - legacy: `table` / `skyflowID`
  *  - FlowVault: `tableName` / `skyflowId`
  */
-open class BaseCollectElementInput {
+abstract class BaseCollectElementInput {
     internal var tableName: String? = null
     internal var column: String? = null
     internal var inputStyles: Styles = Styles()
