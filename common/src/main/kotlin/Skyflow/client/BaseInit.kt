@@ -4,7 +4,7 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
 
-internal fun <T : BaseSkyflowClient> initClient(
+internal fun <T : BaseSkyflowClient> baseInit(
     sdkName: String,
     sdkVersion: String,
     logLevel: LogLevel,
