@@ -2,10 +2,10 @@
 
 Reference apps for the Skyflow Android SDKs. Each sample is a standalone app wired to its SDK module — pick the one that matches your vault:
 
-| Sample | SDK | Module | Guide |
-|--------|-----|--------|-------|
-| [`skyvault/`](skyvault/) | SkyVault (v1) | `:skyvault` | [../skyvault/README.md](../skyvault/README.md) |
-| [`flowvault/`](flowvault/) | FlowVault (v2) | `:flowvault` | [../flowvault/README.md](../flowvault/README.md) |
+| Sample | Vault type | Module | Guide |
+|--------|-----------|--------|-------|
+| [`skyvault/`](skyvault/) | PDB vault (v1 API) | `:skyvault` | [../skyvault/README.md](../skyvault/README.md) |
+| [`flowvault/`](flowvault/) | Flow vault (v2 API) | `:flowvault` | [../flowvault/README.md](../flowvault/README.md) |
 
 > These are **reference apps**: each declares a `project(':skyvault')` / `project(':flowvault')` dependency and is not part of the library CI build. To run one, open it in Android Studio and supply your vault details as described below.
 

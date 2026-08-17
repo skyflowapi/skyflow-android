@@ -4,21 +4,14 @@
 [![GitHub release](https://img.shields.io/github/v/release/skyflowapi/skyflow-android.svg)](https://github.com/skyflowapi/skyflow-android/releases)
 [![License](https://img.shields.io/github/license/skyflowapi/skyflow-android)](https://github.com/skyflowapi/skyflow-android/blob/main/LICENSE)
 
-Skyflow's Android SDKs let you securely collect, tokenize, and reveal sensitive data in your Android app without that data touching your front-end infrastructure. This repository ships **two independently-installable SDKs** built on a shared core:
+Skyflow's Android SDKs let you securely collect, tokenize, and reveal sensitive data in your Android app without that data touching your front-end infrastructure. This repository publishes **two SDKs from a shared codebase**. Pick the one that matches your vault type:
 
-| SDK | Vault contract | Gradle artifact | Guide |
-|-----|----------------|-----------------|-------|
-| **SkyVault** | v1 | `com.skyflowapi.android:skyflow-android-sdk` | [skyvault/README.md](skyvault/README.md) |
-| **FlowVault** | v2 | `com.skyflowapi.android:skyflow-flowvault-android-sdk` | [flowvault/README.md](flowvault/README.md) |
+| SDK | Vault type | Install (Gradle) | Guide |
+|-----|------------|------------------|-------|
+| **skyflow-android-sdk** | PDB vault (v1 API) | `com.skyflowapi.android:skyflow-android-sdk:1.27.0` | [skyvault/README.md](skyvault/README.md) |
+| **skyflow-flowvault-android-sdk** | Flow vault (v2 API) | `com.skyflowapi.android:skyflow-flowvault-android-sdk:1.0.0` | [flowvault/README.md](flowvault/README.md) |
 
-## Which SDK do I need?
-
-Install **one** of the two — they share the `Skyflow` package, so a single app uses whichever matches its vault:
-
-- **SkyVault** — for a v1 (SkyVault) vault. This is the long-standing `skyflow-android-sdk`.
-- **FlowVault** — for a v2 (FlowVault) vault.
-
-If you're unsure which contract your vault uses, check with your Skyflow account team.
+If you are an existing Skyflow Android customer, stay on **skyflow-android-sdk** — it is fully backward compatible. **skyflow-flowvault-android-sdk** is a separate SDK (versioned from `1.0.0`) for Flow vaults, built on the v2 API. Both share the `Skyflow` package, so add whichever matches your vault.
 
 ## Requirements
 
@@ -28,15 +21,15 @@ If you're unsure which contract your vault uses, check with your Skyflow account
 
 ## Installation
 
-Both SDKs are published to GitHub Packages. First configure your GitHub Personal Access Token as described in the [SkyVault](skyvault/README.md#configuration) or [FlowVault](flowvault/README.md#configuration) guide, then add the dependency for the SDK you need:
+Both SDKs are published to GitHub Packages. First configure your GitHub Personal Access Token as described in the [skyflow-android-sdk](skyvault/README.md#configuration) or [skyflow-flowvault-android-sdk](flowvault/README.md#configuration) guide, then add the dependency for your vault type:
 
-**SkyVault (v1)**
+**PDB vault (v1 API)**
 
 ```groovy
 implementation 'com.skyflowapi.android:skyflow-android-sdk:1.27.0'
 ```
 
-**FlowVault (v2)**
+**Flow vault (v2 API)**
 
 ```groovy
 implementation 'com.skyflowapi.android:skyflow-flowvault-android-sdk:1.0.0'
@@ -46,15 +39,15 @@ See each guide for the latest published version.
 
 ## Documentation
 
-- **SkyVault (v1):** [skyvault/README.md](skyvault/README.md)
-- **FlowVault (v2):** [flowvault/README.md](flowvault/README.md)
+- **skyflow-android-sdk** — PDB vault (v1 API): [skyvault/README.md](skyvault/README.md)
+- **skyflow-flowvault-android-sdk** — Flow vault (v2 API): [flowvault/README.md](flowvault/README.md)
 
 ## Samples
 
 Runnable reference apps for each SDK live under [`samples/`](samples/README.md):
 
-- [`samples/skyvault/`](samples/skyvault/) — SkyVault (v1) sample app
-- [`samples/flowvault/`](samples/flowvault/) — FlowVault (v2) sample app
+- [`samples/skyvault/`](samples/skyvault/) — skyflow-android-sdk (PDB vault) sample
+- [`samples/flowvault/`](samples/flowvault/) — skyflow-flowvault-android-sdk (Flow vault) sample
 
 ## License
 
