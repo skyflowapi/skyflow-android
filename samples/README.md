@@ -1,46 +1,41 @@
-# Android SDK samples
-Test the SDK by adding `VAULT-ID`, `VAULT-URL`, and `SERVICE-ACCOUNT` details in the required places for each sample.
+# Skyflow Android SDK samples
 
+Reference apps for the Skyflow Android SDKs. Each sample is a standalone app wired to its SDK module — pick the one that matches your vault:
+
+| Sample | SDK | Module | Guide |
+|--------|-----|--------|-------|
+| [`skyvault/`](skyvault/) | SkyVault (v1) | `:skyvault` | [../skyvault/README.md](../skyvault/README.md) |
+| [`flowvault/`](flowvault/) | FlowVault (v2) | `:flowvault` | [../flowvault/README.md](../flowvault/README.md) |
+
+> These are **reference apps**: each declares a `project(':skyvault')` / `project(':flowvault')` dependency and is not part of the library CI build. To run one, open it in Android Studio and supply your vault details as described below.
+
+Test a sample by adding your `VAULT_ID`, `VAULT_URL`, and bearer-token endpoint details in the required places.
 
 ## Prerequisites
-- A Skylow account. If you don't have one, register for one on the [Try Skyflow](https://skyflow.com/try-skyflow) page.
-- [Node.js](https://nodejs.org/en/) version 10 or above
+- A Skyflow account. If you don't have one, register on the [Try Skyflow](https://skyflow.com/try-skyflow) page.
+- [Node.js](https://nodejs.org/en/) version 10 or above (for the bearer-token endpoint below)
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) version 6.x.x
 - [express.js](http://expressjs.com/en/starter/hello-world.html)
-- Android Gradle plugin 4.2.0 and above
+- Android Gradle Plugin 8.6.0 and above
 - Android 5.0 (API level 21) and above
-
-## Prepare
-- Add `include ':samples'` in [settings.gradle](../settings.gradle) file.
 
 ### Create the vault
 1. In a browser, navigate to Skyflow Studio.
 2. Create a vault by clicking **Create Vault** > **Upload Vault Schema**.
-3. Choose [data/vaultSchema.json](data/vaultSchema.json).
+3. Choose the vault schema in the sample's `data/` folder (e.g. [skyvault/data/](skyvault/data/) or [flowvault/data/](flowvault/data/)).
 4. Once the vault is created, click the gear icon and select **Edit Vault Details**.
 5. Note your **Vault URL** and **Vault ID** values, then click **Cancel**. You'll need these later.
+
 ### Create a service account
-1. In the side navigation click, **IAM** > **Service Accounts** > **New Service Account**.
-2. For Name, enter "SDK Samples". For Roles, choose the required roles for specific action.
-3. Click **Create**. Your browser downloads a **credentials.json** file. Keep this file secure, as you'll need it in the next steps.
+1. In the side navigation, click **IAM** > **Service Accounts** > **New Service Account**.
+2. For Name, enter "SDK Samples". For Roles, choose the roles required for the actions you'll test.
+3. Click **Create**. Your browser downloads a **credentials.json** file. Keep it secure — you'll need it next.
 
 ### Create a service account bearer token generation endpoint
-1. Create a new directory named `bearer-token-generator`.
-
-        mkdir bearer-token-generator
-2. Navigate to `bearer-token-generator` directory.
-
-        cd bearer-token-generator
-3. Initialize npm
-
-        npm init
-4. Install `skyflow-node`
-
-        npm i skyflow-node
-5. Move the downloaded “credentials.json” file generated from [Create a service account](#create-a-service-account) step into the `bearer-token-generator` directory.        
-6. Create `index.js` file
-7. Open `index.js` file
-8. Populate `index.js` file with below code snippet
+1. Create a new directory named `bearer-token-generator` and `cd` into it.
+2. Run `npm init`, then install `skyflow-node` with `npm i skyflow-node`.
+3. Move the downloaded `credentials.json` into this directory.
+4. Create an `index.js` file with the following:
 ```javascript
 const express = require("express");
 const app = express();
@@ -81,36 +76,13 @@ app.get("/", async (req, res) => {
 app.listen(port, () => {
  console.log(`Server is listening on port ${port}`);
 })
-
 ```
-9. Start the server
+5. Start the server with `node index.js` — it listens at `localhost:3000`.
 
-        node index.js
-    server will start at `localhost:3000`
+## Configure & run a sample
+1. Open the sample (`skyvault/` or `flowvault/`) in Android Studio.
+2. Supply `VAULT_ID`, `VAULT_URL`, and `TOKEN_URL` (`http://localhost:3000/`) via the sample's `local.properties` / `BuildConfig` fields.
+3. For reveal samples, also supply valid Skyflow IDs and data tokens — see [Get tokens for your stored data](https://docs.skyflow.com/tokenization-apis/#get-tokens-for-your-stored-data).
+4. Build and run on a device or emulator (Android 5.0 / API 21+).
 
-
-## The samples
-### Skyflow Elements
-This sample demonstrates how to use Skyflow Elements to collect sensitive user information and reveal it to a user.
-#### Configure
-1. Update `VAULT_ID`.
-2. Update `VAULT_URL`.
-3. Update `TOKEN_URL` with `http://localhost:3000/`
-
-### Custom Validation
-This sample demonstrates how to use custom validation with Skylow elements.
-#### Configure
-1. Update `VAULT_ID` with the above created vault.
-2. Update `VAULT_URL` with the above created vault.
-
-### Reveal
-This sample demonstrates how to reveal sensitive data.
-#### Configure
-1. Update all `VAULT_ID`.
-2. Update all `VAULT_URL`.
-3. Update `<skyflow_id1>` and `<skyflow_id2>` with skyflow id. Skyflow id is a unique string attached with each row of data in Skyflow vault. You can get it from vault for existing row.
-4. Update `<token1>` and `<token2>` with data tokens. Data tokens are the tokenized form of data. See [Get tokens for your stored data](https://docs.skyflow.com/tokenization-apis/#get-tokens-for-your-stored-data) to retrieve data tokens for your vault data.
-
-
-## Run the samples
-- Build and Run in Android Studio
+For the SDK APIs each sample demonstrates, see the per-SDK guides linked in the table above.
