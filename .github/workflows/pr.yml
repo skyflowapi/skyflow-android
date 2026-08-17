@@ -27,8 +27,8 @@ jobs:
         java-version: '17'
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
-    - name: Run Android Linter
-      run: ./gradlew :Skyflow:lint
+    - name: Run Android Linter (both SDKs)
+      run: ./gradlew :skyvault:lint :flowvault:lint
   build:
 
     runs-on: ubuntu-latest
@@ -42,8 +42,8 @@ jobs:
         java-version: '17'
     - name: Grant permissions to gradlew
       run: chmod +x gradlew
-    - name: Build SDK
-      run: ./gradlew :Skyflow:build
-    - name: Run Tests
+    - name: Build both SDKs
+      run: ./gradlew :skyvault:build :flowvault:build
+    - name: Run Tests (both SDKs via runOnGitHub aggregate)
       id: tests
-      run: ./gradlew :Skyflow:test
+      run: ./gradlew runOnGitHub

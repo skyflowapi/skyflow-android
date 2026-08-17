@@ -1,19 +1,29 @@
 name: Internal Release
+
+# ONE internal (dev) release for both SDKs from a single `release/*` branch — no separate
+# flowvault-release branch, no two PRs. What gets published is decided by the SCOPE of changes
+# (relative to main), mirroring the skyflow-js internal workflow:
+#   common/ or a shared root changed -> publish BOTH skyvault + flowvault
+#   only skyvault/ changed           -> publish skyvault
+#   only flowvault/ changed          -> publish flowvault
+# (Public/beta releases stay per-product via their tag namespaces — this scope logic is internal-only.)
 on:
   push:
     tags-ignore:
       - "*"
     paths-ignore:
-      - "Skyflow/build.gradle"
+      - "skyvault/build.gradle"
+      - "flowvault/build.gradle"
       - "*.md"
     branches:
       - release/*
 
 jobs:
-  publish:
+  internal-release:
     name: Internal Release
     runs-on: ubuntu-latest
-
+    # Skip the automated version-bump commit this workflow pushes (belt-and-suspenders with paths-ignore).
+    if: "!contains(github.event.head_commit.message, '[AUTOMATED] Internal Release')"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,13 +36,34 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Get Previous tag
-        id: previoustag
+      - name: Detect changed scope + base versions
+        id: scope
         run: |
+          git fetch --no-tags origin main
           git fetch --tags
-          tag=$(git describe --tags --abbrev=0 origin/main)
-          echo "::set-output name=tag::$tag"
-          echo "latest stable tag is $tag"
+          # Diff vs where this release branch diverged from main (idempotent across re-pushes).
+          BASE=$(git merge-base FETCH_HEAD HEAD)
+          CHANGED=$(git diff --name-only "$BASE" HEAD)
+          echo "Merge-base with main: $BASE"
+          echo "Changed files:"; echo "$CHANGED"
+
+          # Shared roots feed BOTH SDK builds -> treat like common.
+          SHARED='^(common/|scripts/|build\.gradle|settings\.gradle|gradle/|gradle\.properties|gradlew|\.github/workflows/)'
+          sky=false; fv=false
+          if echo "$CHANGED" | grep -qE "$SHARED";     then sky=true; fv=true; fi
+          if echo "$CHANGED" | grep -qE '^skyvault/';  then sky=true; fi
+          if echo "$CHANGED" | grep -qE '^flowvault/'; then fv=true; fi
+
+          # Base versions for the -dev suffix (skyvault: latest plain-semver tag on main; flowvault: latest flowvault/x.y.z).
+          skytag=$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' origin/main 2>/dev/null || echo "1.27.0")
+          rawfv=$(git tag --list 'flowvault/[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          fvtag="${rawfv#flowvault/}"; [ -z "$fvtag" ] && fvtag="1.0.0"
+
+          {
+            echo "sky=$sky"; echo "fv=$fv"
+            echo "skytag=$skytag"; echo "fvtag=$fvtag"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved -> skyvault=$sky (base $skytag) | flowvault=$fv (base $fvtag)"
 
       - name: Cache Gradle and wrapper
         uses: actions/cache@v4
@@ -42,25 +73,41 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
 
-      - name: Bump Version
+      - name: Bump versions (in scope)
+        if: steps.scope.outputs.sky == 'true' || steps.scope.outputs.fv == 'true'
         run: |
           chmod +x ./scripts/bump_version.sh
-          ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}" "$(git rev-parse --short "$GITHUB_SHA")"
+          sha="$(git rev-parse --short "$GITHUB_SHA")"
+          if [ "${{ steps.scope.outputs.sky }}" = "true" ]; then
+            ./scripts/bump_version.sh legacy "${{ steps.scope.outputs.skytag }}" "$sha"
+          fi
+          if [ "${{ steps.scope.outputs.fv }}" = "true" ]; then
+            ./scripts/bump_version.sh flowvault "${{ steps.scope.outputs.fvtag }}" "$sha"
+          fi
 
-      - name: Commit changes
+      - name: Commit version bump(s)
+        if: steps.scope.outputs.sky == 'true' || steps.scope.outputs.fv == 'true'
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.gihub.com
-          git add Skyflow/build.gradle
-          git commit -m "[AUTOMATED] Private Release ${{ steps.previoustag.outputs.tag }}-dev.$(git rev-parse --short $GITHUB_SHA)"
+          sha="$(git rev-parse --short "$GITHUB_SHA")"
+          [ "${{ steps.scope.outputs.sky }}" = "true" ] && git add skyvault/build.gradle
+          [ "${{ steps.scope.outputs.fv }}" = "true" ] && git add flowvault/build.gradle
+          git commit -m "[AUTOMATED] Internal Release (skyvault=${{ steps.scope.outputs.sky }}, flowvault=${{ steps.scope.outputs.fv }}) dev.$sha"
           git push origin
 
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v3
-      - name: Publish package
+
+      - name: Publish (in scope)
+        if: steps.scope.outputs.sky == 'true' || steps.scope.outputs.fv == 'true'
         run: |
           chmod +x gradlew
-          ./gradlew publish -Pdev=true
+          MODULES=""
+          [ "${{ steps.scope.outputs.sky }}" = "true" ] && MODULES="$MODULES :skyvault:publish"
+          [ "${{ steps.scope.outputs.fv }}" = "true" ] && MODULES="$MODULES :flowvault:publish"
+          echo "Publishing:$MODULES"
+          ./gradlew $MODULES -Pdev=true
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
