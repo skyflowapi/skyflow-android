@@ -76,6 +76,16 @@ class ResponseTest {
         assertEquals(0, response.records.size)
     }
 
+    @Test
+    fun `RevealResponse fromJson parses typed metadata`() {
+        val json = """{"records":[{"token":"tok1","httpCode":200,"metadata":{"tableName":"cards","skyflowId":"id1"}}]}"""
+        val response = RevealResponse.fromJson(json)
+        val record = response.records[0]
+        assertNotNull(record.metadata)
+        assertEquals("cards", record.metadata?.tableName)
+        assertEquals("id1", record.metadata?.skyflowId)
+    }
+
     // SkyflowError
 
     @Test

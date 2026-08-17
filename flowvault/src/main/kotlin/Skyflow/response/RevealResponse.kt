@@ -3,11 +3,16 @@ package Skyflow
 import org.json.JSONArray
 import org.json.JSONObject
 
+data class RevealMetadata(
+    val tableName: String? = null,
+    val skyflowId: String? = null
+)
+
 data class RevealRecord(
     val token: String,
     val error: String? = null,
     val tokenGroupName: String? = null,
-    val metadata: Map<String, Any?>? = null,
+    val metadata: RevealMetadata? = null,
     val httpCode: Int = 0
 )
 
@@ -20,7 +25,8 @@ data class RevealResponse(val records: List<RevealRecord> = emptyList()) {
             r.error?.let { obj.put("error", it) }
             r.metadata?.let { m ->
                 val meta = JSONObject()
-                m.forEach { (k, v) -> meta.put(k, v) }
+                m.tableName?.let { meta.put("tableName", it) }
+                m.skyflowId?.let { meta.put("skyflowId", it) }
                 obj.put("metadata", meta)
             }
             arr.put(obj)
@@ -46,8 +52,12 @@ data class RevealResponse(val records: List<RevealRecord> = emptyList()) {
                             )
                         } else {
                             val metaObj = r.optJSONObject("metadata")
-                            val metadata: Map<String, Any?>? = metaObj?.let { obj ->
-                                obj.keys().asSequence().associateWith { k -> obj.opt(k) }
+                            val metadata: RevealMetadata? = metaObj?.let { obj ->
+                                RevealMetadata(
+                                    tableName = obj.optString("tableName").ifEmpty { null },
+                                    skyflowId = obj.optString("skyflowId").ifEmpty { null }
+                                        ?: obj.optString("skyflowID").ifEmpty { null }
+                                )
                             }
                             RevealRecord(
                                 token = r.optString("token"),
