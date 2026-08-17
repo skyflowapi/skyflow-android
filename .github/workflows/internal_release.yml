@@ -39,10 +39,14 @@ jobs:
       - name: Detect changed scope + base versions
         id: scope
         run: |
-          git fetch --no-tags origin main
-          git fetch --tags
+          # Update origin/main's tracking ref explicitly, then base the merge-base on it.
+          # Do NOT use FETCH_HEAD here: the `git fetch --tags` below re-points FETCH_HEAD at
+          # the release branch, so `merge-base FETCH_HEAD HEAD` collapsed to HEAD -> empty diff
+          # -> both SDKs read as out-of-scope -> publish skipped.
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          git fetch --tags --quiet
           # Diff vs where this release branch diverged from main (idempotent across re-pushes).
-          BASE=$(git merge-base FETCH_HEAD HEAD)
+          BASE=$(git merge-base origin/main HEAD)
           CHANGED=$(git diff --name-only "$BASE" HEAD)
           echo "Merge-base with main: $BASE"
           echo "Changed files:"; echo "$CHANGED"
