@@ -23,7 +23,9 @@ import kotlin.reflect.KClass
  * the concrete `Client`.
  */
 abstract class BaseSkyflowClient internal constructor(
-    val configuration: BaseConfiguration,
+    // `open` so the legacy Client can covariantly narrow the return type to v1 `Configuration`,
+    // preserving the 1.27.0 binary signature `getConfiguration()LSkyflow/Configuration;`.
+    open val configuration: BaseConfiguration,
 ) : ISkyflowClient {
     internal val tag = this::class.qualifiedName
     internal val elementMap = HashMap<String, Any>()

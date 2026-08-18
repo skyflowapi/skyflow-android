@@ -23,7 +23,7 @@ internal class RevealValueCallback(
             applyRecordsToElements(responseJSON)
             callback.onSuccess(responseJSON.toString())
         } catch (e: Exception) {
-            callback.onFailure(Utils.constructError(e))
+            callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 

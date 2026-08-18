@@ -1,6 +1,7 @@
 package Skyflow
 
 import Skyflow.core.Messages
+import Skyflow.core.resolveSdkIdentity
 
 enum class SkyflowErrorCode(val code:Int, var message:String) {
 
@@ -134,6 +135,8 @@ enum class SkyflowErrorCode(val code:Int, var message:String) {
 
     @JvmName("getMessage1")
     fun getMessage() : String {
-        return this.message
+        // Resolve the "__SKYFLOW_SDK_ID__" placeholder — the thrown-error path (SkyflowError /
+        // SkyflowInternalError) derives its message from here and must not leak the raw token.
+        return resolveSdkIdentity(this.message)
     }
 }

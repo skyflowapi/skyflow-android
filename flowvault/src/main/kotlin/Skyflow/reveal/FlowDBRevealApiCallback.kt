@@ -34,7 +34,7 @@ internal class FlowDBRevealApiCallback(
                 .build()
             sendRequest(request)
         } catch (e: Exception) {
-            callback.onFailure(Utils.constructError(e))
+            callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 
@@ -56,17 +56,17 @@ internal class FlowDBRevealApiCallback(
 
     private fun verifyResponse(response: Response) {
         response.use {
-            try {
+            // Build the response INSIDE the try (parse errors -> onFailure), but deliver onSuccess
+            // AFTER it — so an exception thrown by the app's own onSuccess handler is NOT caught here
+            // and turned into a second onFailure. Exactly one of onSuccess/onFailure must fire.
+            val result: JSONObject = try {
                 val bodyStr = response.body?.string() ?: ""
                 val responseJson = try { JSONObject(bodyStr) } catch (e: JSONException) { null }
 
                 if (responseJson?.has("response") == true) {
-                    parseAndDispatch(responseJson)
-                    return
-                }
-
-                // Whole-request failure (auth error, malformed request, etc.)
-                if (!response.isSuccessful) {
+                    buildResponse(responseJson)
+                } else if (!response.isSuccessful) {
+                    // Whole-request failure (auth error, malformed request, etc.)
                     val message = try {
                         responseJson?.getJSONObject("error")?.getString("message") ?: bodyStr
                     } catch (e: JSONException) { bodyStr }
@@ -76,16 +76,18 @@ internal class FlowDBRevealApiCallback(
                         Utils.appendRequestId(message, requestId)
                     ))
                     return
+                } else {
+                    buildResponse(responseJson ?: JSONObject())
                 }
-
-                parseAndDispatch(responseJson ?: JSONObject())
             } catch (e: Exception) {
                 callback.onFailure(Utils.constructErrorResponse(e, 500))
+                return
             }
+            callback.onSuccess(result)
         }
     }
 
-    private fun parseAndDispatch(responseJson: JSONObject) {
+    private fun buildResponse(responseJson: JSONObject): JSONObject {
         val responseArray = responseJson.optJSONArray("response") ?: JSONArray()
         val allRecords = JSONArray()
 
@@ -122,6 +124,6 @@ internal class FlowDBRevealApiCallback(
             }
         }
 
-        callback.onSuccess(JSONObject().put("records", allRecords))
+        return JSONObject().put("records", allRecords)
     }
 }

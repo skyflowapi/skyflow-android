@@ -304,7 +304,11 @@ class TextField @JvmOverloads constructor(
         }
     }
 
-    fun update(updateCollectInput: BaseCollectElementInput) {
+    // Param type is the per-module CollectElementInput (not the base) to preserve the exact v1 JVM
+    // descriptor `update(LSkyflow/CollectElementInput;)V` for binary compatibility. common is compiled
+    // into each module, so this resolves to that module's CollectElementInput; the body only reads
+    // base properties, so it works for both products.
+    fun update(updateCollectInput: CollectElementInput) {
         this.collectInput.tableName = updateCollectInput.tableName
         this.collectInput.column = updateCollectInput.column
         this.collectInput.label = updateCollectInput.label

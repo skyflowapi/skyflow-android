@@ -7,6 +7,8 @@ import Skyflow.core.APIClient
 import Skyflow.core.JWTUtils
 import Skyflow.core.Logger
 import Skyflow.core.Messages
+import Skyflow.core.getMessage
+import Skyflow.core.resolveSdkIdentity
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
@@ -1747,7 +1749,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.NO_TABLE_KEY_IN_UPSERT.message, 0),
+                Messages.NO_TABLE_KEY_IN_UPSERT.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1763,7 +1765,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.NO_COLUMN_KEY_IN_UPSERT.message, 0),
+                Messages.NO_COLUMN_KEY_IN_UPSERT.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1780,7 +1782,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.INVALID_TABLE_IN_UPSERT_OPTION.message, 0),
+                Messages.INVALID_TABLE_IN_UPSERT_OPTION.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1797,7 +1799,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.INVALID_COLUMN_IN_UPSERT_OPTION.message, 0),
+                Messages.INVALID_COLUMN_IN_UPSERT_OPTION.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1814,7 +1816,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.INVALID_TABLE_IN_UPSERT_OPTION.message, 0),
+                Messages.INVALID_TABLE_IN_UPSERT_OPTION.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1831,7 +1833,7 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", options, LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.INVALID_COLUMN_IN_UPSERT_OPTION.message, 0),
+                Messages.INVALID_COLUMN_IN_UPSERT_OPTION.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
@@ -1843,10 +1845,27 @@ class UnitTests {
             assertEquals("card_number", Utils.getUpsertColumn("cards", JSONArray(), LogLevel.DEBUG))
         } catch (e: SkyflowError) {
             assertEquals(
-                String.format(Messages.EMPTY_UPSERT_OPTIONS_ARRAY.message, 0),
+                Messages.EMPTY_UPSERT_OPTIONS_ARRAY.getMessage("0"),
                 e.getInternalErrorMessage()
             )
         }
+    }
+
+    // --- B1 regression: the "__SKYFLOW_SDK_ID__" placeholder must never leak into error messages ---
+
+    @Test
+    fun testNoErrorCodeLeaksSdkPlaceholder() {
+        SkyflowErrorCode.values().forEach {
+            Assert.assertFalse("$it leaks __SKYFLOW_SDK_ID__", resolveSdkIdentity(it.message).contains("__SKYFLOW_SDK_ID__"))
+        }
+    }
+
+    @Test
+    fun testSkyvaultRendersItsSdkVersionInErrors() {
+        // skyvault: SdkInfo.version defaults to 1.27.0 — errors must match the 1.27.0 baseline prefix.
+        val msg = SkyflowError(SkyflowErrorCode.EMPTY_VAULT_URL).getErrorMessage()
+        Assert.assertFalse(msg.contains("__SKYFLOW_SDK_ID__"))
+        Assert.assertTrue(msg.startsWith("Android SDK v1.27.0"))
     }
 
     @Test

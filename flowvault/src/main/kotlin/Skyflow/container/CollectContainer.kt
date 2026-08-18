@@ -28,6 +28,7 @@ internal fun Container<CollectContainer>.collect(callback: Callback, options: Co
         validateVaultConfig()
         Logger.info(tag, Messages.VALIDATE_COLLECT_RECORDS.getMessage(), configuration.options.logLevel)
         validateElements()
+        FlowDBCollectRequestBody.validateAdditionalFields(options?.additionalFields, configuration.options.logLevel)
         post(callback, options)
     } catch (e: Exception) {
         callback.onFailure(Utils.constructErrorResponse(e))
@@ -131,21 +132,4 @@ fun Container<CollectContainer>.collect(callback: CollectCallback, options: Coll
         }
     }
     collect(adapter, options)
-}
-
-internal fun Container<CollectContainer>.update(tableName: String, skyflowID: String, callback: Callback, options: CollectOptions = CollectOptions()) {
-    try {
-        validateVaultConfig()
-        val requestBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
-            configuration.vaultID,
-            tableName,
-            this.collectElements,
-            skyflowID,
-            configuration.options.logLevel
-        )
-        (this.client as Client).apiClient.post(requestBody, callback, options, "update",
-            CVVMap.captureForUpdate(this.collectElements, skyflowID))
-    } catch (e: Exception) {
-        callback.onFailure(Utils.constructErrorResponse(e))
-    }
 }

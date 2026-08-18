@@ -9,6 +9,24 @@ internal class FlowDBCollectRequestBody {
     companion object {
         private val tag = FlowDBCollectRequestBody::class.qualifiedName
 
+        // Validate additionalFields the same way v1 does (empty records / table / fields / column),
+        // reusing the existing shared error codes. flowvault previously left these unvalidated, so a
+        // malformed record produced a bad request (or wrote to tableName="") instead of a clear error.
+        internal fun validateAdditionalFields(additionalFields: AdditionalFields?, logLevel: LogLevel) {
+            val records = additionalFields?.records ?: return
+            if (records.isEmpty()) {
+                throw SkyflowInternalError(SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_RECORDS, tag, logLevel)
+            }
+            records.forEachIndexed { i, rec ->
+                if (rec.tableName.isEmpty())
+                    throw SkyflowInternalError(SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_TABLE_KEY, tag, logLevel, arrayOf("$i"))
+                if (rec.data.isEmpty())
+                    throw SkyflowInternalError(SkyflowErrorCode.ADDITIONAL_FIELDS_EMPTY_FIELDS, tag, logLevel, arrayOf("$i"))
+                if (rec.data.keys.any { it.isEmpty() })
+                    throw SkyflowInternalError(SkyflowErrorCode.EMPTY_COLUMN_NAME, tag, logLevel, arrayOf(rec.tableName))
+            }
+        }
+
         internal fun buildRequestBody(
             vaultID: String,
             elements: MutableList<TextField>,
@@ -18,10 +36,21 @@ internal class FlowDBCollectRequestBody {
             val tableMap = groupByTable(elements, logLevel)
             val upsertByTable = options.upsert?.associateBy { it.tableName } ?: emptyMap()
 
-            // Merge additionalFields insert records into tableMap
+            // Merge additionalFields insert records into tableMap. Reject any column that collides
+            // with an element column (or another additionalFields column) in the same table — same
+            // fail-fast DUPLICATE_COLUMN_FOUND behavior as v1, instead of silently dropping the value.
+            val seenColumns = HashSet<String>()
+            tableMap.forEach { (table, records) -> records.forEach { seenColumns.add(table + it.columnName) } }
             options.additionalFields?.records?.forEach { rec ->
                 val existing = tableMap.getOrPut(rec.tableName) { mutableListOf() }
-                rec.data.forEach { (k, v) -> existing.add(CollectRequestRecord(k, anyToJsonValue(v))) }
+                rec.data.forEach { (k, v) ->
+                    if (!seenColumns.add(rec.tableName + k)) {
+                        throw SkyflowInternalError(
+                            SkyflowErrorCode.DUPLICATE_COLUMN_FOUND, tag, logLevel, arrayOf(rec.tableName, k)
+                        )
+                    }
+                    existing.add(CollectRequestRecord(k, anyToJsonValue(v)))
+                }
             }
 
             val recordsArray = JSONArray()

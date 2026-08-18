@@ -19,10 +19,15 @@ internal class FlowDBAPIClient(
 
     fun post(requestBody: JSONObject, callback: Callback, options: CollectOptions, endpoint: String = "insert", cvvMap: CVVMap = CVVMap.EMPTY) {
         try {
+            val recordsArray = requestBody.optJSONArray("records")
+            if (recordsArray == null || recordsArray.length() == 0) {
+                // Nothing to collect (no elements and no additionalFields) — fail fast, mirroring reveal.
+                throw SkyflowInternalError(SkyflowErrorCode.EMPTY_RECORDS, tag, logLevel)
+            }
             val collectApiCallback = FlowDBCollectAPICallback(this, requestBody, callback, options, logLevel, endpoint, cvvMap)
             this.getAccessToken(collectApiCallback)
         } catch (e: Exception) {
-            callback.onFailure(Utils.constructError(e))
+            callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 
@@ -35,7 +40,7 @@ internal class FlowDBAPIClient(
             val revealApiCallback = FlowDBRevealApiCallback(callback, this, requestBody)
             this.getAccessToken(revealApiCallback)
         } catch (e: Exception) {
-            callback.onFailure(Utils.constructError(e))
+            callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 }

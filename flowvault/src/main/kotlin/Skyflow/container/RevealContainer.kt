@@ -28,6 +28,9 @@ internal fun Container<RevealContainer>.reveal(
     options: RevealOptions? = RevealOptions()
 ) {
     try {
+        // Fail fast on missing/invalid vault config BEFORE the bearer-token round-trip, matching
+        // flowvault collect and legacy reveal (previously reveal failed opaquely at the network layer).
+        Utils.checkVaultDetails(configuration)
         validateElements()
         Logger.info(
             tag,
@@ -36,7 +39,7 @@ internal fun Container<RevealContainer>.reveal(
         )
         get(callback, options)
     } catch (e: Exception) {
-        callback.onFailure(Utils.constructError(e))
+        callback.onFailure(Utils.constructErrorResponse(e))
     }
 }
 

@@ -1,15 +1,36 @@
 package com.Skyflow
 
 import Skyflow.*
+import Skyflow.core.resolveSdkIdentity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ResponseTest {
+
+    // --- B1 regression: the "__SKYFLOW_SDK_ID__" placeholder must never leak into error messages ---
+
+    @Test
+    fun `no error code leaks the SDK identity placeholder`() {
+        SkyflowErrorCode.values().forEach {
+            assertFalse("$it leaks __SKYFLOW_SDK_ID__", resolveSdkIdentity(it.message).contains("__SKYFLOW_SDK_ID__"))
+        }
+    }
+
+    @Test
+    fun `flowvault renders its own SDK version in error messages`() {
+        // FlowVault stamps SdkInfo from its BuildConfig (1.0.0) at init(); simulate that here.
+        SdkInfo.version = "1.0.0"
+        val msg = SkyflowErrorCode.EMPTY_VAULT_URL.getMessage()
+        assertFalse(msg.contains("__SKYFLOW_SDK_ID__"))
+        assertTrue(msg.startsWith("Android SDK v1.0.0"))
+    }
 
     // CollectResponse
 

@@ -63,29 +63,35 @@ internal class FlowDBCollectAPICallback(
 
     private fun verifyResponse(response: Response) {
         response.use {
-            try {
+            // Build the response INSIDE the try (parse errors -> onFailure), but deliver onSuccess
+            // AFTER it — so an exception thrown by the app's own onSuccess handler is NOT caught here
+            // and turned into a second onFailure. Exactly one of onSuccess/onFailure must fire.
+            val result: JSONObject = try {
                 val bodyStr = response.body?.string() ?: ""
                 if (!response.isSuccessful) {
                     val parsed = try { JSONObject(bodyStr) } catch (e: Exception) { null }
                     if (parsed != null && parsed.has("records")) {
-                        dispatchResponse(bodyStr)
+                        buildResponse(bodyStr)
+                    } else {
+                        val message = try {
+                            parsed?.getJSONObject("error")?.getString("message") ?: bodyStr
+                        } catch (e: JSONException) { bodyStr }
+                        val requestId = response.headers["x-request-id"] ?: ""
+                        callback.onFailure(Utils.constructErrorResponse(response.code, Utils.appendRequestId(message, requestId)))
                         return
                     }
-                    val message = try {
-                        parsed?.getJSONObject("error")?.getString("message") ?: bodyStr
-                    } catch (e: JSONException) { bodyStr }
-                    val requestId = response.headers["x-request-id"] ?: ""
-                    callback.onFailure(Utils.constructErrorResponse(response.code, Utils.appendRequestId(message, requestId)))
-                    return
+                } else {
+                    buildResponse(bodyStr)
                 }
-                dispatchResponse(bodyStr)
             } catch (e: Exception) {
                 callback.onFailure(Utils.constructErrorResponse(e, 500))
+                return
             }
+            callback.onSuccess(result)
         }
     }
 
-    private fun dispatchResponse(bodyStr: String) {
+    private fun buildResponse(bodyStr: String): JSONObject {
         val responseJson = JSONObject(bodyStr)
         val records = responseJson.optJSONArray("records") ?: JSONArray()
         val allRecords = JSONArray()
@@ -143,6 +149,6 @@ internal class FlowDBCollectAPICallback(
             allRecords.put(resultRecord)
         }
 
-        callback.onSuccess(JSONObject().put("records", allRecords))
+        return JSONObject().put("records", allRecords)
     }
 }

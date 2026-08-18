@@ -23,6 +23,10 @@ class Client internal constructor(
     configuration: Configuration,
 ) : BaseSkyflowClient(configuration) {
 
+    // Covariantly narrow to the v1 `Configuration` so the getter descriptor stays
+    // `getConfiguration()LSkyflow/Configuration;` — binary-compatible with 1.27.0.
+    override val configuration: Configuration get() = super.configuration as Configuration
+
     internal val apiClient = APIClient(configuration.vaultID, configuration.vaultURL,
         configuration.tokenProvider,configuration.options.logLevel)
 

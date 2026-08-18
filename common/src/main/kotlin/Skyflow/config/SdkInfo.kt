@@ -1,16 +1,14 @@
 package Skyflow
 
 /**
- * Mutable, per-product SDK identity that core reads for error messages and telemetry
- * (see docs/sdk-split-plan.md).
+ * Per-product SDK version that core reads for error-message rendering (see docs/sdk-split-plan.md).
+ * Each SDK stamps it from its own `BuildConfig.SDK_VERSION` inside `init()`; the default matches the
+ * legacy product so a message rendered before `init()` runs is still well-formed.
  *
- * Core must not depend on a specific product's [BuildConfig], so instead of reading it
- * directly, core reads this registration. Each SDK stamps it from its own
- * `BuildConfig.SDK_NAME` / `BuildConfig.SDK_VERSION` inside its `init()` entry point.
- * Defaults match the legacy product so behavior is unchanged if a message is rendered
- * before `init()` runs.
+ * The SDK *name* is intentionally NOT held here: it must never appear in error messages (which stay
+ * byte-identical to 1.27.0's "Android SDK v<version>"), and telemetry reads `BuildConfig.SDK_NAME`
+ * directly (see Utils.fetchMetrics).
  */
 object SdkInfo {
-    var name: String = "skyflow-android-sdk"
     var version: String = "1.27.0"
 }

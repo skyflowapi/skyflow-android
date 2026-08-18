@@ -202,7 +202,13 @@ enum class Messages(val message: String) {
     MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers.")
 }
 
+// Resolve the SDK-identity placeholder to the running product's version. Single-sourced so BOTH
+// the logging path (Messages.getMessage) and the thrown-error path (SkyflowErrorCode.getMessage)
+// substitute it — otherwise thrown errors leak the raw "__SKYFLOW_SDK_ID__" token to users.
+// Per product: skyvault -> "Android SDK v1.27.0", flowvault -> "Android SDK v1.0.0" (SdkInfo.version).
+internal fun resolveSdkIdentity(message: String): String =
+    message.replace(SDK_NAME_VERSION, "Android SDK v${SdkInfo.version}")
+
 fun Messages.getMessage(vararg values: String?): String {
-    val withIdentity = this.message.replace(SDK_NAME_VERSION, "Android SDK v${SdkInfo.version}")
-    return Utils.constructMessage(withIdentity, *values)
+    return Utils.constructMessage(resolveSdkIdentity(this.message), *values)
 }

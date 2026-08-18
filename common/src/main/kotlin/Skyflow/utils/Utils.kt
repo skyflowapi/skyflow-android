@@ -131,6 +131,9 @@ public class Utils {
                                 response.remove(key)
                         }
                     } catch (e: Exception) {
+                        // A malformed sub-field is skipped rather than aborting response shaping,
+                        // but no longer silently — surface it for diagnosis.
+                        Log.w(tag, "removeEmptyAndNullFields: skipping malformed field '$key'", e)
                     }
                 }
             }
