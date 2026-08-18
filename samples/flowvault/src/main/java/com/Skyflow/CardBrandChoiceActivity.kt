@@ -101,7 +101,9 @@ class CardBrandChoiceActivity : AppCompatActivity() {
         )
 
         val name = collectContainer.create(this, nameInput, options)
-        val cvv = collectContainer.create(this, cvvInput)
+        // returnMockValue = true makes the collect response return a fixed mock CVV (999 for a
+        // 3-digit CVV, 9999 for 4-digit) instead of the real token. CVV-only; no-op for other types.
+        val cvv = collectContainer.create(this, cvvInput, CollectElementOptions(returnMockValue = true))
 
         cardNumber.on(EventName.FOCUS) { state ->
             Log.d(TAG, "focus: state $state")

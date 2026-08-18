@@ -3,16 +3,17 @@ package Skyflow.collect.client
 import Skyflow.SkyflowElementType
 import Skyflow.TextField
 import org.json.JSONObject
-import java.security.SecureRandom
 
 /**
- * Captures the actual value entered into each CVV collect element so its token can be swapped
- * for a mock placeholder in the response, without the real value ever reaching the app.
+ * Captures the actual value entered into each CVV collect element that opted in via
+ * [Skyflow.CollectElementOptions.returnMockValue], so its token can be swapped for a fixed mock
+ * placeholder in the response, without the real value ever reaching the app.
  *
  * Because Android collect elements are in-process objects that directly know their own element
- * type and entered value, no identifier plumbing is needed: we read [TextField.fieldType] and
- * [TextField.getValue] at request-assembly time and key the entered value by table name (inserts)
- * or record id / skyflowID (updates), mirroring how the vault echoes records back.
+ * type, options and entered value, no identifier plumbing is needed: we read [TextField.fieldType],
+ * the element's options and [TextField.getValue] at request-assembly time and key the entered value
+ * by table name (inserts) or record id / skyflowID (updates), mirroring how the vault echoes records
+ * back. Elements that did not opt in are skipped entirely, so their real token is returned unchanged.
  */
 internal class CVVMap(
     val byTable: Map<String, Map<String, String>>,
@@ -24,15 +25,16 @@ internal class CVVMap(
         val EMPTY = CVVMap(emptyMap(), emptyMap())
 
         /**
-         * Builds the map from a set of collect elements. Update elements carry their own skyflowID
-         * (they are the ones filtered by a non-empty skyflowId) and are keyed by record id; insert
-         * elements are keyed by table name.
+         * Builds the map from a set of collect elements. Only CVV elements that opted in via
+         * [Skyflow.CollectElementOptions.returnMockValue] are captured. Update elements carry their
+         * own skyflowID (they are the ones filtered by a non-empty skyflowId) and are keyed by record
+         * id; insert elements are keyed by table name.
          */
         internal fun capture(elements: List<TextField>): CVVMap {
             val byTable = LinkedHashMap<String, MutableMap<String, String>>()
             val byRecordId = LinkedHashMap<String, MutableMap<String, String>>()
             for (element in elements) {
-                if (element.fieldType != SkyflowElementType.CVV) continue
+                if (element.fieldType != SkyflowElementType.CVV || !element.options.returnMockValue) continue
                 val value = element.getValue()
                 val skyflowId = element.skyflowId
                 if (!skyflowId.isNullOrEmpty()) {
@@ -46,12 +48,13 @@ internal class CVVMap(
 
         /**
          * Builds the map for the standalone update flow, where the skyflowID is supplied by the
-         * caller rather than carried on the elements. All CVV elements are keyed by that record id.
+         * caller rather than carried on the elements. Only opted-in CVV elements are keyed by that
+         * record id.
          */
         internal fun captureForUpdate(elements: List<TextField>, skyflowId: String): CVVMap {
             val columns = LinkedHashMap<String, String>()
             for (element in elements) {
-                if (element.fieldType != SkyflowElementType.CVV) continue
+                if (element.fieldType != SkyflowElementType.CVV || !element.options.returnMockValue) continue
                 columns[element.columnName] = element.getValue()
             }
             return if (columns.isEmpty()) EMPTY else CVVMap(emptyMap(), mapOf(skyflowId to columns))
@@ -59,29 +62,29 @@ internal class CVVMap(
     }
 }
 
-private val secureRandom = SecureRandom()
+/**
+ * Fixed mock CVV placeholders, keyed by CVV length. Deliberately hardcoded (not random) so a
+ * downstream proxy can reliably identify the mock for detokenization. If the value ever needs to
+ * change, change it HERE — these two constants are the single source of truth.
+ */
+internal const val MOCK_CVV_3 = "999"
+internal const val MOCK_CVV_4 = "9999"
 
 /**
- * Generates a numeric mock CVV placeholder of [length] digits that is guaranteed to differ from
- * [actualValue]. Leading zeros are allowed because this is a display string, not a number. Each
- * attempt is a single secure-random draw (digit = nextInt(10) per position); it regenerates on the
- * rare collision. It runs a handful of times per submit, so speed is not a concern.
+ * Returns the fixed mock CVV for a value of [length] digits: 4-or-more digits -> [MOCK_CVV_4],
+ * otherwise -> [MOCK_CVV_3]. A zero/empty length yields "" (nothing was entered, nothing to mock).
+ * The mock is a fixed value and may coincidentally equal the user's real CVV; that edge case is
+ * accepted by design.
  */
-internal fun generateMockCVV(length: Int, actualValue: String): String {
-    if (length <= 0) return ""
-    while (true) {
-        val builder = StringBuilder(length)
-        for (i in 0 until length) {
-            builder.append(secureRandom.nextInt(10))
-        }
-        val candidate = builder.toString()
-        if (candidate != actualValue) return candidate
-    }
+internal fun mockCVV(length: Int): String = when {
+    length <= 0 -> ""
+    length >= 4 -> MOCK_CVV_4
+    else -> MOCK_CVV_3
 }
 
 /**
- * Replaces the token value of every captured CVV column in [tokens] with a freshly generated mock
- * placeholder that matches the entered length and never equals that element's own entered value.
+ * Replaces the token value of every captured CVV column in [tokens] with the fixed mock placeholder
+ * for the entered length (see [mockCVV]).
  *
  * tokens is keyed only by the TOP-LEVEL column name. Nested sub-fields appear as separate entries
  * in that column's list, each carrying a dotted "path" field. The replacement rule:
@@ -92,10 +95,8 @@ internal fun generateMockCVV(length: Int, actualValue: String): String {
  *
  * One mock is generated per column (same value applied to all matching entries). Updates are matched
  * by record id first, then inserts by table name. Non-CVV columns and hashed data are untouched.
- *
- * Cross-element collision is intentionally ignored: a mock may coincidentally equal a *different*
- * element's entered value, but entered values never leave the device to the app, so there is no
- * observable leak. Only the per-element guarantee (mock != that element's own entered value) matters.
+ * The mock is a fixed value (see [mockCVV]); it may coincidentally equal an entered CVV, which is
+ * acceptable — entered values never leave the device to the app.
  */
 internal fun replaceCVVTokensInRecord(
     tokens: JSONObject,
@@ -113,7 +114,7 @@ internal fun replaceCVVTokensInRecord(
         val nestedPath = if (dotIndex == -1) null else column.substring(dotIndex + 1)
 
         val entries = tokens.optJSONArray(topKey) ?: continue
-        val mock = if (enteredValue.isEmpty()) "" else generateMockCVV(enteredValue.length, enteredValue)
+        val mock = mockCVV(enteredValue.length)
         for (i in 0 until entries.length()) {
             val entry = entries.optJSONObject(i) ?: continue
             val entryPath = if (entry.has("path")) entry.optString("path") else null
