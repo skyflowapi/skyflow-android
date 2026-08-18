@@ -3,7 +3,7 @@ package Skyflow
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class RevealMetadata(
+data class RevealRecordMetadata(
     val tableName: String? = null,
     val skyflowId: String? = null
 )
@@ -12,7 +12,7 @@ data class RevealRecord(
     val token: String,
     val error: String? = null,
     val tokenGroupName: String? = null,
-    val metadata: RevealMetadata? = null,
+    val metadata: RevealRecordMetadata? = null,
     val httpCode: Int = 0
 )
 
@@ -52,8 +52,8 @@ data class RevealResponse(val records: List<RevealRecord> = emptyList()) {
                             )
                         } else {
                             val metaObj = r.optJSONObject("metadata")
-                            val metadata: RevealMetadata? = metaObj?.let { obj ->
-                                RevealMetadata(
+                            val metadata: RevealRecordMetadata? = metaObj?.let { obj ->
+                                RevealRecordMetadata(
                                     tableName = obj.optString("tableName").ifEmpty { null },
                                     skyflowId = obj.optString("skyflowId").ifEmpty { null }
                                         ?: obj.optString("skyflowID").ifEmpty { null }

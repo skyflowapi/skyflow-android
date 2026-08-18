@@ -194,10 +194,10 @@ class InputFormattingCollect : AppCompatActivity() {
                     if (record.httpCode == 200) {
                         Log.d(TAG, "collect success: ${record.tokens}")
                         val intent = Intent(this@InputFormattingCollect, InputFormattingReveal::class.java)
-                        intent.putExtra("cardNumber", record.tokens?.get("card_number")?.toString() ?: "")
-                        intent.putExtra("expiryYear", record.tokens?.get("expiry_year")?.toString() ?: "")
-                        intent.putExtra("expiryDate", record.tokens?.get("expiry_date")?.toString() ?: "")
-                        intent.putExtra("inputField", record.tokens?.get("input_field")?.toString() ?: "")
+                        intent.putExtra("cardNumber", record.tokens?.get("card_number")?.firstOrNull()?.token ?: "")
+                        intent.putExtra("expiryYear", record.tokens?.get("expiry_year")?.firstOrNull()?.token ?: "")
+                        intent.putExtra("expiryDate", record.tokens?.get("expiry_date")?.firstOrNull()?.token ?: "")
+                        intent.putExtra("inputField", record.tokens?.get("input_field")?.firstOrNull()?.token ?: "")
                         startActivity(intent)
                     } else {
                         Log.d(TAG, "collect error [${record.httpCode}]: ${record.error}")

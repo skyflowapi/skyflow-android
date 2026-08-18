@@ -45,9 +45,20 @@ class ResponseTest {
         assertEquals(200, record.httpCode)
         assertNull(record.error)
         assertNotNull(record.tokens)
-        @Suppress("UNCHECKED_CAST")
-        val tokenList = record.tokens?.get("card_number") as? List<Map<String, Any?>>
-        assertEquals("tok1", tokenList?.firstOrNull()?.get("token"))
+        val tokenList = record.tokens?.get("card_number")
+        assertEquals("tok1", tokenList?.firstOrNull()?.token)
+    }
+
+    @Test
+    fun `CollectResponse fromJson preserves the nested-path token field`() {
+        // FlowDB adds a `path` to tokens for nested JSON-path tokenization. flowvault stores tokens as
+        // an untyped Map, so EVERY server key (token, tokenGroupName, path, ...) survives — not dropped.
+        val json = """{"records":[{"tableName":"cards","skyflowId":"id1","tokens":{"card_number":[{"token":"tok1","tokenGroupName":"grp1","path":"a.b.c"}]},"httpCode":200}]}"""
+        val response = CollectResponse.fromJson(json)
+        val token = response.records[0].tokens?.get("card_number")?.firstOrNull()
+        assertEquals("tok1", token?.token)
+        assertEquals("grp1", token?.tokenGroupName)
+        assertEquals("a.b.c", token?.path)
     }
 
     @Test
