@@ -3,6 +3,7 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.composable.*
 import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
@@ -1042,7 +1043,7 @@ class ComposableElementsTests {
         for (logItem in logItems) {
             if (logItem.type == Log.ERROR) {
                 Assert.assertEquals(tag, logItem.tag)
-                Assert.assertEquals(Messages.INVALID_EVENT_TYPE.message, logItem.msg)
+                Assert.assertEquals(Messages.INVALID_EVENT_TYPE.getMessage(), logItem.msg)
                 logFound = true
                 count++
             }
@@ -1089,7 +1090,7 @@ class ComposableElementsTests {
         for (logItem in logItems) {
             if (logItem.type == Log.ERROR) {
                 Assert.assertEquals(tag, logItem.tag)
-                Assert.assertEquals(Messages.INVALID_EVENT_TYPE.message, logItem.msg)
+                Assert.assertEquals(Messages.INVALID_EVENT_TYPE.getMessage(), logItem.msg)
                 logFound = true
                 count++
             }

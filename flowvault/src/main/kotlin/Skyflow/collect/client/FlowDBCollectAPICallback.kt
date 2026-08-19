@@ -46,7 +46,11 @@ internal class FlowDBCollectAPICallback(
     }
 
     override fun onFailure(exception: Any) {
-        callback.onFailure(exception)
+        // getAccessToken delivers a raw SkyflowInternalError here (e.g. INVALID_BEARER_TOKEN). Convert
+        // it to the standard {errors:[{error:{code,description}}]} shape the app adapter's
+        // SkyflowError.fromJson parses, so token failures surface with the real code + message rather
+        // than a mangled 500 from fromJson(nonJsonString).
+        callback.onFailure(if (exception is Exception) Utils.constructErrorResponse(exception) else exception)
     }
 
     private fun sendRequest(request: Request) {

@@ -18,7 +18,6 @@ internal class SkyflowInternalError(val skyflowErrorCode: SkyflowErrorCode = Sky
     override var message = ""
     internal var internalMessage = ""
     private var code = skyflowErrorCode.getCode()
-    var xmlBody:String = ""
 
     init {
         val logMessage =  Utils.constructMessage(skyflowErrorCode.getMessage(), *params)
@@ -41,15 +40,6 @@ internal class SkyflowInternalError(val skyflowErrorCode: SkyflowErrorCode = Sky
     }
     internal fun getInternalErrorMessage():String{
         return this.internalMessage
-    }
-
-    fun setXml(xml:String)
-    {
-        this.xmlBody = xml
-    }
-
-    fun getXml(): String {
-        return xmlBody
     }
 
     override fun toString(): String {

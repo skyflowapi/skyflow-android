@@ -39,7 +39,10 @@ internal class FlowDBRevealApiCallback(
     }
 
     override fun onFailure(exception: Any) {
-        callback.onFailure(exception)
+        // getAccessToken delivers a raw SkyflowInternalError here (e.g. INVALID_BEARER_TOKEN). Convert
+        // it to the standard {errors:[{error:{code,description}}]} shape so the app receives the real
+        // code + message instead of a mangled 500 (RevealValueCallback passes this through unchanged).
+        callback.onFailure(if (exception is Exception) Utils.constructErrorResponse(exception) else exception)
     }
 
     private fun sendRequest(request: Request) {

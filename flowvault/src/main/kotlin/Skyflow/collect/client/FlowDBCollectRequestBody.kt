@@ -90,20 +90,6 @@ internal class FlowDBCollectRequestBody {
                 .put("records", JSONArray().put(JSONObject().put("skyflowID", skyflowID).put("data", dataObject)))
         }
 
-        internal fun buildUpdateRequestBodyFromMap(
-            vaultID: String,
-            tableName: String,
-            data: Map<String, Any>,
-            skyflowID: String
-        ): JSONObject {
-            val dataObject = JSONObject()
-            data.forEach { (k, v) -> dataObject.put(k, v) }
-            return JSONObject()
-                .put("vaultID", vaultID)
-                .put("tableName", tableName)
-                .put("records", JSONArray().put(JSONObject().put("skyflowID", skyflowID).put("data", dataObject)))
-        }
-
         private fun groupByTable(
             elements: MutableList<TextField>,
             logLevel: LogLevel

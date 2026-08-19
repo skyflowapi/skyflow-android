@@ -9,6 +9,6 @@ package Skyflow
  * byte-identical to 1.27.0's "Android SDK v<version>"), and telemetry reads `BuildConfig.SDK_NAME`
  * directly (see Utils.fetchMetrics).
  */
-object SdkInfo {
+internal object SdkInfo {
     var version: String = "1.27.0"
 }

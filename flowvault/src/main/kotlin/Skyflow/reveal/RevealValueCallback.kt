@@ -17,14 +17,19 @@ internal class RevealValueCallback(
     private val elementsList = mutableListOf<Pair<String, Label>>()
 
     override fun onSuccess(responseBody: Any) {
-        try {
+        // Build/apply the response INSIDE the try (parse/apply errors -> onFailure), but deliver
+        // onSuccess AFTER it so an exception thrown by the app's own onSuccess handler is NOT caught
+        // here and turned into a second onFailure. Exactly one of onSuccess/onFailure must fire.
+        val responseString: String = try {
             constructElementMap()
             val responseJSON = JSONObject(responseBody.toString())
             applyRecordsToElements(responseJSON)
-            callback.onSuccess(responseJSON.toString())
+            responseJSON.toString()
         } catch (e: Exception) {
             callback.onFailure(Utils.constructErrorResponse(e))
+            return
         }
+        callback.onSuccess(responseString)
     }
 
     override fun onFailure(exception: Any) {

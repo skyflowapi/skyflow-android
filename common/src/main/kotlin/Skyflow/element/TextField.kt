@@ -5,6 +5,7 @@ import Skyflow.collect.elements.validations.SkyflowValidateYear
 import Skyflow.composable.ComposableEvents
 import Skyflow.core.Logger
 import Skyflow.core.Messages
+import Skyflow.core.getMessage
 import Skyflow.core.elements.state.StateforText
 import Skyflow.utils.EventName
 import android.annotation.SuppressLint
@@ -299,7 +300,7 @@ class TextField @JvmOverloads constructor(
             EventName.BLUR -> this.userOnBlurListener = handler
             EventName.FOCUS -> this.userOnFocusListener = handler
             EventName.SUBMIT -> {
-                Logger.error(tag, Messages.INVALID_EVENT_TYPE.message, optionsForLogging.logLevel)
+                Logger.error(tag, Messages.INVALID_EVENT_TYPE.getMessage(), optionsForLogging.logLevel)
             }
         }
     }

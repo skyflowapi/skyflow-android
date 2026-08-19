@@ -3,7 +3,7 @@ package Skyflow
 import Skyflow.core.Messages
 import Skyflow.core.resolveSdkIdentity
 
-enum class SkyflowErrorCode(val code:Int, var message:String) {
+enum class SkyflowErrorCode(val code:Int, rawMessage:String) {
 
     INVALID_VAULT_ID(400, Messages.INVALID_VAULT_ID.message),
     INVALID_VAULT_URL(400,Messages.INVALID_VAULT_URL.message),
@@ -127,6 +127,14 @@ enum class SkyflowErrorCode(val code:Int, var message:String) {
     EMPTY_TOKEN_ID(400, Messages.EMPTY_TOKEN_ID.message),
     MISSING_TOKEN(400, Messages.MISSING_TOKEN.message)
     ;
+
+    // Backing field holds the raw "__SKYFLOW_SDK_ID__" placeholder; the getter resolves it to the live
+    // per-product identity at READ time (the version isn't known until init()). This restores 1.27.0,
+    // where reading `.message` already returned the substituted "Android SDK v<version> …" string —
+    // so consumers/logs that read `.message` directly no longer see the raw placeholder. Kept as `var`
+    // to preserve the 1.27.0 getMessage()/setMessage() binary surface.
+    var message: String = rawMessage
+        get() = resolveSdkIdentity(field)
 
     @JvmName("getCode1")
     fun getCode() : Int {
