@@ -6,7 +6,7 @@ ext {
     mGroupId = "com.skyflowapi.android"
     mArtifactId = "skyflow-flowvault-android-sdk"
     mVersionCode = 1
-    mVersionName = "1.0.0-dev.c96124d"
+    mVersionName = "1.0.0-dev.3cbfc27"
 
     mLibraryName = "skyflow-flowvault-android"
     mLibraryDescription = "Skyflow’s FlowVault Android SDK can be used to securely collect, tokenize, and display sensitive data in the mobile without exposing your front-end infrastructure to sensitive data."
