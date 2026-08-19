@@ -45,20 +45,6 @@ internal class CVVMap(
             }
             return CVVMap(byTable, byRecordId)
         }
-
-        /**
-         * Builds the map for the standalone update flow, where the skyflowID is supplied by the
-         * caller rather than carried on the elements. Only opted-in CVV elements are keyed by that
-         * record id.
-         */
-        internal fun captureForUpdate(elements: List<TextField>, skyflowId: String): CVVMap {
-            val columns = LinkedHashMap<String, String>()
-            for (element in elements) {
-                if (element.fieldType != SkyflowElementType.CVV || !element.options.returnMockValue) continue
-                columns[element.columnName] = element.getValue()
-            }
-            return if (columns.isEmpty()) EMPTY else CVVMap(emptyMap(), mapOf(skyflowId to columns))
-        }
     }
 }
 
@@ -67,8 +53,8 @@ internal class CVVMap(
  * downstream proxy can reliably identify the mock for detokenization. If the value ever needs to
  * change, change it HERE — these two constants are the single source of truth.
  */
-internal const val MOCK_CVV_3 = "999"
-internal const val MOCK_CVV_4 = "9999"
+internal const val MOCK_CVV_3 = "817"
+internal const val MOCK_CVV_4 = "8173"
 
 /**
  * Returns the fixed mock CVV for a value of [length] digits: 4-or-more digits -> [MOCK_CVV_4],

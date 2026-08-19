@@ -68,23 +68,23 @@ class MockCVVTest {
 
     @Test
     fun `mockCVV returns the 3-digit constant for length 3 and shorter`() {
-        assertEquals("999", mockCVV(3))
-        assertEquals("999", mockCVV(2))
-        assertEquals("999", mockCVV(1))
+        assertEquals("817", mockCVV(3))
+        assertEquals("817", mockCVV(2))
+        assertEquals("817", mockCVV(1))
         assertEquals(MOCK_CVV_3, mockCVV(3))
     }
 
     @Test
     fun `mockCVV returns the 4-digit constant for length 4 and longer`() {
-        assertEquals("9999", mockCVV(4))
-        assertEquals("9999", mockCVV(5))
+        assertEquals("8173", mockCVV(4))
+        assertEquals("8173", mockCVV(5))
         assertEquals(MOCK_CVV_4, mockCVV(4))
     }
 
     @Test
     fun `mock constants hold the agreed fixed values`() {
-        assertEquals("999", MOCK_CVV_3)
-        assertEquals("9999", MOCK_CVV_4)
+        assertEquals("817", MOCK_CVV_3)
+        assertEquals("8173", MOCK_CVV_4)
     }
 
     // ---- token-list builders (mirror the vault's response shape) ----
@@ -139,8 +139,8 @@ class MockCVVTest {
         replaceCVVTokensInRecord(tokens, tableName = "cards", skyflowId = "newlyGeneratedId", cvvMap = cvvMap)
 
         val swapped = tokens.getJSONArray("cvv").getJSONObject(0)
-        // 3-digit entered value -> fixed 999.
-        assertEquals("999", swapped.getString("token"))
+        // 3-digit entered value -> fixed 817.
+        assertEquals("817", swapped.getString("token"))
         // tokenGroupName preserved.
         assertEquals("grp", swapped.getString("tokenGroupName"))
         // Non-CVV column untouched.
@@ -154,22 +154,22 @@ class MockCVVTest {
 
         replaceCVVTokensInRecord(tokens, tableName = "cards", skyflowId = "rec-1", cvvMap = cvvMap)
 
-        // 4-digit entered value -> fixed 9999.
-        assertEquals("9999", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
+        // 4-digit entered value -> fixed 8173.
+        assertEquals("8173", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
     }
 
     @Test
     fun `record id match takes precedence over table match`() {
         val tokens = JSONObject().put("cvv", tokenList("realCvvToken"))
         val cvvMap = CVVMap(
-            byTable = mapOf("cards" to mapOf("cvv" to "111")),      // 3-digit -> would be 999
-            byRecordId = mapOf("rec-1" to mapOf("cvv" to "2222"))   // 4-digit -> 9999
+            byTable = mapOf("cards" to mapOf("cvv" to "111")),      // 3-digit -> would be 817
+            byRecordId = mapOf("rec-1" to mapOf("cvv" to "2222"))   // 4-digit -> 8173
         )
 
         replaceCVVTokensInRecord(tokens, tableName = "cards", skyflowId = "rec-1", cvvMap = cvvMap)
 
-        // Value must follow the record-id entry (9999), proving record id won.
-        assertEquals("9999", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
+        // Value must follow the record-id entry (8173), proving record id won.
+        assertEquals("8173", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
     }
 
     @Test
@@ -181,7 +181,7 @@ class MockCVVTest {
 
         val entries = tokens.getJSONArray("cvv")
         for (i in 0 until entries.length()) {
-            assertEquals("999", entries.getJSONObject(i).getString("token"))
+            assertEquals("817", entries.getJSONObject(i).getString("token"))
         }
     }
 
@@ -237,7 +237,7 @@ class MockCVVTest {
         // whole-column entry (no path): untouched
         assertEquals("whole-col-tok", addr.getJSONObject(0).getString("token"))
         // pincode entry: replaced with the fixed 3-digit mock
-        assertEquals("999", addr.getJSONObject(1).getString("token"))
+        assertEquals("817", addr.getJSONObject(1).getString("token"))
         // city, city.street, city.ward: untouched
         assertEquals("city-tok",    addr.getJSONObject(2).getString("token"))
         assertEquals("street-tok",  addr.getJSONObject(3).getString("token"))
@@ -260,7 +260,7 @@ class MockCVVTest {
         assertEquals("city-tok",      addr.getJSONObject(2).getString("token"))
         assertEquals("ward-tok",      addr.getJSONObject(4).getString("token"))
         // city.street: replaced with the fixed 3-digit mock
-        assertEquals("999", addr.getJSONObject(3).getString("token"))
+        assertEquals("817", addr.getJSONObject(3).getString("token"))
     }
 
     @Test
@@ -282,7 +282,7 @@ class MockCVVTest {
         assertEquals("ward-tok",      addr.getJSONObject(4).getString("token"))
         assertEquals("details-tok",   addr.getJSONObject(5).getString("token"))
         // details.cvv: replaced with the fixed 4-digit mock
-        assertEquals("9999", addr.getJSONObject(6).getString("token"))
+        assertEquals("8173", addr.getJSONObject(6).getString("token"))
         // other column untouched
         assertEquals("card-tok", tokens.getJSONArray("card_number").getJSONObject(0).getString("token"))
     }
@@ -301,8 +301,8 @@ class MockCVVTest {
 
         val entries = tokens.getJSONArray("cvv")
         // path-less entries replaced with the same fixed mock
-        assertEquals("999", entries.getJSONObject(0).getString("token"))
-        assertEquals("999", entries.getJSONObject(1).getString("token"))
+        assertEquals("817", entries.getJSONObject(0).getString("token"))
+        assertEquals("817", entries.getJSONObject(1).getString("token"))
         // path-carrying entry untouched
         assertEquals("sub-tok", entries.getJSONObject(2).getString("token"))
     }
@@ -366,21 +366,6 @@ class MockCVVTest {
         assertFalse("opted-out column must be absent", cols?.containsKey("cvv_b") ?: false)
     }
 
-    // ---- CVVMap.captureForUpdate: same gating ----
-
-    @Test
-    fun `captureForUpdate includes an opted-in CVV keyed by the supplied record id`() {
-        val cvv = cvvElement(returnMockValue = true, value = "321")
-        val map = CVVMap.captureForUpdate(listOf(cvv), "rec-77")
-        assertEquals("321", map.byRecordId["rec-77"]?.get("cvv"))
-    }
-
-    @Test
-    fun `captureForUpdate returns EMPTY when no CVV opted in`() {
-        val cvv = cvvElement(returnMockValue = false, value = "321")
-        assertTrue(CVVMap.captureForUpdate(listOf(cvv), "rec-77").isEmpty())
-    }
-
     // ---- capture -> replace integration ----
 
     @Test
@@ -389,7 +374,7 @@ class MockCVVTest {
         val map = CVVMap.capture(listOf(cvv))
         val tokens = JSONObject().put("cvv", tokenList("realCvvToken"))
         replaceCVVTokensInRecord(tokens, tableName = "cards", skyflowId = "id", cvvMap = map)
-        assertEquals("999", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
+        assertEquals("817", tokens.getJSONArray("cvv").getJSONObject(0).getString("token"))
     }
 
     @Test
