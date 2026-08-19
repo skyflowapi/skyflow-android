@@ -20,7 +20,10 @@ internal abstract class BaseApiClient(
 ) {
     protected val tag: String? = this::class.qualifiedName
 
-    private fun isValidToken(token: String?): Boolean {
+    // `protected open` so a product can harden it (see FlowDBAPIClient). The legacy client does NOT
+    // override it, so skyvault keeps the exact 1.27.0 behavior (JWTUtils may throw on a malformed
+    // token). This change is additive — no behavior change for existing callers.
+    protected open fun isValidToken(token: String?): Boolean {
         return if (token != "") !JWTUtils.isExpired(token!!) else false
     }
 

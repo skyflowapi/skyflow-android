@@ -10,12 +10,15 @@ import Skyflow.Options
 import Skyflow.SkyflowError
 import Skyflow.SkyflowErrorCode
 import Skyflow.SkyflowInternalError
+import Skyflow.TokenProvider
+import Skyflow.core.FlowDBAPIClient
 import Skyflow.reveal.FlowDBRevealApiCallback
 import Skyflow.reveal.RevealValueCallback
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -94,5 +97,33 @@ class ErrorDeliveryTest {
         }
 
         assertFalse("onFailure must not fire when the app's onSuccess throws", onFailureCalled)
+    }
+
+    // ---- JWT: a malformed/opaque bearer token must not crash ----
+
+    /**
+     * A TokenProvider that returns an opaque (non-JWT) token makes JWTUtils throw. In the base flow
+     * that throw lands on the token-provider callback (outside getAccessToken's try) and would crash;
+     * FlowDBAPIClient.isValidToken now swallows it so the app gets a typed INVALID_BEARER_TOKEN.
+     */
+    @Test
+    fun `JWT opaque bearer token yields INVALID_BEARER_TOKEN instead of crashing`() {
+        var captured: Callback? = null
+        val provider = object : TokenProvider {
+            override fun getBearerToken(callback: Callback) { captured = callback }
+        }
+        val apiClient = FlowDBAPIClient("vault123", "https://vault.url.com", provider, LogLevel.ERROR)
+
+        var failure: Any? = null
+        apiClient.getAccessToken(object : Callback {
+            override fun onSuccess(responseBody: Any) {}
+            override fun onFailure(exception: Any) { failure = exception }
+        })
+        // Deliver the token AFTER getAccessToken returned (outside its try), as a real async provider
+        // would. Pre-fix this threw ArrayIndexOutOfBounds here (an uncaught crash).
+        captured!!.onSuccess("opaque-not-a-jwt")
+
+        assertTrue(failure is SkyflowInternalError)
+        assertEquals(SkyflowErrorCode.INVALID_BEARER_TOKEN.code, (failure as SkyflowInternalError).getErrorcode())
     }
 }

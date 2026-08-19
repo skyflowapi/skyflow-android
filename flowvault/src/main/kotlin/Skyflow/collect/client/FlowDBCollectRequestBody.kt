@@ -90,6 +90,40 @@ internal class FlowDBCollectRequestBody {
                 .put("records", JSONArray().put(JSONObject().put("skyflowID", skyflowID).put("data", dataObject)))
         }
 
+        // Builds ONE combined update body from update elements + additionalFields update records,
+        // merging BOTH sources by (tableName, skyflowId) into a single record per record id — matching
+        // v1's "${table}_${skyflowID}" merge, so the vault gets one update op per record, not two.
+        // additionalFields overwrite element columns on collision (v1 last-writer-wins).
+        internal fun buildCombinedUpdateBody(
+            vaultID: String,
+            updateElements: List<TextField>,
+            additionalUpdates: List<AdditionalFieldsRecord>,
+            logLevel: LogLevel
+        ): JSONObject {
+            val recordByKey = LinkedHashMap<Pair<String, String>, JSONObject>()
+
+            updateElements.groupBy { it.tableName to it.skyflowId!! }.forEach { (key, elements) ->
+                val (tableName, skyflowID) = key
+                val rec = buildUpdateRequestBody(
+                    vaultID, tableName, elements.toMutableList(), skyflowID, logLevel
+                ).getJSONArray("records").getJSONObject(0).put("tableName", tableName)
+                recordByKey[key] = rec
+            }
+
+            additionalUpdates.groupBy { it.tableName to it.skyflowId!! }.forEach { (key, records) ->
+                val (tableName, skyflowID) = key
+                val rec = recordByKey.getOrPut(key) {
+                    JSONObject().put("skyflowID", skyflowID).put("data", JSONObject()).put("tableName", tableName)
+                }
+                val dataObj = rec.getJSONObject("data")
+                records.forEach { r -> r.data.forEach { (k, v) -> dataObj.put(k, v) } }
+            }
+
+            val updateRecordsArray = JSONArray()
+            recordByKey.values.forEach { updateRecordsArray.put(it) }
+            return JSONObject().put("vaultID", vaultID).put("records", updateRecordsArray)
+        }
+
         private fun groupByTable(
             elements: MutableList<TextField>,
             logLevel: LogLevel

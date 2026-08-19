@@ -212,34 +212,11 @@ private fun Container<ComposableContainer>.post(callback: Callback, options: Col
         ?.filter { it.skyflowId.isNullOrEmpty() } ?: emptyList()
 
     if (updateElements.isNotEmpty() || additionalUpdates.isNotEmpty()) {
-        val updateRecordsArray = org.json.JSONArray()
-
-        updateElements.groupBy { it.skyflowId }.forEach { (_, elements) ->
-            val tableName = elements.first().tableName
-            val skyflowID = elements.first().skyflowId!!
-            val singleBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
-                configuration.vaultID, tableName, elements.toMutableList(),
-                skyflowID, configuration.options.logLevel
-            )
-            val rec = singleBody.getJSONArray("records").getJSONObject(0)
-            rec.put("tableName", tableName)
-            updateRecordsArray.put(rec)
-        }
-
-        additionalUpdates.groupBy { it.skyflowId }.forEach { (_, records) ->
-            val merged = records.fold(mutableMapOf<String, Any>()) { acc, r -> acc.also { it.putAll(r.data) } }
-            val dataObj = org.json.JSONObject().apply { merged.forEach { (k, v) -> put(k, v) } }
-            updateRecordsArray.put(
-                org.json.JSONObject()
-                    .put("skyflowID", records.first().skyflowId!!)
-                    .put("data", dataObj)
-                    .put("tableName", records.first().tableName)
-            )
-        }
-
-        val combinedUpdateBody = JSONObject()
-            .put("vaultID", configuration.vaultID)
-            .put("records", updateRecordsArray)
+        // ONE combined update body: element-update columns + additionalFields update data are merged
+        // by (tableName, skyflowId) into a single record per record id (matching v1). See helper.
+        val combinedUpdateBody = FlowDBCollectRequestBody.buildCombinedUpdateBody(
+            configuration.vaultID, updateElements, additionalUpdates, configuration.options.logLevel
+        )
 
         val insertBody: JSONObject? = if (insertElements.isNotEmpty() || additionalInserts.isNotEmpty()) {
             val insertOptions = CollectOptions(
@@ -275,14 +252,17 @@ private fun Container<ComposableContainer>.post(callback: Callback, options: Col
 
 private fun Container<ComposableContainer>.addViewsToComposableLayout() {
 
+    // A caller may explicitly pass styles = null (the ctor only DEFAULTS them); fall back to the same
+    // defaults rather than NPE-ing on a force-unwrap.
+    val styles = options.styles ?: ComposableStyles.getStyles()
     val lp = LinearLayout.LayoutParams(
-        options.styles!!.base.width,
-        options.styles!!.base.height
+        styles.base.width,
+        styles.base.height
     )
     var k = 0
     for (i in options.layout.indices) {
-        val padding = options.styles!!.base.padding
-        val margin = options.styles!!.base.margin
+        val padding = styles.base.padding
+        val margin = styles.base.margin
         val composableRow = LinearLayout(context, null, 0)
         composableRow.orientation = LinearLayout.HORIZONTAL
         composableRow.layoutParams = lp
@@ -338,7 +318,7 @@ private fun Container<ComposableContainer>.addViewsToComposableLayout() {
 
 private fun Container<ComposableContainer>.applyStylesToErrorText(errorText: TextView) {
     errorText.visibility = View.INVISIBLE
-    val baseErrorTextStyles = options.errorTextStyles!!.base
+    val baseErrorTextStyles = (options.errorTextStyles ?: ComposableStyles.getErrorTextStyles()).base
 
     val errorMargin = baseErrorTextStyles.margin
     val lp = LinearLayout.LayoutParams(baseErrorTextStyles.width, baseErrorTextStyles.height)
@@ -365,7 +345,8 @@ private fun Container<ComposableContainer>.applyStylesToErrorText(errorText: Tex
 private fun Container<ComposableContainer>.getBackgroundDrawable(row: Boolean): Drawable {
     val border = GradientDrawable()
     border.setColor(Color.WHITE)
-    val borderStyles = if (row) options.styles!!.base else options.errorTextStyles!!.base
+    val borderStyles = if (row) (options.styles ?: ComposableStyles.getStyles()).base
+                       else (options.errorTextStyles ?: ComposableStyles.getErrorTextStyles()).base
     border.setStroke(borderStyles.borderWidth, borderStyles.borderColor)
     border.cornerRadius = borderStyles.cornerRadius
     return border

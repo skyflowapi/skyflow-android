@@ -60,35 +60,11 @@ internal fun Container<CollectContainer>.post(callback: Callback, options: Colle
         ?.filter { it.skyflowId.isNullOrEmpty() } ?: emptyList()
 
     if (updateElements.isNotEmpty() || additionalUpdates.isNotEmpty()) {
-        // Build ONE combined update body — tableName per record so all go in a single API call
-        val updateRecordsArray = org.json.JSONArray()
-
-        updateElements.groupBy { it.skyflowId }.forEach { (_, elements) ->
-            val tableName = elements.first().tableName
-            val skyflowID = elements.first().skyflowId!!
-            val singleBody = FlowDBCollectRequestBody.buildUpdateRequestBody(
-                configuration.vaultID, tableName, elements.toMutableList(),
-                skyflowID, configuration.options.logLevel
-            )
-            val rec = singleBody.getJSONArray("records").getJSONObject(0)
-            rec.put("tableName", tableName)
-            updateRecordsArray.put(rec)
-        }
-
-        additionalUpdates.groupBy { it.skyflowId }.forEach { (_, records) ->
-            val merged = records.fold(mutableMapOf<String, Any>()) { acc, r -> acc.also { it.putAll(r.data) } }
-            val dataObj = org.json.JSONObject().apply { merged.forEach { (k, v) -> put(k, v) } }
-            updateRecordsArray.put(
-                org.json.JSONObject()
-                    .put("skyflowID", records.first().skyflowId!!)
-                    .put("data", dataObj)
-                    .put("tableName", records.first().tableName)
-            )
-        }
-
-        val combinedUpdateBody = JSONObject()
-            .put("vaultID", configuration.vaultID)
-            .put("records", updateRecordsArray)
+        // ONE combined update body: element-update columns + additionalFields update data are merged
+        // by (tableName, skyflowId) into a single record per record id (matching v1). See helper.
+        val combinedUpdateBody = FlowDBCollectRequestBody.buildCombinedUpdateBody(
+            configuration.vaultID, updateElements, additionalUpdates, configuration.options.logLevel
+        )
 
         val insertBody: JSONObject? = if (insertElements.isNotEmpty() || additionalInserts.isNotEmpty()) {
             val insertOptions = CollectOptions(

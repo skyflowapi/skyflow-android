@@ -15,7 +15,17 @@ internal class FlowDBAPIClient(
     token: String = "",
     val okHttpClient: okhttp3.OkHttpClient = okhttp3.OkHttpClient()
 ) : BaseApiClient(vaultId, vaultURL, tokenProvider, logLevel, token) {
-    // Bearer-token lifecycle (isValidToken / getAccessToken) is inherited from BaseApiClient.
+    // Bearer-token lifecycle (getAccessToken) is inherited from BaseApiClient.
+
+    // Harden the token check for v2: a malformed/opaque bearer token (no dots, or no `exp` claim)
+    // makes JWTUtils throw. In the base flow that throw is uncaught on the token-provider callback
+    // thread (a crash). Treat any such token as invalid so getAccessToken emits a typed
+    // INVALID_BEARER_TOKEN instead. (The legacy client intentionally keeps the 1.27.0 behavior.)
+    override fun isValidToken(token: String?): Boolean = try {
+        super.isValidToken(token)
+    } catch (e: Exception) {
+        false
+    }
 
     fun post(requestBody: JSONObject, callback: Callback, options: CollectOptions, endpoint: String = "insert", cvvMap: CVVMap = CVVMap.EMPTY) {
         try {

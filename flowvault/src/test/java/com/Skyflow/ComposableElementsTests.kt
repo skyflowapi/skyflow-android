@@ -1100,4 +1100,23 @@ class ComposableElementsTests {
         Assert.assertEquals(4, count)
     }
 
+    // A caller may explicitly pass styles/errorTextStyles = null. Previously getComposableLayout()
+    // force-unwrapped them and threw NPE; now it falls back to the default composable styles.
+    @Test
+    fun `composable container with null styles renders instead of throwing NPE`() {
+        val container = skyflow.container(
+            ContainerType.COMPOSABLE, activity,
+            ContainerOptions(layout = arrayOf(1), styles = null, errorTextStyles = null)
+        )
+        val input = CollectElementInput(
+            "cards", "card_number", SkyflowElementType.CARD_NUMBER, placeholder = "card number"
+        )
+        val element = container.create(activity, input, CollectElementOptions(false))
+        element.inputField.setText("4111 1111 1111 1111")
+        dispatchKeyEvent(element)
+
+        val composableLayout = container.getComposableLayout()
+        Assert.assertNotNull(composableLayout)
+    }
+
 }
