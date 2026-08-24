@@ -1,12 +1,10 @@
 package  com.Skyflow.collect.elements.validations
 
-import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
-
 /**
 Validate input in scope of length.
  */
 class LengthMatchRule(val minLength: Int, val maxLength: Int,
-                      override var error: SkyflowValidationError = "validation failed") : ValidationRule,SkyflowInternalValidationProtocol {
+                      override var error: SkyflowValidationError = "validation failed") : ValidationRule {
 
 
     /// validate length of text

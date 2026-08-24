@@ -1,5 +1,6 @@
 package Skyflow
 
+import Skyflow.core.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -35,48 +36,71 @@ data class RevealResponse(val records: List<RevealRecord> = emptyList()) {
     }
 
     companion object {
-        fun fromJson(json: String): RevealResponse {
-            return try {
-                val root = JSONObject(json)
-                val records = root.optJSONArray("records")?.let { arr ->
-                    (0 until arr.length()).mapNotNull { i ->
-                        val r = arr.optJSONObject(i) ?: return@mapNotNull null
-                        val httpCode = r.optInt("httpCode", 200)
-                        if (r.has("error") && !r.isNull("error")) {
-                            RevealRecord(
-                                token = r.optString("token"),
-                                error = r.optString("error"),
-                                tokenGroupName = null,
-                                metadata = null,
-                                httpCode = httpCode
-                            )
-                        } else {
-                            val metaObj = r.optJSONObject("metadata")
-                            val metadata: RevealRecordMetadata? = metaObj?.let { obj ->
-                                RevealRecordMetadata(
-                                    tableName = obj.optString("tableName").ifEmpty { null },
-                                    skyflowId = obj.optString("skyflowId").ifEmpty { null }
-                                        ?: obj.optString("skyflowID").ifEmpty { null }
-                                )
-                            }
-                            RevealRecord(
-                                token = r.optString("token"),
-                                error = null,
-                                tokenGroupName = r.optString("tokenGroupName").ifEmpty { null },
-                                metadata = metadata,
-                                httpCode = httpCode
+        private const val TAG = "RevealResponse"
+
+        // Strict decode: throws if the body is not a JSON object, so the SDK's success path can
+        // surface a real failure (onFailure) instead of a false empty onSuccess. Non-object entries
+        // in `records` are logged and skipped rather than silently dropped.
+        internal fun fromJsonOrThrow(json: String, logLevel: LogLevel): RevealResponse {
+            val root = JSONObject(json)
+            val records = root.optJSONArray("records")?.let { arr ->
+                (0 until arr.length()).mapNotNull { i ->
+                    val r = arr.optJSONObject(i)
+                    if (r == null) {
+                        Logger.warn(TAG, "Skipping non-object entry at records[$i] in reveal response", logLevel)
+                        return@mapNotNull null
+                    }
+                    val httpCode = r.optInt("httpCode", 200)
+                    if (r.has("error") && !r.isNull("error")) {
+                        RevealRecord(
+                            token = r.optString("token"),
+                            error = r.optString("error"),
+                            tokenGroupName = null,
+                            metadata = null,
+                            httpCode = httpCode
+                        )
+                    } else {
+                        val metaObj = r.optJSONObject("metadata")
+                        val metadata: RevealRecordMetadata? = metaObj?.let { obj ->
+                            RevealRecordMetadata(
+                                tableName = obj.optString("tableName").ifEmpty { null },
+                                skyflowId = obj.optString("skyflowId").ifEmpty { null }
+                                    ?: obj.optString("skyflowID").ifEmpty { null }
                             )
                         }
+                        RevealRecord(
+                            token = r.optString("token"),
+                            error = null,
+                            tokenGroupName = r.optString("tokenGroupName").ifEmpty { null },
+                            metadata = metadata,
+                            httpCode = httpCode
+                        )
                     }
-                } ?: emptyList()
-                RevealResponse(records)
+                }
+            } ?: emptyList()
+            return RevealResponse(records)
+        }
+
+        // Public, lenient (kept for backwards compatibility): logs and returns an empty response on
+        // parse failure instead of throwing. The SDK's own success path uses fromJsonOrThrow so an
+        // undecodable response surfaces as onFailure rather than a false empty onSuccess.
+        fun fromJson(json: String): RevealResponse {
+            return try {
+                fromJsonOrThrow(json, LogLevel.ERROR)
             } catch (e: Exception) {
+                Logger.error(TAG, "Failed to parse reveal response: ${e.message}", LogLevel.ERROR)
                 RevealResponse()
             }
         }
     }
 }
 
+/**
+ * Result callback for a `reveal()` call.
+ *
+ * Threading: both [onSuccess] and [onFailure] are invoked on the **main (UI) thread**, so it is safe
+ * to update Views directly from them. Exactly one of the two is called per `reveal()` invocation.
+ */
 interface RevealCallback {
     fun onSuccess(response: RevealResponse)
     fun onFailure(error: SkyflowError)

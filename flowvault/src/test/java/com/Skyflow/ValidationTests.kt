@@ -3,7 +3,9 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.collect.client.FlowDBCollectRequestBody
 import Skyflow.collect.client.FlowDBCollectAPICallback
+import Skyflow.collect.client.FlowDBMixedAPICallback
 import Skyflow.core.FlowDBAPIClient
+import Skyflow.utils.Utils
 import Skyflow.collect.elements.validations.ElementValueMatchRule
 import android.app.Activity
 import com.Skyflow.collect.elements.validations.*
@@ -24,6 +26,8 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.Shadows.shadowOf
+import android.os.Looper
 
 @RunWith(RobolectricTestRunner::class)
 class ValidationTests{
@@ -55,10 +59,12 @@ class ValidationTests{
         assertEquals("Regex validation Failed", error)
     }
 
-    // H2 regression: reveal() must fail fast on missing vault config, BEFORE any bearer-token /
-    // network call. With an empty vaultURL the failure is delivered synchronously (checkVaultDetails);
-    // without the fix, reveal() would pass empty validation and fail async at the network layer,
-    // leaving capturedError null right after the call returns.
+    // H2 regression: reveal() must fail fast on missing vault config — the failure is determined
+    // synchronously by checkVaultDetails, BEFORE any bearer-token / network call. Callbacks are now
+    // delivered on the main thread (issue #5), so idle the main looper to run the posted onFailure;
+    // the point is that NO network round-trip was needed to produce it (idling the looper does not
+    // run OkHttp I/O). Without the H2 fix, reveal would go async at the network layer and capturedError
+    // would remain null after idling.
     @Test
     fun testRevealFailsFastOnMissingVaultUrl() {
         val client = Client(Configuration("vault123", "", AccessTokenProvider()))
@@ -68,10 +74,10 @@ class ValidationTests{
             override fun onSuccess(response: RevealResponse) {}
             override fun onFailure(error: SkyflowError) { capturedError = error }
         })
-        // Fail-fast (synchronous) delivery is the core H2 guarantee; and the message now survives the
-        // error round-trip (constructErrorResponse -> SkyflowError.fromJson) — carrying the real
-        // EMPTY_VAULT_URL text rather than a generic "Unknown error".
-        assertNotNull("reveal should fail fast (synchronously) when vaultURL is empty", capturedError)
+        shadowOf(Looper.getMainLooper()).idle()   // run the main-thread-posted callback (issue #5)
+        // The message survives the error round-trip (constructErrorResponse -> SkyflowError.fromJson),
+        // carrying the real EMPTY_VAULT_URL text rather than a generic "Unknown error".
+        assertNotNull("reveal should fail fast (no network) when vaultURL is empty", capturedError)
         assertTrue("SkyflowError should carry the real vaultURL message", capturedError!!.message?.contains("vaultURL") == true)
     }
 
@@ -204,5 +210,120 @@ class ValidationTests{
         val confirmPin = container.create(activity, collectInput1) as? TextField
         confirmPin!!.inputField.setText("11111")
         assertEquals("not matched", confirmPin.validate())
+    }
+
+    // Issue #1 regression: a CONSUMER-authored ValidationRule — implementing ONLY the public
+    // ValidationRule interface (all an app in another module can implement) — must validate normally.
+    // Before the fix, SkyflowValidator force-cast every rule to the internal
+    // SkyflowInternalValidationProtocol, so a consumer rule threw ClassCastException inside
+    // SkyflowValidator.validate — reached synchronously from container.create() (StateforText) / the
+    // first keystroke, on the UI thread. (This test could not even have compiled before the fix,
+    // since ValidationRule had no validate() to override.)
+    @Test
+    fun testConsumerAuthoredValidationRule() {
+        val onlyAcme = object : ValidationRule {
+            override var error: SkyflowValidationError = "must be ACME"
+            override fun validate(text: String?): Boolean = text.isNullOrEmpty() || text == "ACME"
+        }
+
+        // 1) Direct validator path — the exact call site that used to throw ClassCastException.
+        val set = ValidationSet()
+        set.add(onlyAcme)
+        assertEquals("", SkyflowValidator.validate("ACME", set))
+        assertEquals("must be ACME", SkyflowValidator.validate("ZEBRA", set))
+
+        // 2) Real-world entry point: container.create() runs validation via StateforText and must NOT
+        // crash. INPUT_FIELD carries no built-in rules, so only the consumer rule applies.
+        val container = skyflow.container(ContainerType.COLLECT)
+        val field = container.create(activity, CollectElementInput("cards", "name",
+            SkyflowElementType.INPUT_FIELD, placeholder = "name", validations = set)) as? TextField
+        assertNotNull("container.create() must not crash for a consumer-authored rule", field)
+        field!!.inputField.setText("ZEBRA"); field.actualValue = "ZEBRA"
+        assertEquals("must be ACME", field.validate())
+        field.inputField.setText("ACME"); field.actualValue = "ACME"
+        assertEquals("", field.validate())
+    }
+
+    // Issue #2 regression: a mixed insert+update collect() fans out into two HTTP calls; the SDK must
+    // deliver EXACTLY ONE terminal callback and never drop a committed half. These drive the
+    // reconciliation (subCallbackFor) directly with canned sub-call results — no network needed.
+    @Test
+    fun testMixedCallbackPartialFailureConsolidatesIntoOneOnSuccess() {
+        val apiClient = mockk<FlowDBAPIClient>(relaxed = true)
+        val updateBody = JSONObject("""{"records":[{"skyflowID":"id1","tableName":"cards"}]}""")
+        val insertBody = JSONObject("""{"records":[{"tableName":"cards"}]}""")
+        var successResponse: Any? = null
+        var failureCount = 0
+        val finalCallback = object : Callback {
+            override fun onSuccess(responseBody: Any) { successResponse = responseBody }
+            override fun onFailure(exception: Any) { failureCount++ }
+        }
+        val mixed = FlowDBMixedAPICallback(apiClient, updateBody, insertBody, finalCallback, CollectOptions(), LogLevel.ERROR)
+
+        // update commits (already written server-side); insert fails.
+        mixed.subCallbackFor(updateBody).onSuccess(
+            """{"records":[{"tableName":"cards","skyflowId":"id1","tokens":{"cvv":[{"token":"tok1"}]},"httpCode":200}]}"""
+        )
+        mixed.subCallbackFor(insertBody).onFailure(Utils.constructErrorResponse(400, "insert failed"))
+
+        assertEquals("onFailure must NOT fire when one half committed", 0, failureCount)
+        assertNotNull("a single consolidated onSuccess must fire", successResponse)
+        val resp = CollectResponse.fromJson(successResponse.toString())
+        assertEquals("both the committed update and the failed insert must be represented", 2, resp.records.size)
+        assertTrue("committed update token must survive",
+            resp.records.any { it.tokens?.get("cvv")?.firstOrNull()?.token == "tok1" })
+        assertTrue("failed insert must appear as an error record (not be dropped)",
+            resp.records.any { it.error == "insert failed" && it.httpCode == 400 })
+    }
+
+    @Test
+    fun testMixedCallbackBothFailuresFireOnFailureExactlyOnce() {
+        val apiClient = mockk<FlowDBAPIClient>(relaxed = true)
+        val updateBody = JSONObject("""{"records":[{"skyflowID":"id1","tableName":"cards"}]}""")
+        val insertBody = JSONObject("""{"records":[{"tableName":"cards"}]}""")
+        var successCount = 0
+        var failureCount = 0
+        val finalCallback = object : Callback {
+            override fun onSuccess(responseBody: Any) { successCount++ }
+            override fun onFailure(exception: Any) { failureCount++ }
+        }
+        val mixed = FlowDBMixedAPICallback(apiClient, updateBody, insertBody, finalCallback, CollectOptions(), LogLevel.ERROR)
+
+        mixed.subCallbackFor(updateBody).onFailure(Utils.constructErrorResponse(500, "update failed"))
+        mixed.subCallbackFor(insertBody).onFailure(Utils.constructErrorResponse(400, "insert failed"))
+
+        assertEquals("both-fail must fire onFailure exactly once (previously fired twice)", 1, failureCount)
+        assertEquals("no onSuccess when nothing committed", 0, successCount)
+    }
+
+    // Issue #3 regression: the SDK must not report an undecodable response as an empty success.
+    // fromJsonOrThrow (used by the success-path adapters) throws on a malformed body so the adapter
+    // routes to onFailure; the public fromJson stays lenient (returns empty) for back-compat.
+    @Test
+    fun testFromJsonOrThrowThrowsOnMalformedResponse() {
+        try {
+            CollectResponse.fromJsonOrThrow("not-json", LogLevel.ERROR)
+            fail("expected a parse exception for a malformed collect response")
+        } catch (e: Exception) { /* expected */ }
+        try {
+            RevealResponse.fromJsonOrThrow("<<<", LogLevel.ERROR)
+            fail("expected a parse exception for a malformed reveal response")
+        } catch (e: Exception) { /* expected */ }
+    }
+
+    @Test
+    fun testPublicFromJsonStaysLenientForBackCompat() {
+        // public fromJson must never throw (back-compat) — it returns an empty response.
+        assertEquals(0, CollectResponse.fromJson("not-json").records.size)
+        assertEquals(0, RevealResponse.fromJson("<<<").records.size)
+    }
+
+    @Test
+    fun testFromJsonOrThrowParsesValidAndSkipsNonObjectEntries() {
+        val json = """{"records":["oops",{"tableName":"cards","skyflowId":"id1","tokens":{"cvv":[{"token":"tok1"}]},"httpCode":200}]}"""
+        val resp = CollectResponse.fromJsonOrThrow(json, LogLevel.ERROR)
+        // the non-object "oops" entry is skipped (logged, not silently dropped); the valid record parses.
+        assertEquals(1, resp.records.size)
+        assertEquals("tok1", resp.records[0].tokens?.get("cvv")?.firstOrNull()?.token)
     }
 }

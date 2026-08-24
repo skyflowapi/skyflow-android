@@ -1,13 +1,12 @@
 package  com.Skyflow.collect.elements.validations
 
 import Skyflow.collect.elements.utils.CardType
-import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import java.util.regex.Pattern
 
 /**
 Validate input in the scope of matching supported cards.
  */
-internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : ValidationRule,SkyflowInternalValidationProtocol {
+internal class SkyflowValidateCardNumber(override var error: SkyflowValidationError = "") : ValidationRule {
 
     override fun validate(text: String?) : Boolean {
         val cardNumber = text!!.replace(" ", "").replace("-", "")
@@ -42,5 +41,3 @@ internal class SkyflowValidateCardNumber(override var error: SkyflowValidationEr
         return (oddSum + evenSum) % 10 == 0
     }
 }
-
-

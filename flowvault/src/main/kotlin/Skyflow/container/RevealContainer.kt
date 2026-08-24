@@ -4,6 +4,8 @@ import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.getMessage
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import Skyflow.reveal.FlowDBRevealRequestBody
 import Skyflow.reveal.RevealValueCallback
 import Skyflow.utils.Utils
@@ -46,12 +48,27 @@ internal fun Container<RevealContainer>.reveal(
 // validateElements moved to common (BaseRevealContainer.kt) — shared with v1.
 
 fun Container<RevealContainer>.reveal(callback: RevealCallback, options: RevealOptions? = RevealOptions()) {
+    val logLevel = configuration.options.logLevel
+    // Deliver the app's RevealCallback on the main thread (see RevealCallback doc): apps can touch
+    // Views directly, it matches the SDK's own main-thread Label updates, and an exception in the
+    // app's handler surfaces as a normal main-thread crash instead of killing the OkHttp thread.
+    val mainHandler = Handler(Looper.getMainLooper())
     val adapter = object : Callback {
         override fun onSuccess(responseBody: Any) {
-            callback.onSuccess(RevealResponse.fromJson(responseBody.toString()))
+            val parsed = try {
+                RevealResponse.fromJsonOrThrow(responseBody.toString(), logLevel)
+            } catch (e: Exception) {
+                // A success-path response the SDK cannot decode must NOT be reported as an empty
+                // success — surface it as a failure (and log) so the app knows something went wrong.
+                Logger.error("RevealContainer", "Unable to parse reveal response: ${e.message}", logLevel)
+                mainHandler.post { callback.onFailure(SkyflowError(null, 500, "Unable to parse response from server", null, emptyList())) }
+                return
+            }
+            mainHandler.post { callback.onSuccess(parsed) }
         }
         override fun onFailure(exception: Any) {
-            callback.onFailure(SkyflowError.fromJson(exception.toString()))
+            val error = SkyflowError.fromJson(exception.toString())
+            mainHandler.post { callback.onFailure(error) }
         }
     }
     reveal(adapter, options)

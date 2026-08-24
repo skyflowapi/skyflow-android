@@ -4,7 +4,7 @@ import android.text.TextUtils
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.ValidationRule
 
-class SkyflowValidateMonth(override var error: SkyflowValidationError = "INVALID_EXPIRE_MONTH") : ValidationRule,SkyflowInternalValidationProtocol {
+class SkyflowValidateMonth(override var error: SkyflowValidationError = "INVALID_EXPIRE_MONTH") : ValidationRule {
     override fun validate(text: String?): Boolean {
         if(text!!.isEmpty()) {
             return true

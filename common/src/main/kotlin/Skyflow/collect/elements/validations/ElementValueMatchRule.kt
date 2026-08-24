@@ -4,7 +4,7 @@ import Skyflow.Element
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.ValidationRule
 
-class ElementValueMatchRule(var element:Element, override var error: SkyflowValidationError = "validation failed"): ValidationRule,SkyflowInternalValidationProtocol {
+class ElementValueMatchRule(var element:Element, override var error: SkyflowValidationError = "validation failed"): ValidationRule {
     override fun validate(text: String?): Boolean {
         return element.getValue().equals(text)
     } }

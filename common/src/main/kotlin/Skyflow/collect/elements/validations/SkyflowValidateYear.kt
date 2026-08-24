@@ -6,7 +6,7 @@ import android.util.Log
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.Skyflow.collect.elements.validations.ValidationRule
 
-class SkyflowValidateYear(override var error: SkyflowValidationError = "INVALID_EXPIRE_YEAR",var format:String="yy") : ValidationRule,SkyflowInternalValidationProtocol {
+class SkyflowValidateYear(override var error: SkyflowValidationError = "INVALID_EXPIRE_YEAR",var format:String="yy") : ValidationRule {
     override fun validate(text: String?): Boolean {
         if(text!!.isEmpty()) {
             return true

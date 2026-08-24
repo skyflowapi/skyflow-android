@@ -1,5 +1,6 @@
 package Skyflow
 
+import Skyflow.core.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -62,36 +63,53 @@ data class CollectResponse(val records: List<CollectRecord> = emptyList()) {
     }
 
     companion object {
+        private const val TAG = "CollectResponse"
+
+        // Strict decode: throws if the body is not a JSON object, so the SDK's success path can
+        // surface a real failure (onFailure) instead of a false empty onSuccess. Non-object entries
+        // in `records` are logged and skipped rather than silently dropped.
+        internal fun fromJsonOrThrow(json: String, logLevel: LogLevel): CollectResponse {
+            val root = JSONObject(json)
+            val records = root.optJSONArray("records")?.let { arr ->
+                (0 until arr.length()).mapNotNull { i ->
+                    val r = arr.optJSONObject(i)
+                    if (r == null) {
+                        Logger.warn(TAG, "Skipping non-object entry at records[$i] in collect response", logLevel)
+                        return@mapNotNull null
+                    }
+                    val httpCode = r.optInt("httpCode", 200)
+                    if (r.has("error") && !r.isNull("error")) {
+                        CollectRecord(
+                            tableName = r.optString("tableName").ifEmpty { null },
+                            skyflowId = if (r.isNull("skyflowId")) null else r.optString("skyflowId").ifEmpty { null },
+                            error = r.optString("error"),
+                            tokens = null,
+                            hashedData = null,
+                            httpCode = httpCode
+                        )
+                    } else {
+                        CollectRecord(
+                            tableName = r.optString("tableName").ifEmpty { null },
+                            skyflowId = r.optString("skyflowId").ifEmpty { null },
+                            error = null,
+                            tokens = parseTokens(r.optJSONObject("tokens")),
+                            hashedData = parseHashedData(r.optJSONObject("hashedData")),
+                            httpCode = httpCode
+                        )
+                    }
+                }
+            } ?: emptyList()
+            return CollectResponse(records)
+        }
+
+        // Public, lenient (kept for backwards compatibility): logs and returns an empty response on
+        // parse failure instead of throwing. The SDK's own success path uses fromJsonOrThrow so an
+        // undecodable response surfaces as onFailure rather than a false empty onSuccess.
         fun fromJson(json: String): CollectResponse {
             return try {
-                val root = JSONObject(json)
-                val records = root.optJSONArray("records")?.let { arr ->
-                    (0 until arr.length()).mapNotNull { i ->
-                        val r = arr.optJSONObject(i) ?: return@mapNotNull null
-                        val httpCode = r.optInt("httpCode", 200)
-                        if (r.has("error") && !r.isNull("error")) {
-                            CollectRecord(
-                                tableName = r.optString("tableName").ifEmpty { null },
-                                skyflowId = if (r.isNull("skyflowId")) null else r.optString("skyflowId").ifEmpty { null },
-                                error = r.optString("error"),
-                                tokens = null,
-                                hashedData = null,
-                                httpCode = httpCode
-                            )
-                        } else {
-                            CollectRecord(
-                                tableName = r.optString("tableName").ifEmpty { null },
-                                skyflowId = r.optString("skyflowId").ifEmpty { null },
-                                error = null,
-                                tokens = parseTokens(r.optJSONObject("tokens")),
-                                hashedData = parseHashedData(r.optJSONObject("hashedData")),
-                                httpCode = httpCode
-                            )
-                        }
-                    }
-                } ?: emptyList()
-                CollectResponse(records)
+                fromJsonOrThrow(json, LogLevel.ERROR)
             } catch (e: Exception) {
+                Logger.error(TAG, "Failed to parse collect response: ${e.message}", LogLevel.ERROR)
                 CollectResponse()
             }
         }
@@ -133,6 +151,12 @@ data class CollectResponse(val records: List<CollectRecord> = emptyList()) {
     }
 }
 
+/**
+ * Result callback for a `collect()` call.
+ *
+ * Threading: both [onSuccess] and [onFailure] are invoked on the **main (UI) thread**, so it is safe
+ * to update Views directly from them. Exactly one of the two is called per `collect()` invocation.
+ */
 interface CollectCallback {
     fun onSuccess(response: CollectResponse)
     fun onFailure(error: SkyflowError)

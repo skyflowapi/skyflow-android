@@ -10,6 +10,8 @@ import Skyflow.core.getMessage
 import Skyflow.utils.EventName
 import Skyflow.utils.Utils
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
@@ -107,12 +109,27 @@ internal fun Container<ComposableContainer>.collect(
 }
 
 fun Container<ComposableContainer>.collect(callback: CollectCallback, options: CollectOptions? = CollectOptions()) {
+    val logLevel = configuration.options.logLevel
+    // Deliver the app's CollectCallback on the main thread (see CollectCallback doc): apps can touch
+    // Views directly, it matches the SDK's own main-thread element updates, and an exception in the
+    // app's handler surfaces as a normal main-thread crash instead of killing the OkHttp thread.
+    val mainHandler = Handler(Looper.getMainLooper())
     val adapter = object : Callback {
         override fun onSuccess(responseBody: Any) {
-            callback.onSuccess(CollectResponse.fromJson(responseBody.toString()))
+            val parsed = try {
+                CollectResponse.fromJsonOrThrow(responseBody.toString(), logLevel)
+            } catch (e: Exception) {
+                // A success-path response the SDK cannot decode must NOT be reported as an empty
+                // success — surface it as a failure (and log) so the app knows something went wrong.
+                Logger.error("ComposableContainer", "Unable to parse collect response: ${e.message}", logLevel)
+                mainHandler.post { callback.onFailure(SkyflowError(null, 500, "Unable to parse response from server", null, emptyList())) }
+                return
+            }
+            mainHandler.post { callback.onSuccess(parsed) }
         }
         override fun onFailure(exception: Any) {
-            callback.onFailure(SkyflowError.fromJson(exception.toString()))
+            val error = SkyflowError.fromJson(exception.toString())
+            mainHandler.post { callback.onFailure(error) }
         }
     }
     collect(adapter, options)

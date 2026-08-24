@@ -1,6 +1,5 @@
 package  com.Skyflow.collect.elements.validations
 
-import Skyflow.collect.elements.validations.SkyflowInternalValidationProtocol
 import Skyflow.utils.Utils
 import android.text.TextUtils
 import java.util.*
@@ -8,7 +7,7 @@ import java.util.*
 /**
 Validate input in scope of length.
  */
-internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override var error: SkyflowValidationError = "INVALID_EXPIRE_DATE") : ValidationRule,SkyflowInternalValidationProtocol {
+internal class SkyflowValidateExpireDate(var format:String ="mm/yy", override var error: SkyflowValidationError = "INVALID_EXPIRE_DATE") : ValidationRule {
 
 
     /// validate length of text
