@@ -35,9 +35,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            buildConfigField("String", "TOKEN_URL", "\"" +  localProperties.getProperty("TOKEN_URL") + "\"")
-            buildConfigField("String", "VAULT_ID", "\"" +  localProperties.getProperty("VAULT_ID") + "\"")
-            buildConfigField("String", "VAULT_URL", "\"" +  localProperties.getProperty("VAULT_URL") + "\"")
+            // Vault connection (existing fields, now null-safe so the sample still compiles when a key is unset).
+            buildConfigField("String", "TOKEN_URL", "\"" + (localProperties.getProperty("TOKEN_URL") ?: "<TOKEN_URL>") + "\"")
+            buildConfigField("String", "VAULT_ID", "\"" + (localProperties.getProperty("VAULT_ID") ?: "<VAULT_ID>") + "\"")
+            buildConfigField("String", "VAULT_URL", "\"" + (localProperties.getProperty("VAULT_URL") ?: "<VAULT_URL>") + "\"")
+            // Schema / demo config consumed by the activities. Each defaults to its placeholder so the
+            // sample compiles out of the box; supply real values in local.properties to run against a vault.
+            buildConfigField("String", "TABLE_NAME", "\"" + (localProperties.getProperty("TABLE_NAME") ?: "<TABLE_NAME>") + "\"")
+            buildConfigField("String", "COLUMN_NAME", "\"" + (localProperties.getProperty("COLUMN_NAME") ?: "<COLUMN_NAME>") + "\"")
+            buildConfigField("String", "EXPIRY_COLUMN", "\"" + (localProperties.getProperty("EXPIRY_COLUMN") ?: "<EXPIRY_COLUMN>") + "\"")
+            buildConfigField("String", "COLUMN", "\"" + (localProperties.getProperty("COLUMN") ?: "<COLUMN>") + "\"")
+            buildConfigField("String", "UNIQUE_COLUMN", "\"" + (localProperties.getProperty("UNIQUE_COLUMN") ?: "<UNIQUE_COLUMN>") + "\"")
+            buildConfigField("String", "TOKEN_GROUP_NAME", "\"" + (localProperties.getProperty("TOKEN_GROUP_NAME") ?: "<TOKEN_GROUP_NAME>") + "\"")
+            buildConfigField("String", "SKYFLOW_ID", "\"" + (localProperties.getProperty("SKYFLOW_ID") ?: "<SKYFLOW_ID>") + "\"")
+            buildConfigField("String", "VALUE", "\"" + (localProperties.getProperty("VALUE") ?: "<VALUE>") + "\"")
+            buildConfigField("String", "BEARER_TOKEN", "\"" + (localProperties.getProperty("BEARER_TOKEN") ?: "<BEARER_TOKEN>") + "\"")
+            // Redaction NAME (plain String forwarded to the API, e.g. a schema redaction like "mask1"), not a RedactionType enum.
+            buildConfigField("String", "REDACTION_TYPE", "\"" + (localProperties.getProperty("REDACTION_TYPE") ?: "<REDACTION_TYPE>") + "\"")
+            // Reveal demo data tokens (RevealActivity).
+            buildConfigField("String", "TOKEN_1", "\"" + (localProperties.getProperty("TOKEN_1") ?: "<TOKEN_1>") + "\"")
+            buildConfigField("String", "TOKEN_2", "\"" + (localProperties.getProperty("TOKEN_2") ?: "<TOKEN_2>") + "\"")
             buildConfigField("String", "GATEWAY_TOKEN", "\"" + localProperties.getProperty("GATEWAY_TOKEN") + "\"")
             buildConfigField("String", "GATEWAY_URL_PULL_FUNDS", "\"" + localProperties.getProperty("GATEWAY_URL_PULL_FUNDS") + "\"")
             buildConfigField("String", "GATEWAY_CVV_GEN_URL", "\"" + localProperties.getProperty("GATEWAY_CVV_GEN_URL") + "\"")

@@ -15,6 +15,10 @@ on:
       - "skyvault/build.gradle"
       - "flowvault/build.gradle"
       - "*.md"
+      # Sample apps are not shipped artifacts — a samples-only change must not trigger an internal
+      # (dev) release. (The scope step also treats samples/ as out-of-scope, so nothing would publish
+      # even if triggered; this stops the workflow from running at all for samples-only pushes.)
+      - "samples/**"
     branches:
       - release/*
 

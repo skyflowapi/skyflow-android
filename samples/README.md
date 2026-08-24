@@ -81,8 +81,28 @@ app.listen(port, () => {
 
 ## Configure & run a sample
 1. Open the sample (`skyvault/` or `flowvault/`) in Android Studio.
-2. Supply `VAULT_ID`, `VAULT_URL`, and `TOKEN_URL` (`http://localhost:3000/`) via the sample's `local.properties` / `BuildConfig` fields.
+2. Add your values to the **root** `local.properties` file. The sample's `build.gradle` reads each key from `local.properties` and exposes it as a `BuildConfig` field, so the activities pick them up automatically — you never hand-edit the `.kt` files. Any key you leave unset falls back to a `<PLACEHOLDER>` default so the sample still compiles.
 3. For reveal samples, also supply valid Skyflow IDs and data tokens — see [Get tokens for your stored data](https://docs.skyflow.com/tokenization-apis/#get-tokens-for-your-stored-data).
 4. Build and run on a device or emulator (Android 5.0 / API 21+).
+
+### FlowVault `local.properties` keys
+The `flowvault/` sample reads the following keys (all optional — unset keys default to a placeholder):
+
+| Key | Used by | Purpose |
+|-----|---------|---------|
+| `VAULT_ID` | all | Vault ID |
+| `VAULT_URL` | all | Vault URL (host, no scheme) |
+| `TOKEN_URL` | all | Bearer-token endpoint (e.g. `http://localhost:3000/`) used by `DemoTokenProvider` |
+| `TABLE_NAME` | collect / update / card-brand | Table to insert or update into |
+| `COLUMN_NAME` | collect / update / card-brand | Column for card number / name / cvv fields |
+| `EXPIRY_COLUMN` | collect | Column for the expiration-date field |
+| `COLUMN` | collect / update | Column key for an additional field |
+| `VALUE` | collect / update | Value for an additional field |
+| `UNIQUE_COLUMN` | collect (upsert) | Unique column for upsert |
+| `SKYFLOW_ID` | update | Skyflow ID of the record to update |
+| `TOKEN_1`, `TOKEN_2` | reveal | Data tokens to reveal |
+| `TOKEN_GROUP_NAME` | reveal | Token group name for reveal-with-options |
+| `REDACTION_TYPE` | reveal | Redaction name to apply (plain string, e.g. a schema redaction) |
+| `BEARER_TOKEN` | (optional) | A literal bearer token. Not used by default — the card-brand demo fetches a fresh token via `TOKEN_URL`. Provided only if you prefer to hardcode one. |
 
 For the SDK APIs each sample demonstrates, see the per-SDK guides linked in the table above.

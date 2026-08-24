@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import Skyflow.utils.EventName
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
@@ -24,8 +25,8 @@ class CollectActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val skyflowClient = init(Configuration(
-            vaultID = "<VAULT_ID>",
-            vaultURL = "<VAULT_URL>",
+            vaultID = BuildConfig.VAULT_ID,
+            vaultURL = BuildConfig.VAULT_URL,
             tokenProvider = DemoTokenProvider()
         ))
 
@@ -42,8 +43,8 @@ class CollectActivity : AppCompatActivity() {
         val errorStyles = Styles(errorStyle)
 
         val cardNumberInput = CollectElementInput(
-            tableName = "<TABLE_NAME>",
-            column = "<COLUMN_NAME>",
+            tableName = BuildConfig.TABLE_NAME,
+            column = BuildConfig.COLUMN_NAME,
             type = SkyflowElementType.CARD_NUMBER,
             inputStyles = styles,
             errorTextStyles = errorStyles,
@@ -51,8 +52,8 @@ class CollectActivity : AppCompatActivity() {
             placeholder = "Card Number"
         )
         val expiryInput = CollectElementInput(
-            tableName = "<TABLE_NAME>",
-            column = "<EXPIRY_COLUMN>",
+            tableName = BuildConfig.TABLE_NAME,
+            column = BuildConfig.EXPIRY_COLUMN,
             type = SkyflowElementType.EXPIRATION_DATE,
             inputStyles = styles,
             errorTextStyles = errorStyles,
@@ -108,9 +109,9 @@ class CollectActivity : AppCompatActivity() {
             val options = CollectOptions(
                 upsert = listOf(
                     UpsertOptions(
-                        tableName = "<TABLE_NAME>",
+                        tableName = BuildConfig.TABLE_NAME,
                         updateType = UpdateType.UPDATE,
-                        uniqueColumns = listOf("<UNIQUE_COLUMN>")
+                        uniqueColumns = listOf(BuildConfig.UNIQUE_COLUMN)
                     )
                 )
             )
@@ -135,8 +136,8 @@ class CollectActivity : AppCompatActivity() {
                 additionalFields = AdditionalFields(
                     records = listOf(
                         AdditionalFieldsRecord(
-                            tableName = "<TABLE_NAME>",
-                            data = mapOf("<COLUMN>" to "<VALUE>")
+                            tableName = BuildConfig.TABLE_NAME,
+                            data = mapOf(BuildConfig.COLUMN to BuildConfig.VALUE)
                         )
                     )
                 )
@@ -165,7 +166,7 @@ class CollectActivity : AppCompatActivity() {
 
     class DemoTokenProvider : TokenProvider {
         override fun getBearerToken(callback: Callback) {
-            val url = "<TOKEN_URL>"
+            val url = BuildConfig.TOKEN_URL
             val request = okhttp3.Request.Builder().url(url).build()
             val okHttpClient = OkHttpClient()
             try {

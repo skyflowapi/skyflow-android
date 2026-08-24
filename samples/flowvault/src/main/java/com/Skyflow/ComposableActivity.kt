@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import Skyflow.collect.elements.validations.ElementValueMatchRule
 import Skyflow.composable.*
 import Skyflow.utils.EventName
@@ -24,8 +25,8 @@ class ComposableActivity : AppCompatActivity() {
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            "<VAULT_ID>",
-            "<VAULT_URL>",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             tokenProvider,
             Options(LogLevel.ERROR, Env.PROD)
         )

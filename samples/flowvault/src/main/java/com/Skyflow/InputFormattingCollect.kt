@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import Skyflow.LogLevel
 import Skyflow.Options
 import android.app.AlertDialog
@@ -24,8 +25,8 @@ class InputFormattingCollect : AppCompatActivity() {
 
         val tokenProvider = CollectActivity.DemoTokenProvider()
         val skyflowConfiguration = Configuration(
-            "<VAULT_ID>",
-            "<VAULT_URL>",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             tokenProvider,
             Options(LogLevel.DEBUG, Env.PROD)
         )

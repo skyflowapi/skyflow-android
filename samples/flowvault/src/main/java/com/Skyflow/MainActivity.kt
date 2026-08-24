@@ -34,10 +34,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, ComposableActivity::class.java))
         }
 
-        binding.cardBrandChoiceDemo.setOnClickListener {
-            startActivity(Intent(this, CardBrandChoiceActivity::class.java))
-        }
-
         binding.updateDemo.setOnClickListener {
             startActivity(Intent(this, UpdateCollectActivity::class.java))
         }

@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import Skyflow.collect.elements.validations.ElementValueMatchRule
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
@@ -20,8 +21,8 @@ class CustomValidationsActivity : AppCompatActivity() {
         binding = ActivityCollectBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val skyflowConfiguration = Skyflow.Configuration(
-            "VAULT_ID",
-            "VAULT_URL",
+            BuildConfig.VAULT_ID,
+            BuildConfig.VAULT_URL,
             CollectActivity.DemoTokenProvider(),
             Options(LogLevel.ERROR, Env.PROD)
         )

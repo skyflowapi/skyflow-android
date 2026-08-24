@@ -27,7 +27,6 @@
             android:name=".InputFormattingReveal"
             android:label="@string/input_formatting_demo" />
         <activity android:name=".ComposableActivity" />
-        <activity android:name=".CardBrandChoiceActivity" />
         <activity android:name=".UpdateCollectActivity" />
         <activity
             android:name=".MainActivity"

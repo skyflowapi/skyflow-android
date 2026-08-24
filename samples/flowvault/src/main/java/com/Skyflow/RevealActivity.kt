@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -20,8 +21,8 @@ class RevealActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val skyflowClient = init(Configuration(
-            vaultID = "<VAULT_ID>",
-            vaultURL = "<VAULT_URL>",
+            vaultID = BuildConfig.VAULT_ID,
+            vaultURL = BuildConfig.VAULT_URL,
             tokenProvider = CollectActivity.DemoTokenProvider()
         ))
 
@@ -35,13 +36,13 @@ class RevealActivity : AppCompatActivity() {
         val styles = Styles(baseStyle)
 
         val cardNumberInput = RevealElementInput(
-            token = "<TOKEN_1>",
+            token = BuildConfig.TOKEN_1,
             inputStyles = styles,
             label = "Card Number",
             altText = "•••• •••• •••• ••••"
         )
         val cvvInput = RevealElementInput(
-            token = "<TOKEN_2>",
+            token = BuildConfig.TOKEN_2,
             inputStyles = styles,
             label = "CVV",
             altText = "•••"
@@ -82,8 +83,8 @@ class RevealActivity : AppCompatActivity() {
             val options = RevealOptions(
                 tokenGroupRedactions = listOf(
                     TokenGroupRedaction(
-                        tokenGroupName = "<TOKEN_GROUP_NAME>",
-                        redaction = "<REDACTION_TYPE>"
+                        tokenGroupName = BuildConfig.TOKEN_GROUP_NAME,
+                        redaction = BuildConfig.REDACTION_TYPE
                     )
                 )
             )

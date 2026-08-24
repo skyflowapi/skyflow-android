@@ -1,6 +1,7 @@
 package com.Skyflow
 
 import Skyflow.*
+import com.Skyflow.BuildConfig
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
@@ -21,8 +22,8 @@ class UpdateCollectActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val skyflowClient = init(Configuration(
-            vaultID = "<VAULT_ID>",
-            vaultURL = "<VAULT_URL>",
+            vaultID = BuildConfig.VAULT_ID,
+            vaultURL = BuildConfig.VAULT_URL,
             tokenProvider = CollectActivity.DemoTokenProvider()
         ))
 
@@ -47,11 +48,11 @@ class UpdateCollectActivity : AppCompatActivity() {
             base = Style(padding = padding, font = R.font.roboto_light, textAlignment = Gravity.START, textColor = Color.RED)
         )
 
-        val skyflowId = "<SKYFLOW_ID>"
+        val skyflowId = BuildConfig.SKYFLOW_ID
 
         val cardNumberInput = CollectElementInput(
-            tableName = "<TABLE_NAME>",
-            column = "<COLUMN_NAME>",
+            tableName = BuildConfig.TABLE_NAME,
+            column = BuildConfig.COLUMN_NAME,
             type = SkyflowElementType.CARD_NUMBER,
             inputStyles = inputStyles,
             errorTextStyles = errorStyles,
@@ -60,8 +61,8 @@ class UpdateCollectActivity : AppCompatActivity() {
             skyflowId = skyflowId
         )
         val nameInput = CollectElementInput(
-            tableName = "<TABLE_NAME>",
-            column = "<COLUMN_NAME>",
+            tableName = BuildConfig.TABLE_NAME,
+            column = BuildConfig.COLUMN_NAME,
             type = SkyflowElementType.CARDHOLDER_NAME,
             inputStyles = inputStyles,
             errorTextStyles = errorStyles,
@@ -70,8 +71,8 @@ class UpdateCollectActivity : AppCompatActivity() {
             skyflowId = skyflowId
         )
         val expiryInput = CollectElementInput(
-            tableName = "<TABLE_NAME>",
-            column = "<COLUMN_NAME>",
+            tableName = BuildConfig.TABLE_NAME,
+            column = BuildConfig.COLUMN_NAME,
             type = SkyflowElementType.EXPIRATION_DATE,
             inputStyles = inputStyles,
             errorTextStyles = errorStyles,
@@ -121,8 +122,8 @@ class UpdateCollectActivity : AppCompatActivity() {
                 additionalFields = AdditionalFields(
                     records = listOf(
                         AdditionalFieldsRecord(
-                            tableName = "<TABLE_NAME>",
-                            data = mapOf("<COLUMN>" to "<VALUE>"),
+                            tableName = BuildConfig.TABLE_NAME,
+                            data = mapOf(BuildConfig.COLUMN to BuildConfig.VALUE),
                             skyflowId = skyflowId
                         )
                     )
