@@ -144,7 +144,7 @@ val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
 val cardNumberInput = Skyflow.CollectElementInput(
     tableName = "cards",
     column = "card_number",
-    type = Skyflow.ElementType.CARD_NUMBER
+    type = SkyflowElementType.CARD_NUMBER
 )
 val cardNumberElement = container.create(context = this, input = cardNumberInput)
 parent.addView(cardNumberElement) // it's a View — mount it like any other
@@ -319,7 +319,7 @@ To create a collect element, we must first construct `Skyflow.CollectElementInpu
 Skyflow.CollectElementInput(
    tableName: String,            // required, the table this data belongs to
    column: String,           // required, the column into which this data should be inserted
-   type: Skyflow.ElementType   //Skyflow.ElementType enum
+   type: SkyflowElementType   //SkyflowElementType enum
    inputStyles: Skyflow.Styles,     //optional styles that should be applied to the form element
    labelStyles: Skyflow.Styles, //optional styles that will be applied to the label of the collect element
    errorTextStyles: Skyflow.Styles,  //optional styles that will be applied to the errorText of the collect element
@@ -505,7 +505,7 @@ the `context` param takes android `Context` object as described below:
 val collectElementInput =  Skyflow.CollectElementInput(
         tableName = "string",            //the table this data belongs to
         column = "string",           //the column into which this data should be inserted
-        type = Skyflow.ElementType.CARD_NUMBER,   //Skyflow.ElementType enum
+        type = SkyflowElementType.CARD_NUMBER,   //SkyflowElementType enum
         inputStyles = Skyflow.Styles(),     /*optional styles that should be applied to the form element*/
         labelStyles = Skyflow.Styles(), //optional styles that will be applied to the label of the collect element
         errorTextStyles = Skyflow.Styles(),  //optional styles that will be applied to the errorText of the collect element
@@ -599,7 +599,7 @@ To create a collect Element, construct a `Skyflow.CollectElementInput` object as
 val collectElementInput = Skyflow.CollectElementInput(
     tableName: String,                  // required, the table this data belongs to
     column: String,                 // required, the column into which this data should be inserted
-    type: Skyflow.ElementType,      // Skyflow.ElementType enum
+    type: SkyflowElementType,      // SkyflowElementType enum
     inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
     labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
     errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
@@ -708,15 +708,15 @@ val lengthRule = LengthMatchRule(minLength = 8, maxLength = 16, error = "Must be
 myRuleset.add(rule = strongPasswordRule)
 myRuleset.add(rule = lengthRule)
 
-val passwordInput = CollectElementInput(inputStyles = styles, label = "Password", placeholder = "****", type = ElementType.INPUT_FIELD, validations = myRuleset)
+val passwordInput = CollectElementInput(inputStyles = styles, label = "Password", placeholder = "****", type = SkyflowElementType.INPUT_FIELD, validations = myRuleset)
 
-val Password = container.create(passwordInput)
+val Password = container.create(context = this, input = passwordInput)
 
 // For confirm Password element - shows error when the PINs don't match
-val elementMatchRule = ElementMatchRule(element = Password, error = "PINs don't match")
+val elementMatchRule = ElementValueMatchRule(element = Password, error = "PINs don't match")
 
-val confirmPasswordinput = CollectElementInput(inputStyles = styles, label = "Confirm Password", placeholder = "****", type = ElementType.INPUT_FIELD, validations = ValidationSet(rules = mutableListOf(strongPasswordRule, lengthRule, elementMatchRule)))
-val confirmPassword = container.create(input = confirmPasswordinput)
+val confirmPasswordinput = CollectElementInput(inputStyles = styles, label = "Confirm Password", placeholder = "****", type = SkyflowElementType.INPUT_FIELD, validations = ValidationSet(rules = mutableListOf(strongPasswordRule, lengthRule, elementMatchRule)))
+val confirmPassword = container.create(context = this, input = confirmPasswordinput)
 
 //mount elements to the screen
 addView(Password)
@@ -748,7 +748,7 @@ The handler ```(state: JSONObject) -> Unit``` is a callback function you provide
 
 ```kt
 val state = {
-  "elementType": Skyflow.ElementType,
+  "elementType": SkyflowElementType,
   "isEmpty": Boolean,
   "isRequired": Boolean,
   "isFocused": Boolean,
@@ -774,12 +774,12 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
 val cardNumberInput = Skyflow.CollectElementInput(
     tableName = "cards",
     column = "cardNumber",
-    type = Skyflow.ElementType.CARD_NUMBER,
+    type = SkyflowElementType.CARD_NUMBER,
 )
 val cardHolderNameInput = Skyflow.CollectElementInput(
     tableName = "cards",
     column = "cardHolderName",
-    type = Skyflow.ElementType.CARDHOLDER_NAME,
+    type = SkyflowElementType.CARDHOLDER_NAME,
 )
 
 val cardNumber = container.create(context = this, input = cardNumberInput)
@@ -798,7 +798,7 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
 ##### Sample Element state object when `Env` is `DEV`
 ```kt
 {
-   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "elementType": SkyflowElementType.CARD_NUMBER,
    "isEmpty": false,
    "isRequired": false,
    "isFocused": true,
@@ -806,7 +806,7 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
    "value": "4111111111111111"
 }
 {
-   "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+   "elementType": SkyflowElementType.CARDHOLDER_NAME,
    "isEmpty": false,
    "isRequired": false,
    "isFocused": true,
@@ -817,14 +817,14 @@ cardHolderName.on(eventName = Skyflow.EventName.CHANGE) { state ->
 ##### Sample Element state object when `Env` is `PROD`
 ```kt
 {
-   "elementType": Skyflow.ElementType.CARD_NUMBER,
+   "elementType": SkyflowElementType.CARD_NUMBER,
    "isEmpty": false,
    "isFocused": true,
    "isValid": true,
    "value": "41111111XXXXXXXX"
 }
 {
-   "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+   "elementType": SkyflowElementType.CARDHOLDER_NAME,
    "isEmpty": false,
    "isFocused": true,
    "isValid": true,
@@ -854,10 +854,10 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
 val cardNumberInput = Skyflow.CollectElementInput(
     tableName = "cards",
     column = "cardNumber",
-    type = Skyflow.ElementType.CARD_NUMBER,
+    type = SkyflowElementType.CARD_NUMBER,
 )
 
-val cardNumber = container.create(input = cardNumberInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
 
 //Set custom error
 cardNumber.setError("custom error")
@@ -892,9 +892,9 @@ val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
 val cardNumberInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardNumber",
-  type = Skyflow.ElementType.CARD_NUMBER,
+  type = SkyflowElementType.CARD_NUMBER,
 )
-val cardNumber = container.create(input = cardNumberInput)
+val cardNumber = container.create(context = this, input = cardNumberInput)
 //Set a value programatically
 cardNumber.setValue("4111111111111111")
 //Clear the value
@@ -954,7 +954,7 @@ val composableElementInput = Skyflow.CollectElementInput(
   placeholder: String,             // optional placeholder for the form element
   altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
   validations: ValidationSet,      // optional set of validations for the input element
-  type: Skyflow.ElementType,       // Skyflow.ElementType enum
+  type: SkyflowElementType,       // SkyflowElementType enum
 )
 ```
 The `tableName` and `column` fields indicate which table and column in the vault the Element corresponds to.
@@ -1036,7 +1036,7 @@ val styles = Skyflow.Styles(
  
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
  
-Finally, the `type` parameter takes a Skyflow.ElementType. Each type applies the appropriate regex and validations to the form element. 
+Finally, the `type` parameter takes a SkyflowElementType. Each type applies the appropriate regex and validations to the form element. 
 
 The Android SDK supports the following composable elements:
 
@@ -1126,7 +1126,7 @@ val composableElementInput = Skyflow.CollectElementInput(
   placeholder: String,             // optional placeholder for the form element
   altText: String,                 // (DEPRECATED) optional that acts as an initial value for the collect element
   validations: ValidationSet,      // optional set of validations for the input element
-  type: Skyflow.ElementType,       // Skyflow.ElementType enum
+  type: SkyflowElementType,       // SkyflowElementType enum
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
@@ -1214,7 +1214,7 @@ Composable Elements use the following schema:
 val composableElementInput = Skyflow.CollectElementInput(
     tableName: String,                  // required, the table this data belongs to
     column: String,                 // required, the column into which this data should be updated
-    type: Skyflow.ElementType,      // Skyflow.ElementType enum
+    type: SkyflowElementType,      // SkyflowElementType enum
     inputStyles: Skyflow.Styles,     // optional styles that should be applied to the form element
     labelStyles: Skyflow.Styles,     // optional styles that will be applied to the label of the collect element
     errorTextStyles: Skyflow.Styles, // optional styles that will be applied to the errorText of the collect element
@@ -1325,7 +1325,7 @@ The handler `(state: JSONObject) -> Unit` is a callback function you provide, th
 
 ```kotlin
 val state = {
-  "elementType": Skyflow.ElementType,
+  "elementType": SkyflowElementType,
   "isEmpty": Bool ,
   "isRequired": Bool,
   "isFocused": Bool,
@@ -1363,13 +1363,13 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 val cardNumberInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardNumber",
-  type = Skyflow.ElementType.CARD_NUMBER,
+  type = SkyflowElementType.CARD_NUMBER,
 )
 
 val cardHolderNameInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardHolderName",
-  type = Skyflow.ElementType.CARDHOLDER_NAME,
+  type = SkyflowElementType.CARDHOLDER_NAME,
 )    
 
 val cardNumber = container.create(context = this, input = cardNumberInput)
@@ -1397,7 +1397,7 @@ cardHolderName.on(eventName: Skyflow.EventName.CHANGE) { state ->
 #### Sample Element state object when `env` is `DEV`
 ```kotlin
 {
-  "elementType": Skyflow.ElementType.CARD_NUMBER,
+  "elementType": SkyflowElementType.CARD_NUMBER,
   "isEmpty": false,
   "isRequired": false,
   "isFocused": true,
@@ -1405,7 +1405,7 @@ cardHolderName.on(eventName: Skyflow.EventName.CHANGE) { state ->
   "value": "4111111111111111"
 }
 {
-  "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+  "elementType": SkyflowElementType.CARDHOLDER_NAME,
   "isEmpty": false,
   "isRequired": false,
   "isFocused": true,
@@ -1416,7 +1416,7 @@ cardHolderName.on(eventName: Skyflow.EventName.CHANGE) { state ->
 #### Sample Element state object when `env` is `PROD`
 ```kotlin
 {
-  "elementType": Skyflow.ElementType.CARD_NUMBER,
+  "elementType": SkyflowElementType.CARD_NUMBER,
   "isEmpty": false,
   "isRequired": false,
   "isFocused": true,
@@ -1424,7 +1424,7 @@ cardHolderName.on(eventName: Skyflow.EventName.CHANGE) { state ->
   "value": "41111111XXXXXXXX"
 }
 {
-  "elementType": Skyflow.ElementType.CARDHOLDER_NAME,
+  "elementType": SkyflowElementType.CARDHOLDER_NAME,
   "isEmpty": false,
   "isRequired": false,
   "isFocused": true,
@@ -1482,13 +1482,13 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 val cardNumberInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardNumber",
-  type = Skyflow.ElementType.CARD_NUMBER,
+  type = SkyflowElementType.CARD_NUMBER,
 )
 
 val cardHolderNameInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardHolderName",
-  type = Skyflow.ElementType.CARDHOLDER_NAME,
+  type = SkyflowElementType.CARDHOLDER_NAME,
 )    
 
 val cardNumber = container.create(context = this, input = cardNumberInput)
@@ -1549,7 +1549,7 @@ val container = skyflowClient.container(type: Skyflow.ContainerType.COMPOSABLE, 
 val cardNumberInput = Skyflow.CollectElementInput(
   tableName = "cards",
   column = "cardNumber",
-  type = Skyflow.ElementType.CARD_NUMBER,
+  type = SkyflowElementType.CARD_NUMBER,
 )
 
 val cardNumber = container.create(context = this, input = cardNumberInput)
@@ -1669,6 +1669,7 @@ Once you've defined a `Skyflow.RevealElementInput` object and `Skyflow.RevealEle
 
 ```kotlin
 val element = container.create(
+  context = this,
   input = revealElementInput,
   options = Skyflow.RevealElementOptions(
     format = "XXXX-XXXXXX-XXXXX",
