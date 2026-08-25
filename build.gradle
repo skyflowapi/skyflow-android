@@ -9,6 +9,10 @@ task clean(type: Delete) {
 }
 
 tasks.register("runOnGitHub") { // 1
-    dependsOn(":Skyflow:lint", ":Skyflow:test")  // 2 ==> CUSTOMIZE THIS LINE
+    // PR CI aggregate: lint + test BOTH published modules (legacy skyvault + flowvault) in one task.
+    dependsOn(
+        ":skyvault:lint", ":skyvault:test",
+        ":flowvault:lint", ":flowvault:test"
+    )
     group = "custom"      // 3
 }

@@ -1,0 +1,88 @@
+plugins {
+    id 'com.android.application'
+}
+
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
+android {
+    namespace "com.Skyflow"
+    compileSdk 31
+
+    defaultConfig {
+        applicationId "com.skyflow_android.flowvault"
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // Vault connection (existing fields, now null-safe so the sample still compiles when a key is unset).
+            buildConfigField("String", "TOKEN_URL", "\"" + (localProperties.getProperty("TOKEN_URL") ?: "<TOKEN_URL>") + "\"")
+            buildConfigField("String", "VAULT_ID", "\"" + (localProperties.getProperty("VAULT_ID") ?: "<VAULT_ID>") + "\"")
+            buildConfigField("String", "VAULT_URL", "\"" + (localProperties.getProperty("VAULT_URL") ?: "<VAULT_URL>") + "\"")
+            // Schema / demo config consumed by the activities. Each defaults to its placeholder so the
+            // sample compiles out of the box; supply real values in local.properties to run against a vault.
+            buildConfigField("String", "TABLE_NAME", "\"" + (localProperties.getProperty("TABLE_NAME") ?: "<TABLE_NAME>") + "\"")
+            buildConfigField("String", "COLUMN_NAME", "\"" + (localProperties.getProperty("COLUMN_NAME") ?: "<COLUMN_NAME>") + "\"")
+            buildConfigField("String", "EXPIRY_COLUMN", "\"" + (localProperties.getProperty("EXPIRY_COLUMN") ?: "<EXPIRY_COLUMN>") + "\"")
+            buildConfigField("String", "COLUMN", "\"" + (localProperties.getProperty("COLUMN") ?: "<COLUMN>") + "\"")
+            buildConfigField("String", "UNIQUE_COLUMN", "\"" + (localProperties.getProperty("UNIQUE_COLUMN") ?: "<UNIQUE_COLUMN>") + "\"")
+            buildConfigField("String", "TOKEN_GROUP_NAME", "\"" + (localProperties.getProperty("TOKEN_GROUP_NAME") ?: "<TOKEN_GROUP_NAME>") + "\"")
+            buildConfigField("String", "SKYFLOW_ID", "\"" + (localProperties.getProperty("SKYFLOW_ID") ?: "<SKYFLOW_ID>") + "\"")
+            buildConfigField("String", "VALUE", "\"" + (localProperties.getProperty("VALUE") ?: "<VALUE>") + "\"")
+            buildConfigField("String", "BEARER_TOKEN", "\"" + (localProperties.getProperty("BEARER_TOKEN") ?: "<BEARER_TOKEN>") + "\"")
+            // Redaction NAME (plain String forwarded to the API, e.g. a schema redaction like "mask1"), not a RedactionType enum.
+            buildConfigField("String", "REDACTION_TYPE", "\"" + (localProperties.getProperty("REDACTION_TYPE") ?: "<REDACTION_TYPE>") + "\"")
+            // Reveal demo data tokens (RevealActivity).
+            buildConfigField("String", "TOKEN_1", "\"" + (localProperties.getProperty("TOKEN_1") ?: "<TOKEN_1>") + "\"")
+            buildConfigField("String", "TOKEN_2", "\"" + (localProperties.getProperty("TOKEN_2") ?: "<TOKEN_2>") + "\"")
+            buildConfigField("String", "GATEWAY_TOKEN", "\"" + localProperties.getProperty("GATEWAY_TOKEN") + "\"")
+            buildConfigField("String", "GATEWAY_URL_PULL_FUNDS", "\"" + localProperties.getProperty("GATEWAY_URL_PULL_FUNDS") + "\"")
+            buildConfigField("String", "GATEWAY_CVV_GEN_URL", "\"" + localProperties.getProperty("GATEWAY_CVV_GEN_URL") + "\"")
+            buildConfigField("String", "GATEWAY_ACCESS_TOKEN", "\"" + localProperties.getProperty("GATEWAY_ACCESS_TOKEN") + "\"")
+            buildConfigField("String", "CARD_NUMBER_TOKEN", "\"" + localProperties.getProperty("CARD_NUMBER_TOKEN") + "\"")
+            buildConfigField("String", "EXPIRATION_DATE_TOKEN", "\"" + localProperties.getProperty("EXPIRATION_DATE_TOKEN") + "\"")
+            buildConfigField("String", "TOKEN_LOCAL_URL", "\"" + localProperties.getProperty("TOKEN_LOCAL_URL") + "\"")
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+configurations.all {
+    resolutionStrategy { force 'androidx.core:core-ktx:1.6.0' }
+}
+dependencies {
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation project(path: ':flowvault')
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation "androidx.core:core-ktx:+"
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+}

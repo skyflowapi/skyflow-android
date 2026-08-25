@@ -1,0 +1,58 @@
+{
+    "name": "flowvault-sample",
+    "description": "Sample FlowDB (FlowVault) vault schema for the Android SDK sample app.",
+    "useMasterKey": null,
+    "workspaceID": "<WORKSPACE_ID>",
+    "owners": null,
+    "schema": {
+        "vaultType": "STRUCTURED",
+        "tables": [
+            {
+                "name": "table1",
+                "unique": [{"values": ["email"]}],
+                "deletettl": 0
+            },
+            {
+                "name": "customer",
+                "unique": [{"values": ["email"]}],
+                "deletettl": 0
+            }
+        ],
+        "tokenGroup": [
+            {"name":"deterministic","type":"DETERMINISTIC","transientTime":0,"regex":"","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"deterministic_string","type":"DETERMINISTIC","transientTime":0,"regex":"","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":{"right4":null,"prefixPreserved":{"length":3}},"constraints":{"dataType":"STRING","inputValidation":[],"redactions":["mask1"]},"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"nondeterministic","type":"NONDETERMINISTIC","transientTime":0,"regex":"","format":"FPT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"nondeterministic_string","type":"NONDETERMINISTIC","transientTime":0,"regex":"","format":"FPT","rightToForget":false,"subType":null,"constraints":{"dataType":"STRING","inputValidation":["^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"],"redactions":["mask2"]},"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"nondeterministic_transient","type":"NONDETERMINISTIC","transientTime":60,"regex":"","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"deterministic_regex","type":"DETERMINISTIC","transientTime":0,"regex":"^[a-zA-Z0-9]+$","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"deterministic_regex_dateOfBirth","type":"DETERMINISTIC","transientTime":0,"regex":"([0-9][0-9][0-9][0-9])(-0[1-9])(-[0-2][1-9])","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"nondeterministic_regex","type":"NONDETERMINISTIC","transientTime":0,"regex":"^[a-zA-Z0-9]+$","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"deterministic_rightToForget","type":"DETERMINISTIC","transientTime":0,"regex":"","format":"UNDEFINED_TOKENFORMAT","rightToForget":true,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"nondeterministic_transient_regex","type":"NONDETERMINISTIC","transientTime":60,"regex":"^[a-zA-Z0-9]+$","format":"UNDEFINED_TOKENFORMAT","rightToForget":false,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false},
+            {"name":"deterministic_regex_rightToForget","type":"DETERMINISTIC","transientTime":0,"regex":"^[a-zA-Z0-9]+$","format":"UNDEFINED_TOKENFORMAT","rightToForget":true,"subType":null,"constraints":null,"valueBound":false,"skipValidationForBYOT":false}
+        ],
+        "columns": [
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"name","notNull":true,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"table1","tokenGroups":["deterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"ssn","notNull":true,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"table1","tokenGroups":["deterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"passport","notNull":true,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1", "mask2"],"sensitivity":"UNKNOWN","tableName":"table1","tokenGroups":["deterministic_string", "nondeterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":["^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"],"name":"email","notNull":true,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask2"],"sensitivity":"UNKNOWN","tableName":"table1","tokenGroups":["nondeterministic_string", "nondeterministic"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"middle_name","notNull":false,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"table1","tokenGroups":["deterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"name","notNull":false,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"customer","tokenGroups":["deterministic", "nondeterministic"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"card_number","notNull":false,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"customer","tokenGroups":["deterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":["^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"],"name":"email","notNull":true,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask2"],"sensitivity":"UNKNOWN","tableName":"customer","tokenGroups":["nondeterministic_string"],"hashings":["hash1"]},
+            {"dataType":"STRING","description":"","identifiability":"UNKNOWN","inner":[],"inputValidation":[],"name":"expiration_date","notNull":false,"operations":["EXACT_MATCH"],"personalInformationType":[],"predefinedValues":[],"privacyLaws":[],"redactions":["mask1"],"sensitivity":"UNKNOWN","tableName":"customer","tokenGroups":["deterministic_string"],"hashings":["hash1"]}
+        ],
+        "redactions": [
+            {"name":"mask1","findPattern":"[A-Z]","replacePattern":null},
+            {"name":"mask2","findPattern":"^[a-zA-Z0-9._%+-]+","replacePattern":"xxxx"},
+            {"name":"mask3","findPattern":"[0-9]{12}","replacePattern":"*"},
+            {"name":"mask4","findPattern":"[0-9]","replacePattern":"#"},
+            {"name":"mask5","findPattern":"[a-z]","replacePattern":"."}
+        ],
+        "queryService": null,
+        "hashings": [
+            { "name": "hash1", "algorithm": "SHA256" },
+            { "name": "hash2", "algorithm": "SHA256" }
+        ]
+    }
+}

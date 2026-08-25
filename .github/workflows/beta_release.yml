@@ -1,8 +1,13 @@
 name: Public Beta Release
 
+# One workflow for both SDKs' beta releases. The tag namespace decides the product:
+#   x.y.z-beta.n            -> legacy (skyvault)
+#   flowvault/x.y.z-beta.n  -> flowvault
 on:
   push:
-    tags: "*.*.*-beta.*"
+    tags:
+      - '*.*.*-beta.*'
+      - 'flowvault/*-beta.*'
 
 jobs:
   build-sdk:
@@ -24,9 +29,8 @@ jobs:
         run: |
           raw=$(git branch -r --contains ${{ github.ref }})
           branch=${raw##*/}
-          beta_branch="beta-release/$branch"
-          echo "::set-output name=branch::$beta_branch"
-          echo "Branch is $beta_branch."
+          echo "branch=beta-release/$branch" >> "$GITHUB_OUTPUT"
+          echo "Branch is beta-release/$branch."
 
       - name: Create local properties file
         run: |
@@ -34,25 +38,37 @@ jobs:
           echo gpr.user=${{ github.actor }} >> local.properties
           echo gpr.key=${{ secrets.PAT_ACTIONS }} >> local.properties
 
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 1.0.0
+      - name: Determine product from tag
+        id: prod
+        run: |
+          ref="${GITHUB_REF_NAME}"
+          if [[ "$ref" == flowvault/* ]]; then
+            product=flowvault; module=flowvault; version="${ref#flowvault/}"; gradle_file=flowvault/build.gradle; label="FlowVault Public Beta"
+          else
+            product=legacy;    module=skyvault;  version="$ref";            gradle_file=skyvault/build.gradle;  label="Public Beta"
+          fi
+          {
+            echo "product=$product"
+            echo "module=$module"
+            echo "version=$version"
+            echo "gradle_file=$gradle_file"
+            echo "label=$label"
+          } >> "$GITHUB_OUTPUT"
+          echo "Beta releasing tag '$ref' as product=$product version=$version"
 
       - name: Bump Version
         run: |
           chmod +x ./scripts/bump_version.sh
-          ./scripts/bump_version.sh "${{ steps.previoustag.outputs.tag }}"
+          ./scripts/bump_version.sh ${{ steps.prod.outputs.product }} "${{ steps.prod.outputs.version }}"
 
       - name: Commit changes
         run: |
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.gihub.com
           git branch -f ${{ steps.check_step.outputs.branch }} origin/${{ steps.check_step.outputs.branch }}
-          git checkout ${{ steps.check_step.outputs.branch }}  
-          git add Skyflow/build.gradle
-          git commit -m "[AUTOMATED] Public Beta Release ${{ steps.previoustag.outputs.tag }}"
+          git checkout ${{ steps.check_step.outputs.branch }}
+          git add ${{ steps.prod.outputs.gradle_file }}
+          git commit -m "[AUTOMATED] ${{ steps.prod.outputs.label }} Release ${{ steps.prod.outputs.version }}"
           git push origin
 
       - name: Validate Gradle wrapper
@@ -60,7 +76,7 @@ jobs:
       - name: Publish package
         run: |
           chmod +x gradlew
-          ./gradlew publish -Pbeta=true
+          ./gradlew :${{ steps.prod.outputs.module }}:publish -Pbeta=true
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
