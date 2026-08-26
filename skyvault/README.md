@@ -108,10 +108,10 @@ val config = Skyflow.Configuration(
     vaultID = <VAULT_ID>,
     vaultURL = <VAULT_URL>,
     tokenProvider = demoTokenProvider,
-    options: Skyflow.Options(
-      logLevel : Skyflow.LogLevel, // optional, if not specified loglevel is ERROR.
-        env: SKyflow.Env //optiuona, if not specified env is PROD.
-       ) 
+    options = Skyflow.Options(
+      logLevel = Skyflow.LogLevel.ERROR, // optional, if not specified loglevel is ERROR.
+      env = Skyflow.Env.PROD // optional, if not specified env is PROD.
+    )
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -442,10 +442,10 @@ Collect Element Options examples for INPUT_FIELD
 Example 1
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "+91 XXXX-XX-XXXX",
-  translation: hashmapOf('X' to "[0-9]")
+  required = true, 
+  enableCardIcon = true,
+  format = "+91 XXXX-XX-XXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 User input: "1234121234"
@@ -455,10 +455,10 @@ Value displayed in INPUT_FIELD: "+91 1234-12-1234"
 Example 2
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "AY XX-XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+  required = true, 
+  enableCardIcon = true,
+  format = "AY XX-XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
 )
 ```
 User input: "B1234121234"
@@ -1370,10 +1370,10 @@ Collect Element Options examples for INPUT_FIELD
 Example 1
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "+91 XXXX-XX-XXXX",
-  translation: hashmapOf('X' to "[0-9]")
+  required = true, 
+  enableCardIcon = true,
+  format = "+91 XXXX-XX-XXXX",
+  translation = hashmapOf('X' to "[0-9]")
 )
 ```
 User input: "1234121234"
@@ -1383,10 +1383,10 @@ Value displayed in INPUT_FIELD: "+91 1234-12-1234"
 Example 2
 ```kotlin
 Skyflow.CollectElementOptions(
-  required: true, 
-  enableCardIcon: true,
-  format: "AY XX-XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
+  required = true, 
+  enableCardIcon = true,
+  format = "AY XX-XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]", 'Y' to "[A-Z]")
 )
 ```
 User input: "B1234121234"
@@ -1410,12 +1410,12 @@ val composableElementInput = Skyflow.CollectElementInput(
 )
 
 val collectElementOptions = Skyflow.CollectElementOptions(
-  required: false,  // indicates whether the field is marked as required. Defaults to 'false',
-  enableCardIcon: true, // indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
-  format: "mm/yy" // Format for the element
+  required = false,  // indicates whether the field is marked as required. Defaults to 'false',
+  enableCardIcon = true, // indicates whether card icon should be enabled (only for CARD_NUMBER inputs)
+  format = "mm/yy" // Format for the element
 )
 
-val element = container.create(context = Context, input: composableElementInput, options: collectElementOptions)
+val element = container.create(context = Context, input = composableElementInput, options = collectElementOptions)
 ```
 ### Step 3: Mount Elements to the Screen
 
@@ -2003,7 +2003,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -2122,7 +2122,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -2189,7 +2189,7 @@ val config = Skyflow.Configuration(
   vaultID = VAULT_ID,
   vaultURL = VAULT_URL,
   tokenProvider = demoTokenProvider,
-  options = Skyflow.Options(logLevel: Skyflow.LogLevel.DEBUG)
+  options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG)
 )
 
 val skyflowClient = Skyflow.init(config)
@@ -2569,10 +2569,10 @@ Reveal Element Options examples:
 
 Example 1:
 ```kotlin
-let element = container.create(input: revealElementInput)
+val element = container.create(context = this, input = revealElementInput)
 Skyflow.RevealElementOptions(
-  format: "(XXX) XXX-XXXX",
-  translation: hashmapOf('X' to "[0-9]") 
+  format = "(XXX) XXX-XXXX",
+  translation = hashmapOf('X' to "[0-9]") 
 )
 ```
 Value from vault: "1234121234"
@@ -2582,8 +2582,8 @@ Value displayed in element: "(123) 412-1234"
 Example 2:
 ```kotlin
 Skyflow.RevealElementOptions(
-  format: "XXXX-XXXXXX-XXXXX",
-  translation: hashmapOf('X' to "[0-9]") 
+  format = "XXXX-XXXXXX-XXXXX",
+  translation = hashmapOf('X' to "[0-9]") 
 )
 ```
 Value from vault: "374200000000004"
@@ -2593,8 +2593,8 @@ Value displayed in element: "3742-000000-00004"
 Once you've defined a `Skyflow.RevealElementInput` object and `Skyflow.RevealElementOptions`, you can use the `create()` method of the container to create the Element as shown below:
 
 ```kotlin
-let element = container.create(input: revealElementInput, options: Skyflow.RevealElementOptions(format: "XXXX-XXXXXX-XXXXX",
-translation: hashmapOf('X' to "[0-9]")
+val element = container.create(context = this, input = revealElementInput, options = Skyflow.RevealElementOptions(format = "XXXX-XXXXXX-XXXXX",
+translation = hashmapOf('X' to "[0-9]")
 ))
 ```
 
