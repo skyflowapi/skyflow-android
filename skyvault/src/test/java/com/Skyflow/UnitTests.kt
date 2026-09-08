@@ -241,7 +241,7 @@ class UnitTests {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
@@ -270,7 +270,7 @@ class UnitTests {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
@@ -298,7 +298,7 @@ class UnitTests {
         val revealRecords = JSONObject()
         val revealRecordsArray = JSONArray()
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
         revealRecordsArray.put(recordObj)
         revealRecords.put("records", revealRecordsArray)
@@ -919,7 +919,7 @@ class UnitTests {
     fun testJwtUtils() {
         assertNotNull(
             JWTUtils.isExpired(
-                "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL21hbmFnZS5za3lmbG93YXBpcy50ZWNoIiwiY2xpIjoiZWM3NzBlODQyOWNjNDNiM2JhMGI2NDk2MzA3M2EyZDMiLCJleHAiOjE2MzQ4MDkxOTcsImlhdCI6MTYzNDgwNTU5NywiaXNzIjoic2EtYXV0aEBtYW5hZ2Uuc2t5Zmxvd2FwaXMudGVjaCIsImp0aSI6InA0ZjA0YzMwYTczODQyMzM4OGQ2ZGNjYjE4Y2E4Nzg5Iiwic2NwIjpbImFjY291bnRzLnJlYWQiLCJ3b3Jrc3BhY2VzLnJlYWQiLCJ2YXVsdHMucmVhZCIsInZhdWx0VGVtcGxhdGVzLnZhbGlkYXRlIiwic3FsLnJlYWQiLCJyZWNvcmRzLnJlYWQiLCJyZWNvcmRzLmNyZWF0ZSIsInJlY29yZHMudXBkYXRlIiwicmVjb3Jkcy5kZWxldGUiLCJ3b3JrZmxvd3MucmVhZCIsIndvcmtmbG93UnVucy5jcmVhdGUiLCJ3b3JrZmxvd1J1bnMucmVhZCIsIndvcmtmbG93UnVucy51cGRhdGUiLCJhY2NvdW50cy5yZWFkIiwid29ya3NwYWNlcy5yZWFkIiwidmF1bHRzLnJlYWQiLCJ2YXVsdFRlbXBsYXRlcy52YWxpZGF0ZSIsInNxbC5yZWFkIiwicmVjb3Jkcy5yZWFkIiwid29ya2Zsb3dzLnJlYWQiLCJhY2NvdW50cy5yZWFkIiwid29ya3NwYWNlcy5yZWFkIiwidXNlcnMucmVhZCIsInNlcnZpY2VBY2NvdW50LnZhdWx0LmNyZWF0ZSIsInNlcnZpY2VBY2NvdW50LnJlYWQiLCJzZXJ2aWNlQWNjb3VudC51cGRhdGUiLCJzZXJ2aWNlQWNjb3VudC5kZWxldGUiLCJzZXJ2aWNlQWNjb3VudC5zdGF0dXMudXBkYXRlIiwidmF1bHRGdW5jdGlvbkNvbmZpZy52YXVsdC5jcmVhdGUiLCJ2YXVsdEZ1bmN0aW9uQ29uZmlnLnJlYWQiLCJ2YXVsdEZ1bmN0aW9uQ29uZmlnLnVwZGF0ZSIsInZhdWx0RnVuY3Rpb25Db25maWcuZGVsZXRlIiwidmF1bHRGdW5jdGlvbkNvbmZpZy5zdGF0dXMudXBkYXRlIiwic3FsU2VydmljZUFjY291bnQuY3JlYXRlIiwidmF1bHRzLnJlYWQiLCJ2YXVsdHMudXBkYXRlIiwidmF1bHRzLmRlbGV0ZSIsInZhdWx0cy5zdGF0dXMudXBkYXRlIiwia2V5LmNyZWF0ZSIsImtleS51cGRhdGUiLCJrZXkudmF1bHQudXBkYXRlIiwia2V5LnZhdWx0LnJlYWQiLCJ2YXVsdEludGVncmF0aW9ucy5jcmVhdGUiLCJ2YXVsdFRlbXBsYXRlcy52YWxpZGF0ZSIsInNxbC5yZWFkIiwicmVjb3Jkcy5yZWFkIiwicmVjb3Jkcy5jcmVhdGUiLCJyZWNvcmRzLnVwZGF0ZSIsInJlY29yZHMuZGVsZXRlIiwicm9sZXMudmF1bHQuY3JlYXRlIiwicm9sZXMudmF1bHQucmVhZCIsInJvbGVzLnZhdWx0LnVwZGF0ZSIsInJvbGVzLnZhdWx0LmRlbGV0ZSIsInJvbGVzLnZhdWx0Lm1lbWJlcnMucmVhZCIsInJvbGVzLnBvbGljeS5yZWFkIiwicm9sZXMudmF1bHRGdW5jdGlvbkNvbmZpZy5jcmVhdGUiLCJyb2xlcy52YXVsdEZ1bmN0aW9uQ29uZmlnLnJlYWQiLCJyb2xlcy52YXVsdEZ1bmN0aW9uQ29uZmlnLnVwZGF0ZSIsInJvbGVzLnZhdWx0RnVuY3Rpb25Db25maWcuZGVsZXRlIiwicm9sZXMudmF1bHRGdW5jdGlvbkNvbmZpZy5tZW1iZXJzLnJlYWQiLCJyb2xlcy5kZWZpbml0aW9ucy5yZWFkIiwicm9sZXMubWVtYmVyUm9sZXMucmVhZCIsInJvbGVzLm1lbWJlclBlcm1pc3Npb25zLnJlYWQiLCJ3b3JrZmxvd3MucmVhZCIsIndvcmtmbG93UnVucy5jcmVhdGUiLCJ3b3JrZmxvd1J1bnMucmVhZCIsIndvcmtmbG93UnVucy51cGRhdGUiLCJwb2xpY2llcy52YXVsdC5jcmVhdGUiLCJwb2xpY2llcy52YXVsdC5yZWFkIiwicG9saWNpZXMudmF1bHQudXBkYXRlIiwicG9saWNpZXMudmF1bHQuZGVsZXRlIiwicG9saWNpZXMudmF1bHQuc3RhdHVzLnVwZGF0ZSIsInBvbGljaWVzLnJvbGUudmF1bHQucmVhZCJdLCJzdWIiOiJnby1zZXJ2ZXItZm9yLWFuZHJvaWQtdGVzdGluZyJ9.Qqx4_4NUFt3ah86Pl09leSMi7g8r3JH680r6CW9jzoJh4c6DBuupuqFVJ-R0-5tWh3Qk8KpIqwZ0xDN-XQiGwwGd_Ho6lszmAU4yyx23wcAocZfBY4TQ1QIfzVDBEwVXkYdAxkcfpfiKHIRZTjkSa5lkYYveIwNBYzpG96ZNFNXWvixCVlwXcNhxryG93GPWPQVFbhAiu3tctbncf7TxnlqW8RJW7jqJo9dWL6prw03-4bl_71TdSJm2BuXryaIIpxxkgrsp_xinOZ2kLOmJVga3pyMgwrDe92yrYdCOPMKvb8IbCmvNAxEJBlHuPx_rrREmpU-1lFkjvI9-el4IZA"
+                "<JWT_TOKEN>"
             )
         )
 
