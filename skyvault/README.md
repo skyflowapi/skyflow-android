@@ -948,7 +948,7 @@ container.collect(callback = insertCallback, options = collectOptions)
             "fields": {
                 "skyflow_id": "431eaa6c-5c15-4513-aa15-29f50babe882",
                 "card_number": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
-                "first_name": "131e70dc-6f76-4319-bdd3-96281e051051"
+                "first_name": "<TOKEN_2>"
             }
         }
     ]
@@ -1928,7 +1928,7 @@ container.collect(callback = insertCallback, options = collectOptions)
             "fields": {
                 "skyflow_id": "431eaa6c-5c15-4513-aa15-29f50babe882",
                 "card_number": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
-                "cardholder_name": "131e70dc-6f76-4319-bdd3-96281e051051",
+                "cardholder_name": "<TOKEN_2>",
                 "cvv": "098834fe-de99-4fc8-abdf-88c18a28a2cf"
             }
         }
@@ -1946,7 +1946,7 @@ container.collect(callback = insertCallback, options = collectOptions)
             "fields": {
                 "skyflow_id": "431eaa6c-5c15-4513-aa15-29f50babe882",
                 "card_number": "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
-                "cardholder_name": "131e70dc-6f76-4319-bdd3-96281e051051",
+                "cardholder_name": "<TOKEN_2>",
                 "cvv": "098834fe-de99-4fc8-abdf-88c18a28a2cf"
             }
         }
@@ -2260,7 +2260,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   val records = JSONObject()
   val recordsArray = JSONArray()
   val recordObj = JSONObject()
-  recordObj.put("token", "45012507-f72b-4f5c-9bf9-86b133bae719")
+  recordObj.put("token", "<TOKEN_1>")
   recordObj.put("redaction", RedactionType.MASKED)
   recordsArray.put(recordObj)
   records.put("records", recordsArray)
@@ -2272,7 +2272,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
   {
     "records": [
       {
-        "token": "131e70dc-6f76-4319-bdd3-96281e051051",
+        "token": "<TOKEN_2>",
         "value": "j***oe"
       }
     ]
@@ -2464,7 +2464,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
       {
         "fields": {
           "card_number": "9802-3257-3113-0294",
-          "expiry_date": "45012507-f72b-4f5c-9bf9-86b133bae719",
+          "expiry_date": "<TOKEN_1>",
           "fullname": "131e2507-f72b-4f5c-9bf9-86b133bae719",
         },
         "table": "cards"
@@ -2473,7 +2473,7 @@ For non-PCI use-cases, retrieving data from the vault and revealing it in the mo
         "fields": {
           "card_number": "0294-3213-3157-9802",
           "expiry_date": "131e2507-f72b-4f5c-9bf9-86b133bae719",
-          "fullname": "45012507-f72b-4f5c-9bf9-86b133bae719",
+          "fullname": "<TOKEN_1>",
         },
         "table": "cards"
       }
@@ -2647,7 +2647,7 @@ val errorTextStyles = Skyflow.Styles(base = baseTextStyle)
 
 //Create Reveal Elements
 val cardNumberInput = Skyflow.RevealElementInput(
-        token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+        token = "<TOKEN_3>",
         redaction = RedactionType.MASKED,
         inputStyles = inputStyles,
         labelStyles = labelStyles,
@@ -2659,7 +2659,7 @@ val cardNumberInput = Skyflow.RevealElementInput(
 val cardNumberElement = container.create(context = Context, input = cardNumberInput)
 
 val nameInput = Skyflow.RevealElementInput(
-        token = "89024714-6a26-4256-b9d4-55ad69aa4047",
+        token = "<TOKEN_4>",
         redaction = RedactionType.DEFAULT,
         inputStyles = inputStyles,
         labelStyles = labelStyles,
@@ -2704,15 +2704,15 @@ The response below shows that some tokens assigned to the reveal elements get re
 {
   "success": [
     {
-      "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75"
+      "token": "<TOKEN_3>"
     }
   ],
  "errors": [
     {
-       "id": "89024714-6a26-4256-b9d4-55ad69aa4047",
+       "id": "<TOKEN_4>",
        "error": {
          "code": 404,
-         "description": "Tokens not found for 89024714-6a26-4256-b9d4-55ad69aa4047"
+         "description": "Tokens not found for <TOKEN_4>"
        }
    }
   ]

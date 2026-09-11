@@ -168,7 +168,7 @@ Reveal a token back to its real value (using the same `skyflowClient` from above
 // 1. Create a container and a Reveal Element for the token
 val revealContainer = skyflowClient.container(Skyflow.ContainerType.REVEAL)
 val cardNumberReveal = Skyflow.RevealElementInput(
-    token = "f3907186-e7e2-466f-91e5-48e12c2bcbc1",
+    token = "<TOKEN_1>",
     label = "Card Number"
 )
 val revealElement = revealContainer.create(context = this, input = cardNumberReveal)
@@ -1756,7 +1756,7 @@ val errorTextStyles = Styles(base = baseTextStyle)
 
 // Create Reveal Elements — no redaction on individual elements
 val cardNumberInput = RevealElementInput(
-    token = "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+    token = "<TOKEN_2>",
     inputStyles = inputStyles,
     labelStyles = labelStyles,
     errorTextStyles = errorTextStyles,
@@ -1767,7 +1767,7 @@ val cardNumberInput = RevealElementInput(
 val cardNumberElement = container.create(context = this, input = cardNumberInput)
 
 val nameInput = RevealElementInput(
-    token = "89024714-6a26-4256-b9d4-55ad69aa4047",
+    token = "<TOKEN_3>",
     inputStyles = inputStyles,
     labelStyles = labelStyles,
     errorTextStyles = errorTextStyles,
@@ -1803,7 +1803,7 @@ The `records` list contains both successful and failed tokens. Each record carri
 {
     "records": [
         {
-            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "token": "<TOKEN_2>",
             "tokenGroupName": "deterministic_string",
             "metadata": {
                 "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
@@ -1812,8 +1812,8 @@ The `records` list contains both successful and failed tokens. Each record carri
             "httpCode": 200
         },
         {
-            "token": "89024714-6a26-4256-b9d4-55ad69aa4047",
-            "error": "Detokenize failed. Token 89024714-6a26-4256-b9d4-55ad69aa4047 is invalid. Specify a valid token.",
+            "token": "<TOKEN_3>",
+            "error": "Detokenize failed. Token <TOKEN_3> is invalid. Specify a valid token.",
             "httpCode": 404
         }
     ]
@@ -1864,7 +1864,7 @@ container.collect(object : CollectCallback {
             "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
             "tokens": {
                 "card_number": [
-                    { "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75", "tokenGroupName": "deterministic_string" }
+                    { "token": "<TOKEN_2>", "tokenGroupName": "deterministic_string" }
                 ]
             },
             "httpCode": 200
@@ -1963,7 +1963,7 @@ Both success and partial-error records are delivered as `CollectRecord` in the s
             "skyflowId": "f1714ef8-8deb-489a-a18d-77e0e007f403",
             "tokens": {
                 "cardNumber": [
-                    {"token": "f3907186-e7e2-466f-91e5-48e12c2bcbc1", "tokenGroupName": "deterministic_string"}
+                    {"token": "<TOKEN_1>", "tokenGroupName": "deterministic_string"}
                 ]
             },
             "httpCode": 200
@@ -2054,7 +2054,7 @@ data class RevealRecord(
 {
     "records": [
         {
-            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "token": "<TOKEN_2>",
             "tokenGroupName": "deterministic_string",
             "metadata": {
                 "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
@@ -2071,7 +2071,7 @@ data class RevealRecord(
 {
     "records": [
         {
-            "token": "b63ec4e0-bbad-4e43-96e6-6bd50f483f75",
+            "token": "<TOKEN_2>",
             "tokenGroupName": "deterministic_string",
             "metadata": {
                 "skyflowId": "3ac0424e-fe45-43a9-9193-2e6d2913cbd2",
@@ -2080,8 +2080,8 @@ data class RevealRecord(
             "httpCode": 200
         },
         {
-            "token": "a4b24714-6a26-4256-b9d4-55ad69aa4047",
-            "error": "Tokens not found for a4b24714-6a26-4256-b9d4-55ad69aa4047",
+            "token": "<TOKEN_4>",
+            "error": "Tokens not found for <TOKEN_4>",
             "httpCode": 404
         }
     ]

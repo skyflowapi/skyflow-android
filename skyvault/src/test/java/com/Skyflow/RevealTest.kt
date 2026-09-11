@@ -84,7 +84,7 @@ class RevealTest {
         val skyflow = Client(skyflowConfiguration)
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date"
 
         )
@@ -120,7 +120,7 @@ class RevealTest {
         val skyflow = Client(skyflowConfiguration)
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date"
         )
         val revealElement =
@@ -150,7 +150,7 @@ class RevealTest {
         val skyflow = Client(skyflowConfiguration)
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date"
         )
         val revealElement =
@@ -299,7 +299,7 @@ class RevealTest {
     fun testNoRedactionPassed() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            token = "51b1406a-0a30-49bf-b303-0eef66bd502d",
+            token = "<TOKEN_1>",
             label = "expire_date",
             altText = "expire date"
         )
@@ -311,7 +311,7 @@ class RevealTest {
     fun testEmptyStyles() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", altText = "expire date"
 
         )
@@ -324,7 +324,7 @@ class RevealTest {
     fun testEmptyStyle() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles()
 
         )
@@ -338,7 +338,7 @@ class RevealTest {
     fun testNullStyle() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles(null)
 
         )
@@ -394,13 +394,13 @@ class RevealTest {
             SkyflowElementType.CARD_NUMBER, label = "card number"
         )
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles()
 
         )
         val revealElement = container.create(activity, revealInput, Skyflow.RevealElementOptions())
         junit.framework.Assert.assertEquals(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d",
+            "<TOKEN_1>",
             container.revealElements[0].revealInput.token
         )
     }
@@ -410,7 +410,7 @@ class RevealTest {
 
         val container = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "card number", inputStyles = Styles(null)
 
         )
@@ -424,7 +424,7 @@ class RevealTest {
 
         val container = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "card number", inputStyles = Styles(null)
 
         )
@@ -745,14 +745,14 @@ class RevealTest {
     fun testOnSuccessInRevealValue() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles()
 
         )
         val expiry_date =
             revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
         val revealInput1 = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "cvv", inputStyles = Styles()
 
         )
@@ -764,7 +764,7 @@ class RevealTest {
         list.add(cvv)
 
         val response = """
-            {"records":[{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"12/22"},{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"123"}]}
+            {"records":[{"token":"<TOKEN_1>","value":"12/22"},{"token":"<TOKEN_1>","value":"123"}]}
         """.trimIndent()
         RevealValueCallback(object : Callback {
             override fun onSuccess(responseBody: Any) {
@@ -797,14 +797,14 @@ class RevealTest {
     fun TestOnFailureInRevealValue() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles()
 
         )
         val expiry_date =
             revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
         val revealInput1 = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "cvv", inputStyles = Styles()
 
         )
@@ -816,7 +816,7 @@ class RevealTest {
         list.add(cvv)
 
         val response = """
-            {"errors":[{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"12/22"},{"token":"51b1406a-0a30-49bf-b303-0eef66bd502d","value":"123"}],"records":[]}
+            {"errors":[{"token":"<TOKEN_1>","value":"12/22"},{"token":"<TOKEN_1>","value":"123"}],"records":[]}
         """.trimIndent()
         RevealValueCallback(object : Callback {
             override fun onSuccess(responseBody: Any) {
@@ -837,14 +837,14 @@ class RevealTest {
     fun TestOnFailureInRevealValueWithoutRecords() {
         val revealContainer = skyflow.container(ContainerType.REVEAL)
         val revealInput = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "expire_date", inputStyles = Styles()
 
         )
         val expiry_date =
             revealContainer.create(activity, revealInput, Skyflow.RevealElementOptions())
         val revealInput1 = RevealElementInput(
-            "51b1406a-0a30-49bf-b303-0eef66bd502d", RedactionType.PLAIN_TEXT,
+            "<TOKEN_1>", RedactionType.PLAIN_TEXT,
             label = "cvv", inputStyles = Styles()
 
         )

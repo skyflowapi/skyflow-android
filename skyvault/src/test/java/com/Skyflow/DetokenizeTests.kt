@@ -59,7 +59,7 @@ class DetokenizeTests {
         val detokenizeRecordsArray = JSONArray()
 
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
 
         detokenizeRecordsArray.put(recordObj)
@@ -94,7 +94,7 @@ class DetokenizeTests {
         val detokenizeRecordsArray = JSONArray()
 
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
 
         detokenizeRecordsArray.put(recordObj)
@@ -129,7 +129,7 @@ class DetokenizeTests {
         val detokenizeRecordsArray = JSONArray()
 
         val recordObj = JSONObject()
-        recordObj.put("token", "895630c8-cb87-4876-8df5-0a785ebfcdda")
+        recordObj.put("token", "<TOKEN_1>")
         recordObj.put("redaction", RedactionType.PLAIN_TEXT)
 
         detokenizeRecordsArray.put(recordObj)
