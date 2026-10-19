@@ -116,7 +116,7 @@ val config = Skyflow.Configuration(
 
 val skyflowClient = Skyflow.init(config)
 ```
-For the tokenProvider parameter, pass in an implementation of the Skyflow.TokenProvider interface that declares a getAccessToken method which retrieves a Skyflow bearer token from your backend. This function will be invoked when the SDK needs to insert or retrieve data from the vault.
+For the tokenProvider parameter, pass in an implementation of the Skyflow.TokenProvider interface that declares a getBearerToken method which retrieves a Skyflow bearer token from your backend. This function will be invoked when the SDK needs to insert or retrieve data from the vault.
 
 For example, if the response of the consumer tokenAPI is in the below format
 
@@ -372,7 +372,7 @@ The parameters in `Skyflow.Style` object that are respected for `label` and `err
 
 Other parameters in the `Skyflow.Style` object are ignored for `label` and `errorText` text views.
 
-Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 5 types:
+Finally, the `type` field takes a Skyflow ElementType. Each type applies the appropriate regex and validations to the form element. There are currently 8 types:
 - `INPUT_FIELD`
 - `CARDHOLDER_NAME`
 - `CARD_NUMBER`
@@ -523,7 +523,7 @@ fun clearFields(elements: List<TextField>) {
 When the form is ready to be submitted, call the collect(options: Skyflow.CollectOptions? = nil, callback: Skyflow.Callback) method on the container object. The options parameter takes `Skyflow.CollectOptions` object.
 
 `Skyflow.CollectOptions` takes two optional fields
-- `tokens`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
+- `token`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
 - `additionalFields`: Non-PCI elements data to be inserted into the vault which should be in the `records` object format as described in the above [Inserting data into vault](#Inserting-data-into-the-vault) section.
 
 ```kt
@@ -538,7 +538,7 @@ record.put("fields", fields)
 recordsArray.put(record)
 nonPCIRecords.put("records", recordsArray)
 
-val options = Skyflow.CollectOptions(tokens = true, additonalFields = nonPCIRecords)
+val options = Skyflow.CollectOptions(token = true, additionalFields = nonPCIRecords)
 val insertCallback = InsertCallback() //Custom callback - implementation of Skyflow.callback
 container.collect(options, insertCallback)
 ```
@@ -550,7 +550,7 @@ container.collect(options, insertCallback)
 val config = Skyflow.Configuration(vaultId = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider)
 
 //Initialize skyflow client
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 //Create a CollectContainer
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
@@ -599,7 +599,7 @@ recordsArray.put(record)
 nonPCIRecords.put("records", recordsArray)
 
 //Initialize and set required options for insertion
-val collectOptions = Skyflow.CollectOptions(tokens = true, additionalFields = nonPCIRecords)
+val collectOptions = Skyflow.CollectOptions(token = true, additionalFields = nonPCIRecords)
 
 //Implement a custom Skyflow.Callback to be called on Insertion success/failure
 public class InsertCallback: Skyflow.Callback {
@@ -644,7 +644,7 @@ container.collect(options = collectOptions, callback = insertCallback)
 #### [Sample Code](https://github.com/skyflowapi/skyflow-android/blob/main/samples/skyvault/src/main/java/com/Skyflow/UpsertFeature.kt):
 ```kt
 val config = Skyflow.Configuration(vaultId = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider)
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
 val options = Skyflow.CollectElementOptions(required = true)
 val baseStyle = Skyflow.Style(borderColor = Color.BLUE)
@@ -686,7 +686,7 @@ upsertColumn.put("table", "cards")
 upsertColumn.put("column", "card_number")
 upsertArray.put(upsertColumn)
 
-val collectOptions = Skyflow.CollectOptions(tokens = true,upsert = upsertArray)
+val collectOptions = Skyflow.CollectOptions(token = true,upsert = upsertArray)
 
 public class InsertCallback: Skyflow.Callback {
     override fun onSuccess(responseBody: Any) {
@@ -753,7 +753,6 @@ The `table` and `column` fields indicate which table and column in the vault the
 
 **Note:**
 - Use dot delimited strings to specify columns nested inside JSON fields (e.g. `address.street.line1`)
-- `table` and `column` are optional only if the element is being used in invokeConnection()
 
 Along with `CollectElementInput`, you can define other options in the `CollectElementOptions` object as described in the [collect section](#step-2-create-a-collect-element).
 
@@ -785,7 +784,7 @@ fun clearFieldsOnSubmit(elements: List<TextField>) {
 
 When the form is ready to submit, call the `collect(options?)` method on the container object. The `options` parameter takes an object of optional parameters as shown below:
 
-- `tokens`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
+- `token`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
 - `additionalFields`: Non-PCI elements data to update or insert into the vault which should be in the records object format.
 - `upsert`: To support upsert operations while collecting data from Skyflow elements, pass the table and column marked as unique in the table.
 
@@ -815,7 +814,7 @@ upsertArray.put(upsertColumn)
 
 // Send the non-PCI records as additionalFields of CollectOptions (optional) 
 // and apply upsert using `upsert` field of CollectOptions (optional)
-val options = CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertArray)
+val options = CollectOptions(token = true, additionalFields = nonPCIRecords, upsert = upsertArray)
 
 // Custom callback - implementation of Skyflow.Callback
 val insertCallback = InsertCallback()
@@ -911,7 +910,7 @@ val upsertOptions = JSONArray().apply {
 
 // Send the Non-PCI records as additionalFields of CollectOptions (optional) 
 // and apply upsert using optional field `upsert` of CollectOptions
-val collectOptions = CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertOptions)
+val collectOptions = CollectOptions(token = true, additionalFields = nonPCIRecords, upsert = upsertOptions)
 
 // Implement a custom Skyflow.Callback to call on update success/failure
 class InsertCallback : Callback {
@@ -962,7 +961,7 @@ skyflow-android provides two types of validations on Collect Elements
 #### 1. Default Validations:
 Every Collect Element except of type `INPUT_FIELD` has a set of default validations listed below:
 - `CARD_NUMBER`: Card number validation with checkSum algorithm(Luhn algorithm), available card lengths for defined card types
-- `CARD_HOLDER_NAME`: Name, should be 2 or more symbols, valid characters shold match pattern `^([a-zA-Z\\ \\,\\.\\-\\']{2,})$`
+- `CARDHOLDER_NAME`: Name, should be 2 or more symbols, valid characters should match pattern `^([a-zA-Z\\ \\,\\.\\-\\']{2,})$`
 - `CVV`: Card CVV can have 3-4 digits
 - `EXPIRATION_DATE`: Any date starting from current month. By default valid expiration date should be in short year format - `MM/YY`
 - `PIN`: Can have 4-12 digits
@@ -1046,7 +1045,7 @@ val state = {
 //create skyflow client with loglevel:"DEBUG"
 val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
 
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
@@ -1126,7 +1125,7 @@ Helps to display custom error messages on the Skyflow Elements through the metho
 //create skyflow client with loglevel:"DEBUG"
 val config = Skyflow.Configuration(vaultID = VAULT_ID, vaultURL = VAULT_URL, tokenProvider = demoTokenProvider, options = Skyflow.Options(logLevel = Skyflow.LogLevel.DEBUG))
 
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
@@ -1165,7 +1164,7 @@ val config = Skyflow.Configuration(
   tokenProvider = demoTokenProvider,
   options = Skyflow.Options(env = Skyflow.Env.DEV)
 )
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 val container = skyflowClient.container(type = Skyflow.ContainerType.COLLECT)
  
 // Create a CollectElementInput
@@ -1445,7 +1444,7 @@ fun clearFieldsOnSubmit(elements: List<TextField>) {
 When the form is ready to be submitted, call the `collect(options: Skyflow.CollectOptions? = CollectOptions(), callback: Skyflow.Callback)` method on the container object. The options parameter takes `Skyflow.CollectOptions` object.
 
 `Skyflow.CollectOptions` takes three optional fields
-- `tokens`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
+- `token`: indicates whether tokens for the collected data should be returned or not. Defaults to 'true'
 - `additionalFields`: Non-PCI elements data to be inserted into the vault which should be in the `records` object format as described in the above [Inserting data into vault](#Inserting-data-into-the-vault) section.
 - `upsert`: To support upsert operations, the table containing the data and a column marked as unique in that table.
 
@@ -1474,7 +1473,7 @@ upsertColumn.put("column", "card_number")
 
 upsertArray.put(upsertColumn)
 
-val options = Skyflow.CollectOptions(tokens = true, additonalFields = nonPCIRecords, upsert = upsertArray)
+val options = Skyflow.CollectOptions(token = true, additionalFields = nonPCIRecords, upsert = upsertArray)
 val insertCallback = InsertCallback() //Custom callback - implementation of Skyflow.callback
 container.collect(options, insertCallback)
 ```
@@ -1585,7 +1584,7 @@ upsertColumn.put("column", "card_number")
 upsertArray.put(upsertColumn)
 
 //Initialize and set required options for insertion
-val collectOptions = Skyflow.CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertArray)
+val collectOptions = Skyflow.CollectOptions(token = true, additionalFields = nonPCIRecords, upsert = upsertArray)
 
 //Implement a custom Skyflow.Callback to be called on Insertion success/failure
 class InsertCallback: Skyflow.Callback {
@@ -1719,7 +1718,7 @@ When you submit the form, call the `collect(options: Skyflow.CollectOptions? = n
 
 The options parameter takes a `Skyflow.CollectOptions` object as shown below:
 
-- `tokens`: Whether or not tokens for the collected data are returned. Defaults to 'true'
+- `token`: Whether or not tokens for the collected data are returned. Defaults to 'true'
 - `additionalFields`: Non-PCI elements data to insert into the vault, specified in the records object format.
 - `upsert`: To support upsert operations, the table containing the data and a column marked as unique in that table.
 
@@ -1750,7 +1749,7 @@ val upsertOptions = JSONArray().apply {
 
 // Send the non-PCI records as additionalFields of CollectOptions (optional) 
 // and apply upsert using `upsert` field of CollectOptions (optional)
-val options = CollectOptions(tokens = true, additionalFields = nonPCIRecords, upsert = upsertOptions)
+val options = CollectOptions(token = true, additionalFields = nonPCIRecords, upsert = upsertOptions)
 
 // Custom callback - implementation of Skyflow.Callback
 val insertCallback = InsertCallback()
@@ -1888,7 +1887,7 @@ val upsertOptions = JSONArray().apply {
 // Send the Non-PCI records as additionalFields of CollectOptions (optional)  
 // and apply upsert using optional field `upsert` of CollectOptions
 val collectOptions = CollectOptions(
-    tokens = true, 
+    token = true, 
     additionalFields = nonPCIRecords, 
     upsert = upsertOptions
 )
@@ -2521,7 +2520,6 @@ val revealElementInput = Skyflow.RevealElementInput(
 ```
 
 `Notes`: 
-- `token` is optional only if it is being used in invokeConnection()
 - `redaction` defaults to [`RedactionType.PLAIN_TEXT`](#redaction-types)
 
 The `inputStyles` parameter accepts a styles object as described in the [previous section](#step-2-create-a-collect-element) for collecting data but the only state available for a reveal element is the base state.
@@ -2632,7 +2630,7 @@ The `setAltText(value: String)` method can be used to set the altText of the Rev
 val config = Skyflow.Configuration(vaultId = <VAULT_ID>, vaultURL = <VAULT_URL>, tokenProvider = demoTokenProvider)
 
 //Initialize skyflow client
-val skyflowClient = Skyflow.initialize(config)
+val skyflowClient = Skyflow.init(config)
 
 //Create a Reveal Container
 val container = skyflowClient.container(type = Skyflow.ContainerType.REVEAL)
