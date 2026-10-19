@@ -81,7 +81,7 @@ app.listen(port, () => {
 
 ## Configure & run a sample
 1. Open the sample (`skyvault/` or `flowvault/`) in Android Studio.
-2. Add your values to the **root** `local.properties` file. The sample's `build.gradle` reads each key from `local.properties` and exposes it as a `BuildConfig` field, so the activities pick them up automatically — you never hand-edit the `.kt` files. Any key you leave unset falls back to a `<PLACEHOLDER>` default so the sample still compiles.
+2. Add your values to the **root** `local.properties` file. The sample's `build.gradle` reads each key from `local.properties` and exposes it as a `BuildConfig` field, so the activities pick them up automatically — you never hand-edit the `.kt` files. In the `flowvault` sample, any key you leave unset falls back to a `<PLACEHOLDER>` default so the sample still compiles. The `skyvault` sample has no such fallback, so set its required keys (`VAULT_ID`, `VAULT_URL`, `TOKEN_URL`) before building.
 3. For reveal samples, also supply valid Skyflow IDs and data tokens — see [Get tokens for your stored data](https://docs.skyflow.com/tokenization-apis/#get-tokens-for-your-stored-data).
 4. Build and run on a device or emulator (Android 5.0 / API 21+).
 
