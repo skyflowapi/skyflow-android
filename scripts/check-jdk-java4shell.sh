@@ -20,7 +20,8 @@ fi
 runtime_version=$("$java_bin" -XshowSettings:properties -version 2>&1 \
   | awk -F' = ' '$1 ~ /^[[:space:]]*java\.runtime\.version$/ { print $2 }' | head -n1)
 cpu_model=$(awk -F': ' '/^model name/ { print $2 }' /proc/cpuinfo 2>/dev/null | head -n1)
-if grep -qw avx512_vbmi /proc/cpuinfo 2>/dev/null; then vbmi="present"; else vbmi="absent"; fi
+# Linux names this CPU flag "avx512vbmi" (no underscore; only avx512_vbmi2 has one).
+if grep -qwE "avx512vbmi|avx512_vbmi" /proc/cpuinfo 2>/dev/null; then vbmi="present"; else vbmi="absent"; fi
 # UseBASE64Intrinsics does not exist on JDK 8; the unlock flag keeps it visible if it is
 # ever reclassified as diagnostic. JAVA_TOOL_OPTIONS is honoured, so a workaround shows as false.
 b64=$("$java_bin" -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version 2>/dev/null \
