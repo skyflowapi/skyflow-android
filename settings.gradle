@@ -20,5 +20,3 @@ dependencyResolutionManagement {
 rootProject.name = "Skyflow-android"
 include ':skyvault'
 include ':flowvault'
-include ':samples:skyvault'
-include ':samples:flowvault'
