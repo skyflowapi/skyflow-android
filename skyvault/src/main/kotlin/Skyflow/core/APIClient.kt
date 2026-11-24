@@ -70,6 +70,21 @@ internal class APIClient(
         }
     }
 
+    fun uploadFiles(
+        elements: List<FileInputElement>,
+        metaData: JSONObject?,
+        callback: Callback
+    ) {
+        try {
+            val uploadCallback = Skyflow.collect.client.FileUploadAPICallback(
+                this, elements, metaData, callback, logLevel
+            )
+            this.getAccessToken(uploadCallback)
+        } catch (e: Exception) {
+            callback.onFailure(Utils.constructErrorResponse(e))
+        }
+    }
+
     fun get(records: JSONObject, callback: Callback) {
 
         try {

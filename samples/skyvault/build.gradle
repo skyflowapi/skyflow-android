@@ -7,7 +7,7 @@ localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
     namespace "com.Skyflow"
-    compileSdk 31
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.skyflow_android"

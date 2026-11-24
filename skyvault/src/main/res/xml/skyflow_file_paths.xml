@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera captures are written here (FileInputElement / FilePicker cacheDir/skyflow_uploads). -->
+    <cache-path name="skyflow_uploads" path="skyflow_uploads/" />
+</paths>

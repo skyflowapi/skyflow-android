@@ -44,6 +44,11 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, CardBrandChoiceActivity::class.java)
             startActivity(intent)
         }
+
+        binding.fileUploadDemo.setOnClickListener {
+            val intent = Intent(this, FileUploadActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
 
