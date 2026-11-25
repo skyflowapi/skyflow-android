@@ -14,6 +14,10 @@ package Skyflow
  * @param maxFileSize         per-file byte cap. [FileElementType.MULTI_FILE_INPUT] only; a single
  *                            [FileElementType.FILE_INPUT] is fixed at 32 MB by the server.
  * @param maxFileCount        max files in one [FileElementType.MULTI_FILE_INPUT] upload (default 4).
+ * @param stripImageMetadata  remove location/EXIF metadata from JPEG photos before upload (GPS,
+ *                            camera make/model, timestamps). Off by default. Stripping copies the
+ *                            photo to a private cache file to rewrite it, then deletes it after upload
+ *                            (the only case where a file briefly touches disk).
  * @param sources             which pickers the element offers. CAMERA is opt-in (see [FileSource]).
  */
 class FileElementOptions(
@@ -24,5 +28,6 @@ class FileElementOptions(
     var returnFileMetadata: Boolean = false,
     var maxFileSize: Long? = null,
     var maxFileCount: Int? = null,
+    var stripImageMetadata: Boolean = false,
     var sources: Array<FileSource> = arrayOf(FileSource.FILES, FileSource.PHOTOS),
 )

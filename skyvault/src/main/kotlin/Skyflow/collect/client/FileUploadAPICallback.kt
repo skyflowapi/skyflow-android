@@ -4,16 +4,22 @@ import Skyflow.*
 import Skyflow.Callback
 import Skyflow.core.APIClient
 import Skyflow.core.file.FileUploadRequestBody
+import Skyflow.core.file.FileUploadValidator
 import Skyflow.core.file.SelectedFile
 import Skyflow.utils.Utils
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Uploads every selected file to `POST {vaultURL}/v2/vaults/{vaultID}/files/upload` (one multipart
@@ -39,16 +45,31 @@ internal class FileUploadAPICallback(
     private val metaData: JSONObject?,
     private val callback: Callback,
     private val logLevel: LogLevel,
+    private val uploadOptions: FileUploadOptions? = null,
 ) : Callback {
 
-    private val okHttpClient = OkHttpClient()
+    private val okHttpClient: OkHttpClient = OkHttpClient.Builder().apply {
+        val timeout = uploadOptions?.timeoutMs ?: 0L
+        if (timeout > 0L) callTimeout(timeout, TimeUnit.MILLISECONDS)
+    }.build()
     private val tag = FileUploadAPICallback::class.qualifiedName
 
-    private val successes = JSONArray()
-    private val errors = JSONArray()
+    // Per-file result slots, indexed by input order so the response preserves it (matches
+    // skyflow-js's Promise.allSettled, which keeps order). slotIsError[i] tags slot i as a failure.
     private val lock = Any()
+    private lateinit var slots: Array<JSONObject?>
+    private lateinit var slotIsError: BooleanArray
     private lateinit var remaining: AtomicInteger
     private lateinit var authHeader: String
+
+    // Cancellation: every enqueued call is tracked; cancel() stops them all and flips `cancelled`.
+    private val callLock = Any()
+    private val activeCalls = mutableListOf<Call>()
+    @Volatile private var cancelled = false
+
+    // Progress: cumulative bytes written vs the total selected size across all files.
+    private val bytesUploaded = AtomicLong(0L)
+    private var totalBytes: Long = 0L
 
     private val useMetaData: Boolean get() = metaData != null && metaData.length() > 0
 
@@ -62,22 +83,29 @@ internal class FileUploadAPICallback(
         authHeader = responseBody.toString()
 
         // Count every file up front so the completion latch is exact across the mixed
-        // direct-upload and insert-then-upload paths.
+        // direct-upload and insert-then-upload paths, and so each file gets a stable input index.
         val totalFiles = elements.sumOf { it.getSelectedFiles().size }
+        totalBytes = elements.sumOf { el -> el.getSelectedFiles().sumOf { maxOf(0L, it.sizeBytes) } }
+        slots = arrayOfNulls(totalFiles)
+        slotIsError = BooleanArray(totalFiles)
         if (totalFiles == 0) {
             finish() // only optional elements with no selection — nothing to upload
             return
         }
         remaining = AtomicInteger(totalFiles)
 
+        var index = 0
         for (element in elements) {
             val files = element.getSelectedFiles()
             if (files.isEmpty()) continue
             if (element.isMultiple && useMetaData) {
-                insertThenUpload(element, files)
+                insertThenUpload(element, files, startIndex = index)
             } else {
-                for (file in files) uploadOne(element, file, skyflowIdOverride = null)
+                files.forEachIndexed { i, file ->
+                    uploadOne(element, file, skyflowIdOverride = null, index = index + i)
+                }
             }
+            index += files.size
         }
     }
 
@@ -87,16 +115,18 @@ internal class FileUploadAPICallback(
 
     // --- Multi-file: insert N records, then upload each file with its new skyflow_id ---
 
-    private fun insertThenUpload(element: FileInputElement, files: List<SelectedFile>) {
+    private fun insertThenUpload(element: FileInputElement, files: List<SelectedFile>, startIndex: Int) {
         val request = try {
             buildInsertRequest(element, files.size)
         } catch (e: Exception) {
-            failFiles(files, 400, messageOf(e))
+            failFiles(files, startIndex, 400, messageOf(e))
             return
         }
-        okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
+        val call = okHttpClient.newCall(request)
+        registerCall(call)
+        call.enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: IOException) {
-                failFiles(files, 500, e.message ?: "network error")
+                failFiles(files, startIndex, 500, e.message ?: "network error")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -112,17 +142,17 @@ internal class FileUploadAPICallback(
                         } catch (e: Exception) {
                             bodyStr.ifEmpty { "Insert for file upload failed." }
                         }
-                        failFiles(files, response.code, Utils.appendRequestId(message, requestId))
+                        failFiles(files, startIndex, response.code, Utils.appendRequestId(message, requestId))
                         return
                     }
                     val ids = try { parseSkyflowIds(bodyStr) } catch (e: Exception) { emptyList() }
                     if (ids.size < files.size) {
                         // Insert succeeded but returned too few record ids (matches skyflow-js's
                         // "No skyflow IDs returned from insert data").
-                        failFiles(files, 500, "Insert for file upload did not return enough record ids.")
+                        failFiles(files, startIndex, 500, "Insert for file upload did not return enough record ids.")
                         return
                     }
-                    files.forEachIndexed { i, file -> uploadOne(element, file, ids[i]) }
+                    files.forEachIndexed { i, file -> uploadOne(element, file, ids[i], startIndex + i) }
                 }
             }
         })
@@ -157,20 +187,34 @@ internal class FileUploadAPICallback(
 
     // --- Direct per-file upload ---
 
-    private fun uploadOne(element: FileInputElement, file: SelectedFile, skyflowIdOverride: String?) {
+    private fun uploadOne(
+        element: FileInputElement,
+        file: SelectedFile,
+        skyflowIdOverride: String?,
+        index: Int,
+    ) {
+        // stripImageMetadata: rewrite the photo to a temp cache file with EXIF removed, upload from
+        // there, and delete it once the request finishes (null = not an image / disabled / failed).
+        val tempFile = if (element.fileOptions.stripImageMetadata)
+            ImageMetadataStripper.stripToTempFile(element.context, file) else null
         val request = try {
-            buildUploadRequest(element, file, skyflowIdOverride)
+            buildUploadRequest(element, file, skyflowIdOverride, tempFile)
         } catch (e: Exception) {
-            recordError(file.name, 400, messageOf(e))
+            tempFile?.delete()
+            recordError(index, file.name, 400, messageOf(e))
             return
         }
-        okHttpClient.newCall(request).enqueue(object : okhttp3.Callback {
+        val call = okHttpClient.newCall(request)
+        registerCall(call)
+        call.enqueue(object : okhttp3.Callback {
             override fun onFailure(call: Call, e: IOException) {
-                recordError(file.name, 500, e.message ?: "network error")
+                tempFile?.delete()
+                recordError(index, file.name, 500, e.message ?: "network error")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                handleUploadResponse(response, element, file)
+                tempFile?.delete()
+                handleUploadResponse(response, element, file, index)
             }
         })
     }
@@ -179,18 +223,25 @@ internal class FileUploadAPICallback(
         element: FileInputElement,
         file: SelectedFile,
         skyflowIdOverride: String?,
+        strippedFile: File?,
     ): Request {
         val url = "$vaultBase/v2/vaults/${apiClient.vaultId}/files/upload"
 
         // preserveFileName = false → send a generated name so any PII in the file name never reaches
         // the vault (matches skyflow-js generateUploadFileName).
         val sentName =
-            if (element.fileOptions.preserveFileName) file.name
+            if (element.fileOptions.preserveFileName) FileUploadValidator.sanitizeFileName(file.name)
             else "${UUID.randomUUID()}" + if (file.extension.isNotEmpty()) ".${file.extension}" else ""
 
-        val fileBody = FileUploadRequestBody(
-            element.context.contentResolver, file.uri, file.mimeType, file.sizeBytes
-        )
+        // Stream from the EXIF-stripped temp file when present, otherwise straight from the Uri.
+        val baseBody: RequestBody = strippedFile?.asRequestBody(file.mimeType?.toMediaTypeOrNull())
+            ?: FileUploadRequestBody(
+                element.context.contentResolver, file.uri, file.mimeType, file.sizeBytes
+            )
+        // Count bytes for progress only when a listener is registered.
+        val fileBody: RequestBody =
+            if (uploadOptions?.progressListener != null) CountingRequestBody(baseBody) { reportProgress(it) }
+            else baseBody
 
         val bodyBuilder = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
@@ -214,7 +265,12 @@ internal class FileUploadAPICallback(
             .build()
     }
 
-    private fun handleUploadResponse(response: Response, element: FileInputElement, file: SelectedFile) {
+    private fun handleUploadResponse(
+        response: Response,
+        element: FileInputElement,
+        file: SelectedFile,
+        index: Int,
+    ) {
         response.use {
             try {
                 val requestId = response.headers.get("x-request-id").toString()
@@ -228,7 +284,7 @@ internal class FileUploadAPICallback(
                     if (element.fileOptions.returnFileMetadata && parsed.has("fileMetadata")) {
                         entry.put("fileMetadata", parsed.get("fileMetadata"))
                     }
-                    recordSuccess(if (entry.length() > 0) entry else parsed)
+                    recordSuccess(index, if (entry.length() > 0) entry else parsed)
                 } else {
                     val bodyStr = response.body?.string() ?: ""
                     val message = try {
@@ -236,28 +292,33 @@ internal class FileUploadAPICallback(
                     } catch (e: Exception) {
                         bodyStr
                     }
-                    recordError(file.name, response.code, Utils.appendRequestId(message, requestId))
+                    recordError(index, file.name, response.code, Utils.appendRequestId(message, requestId))
                 }
             } catch (e: Exception) {
-                recordError(file.name, 500, e.message ?: "error")
+                recordError(index, file.name, 500, e.message ?: "error")
             }
         }
     }
 
-    // --- Aggregation ---
+    // --- Aggregation (per-file slots, assembled in input order at finish) ---
 
-    private fun recordSuccess(entry: JSONObject) {
-        synchronized(lock) { successes.put(entry) }
+    private fun recordSuccess(index: Int, entry: JSONObject) {
+        synchronized(lock) { slots[index] = entry; slotIsError[index] = false }
         complete()
     }
 
-    private fun recordError(fileName: String, code: Int, description: String) {
-        synchronized(lock) { errors.put(errorJson(fileName, code, description)) }
+    private fun recordError(index: Int, fileName: String, code: Int, description: String) {
+        synchronized(lock) { slots[index] = errorJson(fileName, code, description); slotIsError[index] = true }
         complete()
     }
 
-    private fun failFiles(files: List<SelectedFile>, code: Int, description: String) {
-        synchronized(lock) { for (f in files) errors.put(errorJson(f.name, code, description)) }
+    private fun failFiles(files: List<SelectedFile>, startIndex: Int, code: Int, description: String) {
+        synchronized(lock) {
+            files.forEachIndexed { i, f ->
+                slots[startIndex + i] = errorJson(f.name, code, description)
+                slotIsError[startIndex + i] = true
+            }
+        }
         repeat(files.size) { complete() }
     }
 
@@ -266,17 +327,47 @@ internal class FileUploadAPICallback(
     }
 
     private fun finish() {
-        val result = JSONObject()
+        val successes = JSONArray()
+        val errors = JSONArray()
         synchronized(lock) {
-            if (errors.length() == 0) {
-                result.put("fileUploadResponse", successes)
-                callback.onSuccess(result)
-            } else {
-                if (successes.length() > 0) result.put("fileUploadResponse", successes)
-                result.put("errorResponse", errors)
-                callback.onFailure(result)
+            // Walk slots in input order so both lists keep the order files were given (matches
+            // skyflow-js's Promise.allSettled).
+            for (i in slots.indices) {
+                val entry = slots[i] ?: continue
+                if (slotIsError[i]) errors.put(entry) else successes.put(entry)
             }
         }
+        val result = JSONObject()
+        if (errors.length() == 0) {
+            result.put("fileUploadResponse", successes)
+            callback.onSuccess(result)
+        } else {
+            if (successes.length() > 0) result.put("fileUploadResponse", successes)
+            result.put("errorResponse", errors)
+            callback.onFailure(result)
+        }
+    }
+
+    // --- Cancellation & progress ---
+
+    /** Track an enqueued call so [cancel] can stop it; cancel it immediately if already cancelled. */
+    private fun registerCall(call: Call) {
+        synchronized(callLock) {
+            if (cancelled) call.cancel() else activeCalls.add(call)
+        }
+    }
+
+    /** Cancel every in-flight call. Pending files surface as cancellation errors via their onFailure. */
+    fun cancel() {
+        synchronized(callLock) {
+            cancelled = true
+            activeCalls.forEach { it.cancel() }
+        }
+    }
+
+    private fun reportProgress(byteCount: Long) {
+        val listener = uploadOptions?.progressListener ?: return
+        listener.onProgress(bytesUploaded.addAndGet(byteCount), totalBytes)
     }
 
     private fun errorJson(fileName: String, code: Int, description: String): JSONObject =

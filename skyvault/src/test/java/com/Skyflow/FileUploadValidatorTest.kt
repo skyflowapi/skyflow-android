@@ -13,7 +13,7 @@ import org.robolectric.RobolectricTestRunner
 
 /**
  * Unit tests for the shared client-side file validator ([FileUploadValidator]). Covers the count,
- * type, empty, size and name rules, and the JS-parity constants.
+ * type, empty and size rules, the name-sanitizing helper, and the JS-parity constants.
  */
 @RunWith(RobolectricTestRunner::class)
 class FileUploadValidatorTest {
@@ -80,7 +80,7 @@ class FileUploadValidatorTest {
             assertRejects {
                 FileUploadValidator.validateFile(
                     file(blocked), allowedFileType = null, blockEmptyFiles = false,
-                    maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+                    maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
                 )
             }
         }
@@ -91,7 +91,7 @@ class FileUploadValidatorTest {
         assertRejects {
             FileUploadValidator.validateFile(
                 file("photo.gif"), allowedFileType = arrayOf(".pdf", ".png"), blockEmptyFiles = false,
-                maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+                maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
             )
         }
     }
@@ -101,7 +101,7 @@ class FileUploadValidatorTest {
         // Allowed list is matched case-insensitively and with or without the dot.
         FileUploadValidator.validateFile(
             file("photo.PNG"), allowedFileType = arrayOf(".pdf", "png"), blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
         )
     }
 
@@ -109,7 +109,7 @@ class FileUploadValidatorTest {
     fun anyNonBlockedTypeIsAllowedWhenNoAllowedList() {
         FileUploadValidator.validateFile(
             file("notes.txt"), allowedFileType = null, blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
         )
     }
 
@@ -120,13 +120,13 @@ class FileUploadValidatorTest {
         assertRejects {
             FileUploadValidator.validateFile(
                 file("empty.pdf", size = 0L), allowedFileType = null, blockEmptyFiles = true,
-                maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+                maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
             )
         }
         // same 0-byte file passes when the flag is off
         FileUploadValidator.validateFile(
             file("empty.pdf", size = 0L), allowedFileType = null, blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
         )
     }
 
@@ -135,7 +135,7 @@ class FileUploadValidatorTest {
         assertRejects {
             FileUploadValidator.validateFile(
                 file("big.pdf", size = 32_000_001L), allowedFileType = null, blockEmptyFiles = false,
-                maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+                maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
             )
         }
     }
@@ -144,36 +144,40 @@ class FileUploadValidatorTest {
     fun fileAtSizeCapIsAccepted() {
         FileUploadValidator.validateFile(
             file("ok.pdf", size = 32_000_000L), allowedFileType = null, blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
         )
     }
 
-    // --- validateFile: name ---
-
     @Test
-    fun invalidNameRejectedWhenCheckNameOn() {
-        assertRejects {
-            FileUploadValidator.validateFile(
-                file("in voice#.pdf"), allowedFileType = null, blockEmptyFiles = false,
-                maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
-            )
-        }
-    }
-
-    @Test
-    fun invalidNameAllowedWhenCheckNameOff() {
-        // preserveFileName = false → the SDK sends a generated name, so the original isn't checked.
+    fun ordinaryNameWithSpacesIsNotRejected() {
+        // Names are cleaned, never rejected (the cross-SDK fix) — this must not throw.
         FileUploadValidator.validateFile(
-            file("in voice#.pdf"), allowedFileType = null, blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = false, tag = tag, logLevel = log
+            file("my vacation photo.jpg"), allowedFileType = null, blockEmptyFiles = false,
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
+        )
+    }
+
+    // --- sanitizeFileName ---
+
+    @Test
+    fun sanitizeReplacesSpacesAndUnsafeCharsKeepingExtension() {
+        assertEquals("my_photo.jpg", FileUploadValidator.sanitizeFileName("my photo.jpg"))
+        assertEquals("in_voice_.pdf", FileUploadValidator.sanitizeFileName("in voice#.pdf"))
+        // non-ASCII and spaces both become '_'; the dot/extension is preserved.
+        assertEquals("r__sum__.pdf", FileUploadValidator.sanitizeFileName("ré sumé .pdf"))
+    }
+
+    @Test
+    fun sanitizeLeavesAlreadyValidNamesUnchanged() {
+        assertEquals(
+            "invoice-2024_final(1).pdf",
+            FileUploadValidator.sanitizeFileName("invoice-2024_final(1).pdf")
         )
     }
 
     @Test
-    fun validNameAccepted() {
-        FileUploadValidator.validateFile(
-            file("invoice-2024_final(1).pdf"), allowedFileType = null, blockEmptyFiles = false,
-            maxFileSizeBytes = 32_000_000L, checkName = true, tag = tag, logLevel = log
-        )
+    fun sanitizeFallsBackToFileForBlankNames() {
+        assertEquals("file", FileUploadValidator.sanitizeFileName(""))
+        assertEquals("file", FileUploadValidator.sanitizeFileName("   "))
     }
 }

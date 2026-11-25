@@ -59,7 +59,11 @@ fun Container<CollectContainer>.uploadFiles(callback: Callback) {
  * and upload directly, as in skyflow-js. Pass an empty object or use the no-arg overload to skip the
  * insert step entirely.
  */
-fun Container<CollectContainer>.uploadFiles(metaData: JSONObject?, callback: Callback) {
+fun Container<CollectContainer>.uploadFiles(
+    metaData: JSONObject?,
+    callback: Callback,
+    uploadOptions: FileUploadOptions? = null,
+) {
     try {
         Utils.checkVaultDetails(client.configuration)
         val elements = fileElements.filterIsInstance<FileInputElement>()
@@ -71,10 +75,23 @@ fun Container<CollectContainer>.uploadFiles(metaData: JSONObject?, callback: Cal
         for (element in elements) {
             validateFileElement(element)
         }
-        (this.client as Client).apiClient.uploadFiles(elements, metaData, callback)
+        (this.client as Client).apiClient.uploadFiles(elements, metaData, callback, uploadOptions)
     } catch (e: Exception) {
         callback.onFailure(Utils.constructErrorResponse(e))
     }
+}
+
+/** Upload with [FileUploadOptions] (timeout / progress) and no per-record metadata. */
+fun Container<CollectContainer>.uploadFiles(callback: Callback, uploadOptions: FileUploadOptions) {
+    uploadFiles(metaData = null, callback = callback, uploadOptions = uploadOptions)
+}
+
+/**
+ * Cancel the container's in-flight `uploadFiles(...)`, if any. Files that had not finished resolve as
+ * cancellation errors in the upload callback.
+ */
+fun Container<CollectContainer>.cancelFileUploads() {
+    (this.client as Client).apiClient.cancelFileUploads()
 }
 
 internal fun Container<CollectContainer>.validateFileElement(element: FileInputElement) {
@@ -115,7 +132,6 @@ internal fun Container<CollectContainer>.validateFileElement(element: FileInputE
             allowedFileType = element.fileOptions.allowedFileType,
             blockEmptyFiles = element.fileOptions.blockEmptyFiles,
             maxFileSizeBytes = maxSize,
-            checkName = element.fileOptions.preserveFileName,
             tag = fileTag,
             logLevel = logLevel,
         )

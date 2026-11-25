@@ -70,19 +70,29 @@ internal class APIClient(
         }
     }
 
+    // Tracks the in-flight file upload so cancelFileUploads() can stop it.
+    private var activeFileUpload: Skyflow.collect.client.FileUploadAPICallback? = null
+
     fun uploadFiles(
         elements: List<FileInputElement>,
         metaData: JSONObject?,
-        callback: Callback
+        callback: Callback,
+        uploadOptions: FileUploadOptions? = null,
     ) {
         try {
             val uploadCallback = Skyflow.collect.client.FileUploadAPICallback(
-                this, elements, metaData, callback, logLevel
+                this, elements, metaData, callback, logLevel, uploadOptions
             )
+            activeFileUpload = uploadCallback
             this.getAccessToken(uploadCallback)
         } catch (e: Exception) {
             callback.onFailure(Utils.constructErrorResponse(e))
         }
+    }
+
+    /** Cancel the in-flight file upload, if any. Its pending files resolve as cancellation errors. */
+    fun cancelFileUploads() {
+        activeFileUpload?.cancel()
     }
 
     fun get(records: JSONObject, callback: Callback) {

@@ -29,8 +29,20 @@ internal object FileUploadValidator {
     // adds .apk for Android.
     private val BLOCKED_EXTENSIONS = setOf("zip", "exe", "rar", "deb", "apk")
 
-    // JS file-name rule: alphanumerics and ! - _ . * ( ) only.
-    private val VALID_NAME = Regex("^[A-Za-z0-9!\\-_.*()]+$")
+    // File-name character rule (JS set): alphanumerics and ! - _ . * ( ). Any other character is
+    // replaced with '_' by [sanitizeFileName] — we clean names, never reject a file for its name.
+    private val UNSAFE_NAME_CHARS = Regex("[^A-Za-z0-9!\\-_.*()]")
+
+    /**
+     * Clean a file name for upload: replace every character outside the allowed set with `_`, keeping
+     * the dot(s) and extension. Never rejects a file for its name alone (the agreed cross-SDK fix for
+     * names like `my photo.jpg`); a blank name falls back to `file`.
+     */
+    fun sanitizeFileName(name: String): String {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return "file"
+        return trimmed.replace(UNSAFE_NAME_CHARS, "_")
+    }
 
     /**
      * Validate the number of files picked for one element.
@@ -63,18 +75,17 @@ internal object FileUploadValidator {
     }
 
     /**
-     * Validate a single picked file (type, emptiness, size, and name).
+     * Validate a single picked file (type, emptiness, size). The file **name** is not validated —
+     * it is cleaned at upload time by [sanitizeFileName] (or replaced by a UUID when
+     * `preserveFileName = false`), so an ordinary name like `my photo.jpg` is never rejected.
      *
      * @param maxFileSizeBytes  effective per-file cap in bytes.
-     * @param checkName         only enforce the name rule when the original name is preserved
-     *                          (when `preserveFileName = false` the SDK sends a generated UUID name).
      */
     fun validateFile(
         file: SelectedFile,
         allowedFileType: Array<String>?,
         blockEmptyFiles: Boolean,
         maxFileSizeBytes: Long,
-        checkName: Boolean,
         tag: String?,
         logLevel: LogLevel,
     ) {
@@ -104,12 +115,6 @@ internal object FileUploadValidator {
         if (file.sizeBytes > maxFileSizeBytes) {
             throw SkyflowInternalError(
                 SkyflowErrorCode.FILE_SIZE_EXCEEDED, tag, logLevel, arrayOf(file.name)
-            )
-        }
-
-        if (checkName && !VALID_NAME.matches(file.name)) {
-            throw SkyflowInternalError(
-                SkyflowErrorCode.INVALID_FILE_NAME, tag, logLevel, arrayOf(file.name)
             )
         }
     }

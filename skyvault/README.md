@@ -2316,9 +2316,12 @@ Skyflow.FileElementOptions(
     returnFileMetadata: Boolean,       // ask the server to return fileName / fileSize / fileType on success (default false)
     maxFileSize: Long,                 // per-file byte cap — MULTI_FILE_INPUT only (single is fixed at 32 MB)
     maxFileCount: Int,                 // max files for one MULTI_FILE_INPUT upload (default 4)
+    stripImageMetadata: Boolean,       // remove GPS/EXIF metadata from JPEG photos before upload (default false)
     sources: Array<Skyflow.FileSource> // which pickers to offer (default [FILES, PHOTOS])
 )
 ```
+
+File names are **cleaned, never rejected**: characters outside `A-Za-z0-9 ! - _ . * ( )` are replaced with `_` (so `my photo.jpg` → `my_photo.jpg`), keeping the extension. With `preserveFileName = false` a generated UUID name is sent instead.
 
 **`sources` — `Skyflow.FileSource`**
 
@@ -2383,15 +2386,39 @@ container.uploadFiles(metaData, object : Skyflow.Callback {
 })
 ```
 
-All file elements are re-validated first (type, size, count, empty, name); the call fails fast, with no network request, if any required element is empty or any file is invalid.
+All file elements are re-validated first (type, size, count, empty); the call fails fast, with no network request, if any required element is empty or any file is invalid.
+
+### Timeout, progress and cancel
+
+Pass `Skyflow.FileUploadOptions` to set a per-upload timeout and observe byte progress, and call `container.cancelFileUploads()` to stop an in-flight upload:
+
+```kotlin
+val uploadOptions = Skyflow.FileUploadOptions(
+    timeoutMs = 30_000,   // fail a stalled upload after 30s (0 = no timeout)
+    progressListener = object : Skyflow.FileUploadProgressListener {
+        override fun onProgress(bytesUploaded: Long, totalBytes: Long) {
+            // fires on a background thread — post to the main thread for UI
+        }
+    }
+)
+container.uploadFiles(callback, uploadOptions)
+// or: container.uploadFiles(metaData, callback, uploadOptions)
+
+// later, e.g. from a Cancel button:
+container.cancelFileUploads()   // pending files resolve as cancellation errors
+```
 
 ### Upload response
+
+The response keeps the **input order** of the files. Outcomes:
 
 | Outcome | Callback | Body |
 | --- | --- | --- |
 | Every file uploaded | `onSuccess` | `{ "fileUploadResponse": [ ... ] }` |
 | Every file failed | `onFailure` | `{ "errorResponse": [ ... ] }` |
 | Some succeeded, some failed | `onFailure` | `{ "fileUploadResponse": [ ... ], "errorResponse": [ ... ] }` |
+
+Each error entry carries its `fileName`, `code` and `description`.
 
 ### End to end example of collecting files with Skyflow Elements
 
