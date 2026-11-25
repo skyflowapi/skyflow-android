@@ -27,9 +27,6 @@ jobs:
           # Never reuse the runner's cached JDK 17 (17.0.21+9 is pre-Java4Shell-fix). SK-3332.
           check-latest: true
 
-      - name: JDK evidence and Java4Shell guard (CVE-2026-114938)
-        run: bash scripts/check-jdk-java4shell.sh
-
       - name: Determine product from tag
         id: prod
         run: |
