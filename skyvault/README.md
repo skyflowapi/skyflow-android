@@ -2262,7 +2262,7 @@ Skyflow.FileElementInput(
     column: String,                      // file column to upload into
     type: Skyflow.FileElementType,       // FILE_INPUT (single) or MULTI_FILE_INPUT (multiple)
     label: String,                       // optional label shown above the control
-    skyflowID: String,                   // optional existing record id to attach the file(s) to
+    skyflowId: String,                   // optional record id to attach a single file to (ignored for MULTI_FILE_INPUT)
     appearance: Skyflow.FileElementAppearance,   // optional — how the trigger looks (default FIELD)
     buttonStyles: Skyflow.Styles                 // optional — styles for the trigger control
 )

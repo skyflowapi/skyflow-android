@@ -100,12 +100,30 @@ internal class FileUploadAPICallback(
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val ids = try { parseSkyflowIds(response) } catch (e: Exception) { emptyList() }
-                if (ids.size < files.size) {
-                    failFiles(files, 500, "Insert for file upload did not return enough record ids.")
-                    return
+                response.use {
+                    val requestId = response.headers.get("x-request-id").toString()
+                    val bodyStr = response.body?.string() ?: ""
+                    if (!response.isSuccessful) {
+                        // Surface the vault's real insert error (matches skyflow-js), instead of the
+                        // generic "did not return enough record ids" — e.g. an invalid-column 400.
+                        val message = try {
+                            val error = JSONObject(bodyStr).getJSONObject("error")
+                            error.optString("description", error.optString("message", bodyStr))
+                        } catch (e: Exception) {
+                            bodyStr.ifEmpty { "Insert for file upload failed." }
+                        }
+                        failFiles(files, response.code, Utils.appendRequestId(message, requestId))
+                        return
+                    }
+                    val ids = try { parseSkyflowIds(bodyStr) } catch (e: Exception) { emptyList() }
+                    if (ids.size < files.size) {
+                        // Insert succeeded but returned too few record ids (matches skyflow-js's
+                        // "No skyflow IDs returned from insert data").
+                        failFiles(files, 500, "Insert for file upload did not return enough record ids.")
+                        return
+                    }
+                    files.forEachIndexed { i, file -> uploadOne(element, file, ids[i]) }
                 }
-                files.forEachIndexed { i, file -> uploadOne(element, file, ids[i]) }
             }
         })
     }
@@ -127,18 +145,14 @@ internal class FileUploadAPICallback(
             .build()
     }
 
-    private fun parseSkyflowIds(response: Response): List<String> {
-        response.use {
-            if (!response.isSuccessful) return emptyList()
-            val bodyStr = response.body?.string() ?: return emptyList()
-            val records = JSONObject(bodyStr).optJSONArray("records") ?: return emptyList()
-            val ids = mutableListOf<String>()
-            for (i in 0 until records.length()) {
-                val id = records.getJSONObject(i).optString("skyflow_id", "")
-                if (id.isNotEmpty()) ids.add(id)
-            }
-            return ids
+    private fun parseSkyflowIds(bodyStr: String): List<String> {
+        val records = JSONObject(bodyStr).optJSONArray("records") ?: return emptyList()
+        val ids = mutableListOf<String>()
+        for (i in 0 until records.length()) {
+            val id = records.getJSONObject(i).optString("skyflow_id", "")
+            if (id.isNotEmpty()) ids.add(id)
         }
+        return ids
     }
 
     // --- Direct per-file upload ---
@@ -184,7 +198,11 @@ internal class FileUploadAPICallback(
             .addFormDataPart("tableName", element.tableName)
             .addFormDataPart("file", sentName, fileBody)
 
-        val skyflowId = skyflowIdOverride ?: element.skyflowID
+        // Single file may attach to an existing record via the element's skyflowID. Multi-file does
+        // not use an element-level skyflowID (matches skyflow-js, which only reads skyflowID for the
+        // single FILE_INPUT): each file creates a new record, or uses its inserted record id in the
+        // metadata path (skyflowIdOverride).
+        val skyflowId = skyflowIdOverride ?: if (element.isMultiple) null else element.skyflowID
         if (!skyflowId.isNullOrEmpty()) bodyBuilder.addFormDataPart("skyflowID", skyflowId)
         if (element.fileOptions.returnFileMetadata) bodyBuilder.addFormDataPart("returnFileMetadata", "true")
 
