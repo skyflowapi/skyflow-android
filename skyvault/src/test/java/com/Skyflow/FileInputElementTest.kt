@@ -7,11 +7,17 @@ import Skyflow.FileElementType
 import Skyflow.FileInputElement
 import Skyflow.LogLevel
 import Skyflow.core.file.SelectedFile
+import Skyflow.utils.EventName
 import android.app.Activity
 import android.net.Uri
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -136,6 +142,94 @@ class FileInputElementTest {
         el.unmount()
         assertTrue(el.getSelectedFiles().isEmpty())
         assertEquals(0, el.getState().getInt("fileCount"))
+    }
+
+    // --- event listeners ---
+
+    private fun firstButton(view: View): Button? = when (view) {
+        is Button -> view
+        is ViewGroup -> (0 until view.childCount)
+            .asSequence().mapNotNull { firstButton(view.getChildAt(it)) }.firstOrNull()
+        else -> null
+    }
+
+    @Test
+    fun changeFiresOnSelectWithState() {
+        val el = element(FileElementType.MULTI_FILE_INPUT)
+        var last: JSONObject? = null
+        var calls = 0
+        el.on(EventName.CHANGE) { calls++; last = it }
+
+        el.attachSelectedFiles(listOf(file("a.pdf"), file("b.pdf")))
+        assertEquals(1, calls)
+        assertNotNull(last)
+        assertTrue(last!!.getBoolean("isFilled"))
+        assertEquals(2, last!!.getInt("fileCount"))
+        assertEquals("document", last!!.getString("columnName"))
+    }
+
+    @Test
+    fun changeFiresOnUnmountClear() {
+        val el = element(FileElementType.MULTI_FILE_INPUT)
+        el.attachSelectedFiles(listOf(file("a.pdf")))
+        var last: JSONObject? = null
+        el.on(EventName.CHANGE) { last = it }
+        el.unmount()
+        assertNotNull(last)
+        assertFalse(last!!.getBoolean("isFilled"))
+        assertEquals(0, last!!.getInt("fileCount"))
+    }
+
+    @Test
+    fun changeDoesNotFireWithoutAHandler() {
+        // Registering no CHANGE handler must not crash when the selection changes.
+        val el = element(FileElementType.FILE_INPUT)
+        el.attachSelectedFiles(listOf(file("a.pdf")))
+        assertEquals(1, el.getSelectedFiles().size)
+    }
+
+    @Test
+    fun readyFiresOnceOnMount() {
+        val el = element()
+        var calls = 0
+        el.on(EventName.READY) { calls++ }
+        activity.setContentView(el) // attaches to the window -> READY
+        assertEquals(1, calls)
+    }
+
+    @Test
+    fun readyFiresImmediatelyIfRegisteredAfterMount() {
+        val el = element()
+        activity.setContentView(el)
+        var state: JSONObject? = null
+        el.on(EventName.READY) { state = it } // already mounted -> immediate
+        assertNotNull(state)
+    }
+
+    @Test
+    fun focusAndBlurFireFromTheTrigger() {
+        val el = element(appearance = FileElementAppearance.FIELD)
+        activity.setContentView(el)
+        var focus = 0
+        var blur = 0
+        el.on(EventName.FOCUS) { focus++ }
+        el.on(EventName.BLUR) { blur++ }
+
+        val trigger = firstButton(el)
+        assertNotNull("FIELD appearance should have a trigger button", trigger)
+        trigger!!.requestFocus()
+        assertEquals(1, focus)
+        trigger.clearFocus()
+        assertEquals(1, blur)
+    }
+
+    @Test
+    fun submitEventIsRejectedWithoutCrashing() {
+        val el = element()
+        var called = false
+        el.on(EventName.SUBMIT) { called = true } // unsupported -> logs, never invoked
+        el.attachSelectedFiles(listOf(file("a.pdf")))
+        assertFalse(called)
     }
 
     // --- rendering: every appearance builds without error ---

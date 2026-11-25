@@ -52,6 +52,12 @@ internal class FileUploadAPICallback(
 
     private val useMetaData: Boolean get() = metaData != null && metaData.length() > 0
 
+    // Configuration appends "/v1/vaults/" to vaultURL for the legacy v1 data APIs. The file-upload
+    // endpoints build their own "/v2/vaults/..." and "/v1/vaults/..." paths, so they need the bare
+    // vault origin — strip that suffix here to avoid a doubled "/v1/vaults/v2/vaults/..." path.
+    private val vaultBase: String
+        get() = apiClient.vaultURL.trimEnd('/').removeSuffix("/v1/vaults")
+
     override fun onSuccess(responseBody: Any) {
         authHeader = responseBody.toString()
 
@@ -105,8 +111,7 @@ internal class FileUploadAPICallback(
     }
 
     private fun buildInsertRequest(element: FileInputElement, count: Int): Request {
-        val base = apiClient.vaultURL.trimEnd('/')
-        val url = "$base/v1/vaults/${apiClient.vaultId}/${element.tableName}"
+        val url = "$vaultBase/v1/vaults/${apiClient.vaultId}/${element.tableName}"
         val records = JSONArray()
         repeat(count) {
             // Deep-copy metaData per record so records never share a mutable fields object.
@@ -161,8 +166,7 @@ internal class FileUploadAPICallback(
         file: SelectedFile,
         skyflowIdOverride: String?,
     ): Request {
-        val base = apiClient.vaultURL.trimEnd('/')
-        val url = "$base/v2/vaults/${apiClient.vaultId}/files/upload"
+        val url = "$vaultBase/v2/vaults/${apiClient.vaultId}/files/upload"
 
         // preserveFileName = false → send a generated name so any PII in the file name never reaches
         // the vault (matches skyflow-js generateUploadFileName).

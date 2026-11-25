@@ -3,6 +3,7 @@ package Skyflow
 import Skyflow.core.Logger
 import Skyflow.core.file.FileUploadValidator
 import Skyflow.core.file.SelectedFile
+import Skyflow.utils.EventName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -62,6 +63,14 @@ class FileInputElement internal constructor(
     private var iconButton: ImageButton? = null      // ICON
 
     private var picker: FilePicker? = null
+
+    // Event listeners (parity with TextField.on and the skyflow-js file element).
+    private var userOnChangeListener: ((JSONObject) -> Unit)? = null
+    private var userOnReadyListener: ((JSONObject) -> Unit)? = null
+    private var userOnFocusListener: ((JSONObject) -> Unit)? = null
+    private var userOnBlurListener: ((JSONObject) -> Unit)? = null
+    private var attachedToWindow = false
+    private var readyEmitted = false
 
     internal val isMultiple: Boolean
         get() = ::fileInput.isInitialized && fileInput.type == FileElementType.MULTI_FILE_INPUT
@@ -167,7 +176,10 @@ class FileInputElement internal constructor(
         }
         is FileElementAppearance.CUSTOM -> null
     }.also { view ->
-        if (view != null) fileInput.buttonStyles?.base?.let { applyButtonStyle(view, it) }
+        if (view != null) {
+            fileInput.buttonStyles?.base?.let { applyButtonStyle(view, it) }
+            wireFocusEvents(view)
+        }
     }
 
     // --- Picking ---
@@ -258,6 +270,7 @@ class FileInputElement internal constructor(
             if (truncated) setError("You can add up to $max files.")
         }
         renderFiles()
+        emitChange()
     }
 
     private fun removeFileAt(index: Int) {
@@ -265,6 +278,7 @@ class FileInputElement internal constructor(
             selectedFiles.removeAt(index)
             clearError()
             renderFiles()
+            emitChange()
         }
     }
 
@@ -404,6 +418,7 @@ class FileInputElement internal constructor(
         selectedFiles.addAll(if (isMultiple) files else files.take(1))
         clearError()
         renderFiles()
+        emitChange()
     }
 
     /** The current selection, for the upload path. Internal only. */
@@ -457,5 +472,61 @@ class FileInputElement internal constructor(
         filesContainer?.removeAllViews()
         clearError()
         renderFiles()
+        emitChange()
+    }
+
+    // --- Event listeners (parity with TextField.on and the skyflow-js file element) ---
+
+    /**
+     * Register a handler for an element event, mirroring [TextField.on] and the skyflow-js file
+     * element's `on(...)`:
+     *  - [EventName.CHANGE] — fired whenever the selection changes (pick / replace / remove / clear).
+     *  - [EventName.READY]  — fired once, when the element is mounted (attached to the window). If the
+     *    element is already mounted when the handler is registered, it fires immediately.
+     *  - [EventName.FOCUS]  — fired when the built-in trigger gains focus.
+     *  - [EventName.BLUR]   — fired when the built-in trigger loses focus.
+     *
+     * The handler receives the privacy-safe [getState] payload (never bytes, Uri or file name). As
+     * with [FileElementAppearance.CUSTOM] there is no built-in trigger, FOCUS/BLUR do not fire for it.
+     * [EventName.SUBMIT] is not supported for file elements.
+     */
+    fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
+        when (eventName) {
+            EventName.CHANGE -> userOnChangeListener = handler
+            EventName.READY -> {
+                userOnReadyListener = handler
+                maybeEmitReady()
+            }
+            EventName.FOCUS -> userOnFocusListener = handler
+            EventName.BLUR -> userOnBlurListener = handler
+            EventName.SUBMIT ->
+                Logger.error(tag, "SUBMIT event is not supported for file elements.", logLevel)
+        }
+    }
+
+    private fun emitChange() {
+        userOnChangeListener?.invoke(getState())
+    }
+
+    /** Wire FOCUS/BLUR on a built-in trigger view so the host can observe focus changes. */
+    private fun wireFocusEvents(view: View) {
+        view.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) userOnFocusListener?.invoke(getState())
+            else userOnBlurListener?.invoke(getState())
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        attachedToWindow = true
+        maybeEmitReady()
+    }
+
+    /** Emit READY once, as soon as the element is both mounted and has a READY handler registered. */
+    private fun maybeEmitReady() {
+        if (attachedToWindow && !readyEmitted && userOnReadyListener != null) {
+            readyEmitted = true
+            userOnReadyListener?.invoke(getState())
+        }
     }
 }

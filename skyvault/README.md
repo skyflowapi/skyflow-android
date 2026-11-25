@@ -2434,6 +2434,37 @@ submitButton.setOnClickListener {
 
 A full, runnable demo covering every `FileElementType`, `FileElementAppearance`, `FileSource` and styled vs. default looks is in the sample app: `samples/skyvault` → **FileUploadActivity** (open the "file upload demo" from the sample's home screen).
 
+### Event listeners on file elements
+
+File elements support the same `on(...)` listener API as other collect elements, so you can react to selection changes and lifecycle events:
+
+```kotlin
+fileElement.on(Skyflow.EventName.CHANGE) { state ->
+    // Fired whenever the selection changes (pick / replace / remove / clear).
+    Log.d("file", "changed: $state")
+}
+fileElement.on(Skyflow.EventName.READY) { state ->
+    // Fired once, when the element is mounted.
+    Log.d("file", "ready: $state")
+}
+fileElement.on(Skyflow.EventName.FOCUS) { state -> Log.d("file", "focus: $state") }
+fileElement.on(Skyflow.EventName.BLUR)  { state -> Log.d("file", "blur: $state") }
+```
+
+Each handler receives a privacy-safe `state` — it never carries the file bytes, `content://` Uri or file name:
+
+```json
+{
+  "elementType": "MULTI_FILE_INPUT",
+  "columnName": "attachments",
+  "isRequired": true,
+  "isFilled": true,
+  "fileCount": 2
+}
+```
+
+Supported events: `CHANGE`, `READY`, `FOCUS`, `BLUR`. `FOCUS`/`BLUR` fire from the built-in trigger, so they do not fire for `FileElementAppearance.CUSTOM` (which has no built-in trigger). `SUBMIT` is not supported for file elements.
+
 ### A note on isolation
 
 The security boundary is the API, not an isolated process. The element holds the picked `content://` Uri(s) internally and exposes no public getter for the bytes, Uri or file name, and events/state never carry file contents — the same model as a text field. But because the SDK runs inside your app's process, native Android (like iOS and unlike a browser's cross-origin iframe) has no way to hide the picked file's bytes from app code that deliberately reads them. The system picker grants access only to the file the user chose, so no storage permission is required; this is encapsulation, not an OS sandbox.
