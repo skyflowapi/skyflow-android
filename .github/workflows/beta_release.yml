@@ -23,6 +23,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          # Never reuse the runner's cached JDK 17 (17.0.21+9 is pre-Java4Shell-fix). SK-3332.
+          check-latest: true
 
       - name: Get the current branch
         id: check_step
