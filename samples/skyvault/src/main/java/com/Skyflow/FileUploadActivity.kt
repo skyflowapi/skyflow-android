@@ -3,6 +3,7 @@ package com.Skyflow
 import Skyflow.*
 import Skyflow.LogLevel
 import Skyflow.Options
+import Skyflow.utils.EventName
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
@@ -188,6 +189,16 @@ class FileUploadActivity : AppCompatActivity() {
             setOnClickListener { customElement.openPicker() }
         }
         parent.addView(customTrigger)
+
+        // 3b. Event listeners — file elements support the same on(...) API as other collect elements.
+        //     CHANGE fires on pick/replace/remove, READY on mount, FOCUS/BLUR from the built-in trigger.
+        //     The state payload is privacy-safe (no bytes, Uri or file name).
+        for (element in listOf(fieldElement, buttonElement, iconElement, cardElement, customElement)) {
+            element.on(EventName.CHANGE) { state -> Log.d(TAG, "CHANGE: $state") }
+            element.on(EventName.READY) { state -> Log.d(TAG, "READY: $state") }
+            element.on(EventName.FOCUS) { state -> Log.d(TAG, "FOCUS: $state") }
+            element.on(EventName.BLUR) { state -> Log.d(TAG, "BLUR: $state") }
+        }
 
         // 4. Upload. One call uploads every selected file across all elements.
         binding.upload.setOnClickListener { upload(metaData = null) }
