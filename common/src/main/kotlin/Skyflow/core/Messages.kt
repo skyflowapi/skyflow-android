@@ -199,7 +199,17 @@ enum class Messages(val message: String) {
     INVALID_INPUT_TRANSLATION("invalid or unsupported translation provided for %s element type."),
     EMPTY_INPUT_TRANSLATION("translation not passed. Switching to default translation %s"),
 
-    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers.")
+    MISMATCH_ELEMENT_COUNT_LAYOUT_SUM("$SDK_NAME_VERSION Mount failed. Invalid layout array values. Make sure all values in the layout array are positive numbers."),
+
+    // file upload validations
+    NO_FILE_ELEMENTS("$SDK_NAME_VERSION File upload failed. No file elements found in the container. Create a file element before calling 'uploadFiles'."),
+    FILE_UPLOAD_ELEMENT_NOT_MOUNTED("$SDK_NAME_VERSION File upload failed. Make sure all file elements are mounted before calling 'uploadFiles'."),
+    FILE_NOT_SELECTED("$SDK_NAME_VERSION File upload failed. No file selected for '%s' column. Choose a file before calling 'uploadFiles'."),
+    EMPTY_FILE("$SDK_NAME_VERSION File upload failed. The selected file '%s' is empty. Choose a non-empty file."),
+    FILE_TYPE_NOT_ALLOWED("$SDK_NAME_VERSION File upload failed. File type of '%s' is not allowed."),
+    FILE_SIZE_EXCEEDED("$SDK_NAME_VERSION File upload failed. File '%s' exceeds the maximum allowed size."),
+    FILE_COUNT_EXCEEDED("$SDK_NAME_VERSION File upload failed. Number of files for '%s' column exceeds the maximum allowed count."),
+    INVALID_FILE_NAME("$SDK_NAME_VERSION File upload failed. File name '%s' is invalid. Only alphanumeric characters and !-_.*() are allowed.")
 }
 
 // Resolve the SDK-identity placeholder to the running product's version. Single-sourced so BOTH

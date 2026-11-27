@@ -13,6 +13,7 @@ Skyflow’s android SDK can be used to securely collect, tokenize, and display s
 * [Initializing Skyflow-android](#initializing-skyflow-android)
 * [Securely collecting data client-side](#securely-collecting-data-client-side)
 * [Securely collecting data client-side using composable elements](#securely-collecting-data-client-side-using-composable-elements)
+* [Securely collecting files client-side](#securely-collecting-files-client-side)
 * [Securely revealing data client-side](#securely-revealing-data-client-side)
 
 # Installation
@@ -2225,6 +2226,270 @@ container.on(EventName.SUBMIT) {
   log.info("on submit", "submit event triggerred")
 }
 ```
+
+---
+# Securely collecting files client-side
+-  [**Using Skyflow Elements to collect files**](#using-skyflow-elements-to-collect-files)
+-  [**Step 1: Create a container**](#step-1-create-a-container-1)
+-  [**Step 2: Create a file Element**](#step-2-create-a-file-element)
+-  [**Step 3: Add the Element to the layout**](#step-3-add-the-element-to-the-layout)
+-  [**Step 4: Upload files**](#step-4-upload-files)
+-  [**Upload response**](#upload-response)
+-  [**End to end example of collecting files with Skyflow Elements**](#end-to-end-example-of-collecting-files-with-skyflow-elements)
+-  [**A note on isolation**](#a-note-on-isolation)
+
+**Skyflow file Elements** let you upload a file (an image, PDF, or any document) straight from the device to a file column in your vault, without the file bytes passing through your back end. The file is picked with the Android system picker, held only inside the element (no public getter for the bytes, Uri or file name — the same model as a text field), validated, and streamed to `{vaultURL}/v2/vaults/{vaultID}/files/upload`.
+
+File Elements are part of the **skyvault** SDK only.
+
+## Using Skyflow Elements to collect files
+
+### Step 1: Create a container
+
+File Elements use the same `COLLECT` container as the other collect elements:
+
+```kt
+val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+```
+
+### Step 2: Create a file Element
+
+Build a `Skyflow.CollectElementInput` with a `Skyflow.FileElementType` — the **same** input and options classes as a text field (matching skyflow-js / iOS) — and create the element with `createFileElement`. It returns a mountable `Skyflow.FileInputElement`:
+
+```kotlin
+Skyflow.CollectElementInput(
+    table: String,                       // vault table the file column belongs to
+    column: String,                      // file column to upload into
+    inputStyles: Skyflow.Styles,         // optional — styles the picker trigger
+    labelStyles: Skyflow.Styles,         // optional — styles the label
+    errorTextStyles: Skyflow.Styles,     // optional — styles the error line
+    label: String,                       // optional label shown above the control
+    placeholder: String,                 // optional trigger prompt before a file is chosen
+    type: Skyflow.FileElementType,       // FILE_INPUT (single) or MULTI_FILE_INPUT (multiple)
+    skyflowID: String                    // optional record id to attach a single file to (ignored for MULTI_FILE_INPUT)
+)
+```
+
+**`type` — `Skyflow.FileElementType`**
+
+| Value | Meaning |
+| --- | --- |
+| `FILE_INPUT` | A single file. The per-file size cap is fixed at 32 MB by the server. |
+| `MULTI_FILE_INPUT` | Multiple files, up to `maxFileCount` (default 4), each up to `maxFileSize`. |
+
+**Layout.** There is one native layout — a trigger button that opens the picker, the selected files listed below with a per-file remove (✕), and an error line. A single element replaces its one file; a multi element appends up to its max. Style the trigger with `inputStyles`, the label with `labelStyles` and the error line with `errorTextStyles`, as on a text field. Apps that want their own trigger call `openPicker()` (see Step 3).
+
+```kotlin
+val input = Skyflow.CollectElementInput(
+    table = "files",
+    column = "document",
+    label = "Upload document",
+    placeholder = "Choose a document",
+    type = Skyflow.FileElementType.FILE_INPUT,
+    inputStyles = Skyflow.Styles(
+        base = Skyflow.Style(
+            backgroundColor = Color.parseColor("#3B5BDB"),
+            textColor = Color.WHITE,
+            cornerRadius = 12f,
+            borderWidth = 0
+        )
+    )
+)
+```
+
+Pass options with `Skyflow.CollectElementOptions` (the same options class as a text field; the file fields below are ignored by text/card elements):
+
+```kotlin
+Skyflow.CollectElementOptions(
+    required: Boolean,                 // fail validation / upload if no file is selected (default false)
+    allowedFileType: Array<String>,    // extensions the picker accepts and the SDK validates, e.g. arrayOf(".pdf", ".png"); null = any (minus blocked types)
+    blockEmptyFiles: Boolean,          // reject a 0-byte file (default false)
+    preserveFileName: Boolean,         // true (default) keeps the original name; false sends a generated UUID name (keeps PII in the name out of the vault)
+    returnFileMetadata: Boolean,       // ask the server to return fileName / fileSize / fileType on success (default false)
+    maxFileSize: Long,                 // per-file byte cap — MULTI_FILE_INPUT only (single is fixed at 32 MB)
+    maxFileCount: Int,                 // max files for one MULTI_FILE_INPUT upload (default 4)
+    stripImageMetadata: Boolean,       // remove GPS/EXIF metadata from JPEG photos before upload (default false)
+    sources: Array<Skyflow.FileSource> // which pickers to offer (default [FILES, PHOTOS])
+)
+```
+
+File names are **cleaned, never rejected**: characters outside `A-Za-z0-9 ! - _ . * ( )` are replaced with `_` (so `my photo.jpg` → `my_photo.jpg`), keeping the extension. With `preserveFileName = false` a generated UUID name is sent instead.
+
+With `stripImageMetadata = true`, JPEGs (matched by extension **or** `image/jpeg` MIME type) have their GPS, destination-coordinate, timestamp and camera make/model EXIF removed before upload. This is **fail-closed**: if a JPEG is selected but its metadata can't be removed, that file fails rather than uploading with its location intact. Non-JPEG files are unaffected and upload normally.
+
+**`sources` — `Skyflow.FileSource`**
+
+When more than one source is enabled the element shows a source chooser; with one source the picker opens directly. None of these require a runtime storage permission.
+
+| Value | Picker |
+| --- | --- |
+| `FileSource.FILES` | The Storage Access Framework document picker. |
+| `FileSource.PHOTOS` | The Android Photo Picker. |
+| `FileSource.CAMERA` | Capture a new photo. Uses the SDK's own `FileProvider`; hidden automatically on devices without a camera. |
+
+```kotlin
+val options = Skyflow.CollectElementOptions(
+    required = true,
+    allowedFileType = arrayOf(".pdf", ".png", ".jpg"),
+    maxFileCount = 4,
+    sources = arrayOf(Skyflow.FileSource.FILES, Skyflow.FileSource.PHOTOS, Skyflow.FileSource.CAMERA)
+)
+
+val fileElement = container.createFileElement(this, input, options)
+```
+
+### Step 3: Add the Element to the layout
+
+Mount the element like any other view:
+
+```kotlin
+val parent = findViewById<LinearLayout>(R.id.parent)
+parent.addView(fileElement)
+```
+
+The element draws its own trigger. To also open the picker from your own control (for example a toolbar button), call `openPicker()`:
+
+```kotlin
+myAttachButton.setOnClickListener { fileElement.openPicker() }
+```
+
+Call `fileElement.unmount()` to clear the selection and reset the element.
+
+### Step 4: Upload files
+
+A single call uploads every file selected across all file elements in the container:
+
+```kotlin
+container.uploadFiles(object : Skyflow.Callback {
+    override fun onSuccess(responseBody: Any) {
+        Log.d("file", "success: $responseBody")
+    }
+    override fun onFailure(exception: Any) {
+        Log.d("file", "failure: $exception")
+    }
+})
+```
+
+To attach per-record metadata, use the `metaData` overload. For each `MULTI_FILE_INPUT` element the SDK first inserts one record per selected file (`metaData` as the record fields), then uploads each file to its new `skyflow_id`. `FILE_INPUT` elements ignore `metaData` and upload directly.
+
+```kotlin
+val metaData = JSONObject().put("uploaded_by", "android-app")
+container.uploadFiles(metaData, object : Skyflow.Callback {
+    override fun onSuccess(responseBody: Any) { /* ... */ }
+    override fun onFailure(exception: Any) { /* ... */ }
+})
+```
+
+All file elements are re-validated first (type, size, count, empty); the call fails fast, with no network request, if any required element is empty or any file is invalid.
+
+### Timeout, progress and cancel
+
+Pass `Skyflow.FileUploadOptions` to set a per-upload timeout and observe byte progress, and call `container.cancelFileUploads()` to stop an in-flight upload:
+
+```kotlin
+val uploadOptions = Skyflow.FileUploadOptions(
+    timeoutMs = 30_000,   // fail a stalled upload after 30s (0 = no timeout)
+    progressListener = object : Skyflow.FileUploadProgressListener {
+        override fun onProgress(bytesUploaded: Long, totalBytes: Long) {
+            // fires on a background thread — post to the main thread for UI
+        }
+    }
+)
+container.uploadFiles(callback, uploadOptions)
+// or: container.uploadFiles(metaData, callback, uploadOptions)
+
+// later, e.g. from a Cancel button:
+container.cancelFileUploads()   // pending files resolve as cancellation errors
+```
+
+### Upload response
+
+The response keeps the **input order** of the files. Outcomes:
+
+| Outcome | Callback | Body |
+| --- | --- | --- |
+| Every file uploaded | `onSuccess` | `{ "fileUploadResponse": [ ... ] }` |
+| Every file failed | `onFailure` | `{ "errorResponse": [ ... ] }` |
+| Some succeeded, some failed | `onFailure` | `{ "fileUploadResponse": [ ... ], "errorResponse": [ ... ] }` |
+
+Each error entry carries its `fileName`, `code` and `description`.
+
+### End to end example of collecting files with Skyflow Elements
+
+```kotlin
+val config = Skyflow.Configuration(
+    "<VAULT_ID>", "<VAULT_URL>", DemoTokenProvider(),
+    Skyflow.Options(Skyflow.LogLevel.ERROR, Skyflow.Env.PROD)
+)
+val skyflowClient = Skyflow.init(config)
+val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
+
+val input = Skyflow.CollectElementInput(
+    table = "files",
+    column = "attachments",
+    label = "Attachments",
+    type = Skyflow.FileElementType.MULTI_FILE_INPUT
+)
+val options = Skyflow.CollectElementOptions(
+    required = true,
+    allowedFileType = arrayOf(".pdf", ".png", ".jpg"),
+    maxFileCount = 4,
+    sources = arrayOf(Skyflow.FileSource.FILES, Skyflow.FileSource.PHOTOS)
+)
+
+val fileElement = container.createFileElement(this, input, options)
+findViewById<LinearLayout>(R.id.parent).addView(fileElement)
+
+submitButton.setOnClickListener {
+    container.uploadFiles(object : Skyflow.Callback {
+        override fun onSuccess(responseBody: Any) {
+            Log.d("file", "upload success: $responseBody")
+        }
+        override fun onFailure(exception: Any) {
+            Log.d("file", "upload failure: $exception")
+        }
+    })
+}
+```
+
+A full, runnable demo covering both `FileElementType`s, every `FileSource`, styled vs. default looks and an app-supplied `openPicker()` trigger is in the sample app: `samples/skyvault` → **FileUploadActivity** (open the "file upload demo" from the sample's home screen).
+
+### Event listeners on file elements
+
+File elements support the same `on(...)` listener API as other collect elements, so you can react to selection changes and lifecycle events:
+
+```kotlin
+fileElement.on(Skyflow.EventName.CHANGE) { state ->
+    // Fired whenever the selection changes (pick / replace / remove / clear).
+    Log.d("file", "changed: $state")
+}
+fileElement.on(Skyflow.EventName.READY) { state ->
+    // Fired once, when the element is mounted.
+    Log.d("file", "ready: $state")
+}
+fileElement.on(Skyflow.EventName.FOCUS) { state -> Log.d("file", "focus: $state") }
+fileElement.on(Skyflow.EventName.BLUR)  { state -> Log.d("file", "blur: $state") }
+```
+
+Each handler receives a privacy-safe `state` — it never carries the file bytes, `content://` Uri or file name:
+
+```json
+{
+  "elementType": "MULTI_FILE_INPUT",
+  "isEmpty": false,
+  "isValid": true,
+  "isRequired": true,
+  "isFocused": false,
+  "fileCount": 2,
+  "value": ""
+}
+```
+
+Supported events: `CHANGE`, `READY`, `FOCUS`, `BLUR`. `FOCUS`/`BLUR` fire from the element's built-in trigger. `SUBMIT` is not supported for file elements.
+
+### A note on isolation
+
+The security boundary is the API, not an isolated process. The element holds the picked `content://` Uri(s) internally and exposes no public getter for the bytes, Uri or file name, and events/state never carry file contents — the same model as a text field. But because the SDK runs inside your app's process, native Android (like iOS and unlike a browser's cross-origin iframe) has no way to hide the picked file's bytes from app code that deliberately reads them. The system picker grants access only to the file the user chose, so no storage permission is required; this is encapsulation, not an OS sandbox.
 
 ---
 # Securely revealing data client-side

@@ -33,6 +33,10 @@ class Container<T : ContainerProtocol> internal constructor(
 
     internal val collectElements: MutableList<TextField> = mutableListOf();
     internal val revealElements: MutableList<Label> = mutableListOf()
+    // File-upload elements. Typed as the neutral [Element] base so core stays free of the skyvault-only
+    // file types (FileInputElement); the skyvault `create`/`uploadFiles` extensions cast back. Only the
+    // skyvault SDK ever populates this.
+    internal val fileElements: MutableList<Element> = mutableListOf()
     internal lateinit var context: Context
     internal lateinit var composableLayout: LinearLayout
     internal lateinit var options: ContainerOptions

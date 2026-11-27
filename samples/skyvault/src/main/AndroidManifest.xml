@@ -33,6 +33,7 @@
         <activity android:name=".ComposableActivity" />
         <activity android:name=".UpdateComposableActivity" />
         <activity android:name=".CardBrandChoiceActivity" />
+        <activity android:name=".FileUploadActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

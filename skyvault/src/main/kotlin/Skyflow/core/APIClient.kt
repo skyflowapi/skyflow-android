@@ -70,6 +70,44 @@ internal class APIClient(
         }
     }
 
+    // Tracks in-flight file uploads keyed by the owning container. All containers share this one
+    // APIClient, so a single slot would let one container's cancelFileUploads() stop another
+    // container's upload. Keying by owner (weakly, so a discarded container doesn't leak) scopes
+    // cancellation to that container and keeps its own overlapping uploads all reachable.
+    private val activeFileUploads =
+        java.util.WeakHashMap<Any, MutableList<Skyflow.collect.client.FileUploadAPICallback>>()
+
+    fun uploadFiles(
+        owner: Any,
+        selections: List<Skyflow.collect.client.FileSelection>,
+        metaData: JSONObject?,
+        callback: Callback,
+        uploadOptions: FileUploadOptions? = null,
+    ) {
+        try {
+            val uploadCallback = Skyflow.collect.client.FileUploadAPICallback(
+                this, selections, metaData, callback, logLevel, uploadOptions
+            )
+            synchronized(activeFileUploads) {
+                val list = activeFileUploads.getOrPut(owner) { mutableListOf() }
+                list.removeAll { it.isDone() } // prune completed uploads so the list stays bounded
+                list.add(uploadCallback)
+            }
+            this.getAccessToken(uploadCallback)
+        } catch (e: Exception) {
+            callback.onFailure(Utils.constructErrorResponse(e))
+        }
+    }
+
+    /**
+     * Cancel [owner]'s in-flight file uploads, if any (and only that owner's). Their pending files
+     * resolve as cancellation errors.
+     */
+    fun cancelFileUploads(owner: Any) {
+        val list = synchronized(activeFileUploads) { activeFileUploads.remove(owner) }
+        list?.forEach { it.cancel() }
+    }
+
     fun get(records: JSONObject, callback: Callback) {
 
         try {

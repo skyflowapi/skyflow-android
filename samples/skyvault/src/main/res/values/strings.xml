@@ -7,11 +7,16 @@
     <string name="custom_validations_demo">custom validations DEMO</string>
     <string name="composable_elements_demo">composable elements demo</string>
     <string name="card_brand_choice_demo">card brand choice demo</string>
+    <string name="file_upload_demo">file upload demo</string>
     <string name="amount">Amount</string>
 
     <!--  common  -->
     <string name="submit">submit</string>
     <string name="clear">clear</string>
+
+    <!--  file upload  -->
+    <string name="file_upload">Upload files</string>
+    <string name="file_upload_with_metadata">Upload (multi) with metadata</string>
 
     <!--  scrollview  -->
     <string name="scrollViewContentDescription">scrollview content description</string>

@@ -125,7 +125,17 @@ enum class SkyflowErrorCode(val code:Int, rawMessage:String) {
     ADDITIONAL_FIELDS_EMPTY_FIELDS(400, Messages.ADDITIONAL_FIELDS_EMPTY_FIELDS.message),
 
     EMPTY_TOKEN_ID(400, Messages.EMPTY_TOKEN_ID.message),
-    MISSING_TOKEN(400, Messages.MISSING_TOKEN.message)
+    MISSING_TOKEN(400, Messages.MISSING_TOKEN.message),
+
+    // file upload validations
+    NO_FILE_ELEMENTS(400, Messages.NO_FILE_ELEMENTS.message),
+    FILE_UPLOAD_ELEMENT_NOT_MOUNTED(400, Messages.FILE_UPLOAD_ELEMENT_NOT_MOUNTED.message),
+    FILE_NOT_SELECTED(400, Messages.FILE_NOT_SELECTED.message),
+    EMPTY_FILE(400, Messages.EMPTY_FILE.message),
+    FILE_TYPE_NOT_ALLOWED(400, Messages.FILE_TYPE_NOT_ALLOWED.message),
+    FILE_SIZE_EXCEEDED(400, Messages.FILE_SIZE_EXCEEDED.message),
+    FILE_COUNT_EXCEEDED(400, Messages.FILE_COUNT_EXCEEDED.message),
+    INVALID_FILE_NAME(400, Messages.INVALID_FILE_NAME.message)
     ;
 
     // Backing field holds the raw "__SKYFLOW_SDK_ID__" placeholder; the getter resolves it to the live
