@@ -4,6 +4,7 @@ import Skyflow.core.Logger
 import Skyflow.core.file.SelectedFile
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.AssetFileDescriptor
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
@@ -38,6 +39,7 @@ internal class FilePicker(
     private val context: Context get() = element.context
 
     private var cameraUri: Uri? = null
+    private var cameraFile: File? = null
 
     fun launch(source: FileSource, multiple: Boolean, allowedFileType: Array<String>?) {
         val activity = context.findComponentActivity()
@@ -93,11 +95,34 @@ internal class FilePicker(
     }
 
     private fun launchCamera(activity: ComponentActivity) {
-        val uri = newCameraUri() ?: return
+        val file = newCameraFile() ?: return
+        val uri = try {
+            FileProvider.getUriForFile(context, "${context.packageName}.skyflow.fileprovider", file)
+        } catch (e: Exception) {
+            Logger.error(
+                tag,
+                "Camera source needs the SDK FileProvider. Could not create a capture file: ${e.message}",
+                logLevel
+            )
+            return
+        }
         cameraUri = uri
+        cameraFile = file
         register(activity, ActivityResultContracts.TakePicture()) { success ->
-            val captured = cameraUri
-            if (success && captured != null) deliver(listOf(captured))
+            val capturedUri = cameraUri
+            val capturedFile = cameraFile
+            cameraUri = null
+            cameraFile = null
+            if (success && capturedUri != null) {
+                // Track the SDK-owned capture so the element can delete it once it is no longer part
+                // of the selection. (User-picked documents are not SDK-owned and are never deleted.)
+                element.registerCaptureFile(capturedUri, capturedFile)
+                deliver(listOf(capturedUri))
+            } else {
+                // Capture cancelled — delete the placeholder file we created so captures don't pile
+                // up in the cache.
+                capturedFile?.delete()
+            }
         }.launch(uri)
     }
 
@@ -141,13 +166,25 @@ internal class FilePicker(
         } catch (e: Exception) {
             Logger.error(tag, "Could not read file metadata: ${e.message}", logLevel)
         }
+        // Some providers omit OpenableColumns.SIZE. Fall back to the file-descriptor length so the
+        // size/empty-file validation actually runs — otherwise an unknown size (-1) slips past both
+        // the per-file cap and the empty-file check.
+        if (size < 0L) size = sizeFromDescriptor(uri)
         return SelectedFile(uri, name, size, context.contentResolver.getType(uri))
     }
 
-    private fun newCameraUri(): Uri? = try {
+    /** Resolve a file's byte length from its descriptor, or -1 if the provider can't report it. */
+    private fun sizeFromDescriptor(uri: Uri): Long = try {
+        context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
+            if (afd.length == AssetFileDescriptor.UNKNOWN_LENGTH) -1L else afd.length
+        } ?: -1L
+    } catch (e: Exception) {
+        -1L
+    }
+
+    private fun newCameraFile(): File? = try {
         val dir = File(context.cacheDir, "skyflow_uploads").apply { mkdirs() }
-        val file = File(dir, "capture_${System.currentTimeMillis()}.jpg")
-        FileProvider.getUriForFile(context, "${context.packageName}.skyflow.fileprovider", file)
+        File(dir, "capture_${System.currentTimeMillis()}.jpg")
     } catch (e: Exception) {
         Logger.error(
             tag,

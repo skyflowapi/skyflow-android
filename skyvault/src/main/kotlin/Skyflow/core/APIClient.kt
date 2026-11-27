@@ -70,29 +70,42 @@ internal class APIClient(
         }
     }
 
-    // Tracks the in-flight file upload so cancelFileUploads() can stop it.
-    private var activeFileUpload: Skyflow.collect.client.FileUploadAPICallback? = null
+    // Tracks in-flight file uploads keyed by the owning container. All containers share this one
+    // APIClient, so a single slot would let one container's cancelFileUploads() stop another
+    // container's upload. Keying by owner (weakly, so a discarded container doesn't leak) scopes
+    // cancellation to that container and keeps its own overlapping uploads all reachable.
+    private val activeFileUploads =
+        java.util.WeakHashMap<Any, MutableList<Skyflow.collect.client.FileUploadAPICallback>>()
 
     fun uploadFiles(
-        elements: List<FileInputElement>,
+        owner: Any,
+        selections: List<Skyflow.collect.client.FileSelection>,
         metaData: JSONObject?,
         callback: Callback,
         uploadOptions: FileUploadOptions? = null,
     ) {
         try {
             val uploadCallback = Skyflow.collect.client.FileUploadAPICallback(
-                this, elements, metaData, callback, logLevel, uploadOptions
+                this, selections, metaData, callback, logLevel, uploadOptions
             )
-            activeFileUpload = uploadCallback
+            synchronized(activeFileUploads) {
+                val list = activeFileUploads.getOrPut(owner) { mutableListOf() }
+                list.removeAll { it.isDone() } // prune completed uploads so the list stays bounded
+                list.add(uploadCallback)
+            }
             this.getAccessToken(uploadCallback)
         } catch (e: Exception) {
             callback.onFailure(Utils.constructErrorResponse(e))
         }
     }
 
-    /** Cancel the in-flight file upload, if any. Its pending files resolve as cancellation errors. */
-    fun cancelFileUploads() {
-        activeFileUpload?.cancel()
+    /**
+     * Cancel [owner]'s in-flight file uploads, if any (and only that owner's). Their pending files
+     * resolve as cancellation errors.
+     */
+    fun cancelFileUploads(owner: Any) {
+        val list = synchronized(activeFileUploads) { activeFileUploads.remove(owner) }
+        list?.forEach { it.cancel() }
     }
 
     fun get(records: JSONObject, callback: Callback) {

@@ -9,10 +9,12 @@
         android:usesCleartextTraffic="true">
 
         <!-- Used only by the CAMERA file source: hands the camera app a content:// Uri in the SDK's
-             own cache to write the capture into. Unique authority so it never collides with the host
-             app's own FileProvider. No CAMERA permission is declared, so none is required. -->
+             own cache to write the capture into. A dedicated FileProvider subclass (not
+             androidx.core.content.FileProvider directly) so this declaration never collides, by
+             class name, with a host app that declares its own FileProvider during manifest merge.
+             No CAMERA permission is declared, so none is required. -->
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name="Skyflow.SkyflowFileProvider"
             android:authorities="${applicationId}.skyflow.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

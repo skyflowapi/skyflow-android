@@ -248,17 +248,21 @@ class FileUploadActivity : AppCompatActivity() {
             val url = "TOKEN_URL"
             val request = okhttp3.Request.Builder().url(url).build()
             val okHttpClient = OkHttpClient()
-            try {
-                Thread {
+            // The exception handler must live INSIDE the worker thread — the network call runs there,
+            // not on this method's stack. Catching around Thread.start() would miss every failure the
+            // request throws (bad status, invalid JSON, I/O error) and let it crash the app instead of
+            // reporting it through the callback.
+            Thread {
+                try {
                     okHttpClient.newCall(request).execute().use { response ->
                         if (!response.isSuccessful) throw IOException("Unexpected code $response")
                         val accessTokenObject = JSONObject(response.body!!.string().toString())
                         callback.onSuccess("${accessTokenObject["accessToken"]}")
                     }
-                }.start()
-            } catch (exception: Exception) {
-                callback.onFailure(exception)
-            }
+                } catch (exception: Exception) {
+                    callback.onFailure(exception)
+                }
+            }.start()
         }
     }
 }

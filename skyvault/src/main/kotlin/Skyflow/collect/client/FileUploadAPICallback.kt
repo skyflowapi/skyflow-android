@@ -17,9 +17,18 @@ import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.util.UUID
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
+
+/**
+ * One file element paired with the exact files selected on it at `uploadFiles(...)` entry. The
+ * selection is snapshotted up front so validation and the later (post-token) upload act on the same
+ * set, even if the user re-picks while the token is being fetched.
+ */
+internal data class FileSelection(val element: FileInputElement, val files: List<SelectedFile>)
 
 /**
  * Uploads every selected file to `POST {vaultURL}/v2/vaults/{vaultID}/files/upload` (one multipart
@@ -41,7 +50,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 internal class FileUploadAPICallback(
     private val apiClient: APIClient,
-    private val elements: List<FileInputElement>,
+    private val selections: List<FileSelection>,
     private val metaData: JSONObject?,
     private val callback: Callback,
     private val logLevel: LogLevel,
@@ -53,6 +62,13 @@ internal class FileUploadAPICallback(
         if (timeout > 0L) callTimeout(timeout, TimeUnit.MILLISECONDS)
     }.build()
     private val tag = FileUploadAPICallback::class.qualifiedName
+
+    // Prepares each file (EXIF strip = a 32 MB copy + rewrite) off the thread that delivers the token
+    // — that thread is the caller's (often the UI thread) for a cached/synchronous token, so doing the
+    // copy there would freeze the UI / ANR. Bounded so several large files don't copy all at once.
+    private val prepExecutor: ExecutorService = Executors.newFixedThreadPool(3) { r ->
+        Thread(r, "skyflow-file-upload").apply { isDaemon = true }
+    }
 
     // Per-file result slots, indexed by input order so the response preserves it (matches
     // skyflow-js's Promise.allSettled, which keeps order). slotIsError[i] tags slot i as a failure.
@@ -67,9 +83,16 @@ internal class FileUploadAPICallback(
     private val activeCalls = mutableListOf<Call>()
     @Volatile private var cancelled = false
 
-    // Progress: cumulative bytes written vs the total selected size across all files.
+    // Progress: cumulative bytes written vs the total selected size across all files. progressLock
+    // keeps the increment and the listener call together so concurrent uploads can't deliver
+    // out-of-order (going backwards) or re-entrant progress.
     private val bytesUploaded = AtomicLong(0L)
     private var totalBytes: Long = 0L
+    private val progressLock = Any()
+
+    // Flips once finish() has run, so the owner can prune completed uploads from its active list.
+    @Volatile private var done = false
+    fun isDone(): Boolean = done
 
     private val useMetaData: Boolean get() = metaData != null && metaData.length() > 0
 
@@ -82,10 +105,11 @@ internal class FileUploadAPICallback(
     override fun onSuccess(responseBody: Any) {
         authHeader = responseBody.toString()
 
-        // Count every file up front so the completion latch is exact across the mixed
-        // direct-upload and insert-then-upload paths, and so each file gets a stable input index.
-        val totalFiles = elements.sumOf { it.getSelectedFiles().size }
-        totalBytes = elements.sumOf { el -> el.getSelectedFiles().sumOf { maxOf(0L, it.sizeBytes) } }
+        // Count every file up front, from the snapshot, so the completion latch is exact across the
+        // mixed direct-upload and insert-then-upload paths, each file gets a stable input index, and
+        // a selection change during the token fetch can't resize or desync these arrays.
+        val totalFiles = selections.sumOf { it.files.size }
+        totalBytes = selections.sumOf { sel -> sel.files.sumOf { maxOf(0L, it.sizeBytes) } }
         slots = arrayOfNulls(totalFiles)
         slotIsError = BooleanArray(totalFiles)
         if (totalFiles == 0) {
@@ -95,8 +119,9 @@ internal class FileUploadAPICallback(
         remaining = AtomicInteger(totalFiles)
 
         var index = 0
-        for (element in elements) {
-            val files = element.getSelectedFiles()
+        for (sel in selections) {
+            val element = sel.element
+            val files = sel.files
             if (files.isEmpty()) continue
             if (element.isMultiple && useMetaData) {
                 insertThenUpload(element, files, startIndex = index)
@@ -110,6 +135,7 @@ internal class FileUploadAPICallback(
     }
 
     override fun onFailure(exception: Any) {
+        prepExecutor.shutdown()
         callback.onFailure(exception)
     }
 
@@ -132,7 +158,16 @@ internal class FileUploadAPICallback(
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     val requestId = response.headers.get("x-request-id").toString()
-                    val bodyStr = response.body?.string() ?: ""
+                    // Reading the body can throw (connection closed mid-response, call timeout).
+                    // OkHttp will NOT call onFailure again once onResponse has started, so if this
+                    // throws uncaught these files never resolve and the public callback hangs — catch
+                    // it and fail them explicitly.
+                    val bodyStr = try {
+                        response.body?.string() ?: ""
+                    } catch (e: Exception) {
+                        failFiles(files, startIndex, 500, e.message ?: "Could not read insert response.")
+                        return
+                    }
                     if (!response.isSuccessful) {
                         // Surface the vault's real insert error (matches skyflow-js), instead of the
                         // generic "did not return enough record ids" — e.g. an invalid-column 400.
@@ -193,10 +228,33 @@ internal class FileUploadAPICallback(
         skyflowIdOverride: String?,
         index: Int,
     ) {
-        // stripImageMetadata: rewrite the photo to a temp cache file with EXIF removed, upload from
-        // there, and delete it once the request finishes (null = not an image / disabled / failed).
-        val tempFile = if (element.fileOptions.stripImageMetadata)
-            ImageMetadataStripper.stripToTempFile(element.context, file) else null
+        // Prepare and enqueue off the token-delivery thread, which is the caller's (often the UI)
+        // thread for a cached/synchronous token — preparing an image can copy+rewrite a 32 MB file.
+        prepExecutor.execute { prepareAndEnqueue(element, file, skyflowIdOverride, index) }
+    }
+
+    private fun prepareAndEnqueue(
+        element: FileInputElement,
+        file: SelectedFile,
+        skyflowIdOverride: String?,
+        index: Int,
+    ) {
+        if (cancelled) {
+            recordError(index, file.name, 0, "Upload cancelled.")
+            return
+        }
+
+        // stripImageMetadata: rewrite the photo to a temp cache file with EXIF removed and upload from
+        // there. When the file IS a strippable image but the strip fails, fail that file rather than
+        // silently uploading the original with its location data intact (fail-closed). Non-images
+        // stream straight from the Uri as before.
+        val mustStrip = element.fileOptions.stripImageMetadata && ImageMetadataStripper.shouldStrip(file)
+        val tempFile = if (mustStrip) ImageMetadataStripper.stripToTempFile(element.context, file) else null
+        if (mustStrip && tempFile == null) {
+            recordError(index, file.name, 400, "Could not remove image metadata before upload.")
+            return
+        }
+
         val request = try {
             buildUploadRequest(element, file, skyflowIdOverride, tempFile)
         } catch (e: Exception) {
@@ -327,6 +385,8 @@ internal class FileUploadAPICallback(
     }
 
     private fun finish() {
+        done = true
+        prepExecutor.shutdown()
         val successes = JSONArray()
         val errors = JSONArray()
         synchronized(lock) {
@@ -363,11 +423,19 @@ internal class FileUploadAPICallback(
             cancelled = true
             activeCalls.forEach { it.cancel() }
         }
+        // shutdown() (not shutdownNow()) so queued prep tasks still RUN — each sees the cancelled flag
+        // and resolves its file as a cancellation error, keeping the completion latch exact. Dropping
+        // them would leave those files unresolved and hang the callback.
+        prepExecutor.shutdown()
     }
 
     private fun reportProgress(byteCount: Long) {
         val listener = uploadOptions?.progressListener ?: return
-        listener.onProgress(bytesUploaded.addAndGet(byteCount), totalBytes)
+        // Hold the lock across the increment and the callback so parallel uploads deliver monotonic,
+        // non-reentrant progress (the atomic alone keeps the counter right, not the call ordering).
+        synchronized(progressLock) {
+            listener.onProgress(bytesUploaded.addAndGet(byteCount), totalBytes)
+        }
     }
 
     private fun errorJson(fileName: String, code: Int, description: String): JSONObject =

@@ -106,6 +106,29 @@ class FileUploadValidatorTest {
     }
 
     @Test
+    fun blockedExtensionWithTrailingWhitespaceIsStillRejected() {
+        // Trailing whitespace must not sneak a blocked type past validation: the name is trimmed
+        // before the extension is read, matching the trimmed name that sanitizeFileName uploads.
+        for (blocked in listOf("app.apk ", "archive.zip ", "run.EXE ")) {
+            assertRejects {
+                FileUploadValidator.validateFile(
+                    file(blocked), allowedFileType = null, blockEmptyFiles = false,
+                    maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
+                )
+            }
+        }
+    }
+
+    @Test
+    fun allowedExtensionWithTrailingWhitespaceIsAccepted() {
+        // The same trimming lets a valid type through despite trailing whitespace.
+        FileUploadValidator.validateFile(
+            file("statement.pdf "), allowedFileType = arrayOf(".pdf"), blockEmptyFiles = false,
+            maxFileSizeBytes = 32_000_000L, tag = tag, logLevel = log
+        )
+    }
+
+    @Test
     fun anyNonBlockedTypeIsAllowedWhenNoAllowedList() {
         FileUploadValidator.validateFile(
             file("notes.txt"), allowedFileType = null, blockEmptyFiles = false,

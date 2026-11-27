@@ -22,7 +22,13 @@ internal data class SelectedFile(
     val sizeBytes: Long,
     val mimeType: String?,
 ) {
-    /** Lower-case extension without the dot (e.g. "pdf"), or "" if the name has none. */
+    /**
+     * Lower-case extension without the dot (e.g. "pdf"), or "" if the name has none. The name is
+     * trimmed first and the extension trimmed after, so trailing/leading whitespace can't make the
+     * extension (used for the blocklist and allow-list) disagree with the trimmed name that
+     * [Skyflow.core.file.FileUploadValidator.sanitizeFileName] actually uploads — e.g. `"a.apk "`
+     * resolves to `apk`, not `"apk "`, so it can't slip past the blocked-extension check.
+     */
     val extension: String
-        get() = name.substringAfterLast('.', "").lowercase()
+        get() = name.trim().substringAfterLast('.', "").trim().lowercase()
 }

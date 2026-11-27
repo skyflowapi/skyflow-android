@@ -1,8 +1,10 @@
 package Skyflow
 
+import Skyflow.collect.client.FileSelection
 import Skyflow.core.Logger
 import Skyflow.core.Messages
 import Skyflow.core.file.FileUploadValidator
+import Skyflow.core.file.SelectedFile
 import Skyflow.core.getMessage
 import Skyflow.utils.Utils
 import android.content.Context
@@ -72,10 +74,14 @@ fun Container<CollectContainer>.uploadFiles(
                 SkyflowErrorCode.NO_FILE_ELEMENTS, fileTag, configuration.options.logLevel
             )
         }
-        for (element in elements) {
-            validateFileElement(element)
+        // Snapshot each element's selection once, up front, then validate and upload that same
+        // snapshot. The upload runs only after an async token fetch, so re-reading the live selection
+        // there could otherwise upload files the user picked after (and so past) validation.
+        val selections = elements.map { FileSelection(it, it.getSelectedFiles()) }
+        for (selection in selections) {
+            validateFileElement(selection.element, selection.files)
         }
-        (this.client as Client).apiClient.uploadFiles(elements, metaData, callback, uploadOptions)
+        (this.client as Client).apiClient.uploadFiles(this, selections, metaData, callback, uploadOptions)
     } catch (e: Exception) {
         callback.onFailure(Utils.constructErrorResponse(e))
     }
@@ -91,10 +97,13 @@ fun Container<CollectContainer>.uploadFiles(callback: Callback, uploadOptions: F
  * cancellation errors in the upload callback.
  */
 fun Container<CollectContainer>.cancelFileUploads() {
-    (this.client as Client).apiClient.cancelFileUploads()
+    (this.client as Client).apiClient.cancelFileUploads(this)
 }
 
-internal fun Container<CollectContainer>.validateFileElement(element: FileInputElement) {
+internal fun Container<CollectContainer>.validateFileElement(
+    element: FileInputElement,
+    files: List<SelectedFile>,
+) {
     val logLevel = configuration.options.logLevel
 
     if (!element.isAttachedToWindow()) {
@@ -115,7 +124,6 @@ internal fun Container<CollectContainer>.validateFileElement(element: FileInputE
         )
     }
 
-    val files = element.getSelectedFiles()
     FileUploadValidator.validateCount(
         count = files.size,
         required = element.isRequired,

@@ -6,6 +6,7 @@ import Skyflow.core.file.SelectedFile
 import Skyflow.utils.EventName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -20,6 +21,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.Skyflow.collect.elements.validations.SkyflowValidationError
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.json.JSONObject
+import java.io.File
 import java.util.Locale
 
 /**
@@ -48,6 +50,12 @@ class FileInputElement internal constructor(
 
     // The current selection. Never exposed publicly.
     private val selectedFiles: MutableList<SelectedFile> = mutableListOf()
+
+    // SDK-owned camera capture files, keyed by the content Uri they were delivered under. The SDK
+    // writes these into its own cache; they're deleted once no longer referenced by the selection
+    // (see [deleteUnreferencedCaptures]) so repeated captures don't accumulate. User-picked documents
+    // are never SDK-owned and never appear here.
+    private val captureFiles: MutableMap<Uri, File> = mutableMapOf()
 
     private val tag = FileInputElement::class.qualifiedName
 
@@ -269,6 +277,7 @@ class FileInputElement internal constructor(
             }
             if (truncated) setError("You can add up to $max files.")
         }
+        deleteUnreferencedCaptures()
         renderFiles()
         emitChange()
     }
@@ -276,9 +285,29 @@ class FileInputElement internal constructor(
     private fun removeFileAt(index: Int) {
         if (index in selectedFiles.indices) {
             selectedFiles.removeAt(index)
+            deleteUnreferencedCaptures()
             clearError()
             renderFiles()
             emitChange()
+        }
+    }
+
+    /** Record a SDK-owned camera capture file so it can be deleted when no longer selected. */
+    internal fun registerCaptureFile(uri: Uri, file: File?) {
+        if (file != null) captureFiles[uri] = file
+    }
+
+    /** Delete any tracked capture file that is no longer part of the current selection. */
+    private fun deleteUnreferencedCaptures() {
+        if (captureFiles.isEmpty()) return
+        val selectedUris = selectedFiles.mapTo(HashSet()) { it.uri }
+        val iterator = captureFiles.entries.iterator()
+        while (iterator.hasNext()) {
+            val (uri, file) = iterator.next()
+            if (uri !in selectedUris) {
+                try { file.delete() } catch (_: Exception) {}
+                iterator.remove()
+            }
         }
     }
 
@@ -416,6 +445,7 @@ class FileInputElement internal constructor(
     internal fun attachSelectedFiles(files: List<SelectedFile>) {
         selectedFiles.clear()
         selectedFiles.addAll(if (isMultiple) files else files.take(1))
+        deleteUnreferencedCaptures()
         clearError()
         renderFiles()
         emitChange()
@@ -469,6 +499,7 @@ class FileInputElement internal constructor(
     /** Clear the selection and reset the element to its initial state (mirrors [TextField.unmount]). */
     fun unmount() {
         selectedFiles.clear()
+        deleteUnreferencedCaptures()
         filesContainer?.removeAllViews()
         clearError()
         renderFiles()

@@ -2323,6 +2323,8 @@ Skyflow.FileElementOptions(
 
 File names are **cleaned, never rejected**: characters outside `A-Za-z0-9 ! - _ . * ( )` are replaced with `_` (so `my photo.jpg` → `my_photo.jpg`), keeping the extension. With `preserveFileName = false` a generated UUID name is sent instead.
 
+With `stripImageMetadata = true`, JPEGs (matched by extension **or** `image/jpeg` MIME type) have their GPS, destination-coordinate, timestamp and camera make/model EXIF removed before upload. This is **fail-closed**: if a JPEG is selected but its metadata can't be removed, that file fails rather than uploading with its location intact. Non-JPEG files are unaffected and upload normally.
+
 **`sources` — `Skyflow.FileSource`**
 
 When more than one source is enabled the element shows a source chooser; with one source the picker opens directly. None of these require a runtime storage permission.
