@@ -16,13 +16,15 @@ import java.util.UUID
 private val fileTag = CollectContainer::class.qualifiedName
 
 /**
- * Create a file-collection element. Overloads [create] for file inputs; returns a mountable
- * [FileInputElement] that the host adds to its layout like any other element.
+ * Create a file-collection element from a [CollectElementInput] built with a [FileElementType] (the
+ * same input/options classes as a text field, as in skyflow-js / iOS). A distinct method name —
+ * mirroring iOS's `create(fileInput:)` — because the text `create(...)` already returns a [TextField];
+ * returns a mountable [FileInputElement] that the host adds to its layout like any other element.
  */
-fun Container<CollectContainer>.create(
+fun Container<CollectContainer>.createFileElement(
     context: Context,
-    input: FileElementInput,
-    options: FileElementOptions = FileElementOptions()
+    input: CollectElementInput,
+    options: CollectElementOptions = CollectElementOptions()
 ): FileInputElement {
     Logger.info(
         fileTag,
@@ -114,13 +116,13 @@ internal fun Container<CollectContainer>.validateFileElement(
     if (element.tableName.isEmpty()) {
         throw SkyflowInternalError(
             SkyflowErrorCode.MISSING_TABLE_IN_ELEMENT, fileTag, logLevel,
-            arrayOf(element.fileInput.type.name)
+            arrayOf(element.fileType.name)
         )
     }
     if (element.columnName.isEmpty()) {
         throw SkyflowInternalError(
             SkyflowErrorCode.MISSING_COLUMN, fileTag, logLevel,
-            arrayOf(element.fileInput.type.name)
+            arrayOf(element.fileType.name)
         )
     }
 
@@ -137,8 +139,8 @@ internal fun Container<CollectContainer>.validateFileElement(
     for (file in files) {
         FileUploadValidator.validateFile(
             file = file,
-            allowedFileType = element.fileOptions.allowedFileType,
-            blockEmptyFiles = element.fileOptions.blockEmptyFiles,
+            allowedFileType = element.collectOptions.allowedFileType,
+            blockEmptyFiles = element.collectOptions.blockEmptyFiles,
             maxFileSizeBytes = maxSize,
             tag = fileTag,
             logLevel = logLevel,

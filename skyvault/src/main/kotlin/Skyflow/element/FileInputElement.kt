@@ -14,7 +14,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -25,7 +24,7 @@ import java.io.File
 import java.util.Locale
 
 /**
- * The native file-collection View returned by `container.create(context, FileElementInput, …)`.
+ * The native file-collection View returned by `container.createFileElement(context, CollectElementInput, …)`.
  * Subclasses the shared [Element] so it mounts like any other element, but it is a `skyvault`-only
  * type (keeps file upload out of flowvault).
  *
@@ -34,19 +33,20 @@ import java.util.Locale
  * [TextField]. State/events never carry the file contents. (See the design doc: native Android has
  * no in-app isolation equivalent to the browser iframe; this is encapsulation, not a sandbox.)
  *
- * UI: the trigger (the control that opens the picker) is drawn per [FileElementInput.appearance] —
- * [FileElementAppearance.FIELD], [FileElementAppearance.BUTTON], [FileElementAppearance.ICON],
- * [FileElementAppearance.CARD], or [FileElementAppearance.CUSTOM] (no trigger; the host app calls
- * [openPicker]). The behaviour — picking, per-file remove (✕), validation, errors — is identical
- * across all five looks. A Material source chooser appears when several [FileSource]s are enabled.
+ * UI: one native default layout — a trigger button (styled by [CollectElementInput] `inputStyles`)
+ * that opens the picker, the selected files listed below with a per-file remove (✕), and an error
+ * line (styled by `errorTextStyles`). A single element replaces its one file; a multi element appends
+ * up to its max. Apps that want their own trigger draw any control and call [openPicker] — the element
+ * still shows the selection and errors. A Material source chooser appears when several [FileSource]s
+ * are enabled.
  */
 class FileInputElement internal constructor(
     context: Context,
     internal val logLevel: LogLevel,
 ) : Element(context) {
 
-    internal lateinit var fileInput: FileElementInput
-    internal lateinit var fileOptions: FileElementOptions
+    internal lateinit var fileInput: CollectElementInput
+    internal lateinit var collectOptions: CollectElementOptions
 
     // The current selection. Never exposed publicly.
     private val selectedFiles: MutableList<SelectedFile> = mutableListOf()
@@ -59,16 +59,12 @@ class FileInputElement internal constructor(
 
     private val tag = FileInputElement::class.qualifiedName
 
-    // UI (shared across looks)
+    // UI
     private var labelView: TextView? = null
     private var filesContainer: LinearLayout? = null
     private var emptyView: TextView? = null
     private var errorView: TextView? = null
-
-    // Trigger views (only one is non-null, by appearance; all null for CUSTOM)
-    private var triggerButton: Button? = null       // FIELD, BUTTON
-    private var cardView: TextView? = null           // CARD
-    private var iconButton: ImageButton? = null      // ICON
+    private var triggerButton: Button? = null
 
     private var picker: FilePicker? = null
 
@@ -79,19 +75,22 @@ class FileInputElement internal constructor(
     private var userOnBlurListener: ((JSONObject) -> Unit)? = null
     private var attachedToWindow = false
     private var readyEmitted = false
+    private var focused = false
+
+    /** The configured file type; [FileElementType.FILE_INPUT] until the field is set up. */
+    internal val fileType: FileElementType
+        get() = if (::fileInput.isInitialized) (fileInput.fileType ?: FileElementType.FILE_INPUT)
+        else FileElementType.FILE_INPUT
 
     internal val isMultiple: Boolean
-        get() = ::fileInput.isInitialized && fileInput.type == FileElementType.MULTI_FILE_INPUT
+        get() = fileType == FileElementType.MULTI_FILE_INPUT
 
-    private val appearance: FileElementAppearance
-        get() = fileInput.appearance
-
-    internal fun setupFileField(input: FileElementInput, options: FileElementOptions) {
+    internal fun setupFileField(input: CollectElementInput, options: CollectElementOptions) {
         this.fileInput = input
-        this.fileOptions = options
+        this.collectOptions = options
         this.columnName = input.column ?: ""
-        this.tableName = input.tableName ?: ""
-        this.skyflowID = input.skyflowId
+        this.tableName = input.table ?: ""
+        this.skyflowID = input.skyflowID
         this.isRequired = options.required
         buildView()
     }
@@ -103,6 +102,7 @@ class FileInputElement internal constructor(
             labelView = TextView(context).apply {
                 text = fileInput.label
                 setPadding(0, 0, 0, dp(6))
+                fileInput.labelStyles.base?.let { applyTextStyle(this, it) }
             }
             addView(labelView)
         }
@@ -112,23 +112,8 @@ class FileInputElement internal constructor(
             setPadding(0, dp(4), 0, 0)
         }
 
-        val trigger = buildTrigger()
-
-        // ICON sits beside the file names; every other look stacks the names under the trigger.
-        if (appearance is FileElementAppearance.ICON && trigger != null) {
-            val row = LinearLayout(context).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-            }
-            row.addView(trigger)
-            filesContainer!!.layoutParams =
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-            row.addView(filesContainer)
-            addView(row)
-        } else {
-            if (trigger != null) addView(trigger)
-            addView(filesContainer)
-        }
+        addView(buildTrigger())
+        addView(filesContainer)
 
         emptyView = TextView(context).apply {
             text = "No file selected"
@@ -141,60 +126,27 @@ class FileInputElement internal constructor(
             gravity = Gravity.START
             setPadding(0, dp(4), 0, 0)
             visibility = View.GONE
+            fileInput.errorTextStyles.base?.let { applyTextStyle(this, it) }
         }
         addView(errorView)
 
         renderFiles()
     }
 
-    /** Build the trigger view for the configured [appearance], or `null` for CUSTOM (no trigger). */
-    private fun buildTrigger(): View? = when (val a = appearance) {
-        is FileElementAppearance.FIELD -> Button(context).apply {
-            isAllCaps = false
-            setOnClickListener { openPicker() }
-            if (fileInput.buttonStyles == null) background = defaultBorder(dashed = false)
-            triggerButton = this
-        }
-        is FileElementAppearance.BUTTON -> Button(context).apply {
-            isAllCaps = false
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setOnClickListener { openPicker() }
-            triggerButton = this
-        }
-        is FileElementAppearance.ICON -> ImageButton(context).apply {
-            setImageResource(a.icon ?: android.R.drawable.ic_menu_upload)
-            contentDescription = "Choose file"
-            background = null
-            setOnClickListener { openPicker() }
-            iconButton = this
-        }
-        is FileElementAppearance.CARD -> TextView(context).apply {
-            gravity = Gravity.CENTER
-            minHeight = dp(120)
-            setPadding(dp(16), dp(24), dp(16), dp(24))
-            isClickable = true
-            if (fileInput.buttonStyles == null) background = defaultBorder(dashed = true)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setOnClickListener { openPicker() }
-            cardView = this
-        }
-        is FileElementAppearance.CUSTOM -> null
-    }.also { view ->
-        if (view != null) {
-            fileInput.buttonStyles?.base?.let { applyButtonStyle(view, it) }
-            wireFocusEvents(view)
-        }
+    /** Build the single default trigger: a button that opens the picker, styled by `inputStyles`. */
+    private fun buildTrigger(): View = Button(context).apply {
+        isAllCaps = false
+        setOnClickListener { openPicker() }
+        fileInput.inputStyles.base?.let { applyButtonStyle(this, it) }
+        wireFocusEvents(this)
+        triggerButton = this
     }
 
     // --- Picking ---
 
     /**
-     * Open the file picker. The public entry point for [FileElementAppearance.CUSTOM] (the host app's
-     * own button calls this), and the same action the built-in triggers fire on tap. Shows the source
+     * Open the file picker. The public entry point for apps that draw their own trigger (call this
+     * from your own button), and the same action the built-in trigger fires on tap. Shows the source
      * chooser when more than one [FileSource] is available, otherwise opens that source directly.
      */
     fun openPicker() {
@@ -209,7 +161,7 @@ class FileInputElement internal constructor(
 
     /** Configured sources, minus CAMERA on devices with no camera (so the control never dead-ends). */
     private fun availableSources(): List<FileSource> {
-        val configured = fileOptions.sources.toList().ifEmpty { listOf(FileSource.FILES) }
+        val configured = collectOptions.sources.toList().ifEmpty { listOf(FileSource.FILES) }
         return configured.filter { it != FileSource.CAMERA || deviceHasCamera() }
     }
 
@@ -218,7 +170,7 @@ class FileInputElement internal constructor(
 
     private fun launchSource(source: FileSource) {
         val p = picker ?: FilePicker(this, logLevel) { files -> addPickedFiles(files) }.also { picker = it }
-        p.launch(source, isMultiple, fileOptions.allowedFileType)
+        p.launch(source, isMultiple, collectOptions.allowedFileType)
     }
 
     private fun showSourceChooser(sources: List<FileSource>) {
@@ -320,46 +272,31 @@ class FileInputElement internal constructor(
         val atMax = isMultiple && selectedFiles.size >= effectiveMaxFileCount()
 
         if (selectedFiles.isEmpty()) {
-            // CARD communicates the empty state in its own prompt; others show the hint line.
-            emptyView?.visibility =
-                if (appearance is FileElementAppearance.CARD) View.GONE else View.VISIBLE
+            emptyView?.visibility = View.VISIBLE
         } else {
             emptyView?.visibility = View.GONE
             selectedFiles.forEachIndexed { index, file -> container.addView(buildFileRow(index, file)) }
         }
 
-        // Trigger label + enabled state (ICON has no text; it only toggles enabled).
-        val enabled = !atMax
         setTriggerLabel(triggerText())
-        setTriggerEnabled(enabled)
+        setTriggerEnabled(!atMax)
     }
 
     private fun triggerText(): String {
-        val hasFiles = selectedFiles.isNotEmpty()
-        return when (appearance) {
-            is FileElementAppearance.CARD ->
-                if (!hasFiles) (if (isMultiple) "Tap to choose files" else "Tap to choose file")
-                else if (isMultiple) "Tap to add files" else "Tap to replace file"
-            else ->
-                if (!hasFiles) (if (isMultiple) "Choose files" else "Choose file")
-                else if (isMultiple) "Add files" else "Replace file"
+        if (selectedFiles.isEmpty()) {
+            val placeholder = if (::fileInput.isInitialized) fileInput.placeholder else ""
+            if (placeholder.isNotEmpty()) return placeholder
+            return if (isMultiple) "Choose files" else "Choose file"
         }
+        return if (isMultiple) "Add files" else "Replace file"
     }
 
     private fun setTriggerLabel(text: String) {
         triggerButton?.text = text
-        cardView?.text = text
-        // iconButton: no text label, by design.
     }
 
     private fun setTriggerEnabled(enabled: Boolean) {
         triggerButton?.isEnabled = enabled
-        iconButton?.isEnabled = enabled
-        cardView?.apply {
-            isEnabled = enabled
-            isClickable = enabled
-            alpha = if (enabled) 1f else 0.5f
-        }
     }
 
     private fun buildFileRow(index: Int, file: SelectedFile): View {
@@ -389,24 +326,13 @@ class FileInputElement internal constructor(
 
     // --- Styling ---
 
-    /** Default trigger background when no [FileElementInput.buttonStyles] is supplied. */
-    private fun defaultBorder(dashed: Boolean): GradientDrawable = GradientDrawable().apply {
-        shape = GradientDrawable.RECTANGLE
-        setColor(Color.TRANSPARENT)
-        cornerRadius = dp(if (dashed) 10 else 6).toFloat()
-        if (dashed) setStroke(dp(2), Color.parseColor("#9E9E9E"), dp(6).toFloat(), dp(4).toFloat())
-        else setStroke(dp(1), Color.parseColor("#9E9E9E"))
-    }
-
-    /** Apply the host-supplied [Style] (buttonStyles.base) to a trigger view, matching [TextField]. */
+    /** Apply the host-supplied [Style] (`inputStyles.base`) to the trigger view, matching [TextField]. */
     private fun applyButtonStyle(view: View, style: Style) {
-        val dashed = appearance is FileElementAppearance.CARD
         val bg = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setColor(style.backgroundColor)
             cornerRadius = style.cornerRadius
-            if (dashed) setStroke(style.borderWidth, style.borderColor, dp(6).toFloat(), dp(4).toFloat())
-            else setStroke(style.borderWidth, style.borderColor)
+            setStroke(style.borderWidth, style.borderColor)
         }
         view.background = bg
         val pad = style.padding
@@ -420,9 +346,19 @@ class FileInputElement internal constructor(
         if (view is TextView) {
             view.setTextColor(style.textColor)
             view.gravity = style.textAlignment
-            if (style.font != Typeface.NORMAL) {
-                try { view.typeface = ResourcesCompat.getFont(context, style.font) } catch (_: Exception) {}
-            }
+            applyFont(view, style)
+        }
+    }
+
+    /** Apply text colour / font from a [Style] to the label or error line. */
+    private fun applyTextStyle(view: TextView, style: Style) {
+        view.setTextColor(style.textColor)
+        applyFont(view, style)
+    }
+
+    private fun applyFont(view: TextView, style: Style) {
+        if (style.font != Typeface.NORMAL) {
+            try { view.typeface = ResourcesCompat.getFont(context, style.font) } catch (_: Exception) {}
         }
     }
 
@@ -456,12 +392,12 @@ class FileInputElement internal constructor(
 
     /** Effective per-file byte cap: single is server-fixed at 32 MB; multi honours [maxFileSize]. */
     internal fun effectiveMaxFileSizeBytes(): Long =
-        if (isMultiple) (fileOptions.maxFileSize ?: FileUploadValidator.SINGLE_FILE_MAX_BYTES)
+        if (isMultiple) (collectOptions.maxFileSize ?: FileUploadValidator.SINGLE_FILE_MAX_BYTES)
         else FileUploadValidator.SINGLE_FILE_MAX_BYTES
 
     /** Effective max file count: single is always 1; multi honours [maxFileCount] (default 4). */
     internal fun effectiveMaxFileCount(): Int =
-        if (isMultiple) (fileOptions.maxFileCount ?: FileUploadValidator.DEFAULT_MAX_FILE_COUNT)
+        if (isMultiple) (collectOptions.maxFileCount ?: FileUploadValidator.DEFAULT_MAX_FILE_COUNT)
         else 1
 
     internal fun setError(message: String) {
@@ -479,13 +415,15 @@ class FileInputElement internal constructor(
     }
 
     override fun getState(): JSONObject {
-        // No bytes / Uri / file name — just enough for the host to drive UI.
+        // No bytes / Uri / file name — counts and flags only, matching the iOS file element events.
         return JSONObject()
-            .put("elementType", if (::fileInput.isInitialized) fileInput.type.name else "")
-            .put("columnName", columnName)
+            .put("elementType", if (::fileInput.isInitialized) fileType.name else "")
+            .put("isEmpty", selectedFiles.isEmpty())
+            .put("isValid", validate().isEmpty())
             .put("isRequired", isRequired)
-            .put("isFilled", selectedFiles.isNotEmpty())
+            .put("isFocused", focused)
             .put("fileCount", selectedFiles.size)
+            .put("value", "")
     }
 
     override fun validate(): SkyflowValidationError {
@@ -517,8 +455,7 @@ class FileInputElement internal constructor(
      *  - [EventName.FOCUS]  — fired when the built-in trigger gains focus.
      *  - [EventName.BLUR]   — fired when the built-in trigger loses focus.
      *
-     * The handler receives the privacy-safe [getState] payload (never bytes, Uri or file name). As
-     * with [FileElementAppearance.CUSTOM] there is no built-in trigger, FOCUS/BLUR do not fire for it.
+     * The handler receives the privacy-safe [getState] payload (never bytes, Uri or file name).
      * [EventName.SUBMIT] is not supported for file elements.
      */
     fun on(eventName: EventName, handler: (state: JSONObject) -> Unit) {
@@ -539,9 +476,10 @@ class FileInputElement internal constructor(
         userOnChangeListener?.invoke(getState())
     }
 
-    /** Wire FOCUS/BLUR on a built-in trigger view so the host can observe focus changes. */
+    /** Wire FOCUS/BLUR on the built-in trigger view so the host can observe focus changes. */
     private fun wireFocusEvents(view: View) {
         view.setOnFocusChangeListener { _, hasFocus ->
+            focused = hasFocus
             if (hasFocus) userOnFocusListener?.invoke(getState())
             else userOnBlurListener?.invoke(getState())
         }

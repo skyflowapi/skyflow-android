@@ -7,7 +7,7 @@ import java.io.File
 
 /**
  * Removes location / identifying EXIF metadata from JPEG photos before upload, for
- * `FileElementOptions.stripImageMetadata`. skyvault-only (keeps the ExifInterface dependency out of
+ * `CollectElementOptions.stripImageMetadata`. skyvault-only (keeps the ExifInterface dependency out of
  * flowvault).
  *
  * The SDK normally streams bytes straight from the picked `content://` Uri with nothing on disk.

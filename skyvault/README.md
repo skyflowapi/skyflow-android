@@ -2254,17 +2254,19 @@ val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
 
 ### Step 2: Create a file Element
 
-Construct a `Skyflow.FileElementInput` and create the element with the file `create` overload. It returns a mountable `Skyflow.FileInputElement`:
+Build a `Skyflow.CollectElementInput` with a `Skyflow.FileElementType` — the **same** input and options classes as a text field (matching skyflow-js / iOS) — and create the element with `createFileElement`. It returns a mountable `Skyflow.FileInputElement`:
 
 ```kotlin
-Skyflow.FileElementInput(
+Skyflow.CollectElementInput(
     table: String,                       // vault table the file column belongs to
     column: String,                      // file column to upload into
-    type: Skyflow.FileElementType,       // FILE_INPUT (single) or MULTI_FILE_INPUT (multiple)
+    inputStyles: Skyflow.Styles,         // optional — styles the picker trigger
+    labelStyles: Skyflow.Styles,         // optional — styles the label
+    errorTextStyles: Skyflow.Styles,     // optional — styles the error line
     label: String,                       // optional label shown above the control
-    skyflowId: String,                   // optional record id to attach a single file to (ignored for MULTI_FILE_INPUT)
-    appearance: Skyflow.FileElementAppearance,   // optional — how the trigger looks (default FIELD)
-    buttonStyles: Skyflow.Styles                 // optional — styles for the trigger control
+    placeholder: String,                 // optional trigger prompt before a file is chosen
+    type: Skyflow.FileElementType,       // FILE_INPUT (single) or MULTI_FILE_INPUT (multiple)
+    skyflowID: String                    // optional record id to attach a single file to (ignored for MULTI_FILE_INPUT)
 )
 ```
 
@@ -2275,26 +2277,16 @@ Skyflow.FileElementInput(
 | `FILE_INPUT` | A single file. The per-file size cap is fixed at 32 MB by the server. |
 | `MULTI_FILE_INPUT` | Multiple files, up to `maxFileCount` (default 4), each up to `maxFileSize`. |
 
-**`appearance` — `Skyflow.FileElementAppearance`**
-
-The behaviour (picking, the per-file remove ✕, validation, errors, upload) is the same across all five looks; only the trigger the user taps changes. Style the trigger with `buttonStyles` (only its `base` style is used).
-
-| Value | Look |
-| --- | --- |
-| `FileElementAppearance.FIELD` | Bordered box with a "Choose File" control (the default). |
-| `FileElementAppearance.BUTTON` | A full-width button; selected files listed below. |
-| `FileElementAppearance.ICON(icon)` | A compact icon with the file names beside it. `icon` is an optional `@DrawableRes Int`. |
-| `FileElementAppearance.CARD` | A large dashed tap area. |
-| `FileElementAppearance.CUSTOM` | The SDK draws no trigger — only the selected files, their ✕ and errors. Your app supplies its own button/icon and calls `element.openPicker()`. |
+**Layout.** There is one native layout — a trigger button that opens the picker, the selected files listed below with a per-file remove (✕), and an error line. A single element replaces its one file; a multi element appends up to its max. Style the trigger with `inputStyles`, the label with `labelStyles` and the error line with `errorTextStyles`, as on a text field. Apps that want their own trigger call `openPicker()` (see Step 3).
 
 ```kotlin
-val input = Skyflow.FileElementInput(
+val input = Skyflow.CollectElementInput(
     table = "files",
     column = "document",
-    type = Skyflow.FileElementType.FILE_INPUT,
     label = "Upload document",
-    appearance = Skyflow.FileElementAppearance.BUTTON,
-    buttonStyles = Skyflow.Styles(
+    placeholder = "Choose a document",
+    type = Skyflow.FileElementType.FILE_INPUT,
+    inputStyles = Skyflow.Styles(
         base = Skyflow.Style(
             backgroundColor = Color.parseColor("#3B5BDB"),
             textColor = Color.WHITE,
@@ -2305,10 +2297,10 @@ val input = Skyflow.FileElementInput(
 )
 ```
 
-Pass options with `Skyflow.FileElementOptions`:
+Pass options with `Skyflow.CollectElementOptions` (the same options class as a text field; the file fields below are ignored by text/card elements):
 
 ```kotlin
-Skyflow.FileElementOptions(
+Skyflow.CollectElementOptions(
     required: Boolean,                 // fail validation / upload if no file is selected (default false)
     allowedFileType: Array<String>,    // extensions the picker accepts and the SDK validates, e.g. arrayOf(".pdf", ".png"); null = any (minus blocked types)
     blockEmptyFiles: Boolean,          // reject a 0-byte file (default false)
@@ -2336,14 +2328,14 @@ When more than one source is enabled the element shows a source chooser; with on
 | `FileSource.CAMERA` | Capture a new photo. Uses the SDK's own `FileProvider`; hidden automatically on devices without a camera. |
 
 ```kotlin
-val options = Skyflow.FileElementOptions(
+val options = Skyflow.CollectElementOptions(
     required = true,
     allowedFileType = arrayOf(".pdf", ".png", ".jpg"),
     maxFileCount = 4,
     sources = arrayOf(Skyflow.FileSource.FILES, Skyflow.FileSource.PHOTOS, Skyflow.FileSource.CAMERA)
 )
 
-val fileElement = container.create(this, input, options)
+val fileElement = container.createFileElement(this, input, options)
 ```
 
 ### Step 3: Add the Element to the layout
@@ -2355,7 +2347,7 @@ val parent = findViewById<LinearLayout>(R.id.parent)
 parent.addView(fileElement)
 ```
 
-With `FileElementAppearance.CUSTOM` the SDK draws no trigger, so wire your own control to `openPicker()`:
+The element draws its own trigger. To also open the picker from your own control (for example a toolbar button), call `openPicker()`:
 
 ```kotlin
 myAttachButton.setOnClickListener { fileElement.openPicker() }
@@ -2432,21 +2424,20 @@ val config = Skyflow.Configuration(
 val skyflowClient = Skyflow.init(config)
 val container = skyflowClient.container(Skyflow.ContainerType.COLLECT)
 
-val input = Skyflow.FileElementInput(
+val input = Skyflow.CollectElementInput(
     table = "files",
     column = "attachments",
-    type = Skyflow.FileElementType.MULTI_FILE_INPUT,
     label = "Attachments",
-    appearance = Skyflow.FileElementAppearance.CARD
+    type = Skyflow.FileElementType.MULTI_FILE_INPUT
 )
-val options = Skyflow.FileElementOptions(
+val options = Skyflow.CollectElementOptions(
     required = true,
     allowedFileType = arrayOf(".pdf", ".png", ".jpg"),
     maxFileCount = 4,
     sources = arrayOf(Skyflow.FileSource.FILES, Skyflow.FileSource.PHOTOS)
 )
 
-val fileElement = container.create(this, input, options)
+val fileElement = container.createFileElement(this, input, options)
 findViewById<LinearLayout>(R.id.parent).addView(fileElement)
 
 submitButton.setOnClickListener {
@@ -2461,7 +2452,7 @@ submitButton.setOnClickListener {
 }
 ```
 
-A full, runnable demo covering every `FileElementType`, `FileElementAppearance`, `FileSource` and styled vs. default looks is in the sample app: `samples/skyvault` → **FileUploadActivity** (open the "file upload demo" from the sample's home screen).
+A full, runnable demo covering both `FileElementType`s, every `FileSource`, styled vs. default looks and an app-supplied `openPicker()` trigger is in the sample app: `samples/skyvault` → **FileUploadActivity** (open the "file upload demo" from the sample's home screen).
 
 ### Event listeners on file elements
 
@@ -2485,14 +2476,16 @@ Each handler receives a privacy-safe `state` — it never carries the file bytes
 ```json
 {
   "elementType": "MULTI_FILE_INPUT",
-  "columnName": "attachments",
+  "isEmpty": false,
+  "isValid": true,
   "isRequired": true,
-  "isFilled": true,
-  "fileCount": 2
+  "isFocused": false,
+  "fileCount": 2,
+  "value": ""
 }
 ```
 
-Supported events: `CHANGE`, `READY`, `FOCUS`, `BLUR`. `FOCUS`/`BLUR` fire from the built-in trigger, so they do not fire for `FileElementAppearance.CUSTOM` (which has no built-in trigger). `SUBMIT` is not supported for file elements.
+Supported events: `CHANGE`, `READY`, `FOCUS`, `BLUR`. `FOCUS`/`BLUR` fire from the element's built-in trigger. `SUBMIT` is not supported for file elements.
 
 ### A note on isolation
 

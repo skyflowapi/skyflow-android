@@ -8,10 +8,8 @@ import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.Skyflow.databinding.ActivityFileUploadBinding
 import okhttp3.OkHttpClient
@@ -19,14 +17,16 @@ import org.json.JSONObject
 import java.io.IOException
 
 /**
- * Demonstrates the skyvault file-upload element across every option:
+ * Demonstrates the skyvault file-upload element. File elements use the same [CollectElementInput] and
+ * [CollectElementOptions] as text fields (matching skyflow-js / iOS); `type` is [FileElementType] and
+ * the element is created with [createFileElement]. There is one native default layout — a trigger
+ * button that opens the picker, the selected files listed below with a per-file remove (✕), and an
+ * error line; `inputStyles` / `labelStyles` / `errorTextStyles` style it. Apps that want their own
+ * trigger call [FileInputElement.openPicker] from any control.
  *
  * - [FileElementType] — `FILE_INPUT` (single) and `MULTI_FILE_INPUT` (multiple).
- * - [FileElementAppearance] — `FIELD`, `BUTTON`, `ICON`, `CARD` and `CUSTOM` (the app's own trigger
- *   calls [FileInputElement.openPicker]).
  * - [FileSource] — `FILES`, `PHOTOS`, `CAMERA` (the element shows a source chooser when more than one
  *   is enabled, and hides `CAMERA` on devices without a camera).
- * - Styling — a plain default element and branded `buttonStyles` on the `BUTTON` and `CARD` looks.
  *
  * All elements live in one COLLECT container, so a single `container.uploadFiles(...)` uploads every
  * selected file. Replace `VAULT_ID` / `VAULT_URL` / `TOKEN_URL` to exercise a real upload; the picker,
@@ -56,127 +56,97 @@ class FileUploadActivity : AppCompatActivity() {
 
         val parent = findViewById<LinearLayout>(R.id.parent)
 
-        // Branded styles reused for the BUTTON and CARD looks (only `base` is applied to the trigger).
-        val brandButtonStyles = Styles(
+        // Branded inputStyles reused for the second element (styles the trigger like any collect field).
+        val brandInputStyles = Styles(
             base = Style(
                 borderColor = Color.parseColor("#3B5BDB"),
                 cornerRadius = 12f,
                 padding = Padding(28, 22, 28, 22),
-                borderWidth = 0,
+                borderWidth = 2,
                 textColor = Color.WHITE,
                 backgroundColor = Color.parseColor("#3B5BDB")
             )
         )
-        val cardStyles = Styles(
-            base = Style(
-                borderColor = Color.parseColor("#3B5BDB"),
-                cornerRadius = 16f,
-                padding = Padding(16, 28, 16, 28),
-                borderWidth = 2,
-                textColor = Color.parseColor("#3B5BDB"),
-                backgroundColor = Color.parseColor("#EEF2FF")
-            )
-        )
 
-        // 2. Create one file element per appearance / type / source combination.
+        // 2. Create file elements. Same input/options classes as text fields; type picks single/multi.
 
-        // FIELD (default look), single file, Files only. No buttonStyles → default bordered box.
-        val fieldElement = collectContainer.create(
+        // Default single-file element, Files only.
+        val fieldElement = collectContainer.createFileElement(
             this,
-            FileElementInput(
+            CollectElementInput(
                 table = "files",
                 column = "document",
-                type = FileElementType.FILE_INPUT,
-                label = "FIELD · single · Files",
-                appearance = FileElementAppearance.FIELD
+                label = "Default · single · Files",
+                placeholder = "Choose a document",
+                type = FileElementType.FILE_INPUT
             ),
-            FileElementOptions(
+            CollectElementOptions(
                 required = false,
                 allowedFileType = arrayOf(".pdf", ".png", ".jpg"),
                 sources = arrayOf(FileSource.FILES)
             )
         )
 
-        // BUTTON look, single file, Files + Photos, branded buttonStyles.
-        val buttonElement = collectContainer.create(
+        // Branded single-file element, Files + Photos (styled trigger via inputStyles).
+        val brandedElement = collectContainer.createFileElement(
             this,
-            FileElementInput(
+            CollectElementInput(
                 table = "files",
                 column = "photo",
-                type = FileElementType.FILE_INPUT,
-                label = "BUTTON · single · Files + Photos",
-                appearance = FileElementAppearance.BUTTON,
-                buttonStyles = brandButtonStyles
+                inputStyles = brandInputStyles,
+                label = "Branded · single · Files + Photos",
+                type = FileElementType.FILE_INPUT
             ),
-            FileElementOptions(
+            CollectElementOptions(
                 required = false,
                 sources = arrayOf(FileSource.FILES, FileSource.PHOTOS)
             )
         )
 
-        // ICON look, single file, Photos + Camera. Default icon (pass ICON(R.drawable.my_icon) to override).
-        val iconElement = collectContainer.create(
+        // Multi-file element, all sources, max 4.
+        val multiElement = collectContainer.createFileElement(
             this,
-            FileElementInput(
-                table = "files",
-                column = "avatar",
-                type = FileElementType.FILE_INPUT,
-                label = "ICON · single · Photos + Camera",
-                appearance = FileElementAppearance.ICON()
-            ),
-            FileElementOptions(
-                required = false,
-                sources = arrayOf(FileSource.PHOTOS, FileSource.CAMERA)
-            )
-        )
-
-        // CARD look, MULTIPLE files, all sources, styled card, max 4 files.
-        val cardElement = collectContainer.create(
-            this,
-            FileElementInput(
+            CollectElementInput(
                 table = "files",
                 column = "attachments",
-                type = FileElementType.MULTI_FILE_INPUT,
-                label = "CARD · multiple · all sources (max 4)",
-                appearance = FileElementAppearance.CARD,
-                buttonStyles = cardStyles
+                label = "Multi · up to 4 · all sources",
+                type = FileElementType.MULTI_FILE_INPUT
             ),
-            FileElementOptions(
+            CollectElementOptions(
                 required = false,
                 maxFileCount = 4,
                 sources = arrayOf(FileSource.FILES, FileSource.PHOTOS, FileSource.CAMERA)
             )
         )
 
-        // CUSTOM look, MULTIPLE files. The SDK draws no trigger — we add our own button below.
-        val customElement = collectContainer.create(
+        // Multi-file element driven by the app's own trigger (openPicker()).
+        val customElement = collectContainer.createFileElement(
             this,
-            FileElementInput(
+            CollectElementInput(
                 table = "files",
                 column = "receipts",
-                type = FileElementType.MULTI_FILE_INPUT,
-                label = "CUSTOM · multiple · app's own trigger",
-                appearance = FileElementAppearance.CUSTOM
+                label = "Custom trigger · multiple (app's own button)",
+                type = FileElementType.MULTI_FILE_INPUT
             ),
-            FileElementOptions(
+            CollectElementOptions(
                 required = false,
                 maxFileCount = 3,
                 sources = arrayOf(FileSource.FILES, FileSource.PHOTOS)
             )
         )
 
-        // 3. Mount every element, then the host-drawn trigger for the CUSTOM element.
+        // 3. Mount every element, then the host-drawn trigger for the custom element.
         val lp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         ).apply { setMargins(40, 24, 40, 8) }
 
-        for (element in listOf(fieldElement, buttonElement, iconElement, cardElement, customElement)) {
+        for (element in listOf(fieldElement, brandedElement, multiElement, customElement)) {
             element.layoutParams = lp
             parent.addView(element)
         }
 
-        // The CUSTOM element's own trigger: any app button/icon that calls openPicker().
+        // The custom element's own trigger: any app button/icon that calls openPicker().
         val customTrigger = Button(this).apply {
             text = "＋ Attach receipts (openPicker)"
             isAllCaps = false
@@ -192,8 +162,8 @@ class FileUploadActivity : AppCompatActivity() {
 
         // 3b. Event listeners — file elements support the same on(...) API as other collect elements.
         //     CHANGE fires on pick/replace/remove, READY on mount, FOCUS/BLUR from the built-in trigger.
-        //     The state payload is privacy-safe (no bytes, Uri or file name).
-        for (element in listOf(fieldElement, buttonElement, iconElement, cardElement, customElement)) {
+        //     The state carries counts and flags only (isEmpty / isValid / isFocused / fileCount), never files.
+        for (element in listOf(fieldElement, brandedElement, multiElement, customElement)) {
             element.on(EventName.CHANGE) { state -> Log.d(TAG, "CHANGE: $state") }
             element.on(EventName.READY) { state -> Log.d(TAG, "READY: $state") }
             element.on(EventName.FOCUS) { state -> Log.d(TAG, "FOCUS: $state") }
@@ -211,8 +181,7 @@ class FileUploadActivity : AppCompatActivity() {
         }
 
         binding.clear.setOnClickListener {
-            listOf(fieldElement, buttonElement, iconElement, cardElement, customElement)
-                .forEach { it.unmount() }
+            listOf(fieldElement, brandedElement, multiElement, customElement).forEach { it.unmount() }
             binding.result.text = ""
         }
     }

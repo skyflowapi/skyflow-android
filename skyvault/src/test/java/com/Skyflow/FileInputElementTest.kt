@@ -1,8 +1,7 @@
 package com.Skyflow
 
-import Skyflow.FileElementAppearance
-import Skyflow.FileElementInput
-import Skyflow.FileElementOptions
+import Skyflow.CollectElementInput
+import Skyflow.CollectElementOptions
 import Skyflow.FileElementType
 import Skyflow.FileInputElement
 import Skyflow.LogLevel
@@ -27,8 +26,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
 
 /**
- * Unit tests for [FileInputElement] selection logic, state, validation and per-appearance rendering.
- * Builds the element directly (bypassing the container) so the tests stay focused on the view.
+ * Unit tests for [FileInputElement] selection logic, state, validation and rendering of the single
+ * default layout. Builds the element directly (bypassing the container) so the tests stay focused on
+ * the view.
  */
 @RunWith(RobolectricTestRunner::class)
 class FileInputElementTest {
@@ -47,11 +47,10 @@ class FileInputElementTest {
 
     private fun element(
         type: FileElementType = FileElementType.FILE_INPUT,
-        appearance: FileElementAppearance = FileElementAppearance.FIELD,
-        options: FileElementOptions = FileElementOptions(),
+        options: CollectElementOptions = CollectElementOptions(),
     ): FileInputElement {
-        val input = FileElementInput(
-            table = "files", column = "document", type = type, label = "Upload", appearance = appearance
+        val input = CollectElementInput(
+            table = "files", column = "document", label = "Upload", type = type
         )
         return FileInputElement(activity, LogLevel.ERROR).apply { setupFileField(input, options) }
     }
@@ -93,13 +92,13 @@ class FileInputElementTest {
     fun multiInputHonoursConfiguredLimits() {
         val el = element(
             FileElementType.MULTI_FILE_INPUT,
-            options = FileElementOptions(maxFileCount = 2, maxFileSize = 10_000L)
+            options = CollectElementOptions(maxFileCount = 2, maxFileSize = 10_000L)
         )
         assertEquals(2, el.effectiveMaxFileCount())
         assertEquals(10_000L, el.effectiveMaxFileSizeBytes())
     }
 
-    // --- state ---
+    // --- state (counts and flags only, matching the iOS file element events) ---
 
     @Test
     fun stateReflectsSelection() {
@@ -107,13 +106,14 @@ class FileInputElementTest {
 
         var state = el.getState()
         assertEquals("MULTI_FILE_INPUT", state.getString("elementType"))
-        assertEquals("document", state.getString("columnName"))
-        assertFalse(state.getBoolean("isFilled"))
+        assertTrue(state.getBoolean("isEmpty"))
+        assertTrue(state.getBoolean("isValid")) // optional + empty is valid
         assertEquals(0, state.getInt("fileCount"))
+        assertEquals("", state.getString("value"))
 
         el.attachSelectedFiles(listOf(file("a.pdf"), file("b.pdf")))
         state = el.getState()
-        assertTrue(state.getBoolean("isFilled"))
+        assertFalse(state.getBoolean("isEmpty"))
         assertEquals(2, state.getInt("fileCount"))
     }
 
@@ -121,15 +121,17 @@ class FileInputElementTest {
 
     @Test
     fun requiredElementIsInvalidUntilAFileIsSelected() {
-        val el = element(FileElementType.FILE_INPUT, options = FileElementOptions(required = true))
+        val el = element(FileElementType.FILE_INPUT, options = CollectElementOptions(required = true))
         assertNotEquals("", el.validate())
+        assertFalse(el.getState().getBoolean("isValid"))
         el.attachSelectedFiles(listOf(file("a.pdf")))
         assertEquals("", el.validate())
+        assertTrue(el.getState().getBoolean("isValid"))
     }
 
     @Test
     fun optionalEmptyElementIsValid() {
-        val el = element(FileElementType.FILE_INPUT, options = FileElementOptions(required = false))
+        val el = element(FileElementType.FILE_INPUT, options = CollectElementOptions(required = false))
         assertEquals("", el.validate())
     }
 
@@ -163,9 +165,8 @@ class FileInputElementTest {
         el.attachSelectedFiles(listOf(file("a.pdf"), file("b.pdf")))
         assertEquals(1, calls)
         assertNotNull(last)
-        assertTrue(last!!.getBoolean("isFilled"))
+        assertFalse(last!!.getBoolean("isEmpty"))
         assertEquals(2, last!!.getInt("fileCount"))
-        assertEquals("document", last!!.getString("columnName"))
     }
 
     @Test
@@ -176,7 +177,7 @@ class FileInputElementTest {
         el.on(EventName.CHANGE) { last = it }
         el.unmount()
         assertNotNull(last)
-        assertFalse(last!!.getBoolean("isFilled"))
+        assertTrue(last!!.getBoolean("isEmpty"))
         assertEquals(0, last!!.getInt("fileCount"))
     }
 
@@ -207,8 +208,8 @@ class FileInputElementTest {
     }
 
     @Test
-    fun focusAndBlurFireFromTheTrigger() {
-        val el = element(appearance = FileElementAppearance.FIELD)
+    fun focusAndBlurFireFromTheTriggerAndTrackState() {
+        val el = element()
         activity.setContentView(el)
         var focus = 0
         var blur = 0
@@ -216,9 +217,10 @@ class FileInputElementTest {
         el.on(EventName.BLUR) { blur++ }
 
         val trigger = firstButton(el)
-        assertNotNull("FIELD appearance should have a trigger button", trigger)
+        assertNotNull("the default layout should have a trigger button", trigger)
         trigger!!.requestFocus()
         assertEquals(1, focus)
+        assertTrue(el.getState().getBoolean("isFocused"))
         trigger.clearFocus()
         assertEquals(1, blur)
     }
@@ -232,25 +234,15 @@ class FileInputElementTest {
         assertFalse(called)
     }
 
-    // --- rendering: every appearance builds without error ---
+    // --- rendering: the default layout builds and holds a selection ---
 
     @Test
-    fun everyAppearanceBuildsAndHoldsSelection() {
-        val appearances = listOf(
-            FileElementAppearance.FIELD,
-            FileElementAppearance.BUTTON,
-            FileElementAppearance.ICON(),
-            FileElementAppearance.CARD,
-            FileElementAppearance.CUSTOM,
-        )
-        for (appearance in appearances) {
-            val el = element(FileElementType.MULTI_FILE_INPUT, appearance = appearance)
-            assertTrue("appearance $appearance should build child views", el.childCount > 0)
+    fun defaultLayoutBuildsAndHoldsSelection() {
+        for (type in listOf(FileElementType.FILE_INPUT, FileElementType.MULTI_FILE_INPUT)) {
+            val el = element(type)
+            assertTrue("$type should build child views", el.childCount > 0)
             el.attachSelectedFiles(listOf(file("a.pdf")))
-            assertEquals(
-                "appearance $appearance should hold the selection",
-                1, el.getSelectedFiles().size
-            )
+            assertEquals("$type should hold the selection", 1, el.getSelectedFiles().size)
         }
     }
 }

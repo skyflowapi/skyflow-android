@@ -248,7 +248,7 @@ internal class FileUploadAPICallback(
         // there. When the file IS a strippable image but the strip fails, fail that file rather than
         // silently uploading the original with its location data intact (fail-closed). Non-images
         // stream straight from the Uri as before.
-        val mustStrip = element.fileOptions.stripImageMetadata && ImageMetadataStripper.shouldStrip(file)
+        val mustStrip = element.collectOptions.stripImageMetadata && ImageMetadataStripper.shouldStrip(file)
         val tempFile = if (mustStrip) ImageMetadataStripper.stripToTempFile(element.context, file) else null
         if (mustStrip && tempFile == null) {
             recordError(index, file.name, 400, "Could not remove image metadata before upload.")
@@ -288,7 +288,7 @@ internal class FileUploadAPICallback(
         // preserveFileName = false → send a generated name so any PII in the file name never reaches
         // the vault (matches skyflow-js generateUploadFileName).
         val sentName =
-            if (element.fileOptions.preserveFileName) FileUploadValidator.sanitizeFileName(file.name)
+            if (element.collectOptions.preserveFileName) FileUploadValidator.sanitizeFileName(file.name)
             else "${UUID.randomUUID()}" + if (file.extension.isNotEmpty()) ".${file.extension}" else ""
 
         // Stream from the EXIF-stripped temp file when present, otherwise straight from the Uri.
@@ -313,7 +313,7 @@ internal class FileUploadAPICallback(
         // metadata path (skyflowIdOverride).
         val skyflowId = skyflowIdOverride ?: if (element.isMultiple) null else element.skyflowID
         if (!skyflowId.isNullOrEmpty()) bodyBuilder.addFormDataPart("skyflowID", skyflowId)
-        if (element.fileOptions.returnFileMetadata) bodyBuilder.addFormDataPart("returnFileMetadata", "true")
+        if (element.collectOptions.returnFileMetadata) bodyBuilder.addFormDataPart("returnFileMetadata", "true")
 
         return Request.Builder()
             .method("POST", bodyBuilder.build())
@@ -339,7 +339,7 @@ internal class FileUploadAPICallback(
                     val entry = JSONObject()
                     val skyflowId = parsed.optString("skyflow_id", parsed.optString("skyflowID", ""))
                     if (skyflowId.isNotEmpty()) entry.put("skyflow_id", skyflowId)
-                    if (element.fileOptions.returnFileMetadata && parsed.has("fileMetadata")) {
+                    if (element.collectOptions.returnFileMetadata && parsed.has("fileMetadata")) {
                         entry.put("fileMetadata", parsed.get("fileMetadata"))
                     }
                     recordSuccess(index, if (entry.length() > 0) entry else parsed)

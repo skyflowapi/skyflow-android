@@ -2,7 +2,7 @@ package Skyflow
 
 /**
  * Where a [FileInputElement] lets the user pick a file from. Passed via
- * [FileElementOptions.sources]. Android-only (there is no browser file input).
+ * [CollectElementOptions.sources]. Android-only (there is no browser file input).
  *
  * - [FILES]  — Storage Access Framework document picker (`ACTION_OPEN_DOCUMENT`). No runtime
  *              permission required.
